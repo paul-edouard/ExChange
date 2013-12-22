@@ -64,7 +64,7 @@ public class YQLHistoricalData extends YQLTable {
 		
 		Calendar date=Calendar.getInstance();
 		date.set(2013, 10, 1);
-		YQLHistoricalData hisData=new YQLHistoricalData("DTE.DE",date);
+		YQLHistoricalData hisData=new YQLHistoricalData("^OEX",date);
 		System.out.println(hisData.getResult().toString(1));
 		
 	}

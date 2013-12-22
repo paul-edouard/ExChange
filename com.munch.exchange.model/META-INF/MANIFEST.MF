@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Model
+Bundle-SymbolicName: com.munch.exchange.model
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: MUNCH
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: com.munch.exchange.model.core,
+ com.munch.exchange.model.xml
