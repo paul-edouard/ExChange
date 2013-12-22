@@ -23,6 +23,7 @@ public class YahooFinance {
 	
 	
 
+	
 	public YahooFinance(String stock) {
 		super();
 		stocks.add(stock);
