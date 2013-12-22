@@ -4,10 +4,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Calendar;
 
-import com.munch.exchange.connect.json.JSONObject;
 
-
-public class YQLHistoricalData {
+public class YQLHistoricalData extends YQLTable {
 	
 	private static String table="yahoo.finance.historicaldata";
 	private static String format="&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
@@ -15,9 +13,7 @@ public class YQLHistoricalData {
 	private Calendar startDate;
 	private Calendar endDate;
 	
-	private String symbol;
 	
-	private JSONObject result;
 	
 	public YQLHistoricalData(String symbol, Calendar startDate, Calendar endDate ){
 		super();
@@ -33,10 +29,10 @@ public class YQLHistoricalData {
 		this.endDate=Calendar.getInstance();
 	}
 	
-	private String createUrl(){
+	protected String createUrl(){
 		try {
 		String baseUrl=YQL.URL;
-		String query = "select * from "+table
+		String query = "select * from "+this.getTable()
 						+" where symbol = \""+symbol+"\""
 						+" and "
 						+"startDate = \""+YQL.getDateString(startDate)+"\""+
@@ -45,7 +41,7 @@ public class YQLHistoricalData {
 		
 		//System.out.println("Query"+query);
 		
-		return baseUrl + URLEncoder.encode(query, "UTF-8") +format;
+		return baseUrl + URLEncoder.encode(query, "UTF-8") +this.getFormat();
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -54,15 +50,14 @@ public class YQLHistoricalData {
 		
 	}
 	
-	
-	
-	public JSONObject getResult(){
-		if(result!=null)return result;
-		
-		result=YQL.getJSONObject(createUrl());
-		return result;
-		
+	protected String getTable(){
+		return table;
 	}
+	
+	protected String getFormat(){
+		return format;
+	}
+	
 	
 	
 	public static void main(String[] args) {

@@ -15,12 +15,24 @@ public class YQL {
 	
 	protected static String URL="http://query.yahooapis.com/v1/public/yql?q=";
 	
+	
+	/**
+	 * return the Date in format that can be use to create a conform query for YQL
+	 * 
+	 * @param date
+	 * @return
+	 */
 	protected static String getDateString(Calendar date){
 		
 		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
 		return format.format(date.getTime());
 	}
-	
+	/**
+	 * open a connection with the given url and return a Json object
+	 * 
+	 * @param url
+	 * @return
+	 */
 	protected static JSONObject getJSONObject(String url){
 		
 		JSONObject result=null;
