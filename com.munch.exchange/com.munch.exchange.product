@@ -3,7 +3,6 @@
 
 <product name="com.munch.exchange" id="com.munch.exchange.product" application="org.eclipse.e4.ui.workbench.swt.E4Application" version="1.0.0.qualifier" useFeatures="false" includeLaunchers="true">
 
-
    <configIni use="default">
    </configIni>
 
@@ -14,10 +13,10 @@
 
    <windowImages i16="/com.munch.exchange/icons/chart_curve.png"/>
 
-
    <plugins>
       <plugin id="com.ibm.icu"/>
       <plugin id="com.munch.exchange"/>
+      <plugin id="com.munch.exchange.model"/>
       <plugin id="javax.annotation"/>
       <plugin id="javax.inject"/>
       <plugin id="javax.xml"/>
