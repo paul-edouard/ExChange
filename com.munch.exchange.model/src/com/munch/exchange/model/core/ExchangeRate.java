@@ -1,5 +1,7 @@
 package com.munch.exchange.model.core;
 
+import java.util.LinkedList;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -16,6 +18,8 @@ public class ExchangeRate extends ParameterElement implements XmlElementIF {
 	protected String symbol;
 	static final String SymbolStr="symbol";
 	
+	protected LinkedList<HistoricalPoint> HistoricalData=new LinkedList<HistoricalPoint>();
+	static final String HistoricalDataStr="historical_data";
 	
 	public String getName() {
 		return name;
@@ -59,39 +63,30 @@ public class ExchangeRate extends ParameterElement implements XmlElementIF {
 				Node child = Children.item(i);
 				if(child instanceof Element){
 					Element childElement=(Element)child;
-					/*
-					//Weight
-					if(childElement.getTagName().equals(Weight.getTagName())){
-						Weight w=new Weight();
-						w.setDate(childElement.getAttribute(Weight.DateStr));
-						w.setEvaluation(childElement.getAttribute(Weight.EvaluationStr));
-						w.setWeightTyp(childElement.getAttribute(Weight.WeightTypStr));
-						w.setValue(childElement.getAttribute(Weight.ValueStr));
-						w.setOriginSystem(childElement.getAttribute(Weight.OriginSystemStr));
-						
-						part.addWeigth(w);
-						
-					}
-					//Material
-					else if(childElement.getTagName().equals(new Material().getTagName())){
-						Material mat=new Material();mat.init(childElement);
-						part.addMaterial(mat);
-					}
-					//Representation
-					else if(childElement.getTagName().equals(new Representation().getTagName())){
-						Representation rep=new Representation();rep.init(childElement);
-						rep.setPartId(part.getLockableId());
-						part.addRepresentation(rep);
-					}
-					//Translation
-					else if(childElement.getTagName().equals(new Translation().getTagName())){
-						Translation trans=new Translation();trans.init(childElement);
-						part.setTranslation(trans);
-					}
-					*/
+					
 					//Parameter
 					if(childElement.getTagName().equals(new Parameter().getTagName())){
 						this.setParameter(new Parameter(childElement));
+					}
+					//Historical Data
+					else if(childElement.getTagName().equals(HistoricalDataStr)){
+						HistoricalData.clear();
+						NodeList Childs=childElement.getChildNodes();
+						for(int j=0;j<Childs.getLength();j++){
+							Node c = Childs.item(i);
+							if(c instanceof Element){
+								Element HElement=(Element)c;
+								
+								//History Point
+								HistoricalPoint point=new HistoricalPoint();
+								if(HElement.getTagName().equals(point.getTagName())){
+									point.init(HElement);
+									HistoricalData.add(point);
+								}
+								
+							}
+						}
+						
 					}
 					
 				}
@@ -128,7 +123,7 @@ public class ExchangeRate extends ParameterElement implements XmlElementIF {
 		//Parameter
 		e.appendChild(this.getParameter().toDomElement(doc));
 		
-		
+		Element HDataEle=doc.createElement(HistoricalDataStr);
 		
 		
 		return e;
