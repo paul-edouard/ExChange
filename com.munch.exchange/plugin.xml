@@ -25,5 +25,21 @@
          </property>
       </product>
    </extension>
+   <extension
+         id="exchangeProduct"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.eclipse.e4.ui.workbench.swt.E4Application"
+            name="ExChange">
+         <property
+               name="appName"
+               value="ExChange">
+         </property>
+         <property
+               name="windowImages"
+               value="icons/chart_curve.png">
+         </property>
+      </product>
+   </extension>
 
 </plugin>
