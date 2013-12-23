@@ -1,6 +1,8 @@
-package com.munch.exchange.connect;
+package com.munch.exchange.services.internal.yql;
 
-import com.munch.exchange.connect.json.JSONObject;
+import com.munch.exchange.services.internal.yql.json.JSONObject;
+
+
 
 public abstract  class  YQLTable {
 	

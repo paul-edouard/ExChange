@@ -1,17 +1,17 @@
-package com.munch.exchange.model.core;
+package com.munch.exchange.services.internal;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.Project;
 import com.munch.exchange.model.xml.XmlFile;
+import com.munch.exchange.services.IProjectProvider;
 
+public class ProjectProviderImpl extends XmlFile implements IProjectProvider {
 
-public class ProjectDAOLocal extends XmlFile  implements ProjectDAOIF {
-	
 	private Project project;
 	
 
-	
 	@Override
 	public boolean save(Project p) {
 		// TODO Auto-generated method stub
@@ -42,6 +42,5 @@ public class ProjectDAOLocal extends XmlFile  implements ProjectDAOIF {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
 
 }

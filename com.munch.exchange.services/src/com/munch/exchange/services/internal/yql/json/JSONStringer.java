@@ -1,4 +1,4 @@
-package com.munch.exchange.connect.json;
+package com.munch.exchange.services.internal.yql.json;
 
 /*
 Copyright (c) 2006 JSON.org

@@ -1,4 +1,4 @@
-package com.munch.exchange.connect;
+package com.munch.exchange.services.internal.yql;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

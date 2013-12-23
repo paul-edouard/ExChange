@@ -1,8 +1,8 @@
-package com.munch.exchange.model.core;
+package com.munch.exchange.services;
 
+import com.munch.exchange.model.core.Project;
 
-
-public interface ProjectDAOIF {
+public interface IProjectProvider {
 	
 	/**
 	 * save the given project
@@ -20,5 +20,6 @@ public interface ProjectDAOIF {
 	 * @return
 	 */
 	public boolean delete(Project p);
+
 
 }

@@ -17,8 +17,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 
-import com.munch.exchange.connect.YahooFinance;
-
 public class InfoPart {
 	private StyledText styledText;
 	@Inject
@@ -34,10 +32,10 @@ public class InfoPart {
 		btnAsk.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				YahooFinance j=new YahooFinance("GE");j.addStock("FDAX.EX");j.addStock("MSFT");
-				j.addStock("DAI.DE");
-				styledText.append(j.getCurrentQuotes()+"\n");
-				
+				//YahooFinance j=new YahooFinance("GE");j.addStock("FDAX.EX");j.addStock("MSFT");
+				//j.addStock("DAI.DE");
+				//styledText.append(j.getCurrentQuotes()+"\n");
+				styledText.append("Coucou\n");
 			}
 		});
 		btnAsk.setText("Get Info!");

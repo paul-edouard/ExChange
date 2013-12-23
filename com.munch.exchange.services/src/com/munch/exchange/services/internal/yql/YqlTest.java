@@ -1,4 +1,4 @@
-package com.munch.exchange.connect;
+package com.munch.exchange.services.internal.yql;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,8 +7,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 
-import com.munch.exchange.connect.json.JSONObject;
-import com.munch.exchange.connect.json.JSONTokener;
+import com.munch.exchange.services.internal.yql.json.JSONObject;
+import com.munch.exchange.services.internal.yql.json.JSONTokener;
+
 
 public class YqlTest {
 	

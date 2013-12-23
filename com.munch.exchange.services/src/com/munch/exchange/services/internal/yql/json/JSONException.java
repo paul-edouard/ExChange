@@ -1,4 +1,4 @@
-package com.munch.exchange.connect.json;
+package com.munch.exchange.services.internal.yql.json;
 
 /**
  * The JSONException is thrown by the JSON.org classes when things are amiss.
