@@ -1,15 +1,14 @@
 package com.munch.exchange.services.internal.yql;
 
-
-public class YQLStocks extends YQLTable {
+public class YQLAnalystEstimate extends YQLTable {
 	
-	private static String table="yahoo.finance.stocks";
+	private static String table="yahoo.finance.analystestimate";
 	private static String format="&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
 
-	public YQLStocks(String symbol){
+	public YQLAnalystEstimate(String symbol){
 		this.symbol=symbol;
 	}
-
+	
 	@Override
 	protected String getTable() {
 		return table;
@@ -20,9 +19,10 @@ public class YQLStocks extends YQLTable {
 		return format;
 	}
 	
+	
 	public static void main(String[] args) {
-		YQLStocks stocks=new YQLStocks("yhoo");
-		System.out.println(stocks.getResult().toString(1));
+		YQLAnalystEstimate analystEstimate=new YQLAnalystEstimate("yhoo");
+		System.out.println(analystEstimate.getResult().toString(1));
 	}
 
 }

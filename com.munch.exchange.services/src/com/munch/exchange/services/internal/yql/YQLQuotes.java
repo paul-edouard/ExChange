@@ -9,7 +9,7 @@ import java.util.List;
 public class YQLQuotes  extends YQLTable {
 	
 	private static String table="yahoo.finance.quotes";
-	private static String format="&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
+	private static String format="&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
 	
 	private List<String> symbols;
 	
