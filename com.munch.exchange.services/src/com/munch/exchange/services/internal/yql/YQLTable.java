@@ -36,7 +36,14 @@ public abstract  class  YQLTable {
 	public JSONObject getResult(){
 		if(result!=null)return result;
 		
-		result=YQL.getJSONObject(createUrl());
+		JSONObject message=YQL.getJSONObject(createUrl());
+		if(message==null)return null;
+		
+		JSONObject query=message.getJSONObject("query");
+		if(query==null)return null;
+		
+		result=query.getJSONObject("results");
+		
 		return result;
 		
 	}

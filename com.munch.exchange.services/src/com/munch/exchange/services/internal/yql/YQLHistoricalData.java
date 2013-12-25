@@ -10,6 +10,8 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Calendar;
 
+import com.munch.exchange.services.internal.yql.json.JSONArray;
+
 
 public class YQLHistoricalData extends YQLTable {
 	
@@ -91,7 +93,7 @@ public class YQLHistoricalData extends YQLTable {
 							"&e="+YQL.getDayString(endDate)+
 							"&f="+YQL.getYearString(endDate)+
 							"&g=v&ignore=.csv";
-			System.out.println(baseUrl + query);
+		//	System.out.println(baseUrl + query);
 			return baseUrl + query;
 		
 		} catch (UnsupportedEncodingException e) {
@@ -168,7 +170,14 @@ public class YQLHistoricalData extends YQLTable {
 		//YQLHistoricalData hisData=new YQLHistoricalData("EURUSD=X",date,date2);
 		
 		
-		System.out.println(hisData.getResult().toString(1));
+		//System.out.println(hisData.getResult().toString(1));
+		
+		JSONArray array=  hisData.getResult().getJSONArray("quote");
+		for(int i=0;i<array.length();i++){
+			System.out.println(array.getJSONObject(i).toString(1));
+		}
+		
+		
 		System.out.println(hisData.getDividendData());
 		
 	}
