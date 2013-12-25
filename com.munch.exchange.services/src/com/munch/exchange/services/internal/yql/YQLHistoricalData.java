@@ -1,6 +1,12 @@
 package com.munch.exchange.services.internal.yql;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Calendar;
 
@@ -13,7 +19,7 @@ public class YQLHistoricalData extends YQLTable {
 	private Calendar startDate;
 	private Calendar endDate;
 	
-	
+	private static String dividend_url="http://ichart.finance.yahoo.com/table.csv?s=";
 	
 	public YQLHistoricalData(String symbol, Calendar startDate, Calendar endDate ){
 		super();
@@ -28,6 +34,74 @@ public class YQLHistoricalData extends YQLTable {
 		this.startDate=startDate;
 		this.endDate=Calendar.getInstance();
 	}
+	
+	
+	public String getDividendData(){
+		
+		String output="";
+		
+		URL url;
+		try {
+			url = new URL(createDividendUrl());
+		
+		URLConnection connection = url.openConnection();
+		
+		InputStreamReader inStream = new InputStreamReader(connection.getInputStream());
+
+        BufferedReader buff= new BufferedReader(inStream);
+        
+        String nextLine="";
+        
+        while (true)
+        {
+               nextLine =buff.readLine();  
+
+               if (nextLine !=null)
+               {
+            	   output+=nextLine+"\n";
+               }
+
+               else
+               {
+                  break;
+               } 
+           }
+        
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return output;
+		
+	}
+	
+	private String createDividendUrl(){
+		try {
+			String baseUrl=dividend_url;
+			
+			String query=	URLEncoder.encode(symbol, "UTF-8")+
+							"&a="+YQL.getMonthString(startDate)+
+							"&b="+YQL.getDayString(startDate)+
+							"&c="+YQL.getYearString(startDate)+
+							"&d="+YQL.getMonthString(endDate)+
+							"&e="+YQL.getDayString(endDate)+
+							"&f="+YQL.getYearString(endDate)+
+							"&g=v&ignore=.csv";
+			System.out.println(baseUrl + query);
+			return baseUrl + query;
+		
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+		
+	}
+	
 	
 	protected String createUrl(){
 		try {
@@ -58,14 +132,44 @@ public class YQLHistoricalData extends YQLTable {
 		return format;
 	}
 	
-	
+	/*
+	 * 
+	 *   InputStreamReader inStream = new InputStreamReader(urlConn.getInputStream());
+
+                     BufferedReader buff= new BufferedReader(inStream);
+
+                     while (true)
+                     {
+                            nextLine =buff.readLine();  
+
+                            if (nextLine !=null)
+                            {
+                                other.setText(nextLine);
+                            }
+
+                            else
+                            {
+                               break;
+                            } 
+                        }
+
+	 * 
+	 */
 	
 	public static void main(String[] args) {
 		
 		Calendar date=Calendar.getInstance();
-		date.set(2013, 10, 1);
-		YQLHistoricalData hisData=new YQLHistoricalData("^OEX",date);
+		date.set(2013, 03, 1);
+		Calendar date2=Calendar.getInstance();
+		date2.set(2013, 03, 20);
+		
+		YQLHistoricalData hisData=new YQLHistoricalData("DAI.DE",date,date2);
+		//EURUSD=X
+		//YQLHistoricalData hisData=new YQLHistoricalData("EURUSD=X",date,date2);
+		
+		
 		System.out.println(hisData.getResult().toString(1));
+		System.out.println(hisData.getDividendData());
 		
 	}
 	

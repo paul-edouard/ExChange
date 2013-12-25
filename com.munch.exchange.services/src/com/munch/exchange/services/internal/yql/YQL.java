@@ -29,6 +29,34 @@ public class YQL {
 		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
 		return format.format(date.getTime());
 	}
+	
+	protected static String getDayString(Calendar date){
+		
+		SimpleDateFormat format=new SimpleDateFormat("dd");
+		return format.format(date.getTime());
+	}
+	
+	protected static String getMonthString(Calendar date){
+		
+		SimpleDateFormat format=new SimpleDateFormat("MM");
+		
+		String month=format.format(date.getTime());
+		int month_int=Integer.valueOf(month);month_int--;
+		String n_month=String.valueOf(month_int);
+		if (month_int<10){
+			n_month="0"+n_month;
+		}
+		
+		
+		return n_month;
+	}
+	
+	protected static String getYearString(Calendar date){
+		
+		SimpleDateFormat format=new SimpleDateFormat("yyyy");
+		return format.format(date.getTime());
+	}
+	
 	/**
 	 * open a connection with the given url and return a Json object
 	 * 

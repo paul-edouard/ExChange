@@ -16,7 +16,11 @@ public class YahooFinance {
 	public static final int bufferSize=1000;
 	
 	
-	private static String quote_url="http://finance.yahoo.com/d/quotes.csv?s=";
+	//private static String quote_url="http://finance.yahoo.com/d/quotes.csv?s=";
+	
+	private static String quote_url="http://ichart.finance.yahoo.com/table.csv?s=";
+	
+	
 	private LinkedList<String> stocks=new LinkedList<String>();
 	
 	private String options="snd1l1yrk2";
@@ -35,12 +39,16 @@ public class YahooFinance {
 	
 	
 	public String createUrl(){
+		return quote_url+"DAI.DE&a=03&c=2010&d=03&e=24&f=2013&g=v&ignore=.csv";
+		
+		/*
 		String stocks_str="";
 		for(String stock :stocks ){
 			stocks_str+=stock+"+";
 		}
 		stocks_str=stocks_str.substring(0, stocks_str.lastIndexOf("+"));
 		return quote_url+stocks_str+"&f="+options;
+		*/
 	}
 	
 	public String getCurrentQuotes(){
