@@ -70,8 +70,8 @@ public class YQLQuotes  extends YQLTable {
 	public static void main(String[] args) {
 		
 		
-		YQLQuotes quote=new YQLQuotes("TWTR");
-		//quote.addSymbol("YHOO");
+		YQLQuotes quote=new YQLQuotes("CTYRX");
+		quote.addSymbol("YHOO");
 		System.out.println(quote.getResult().toString(1));
 		
 	}

@@ -8,7 +8,7 @@ import org.w3c.dom.NodeList;
 import com.munch.exchange.model.xml.XmlElementIF;
 
 
-public class ExchangeRate extends ParameterElement implements XmlElementIF {
+public abstract class ExchangeRate extends ParameterElement implements XmlElementIF {
 	
 	protected String name;
 	static final String NameStr="name";
@@ -48,7 +48,10 @@ public class ExchangeRate extends ParameterElement implements XmlElementIF {
 	/**
 	 * return the TAG Name used in the xml file
 	 */
-	public String getTagName(){return "exchange_rate";}
+	public abstract String getTagName();
+	
+	protected abstract void initAttribute(Element rootElement);
+	protected abstract void initChild(Element childElement);
 	
 	/**
 	 * initializes the users map from a xml element
@@ -61,6 +64,7 @@ public class ExchangeRate extends ParameterElement implements XmlElementIF {
 			this.setName(Root.getAttribute(NameStr));
 			this.setSymbol(Root.getAttribute(SymbolStr));
 			
+			this.initAttribute(Root);
 			
 			NodeList Children=Root.getChildNodes();
 			
@@ -80,12 +84,17 @@ public class ExchangeRate extends ParameterElement implements XmlElementIF {
 						historicalData.init(childElement);
 					}
 					
+					this.initChild(childElement);
+					
 				}
 			}
 			
 		}
 	}
 	
+	
+	protected abstract void setAttribute(Element rootElement);
+	protected abstract void appendChild(Element rootElement);
 	
 	/**
 	 * export the user map in a xml element

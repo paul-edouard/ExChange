@@ -8,9 +8,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.util.Calendar;
+import java.util.LinkedList;
 
+import com.munch.exchange.model.core.Dividend;
+import com.munch.exchange.model.core.HistoricalPoint;
 import com.munch.exchange.services.internal.yql.json.JSONArray;
+import com.munch.exchange.services.internal.yql.json.JSONException;
+import com.munch.exchange.services.internal.yql.json.JSONObject;
 
 
 public class YQLHistoricalData extends YQLTable {
@@ -38,7 +44,20 @@ public class YQLHistoricalData extends YQLTable {
 	}
 	
 	
-	public String getDividendData(){
+	public LinkedList<Dividend> getDividendList(){
+		String[] divs=getDividendData().split(";");
+		LinkedList<Dividend> l=new LinkedList<Dividend>();
+		for(int i=0;i<divs.length;i++){
+			Dividend d=new Dividend(divs[i]);
+			if(d.getDate()!=null)
+				l.add(d);
+		}
+		
+		return l;
+		
+	}
+	
+	private String getDividendData(){
 		
 		String output="";
 		
@@ -58,9 +77,14 @@ public class YQLHistoricalData extends YQLTable {
         {
                nextLine =buff.readLine();  
 
-               if (nextLine !=null)
+               if (nextLine !=null )
                {
-            	   output+=nextLine+"\n";
+            	   
+            	   if(!nextLine.startsWith("Date,Dividends")){
+            		   output+=nextLine+";";
+            	   }
+            	 //  System.out.println("Line:"+nextLine);
+            	   
                }
 
                else
@@ -134,29 +158,41 @@ public class YQLHistoricalData extends YQLTable {
 		return format;
 	}
 	
-	/*
-	 * 
-	 *   InputStreamReader inStream = new InputStreamReader(urlConn.getInputStream());
-
-                     BufferedReader buff= new BufferedReader(inStream);
-
-                     while (true)
-                     {
-                            nextLine =buff.readLine();  
-
-                            if (nextLine !=null)
-                            {
-                                other.setText(nextLine);
-                            }
-
-                            else
-                            {
-                               break;
-                            } 
-                        }
-
-	 * 
-	 */
+	
+	private HistoricalPoint createHisPoint(JSONObject obj){
+		
+		HistoricalPoint point=new HistoricalPoint();
+		point.setLow(obj.getFloat("Low"));
+		point.setOpen(obj.getFloat("Open"));
+		point.setAdjClose(obj.getFloat("Adj_Close"));
+		point.setClose(obj.getFloat("Close"));
+		try {
+			point.setDate(obj.getDate("Date"));
+		} catch (JSONException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		point.setVolume(obj.getLong("Volume"));
+		point.setHigh(obj.getFloat("High"));
+		
+		return point;
+	}
+	
+	public LinkedList<HistoricalPoint> getHisPointList(){
+		
+		LinkedList<HistoricalPoint> plist=new LinkedList<HistoricalPoint>();
+		JSONArray array=  this.getResult().getJSONArray("quote");
+		
+		for(int i=0;i<array.length();i++){
+			plist.add(this.createHisPoint(array.getJSONObject(i)));
+			//System.out.println(hisData.createHisPoint(array.getJSONObject(i)));
+		}
+		
+		return plist;
+	}
+	
+	
+	
 	
 	public static void main(String[] args) {
 		
@@ -166,19 +202,18 @@ public class YQLHistoricalData extends YQLTable {
 		date2.set(2013, 03, 20);
 		
 		YQLHistoricalData hisData=new YQLHistoricalData("DAI.DE",date,date2);
-		//EURUSD=X
-		//YQLHistoricalData hisData=new YQLHistoricalData("EURUSD=X",date,date2);
-		
-		
-		//System.out.println(hisData.getResult().toString(1));
-		
-		JSONArray array=  hisData.getResult().getJSONArray("quote");
-		for(int i=0;i<array.length();i++){
-			System.out.println(array.getJSONObject(i).toString(1));
+		for(HistoricalPoint point: hisData.getHisPointList()){
+			System.out.println(point);
+		}
+		for(Dividend div:hisData.getDividendList()){
+			System.out.println(div);
 		}
 		
 		
-		System.out.println(hisData.getDividendData());
+		//EURUSD=X
+		//YQLHistoricalData hisData=new YQLHistoricalData("EURUSD=X",date,date2);
+		
+		//System.out.println(hisData.getDividendData());
 		
 	}
 	

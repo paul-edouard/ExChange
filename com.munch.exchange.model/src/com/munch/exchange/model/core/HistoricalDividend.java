@@ -9,19 +9,18 @@ import org.w3c.dom.NodeList;
 
 import com.munch.exchange.model.xml.XmlElementIF;
 
-public class HistoricalData extends LinkedList<HistoricalPoint> implements XmlElementIF {
+public class HistoricalDividend extends LinkedList<Dividend> implements
+		XmlElementIF {
 	
 	/***********************************
 	 *                                 *
 	 *		       XML                 *
 	 *                                 *
 	 ***********************************/
-	
 	/**
 	 * return the TAG Name used in the xml file
 	 */
-	public String getTagName(){return "historical_data";}
-	
+	public String getTagName(){return "historical_divident";}
 	
 	/**
 	 * initializes the users map from a xml element
@@ -39,7 +38,7 @@ public class HistoricalData extends LinkedList<HistoricalPoint> implements XmlEl
 					Element childElement=(Element)child;
 					
 					//History Point
-					HistoricalPoint point=new HistoricalPoint();
+					Dividend point=new Dividend();
 					if(childElement.getTagName().equals(point.getTagName())){
 						point.init(childElement);
 						this.add(point);
@@ -59,7 +58,7 @@ public class HistoricalData extends LinkedList<HistoricalPoint> implements XmlEl
 	public Element toDomElement(Document doc){
 		Element e=doc.createElement(this.getTagName());
 			
-		for(HistoricalPoint point : this){
+		for(Dividend point : this){
 			Element h_p=point.toDomElement(doc);
 			e.appendChild(h_p);
 			
@@ -69,12 +68,6 @@ public class HistoricalData extends LinkedList<HistoricalPoint> implements XmlEl
 		
 		return e;
 	  }
-	
-	
-	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 
-	}
-
+	
 }

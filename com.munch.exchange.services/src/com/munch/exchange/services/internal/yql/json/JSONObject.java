@@ -30,7 +30,11 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -474,6 +478,49 @@ public class JSONObject {
         }
         return object;
     }
+    
+    /**
+     * Get the value date associated with a key.
+     *
+     * @param key
+     *            A key string.
+     * @return The date associated with the key.
+     * @throws JSONException
+     *             if the key is not found.
+     * @throws ParseException 
+     *             if the Date has not the format "yyyy-MM-dd"
+     */
+    public Calendar getDate(String key) throws JSONException, ParseException {
+        if (key == null) {
+            throw new JSONException("Null key.");
+        }
+        Object object = this.opt(key);
+        if (object == null) {
+            throw new JSONException("JSONObject[" + quote(key) + "] not found.");
+        }
+        
+        if(object instanceof String){
+        	String dateStr=(String) object;
+        	SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
+        	Date d=format.parse(dateStr);
+			if(d!=null){
+				Calendar date=Calendar.getInstance();
+				date.setTime(d);
+				date.set(Calendar.HOUR_OF_DAY, 23);
+				date.set(Calendar.MINUTE, 59);
+				date.set(Calendar.SECOND, 59);
+				
+				return date;
+			}
+        	
+        }
+        else{
+        	 throw new JSONException("JSONObject[" + quote(key) + "] not a String.");
+        }
+        
+       
+        return null;
+    }
 
     /**
      * Get the boolean value associated with a key.
@@ -515,6 +562,27 @@ public class JSONObject {
         try {
             return object instanceof Number ? ((Number) object).doubleValue()
                     : Double.parseDouble((String) object);
+        } catch (Exception e) {
+            throw new JSONException("JSONObject[" + quote(key)
+                    + "] is not a number.");
+        }
+    }
+    
+    /**
+     * Get the float value associated with a key.
+     *
+     * @param key
+     *            A key string.
+     * @return The numeric value.
+     * @throws JSONException
+     *             if the key is not found or if the value is not a Number
+     *             object and cannot be converted to a number.
+     */
+    public float getFloat(String key) throws JSONException {
+        Object object = this.get(key);
+        try {
+            return object instanceof Number ? ((Number) object).floatValue()
+                    : Float.parseFloat((String) object);
         } catch (Exception e) {
             throw new JSONException("JSONObject[" + quote(key)
                     + "] is not a number.");

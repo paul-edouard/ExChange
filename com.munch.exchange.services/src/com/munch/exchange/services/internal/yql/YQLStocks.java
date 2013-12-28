@@ -21,7 +21,11 @@ public class YQLStocks extends YQLTable {
 	}
 	
 	public static void main(String[] args) {
-		YQLStocks stocks=new YQLStocks("yhoo");
+		//YQLStocks stocks=new YQLStocks("APC.DE");
+		YQLStocks stocks=new YQLStocks("CTYRX");
+		
+		//AAPL
+		
 		System.out.println(stocks.getResult().toString(1));
 	}
 

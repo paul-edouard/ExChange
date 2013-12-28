@@ -18,20 +18,17 @@ public class HistoricalPoint extends ParameterElement implements XmlElementIF {
 	static final String LowStr="low";
 	static final String OpenStr="open";
 	static final String AdjCloseStr="adj_close";
+	static final String CloseStr="close";
 	static final String HighStr="high";
 	static final String VolumeStr="volume";
 	static final String DateStr="date";
 	
-	private float low,open,adj_close,high=0;
+	private float low,open,adj_close,high,close=0;
 	private long volume=0;
 	private Calendar date=Calendar.getInstance();
 	
 	
-	/***********************************
-	 *                                 *
-	 *		       XML                 *
-	 *                                 *
-	 ***********************************/
+	
 	
 	public float getLow() {
 		return low;
@@ -82,13 +79,30 @@ public class HistoricalPoint extends ParameterElement implements XmlElementIF {
 	}
 	
 	
+	public float getClose() {
+		return close;
+	}
+
+	public void setClose(float close) {
+		this.close = close;
+	}
+
+	
+
+	@Override
+	public String toString() {
+		return "HistoricalPoint ["+"date=" + getDateString() +", low=" + low + ", open=" + open
+				+ ", adj_close=" + adj_close + ", high=" + high + ", close="
+				+ close + ", volume=" + volume + "]";
+	}
+
 	public String getDateString(){
-		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'");
+		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		return format.format(date.getTime());
 	}
 	
 	public void setDateString(String dateStr){
-		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'");
+		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		try {
 			Date d=format.parse(dateStr);
 			if(d!=null){
@@ -102,6 +116,11 @@ public class HistoricalPoint extends ParameterElement implements XmlElementIF {
 		
 	}
 	
+	/***********************************
+	 *                                 *
+	 *		       XML                 *
+	 *                                 *
+	 ***********************************/
 	
 	/**
 	 * return the TAG Name used in the xml file
@@ -122,6 +141,7 @@ public class HistoricalPoint extends ParameterElement implements XmlElementIF {
 			this.setHigh(Float.valueOf(Root.getAttribute(HighStr)));
 			this.setLow(Float.valueOf(Root.getAttribute(LowStr)));
 			this.setOpen(Float.valueOf(Root.getAttribute(OpenStr)));
+			this.setClose(Float.valueOf(Root.getAttribute(CloseStr)));
 			this.setVolume(Long.valueOf(Root.getAttribute(VolumeStr)));
 			
 			
@@ -158,13 +178,11 @@ public class HistoricalPoint extends ParameterElement implements XmlElementIF {
 		e.setAttribute(LowStr,String.valueOf(this.getLow()));
 		e.setAttribute(OpenStr,String.valueOf(this.getOpen()));
 		e.setAttribute(VolumeStr,String.valueOf(this.getVolume()));
+		e.setAttribute(CloseStr,String.valueOf(this.getClose()));
 		
 		//Parameter
 		e.appendChild(this.getParameter().toDomElement(doc));
-		
-		
-		
-		
+	
 		return e;
 	  }
 
