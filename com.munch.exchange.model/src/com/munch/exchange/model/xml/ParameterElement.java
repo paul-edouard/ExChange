@@ -1,4 +1,6 @@
-package com.munch.exchange.model.core;
+package com.munch.exchange.model.xml;
+
+import com.munch.exchange.model.xml.Parameter.Type;
 
 
 

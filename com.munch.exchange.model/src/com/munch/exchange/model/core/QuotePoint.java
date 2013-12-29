@@ -1,11 +1,12 @@
 package com.munch.exchange.model.core;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.tool.DateTool;
+import com.munch.exchange.model.xml.ParameterElement;
 import com.munch.exchange.model.xml.XmlElementIF;
 
 public class QuotePoint extends ParameterElement implements XmlElementIF {
@@ -111,41 +112,88 @@ public class QuotePoint extends ParameterElement implements XmlElementIF {
 	public void setLastTradeDate(Calendar lastTradeDate) {
 		this.lastTradeDate = lastTradeDate;
 	}
-	
-	
-	
-	public static String dateToString(Calendar date){
-		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		return format.format(date.getTime());
-	}
-	
 
 	@Override
 	public String toString() {
-		return "QuotePoint [date=" + dateToString(date) + ", averageDailyVolume="
+		return "QuotePoint [date=" + DateTool.dateToString(date) + ", averageDailyVolume="
 				+ averageDailyVolume + ", change=" + change + ", daysLow="
 				+ daysLow + ", daysHigh=" + daysHigh + ", yearLow=" + yearLow
 				+ ", yearHigh=" + yearHigh + ", marketCapitalization="
 				+ marketCapitalization + ", lastTradePrice=" + lastTradePrice
-				+ ", volume=" + volume + ", lastTradeDate=" + dateToString(lastTradeDate)
+				+ ", volume=" + volume + ", lastTradeDate=" + DateTool.dateToString(lastTradeDate)
 				+ "]";
 	}
-
-	@Override
-	public Element toDomElement(Document doc) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void init(Element Root) {
-		// TODO Auto-generated method stub
-
-	}
-
+	
+	
+	/***********************************
+	 *                                 *
+	 *		       XML                 *
+	 *                                 *
+	 ***********************************/
+	
 	@Override
 	public String getTagName() {
 		return "quote";
 	}
+	
+	@Override
+	public void init(Element Root){
+		/*
+		if(Root.getTagName().equals(this.getTagName())){
+			
+			this.setAdjClose(Float.valueOf(Root.getAttribute(AdjCloseStr)));
+			setDateString(Root.getAttribute(DateStr));
+			this.setHigh(Float.valueOf(Root.getAttribute(HighStr)));
+			this.setLow(Float.valueOf(Root.getAttribute(LowStr)));
+			this.setOpen(Float.valueOf(Root.getAttribute(OpenStr)));
+			this.setClose(Float.valueOf(Root.getAttribute(CloseStr)));
+			this.setVolume(Long.valueOf(Root.getAttribute(VolumeStr)));
+			
+			
+			NodeList Children=Root.getChildNodes();
 
+			for(int i=0;i<Children.getLength();i++){
+				Node child = Children.item(i);
+				if(child instanceof Element){
+					Element childElement=(Element)child;
+					
+					//Parameter
+					if(childElement.getTagName().equals(new Parameter().getTagName())){
+						this.setParameter(new Parameter(childElement));
+					}
+					
+				}
+			}
+			
+			
+		}
+		*/
+	}
+	
+	
+	/**
+	 * export the user map in a xml element
+	 */
+	@Override
+	public Element toDomElement(Document doc){
+		/*
+		Element e=doc.createElement(this.getTagName());
+			
+		e.setAttribute(AdjCloseStr,String.valueOf(this.getAdjClose()));
+		e.setAttribute(DateStr, this.getDateString());
+		e.setAttribute(HighStr,String.valueOf(this.getHigh()));
+		e.setAttribute(LowStr,String.valueOf(this.getLow()));
+		e.setAttribute(OpenStr,String.valueOf(this.getOpen()));
+		e.setAttribute(VolumeStr,String.valueOf(this.getVolume()));
+		e.setAttribute(CloseStr,String.valueOf(this.getClose()));
+		
+		//Parameter
+		e.appendChild(this.getParameter().toDomElement(doc));
+	
+		return e;
+		*/
+		return null;
+	  }
+
+	
 }

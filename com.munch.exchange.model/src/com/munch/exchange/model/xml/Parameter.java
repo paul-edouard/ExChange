@@ -1,4 +1,4 @@
-package com.munch.exchange.model.core;
+package com.munch.exchange.model.xml;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -8,8 +8,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import com.munch.exchange.model.xml.XmlElementIF;
 
 
 public class Parameter implements XmlElementIF, Serializable {

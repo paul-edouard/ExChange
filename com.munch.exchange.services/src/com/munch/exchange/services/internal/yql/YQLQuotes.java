@@ -9,9 +9,10 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.munch.exchange.model.core.Parameter;
 import com.munch.exchange.model.core.QuotePoint;
+import com.munch.exchange.model.xml.Parameter;
 import com.munch.exchange.services.internal.yql.json.JSONArray;
+import com.munch.exchange.services.internal.yql.json.JSONException;
 import com.munch.exchange.services.internal.yql.json.JSONObject;
 
 
@@ -148,265 +149,753 @@ public class YQLQuotes  extends YQLTable {
 	/*
 	 * Quote Data
 	 */
-	public float getOpen(){
-		return this.getCurrent().getFloat("Open");
+	public float getOpen() {
+		try {
+			return this.getCurrent().getFloat("Open");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getPriceEPSEstimateCurrentYear() {
+		try {
+			return this.getCurrent().getFloat("PriceEPSEstimateCurrentYear");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getBookValue() {
+		try {
+			return this.getCurrent().getFloat("BookValue");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getBid() {
+		try {
+			return this.getCurrent().getFloat("Bid");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getDaysHigh() {
+		try {
+			return this.getCurrent().getFloat("DaysHigh");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getChangeFromFiftydayMovingAverage() {
+		try {
+			return this.getCurrent()
+					.getFloat("ChangeFromFiftydayMovingAverage");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getOrderBookRealtime() {
+		try {
+			return this.getCurrent().getFloat("OrderBookRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getErrorIndicationreturnedforsymbolchangedinvalid() {
+		try {
+			return this.getCurrent().getString(
+					"ErrorIndicationreturnedforsymbolchangedinvalid");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getDaysRange() {
+		try {
+			return this.getCurrent().getString("DaysRange");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getMoreInfo() {
+		try {
+			return this.getCurrent().getString("MoreInfo");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getAnnualizedGain() {
+		try {
+			return this.getCurrent().getFloat("AnnualizedGain");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getChange_PercentChange() {
+		try {
+			return this.getCurrent().getString("Change_PercentChange");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getDaysRangeRealtime() {
+		try {
+			return this.getCurrent().getString("DaysRangeRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getLowLimit() {
+		try {
+			return this.getCurrent().getFloat("LowLimit");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getPercentChangeFromTwoHundreddayMovingAverage() {
+		try {
+			return this.getCurrent().getString(
+					"PercentChangeFromTwoHundreddayMovingAverage");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getChangeFromTwoHundreddayMovingAverage() {
+		try {
+			return this.getCurrent().getFloat(
+					"ChangeFromTwoHundreddayMovingAverage");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getDividendYield() {
+		try {
+			return this.getCurrent().getFloat("DividendYield");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getEPSEstimateCurrentYear() {
+		try {
+			return this.getCurrent().getFloat("EPSEstimateCurrentYear");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getLastTradeDate() {
+		try {
+			return this.getCurrent().getString("LastTradeDate");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getTwoHundreddayMovingAverage() {
+		try {
+			return this.getCurrent().getFloat("TwoHundreddayMovingAverage");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getAskRealtime() {
+		try {
+			return this.getCurrent().getFloat("AskRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getPercentChange() {
+		try {
+			return this.getCurrent().getString("PercentChange");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getDividendPayDate() {
+		try {
+			return this.getCurrent().getString("DividendPayDate");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getYearRange() {
+		try {
+			return this.getCurrent().getString("YearRange");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getsymbol() {
+		try {
+			return this.getCurrent().getString("symbol");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getPercentChangeFromFiftydayMovingAverage() {
+		try {
+			return this.getCurrent().getString(
+					"PercentChangeFromFiftydayMovingAverage");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getChange() {
+		try {
+			return this.getCurrent().getFloat("Change");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getHoldingsGainPercent() {
+		try {
+			return this.getCurrent().getFloat("HoldingsGainPercent");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getNotes() {
+		try {
+			return this.getCurrent().getString("Notes");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getHoldingsGain() {
+		try {
+			return this.getCurrent().getFloat("HoldingsGain");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getYearHigh() {
+		try {
+			return this.getCurrent().getFloat("YearHigh");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getSymbol() {
+		try {
+			return this.getCurrent().getString("Symbol");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getAfterHoursChangeRealtime() {
+		try {
+			return this.getCurrent().getString("AfterHoursChangeRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getHoldingsGainPercentRealtime() {
+		try {
+			return this.getCurrent().getString("HoldingsGainPercentRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getMarketCapitalization() {
+		try {
+			return this.getCurrent().getString("MarketCapitalization");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getBidRealtime() {
+		try {
+			return this.getCurrent().getFloat("BidRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getLastTradePriceOnly() {
+		try {
+			return this.getCurrent().getFloat("LastTradePriceOnly");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getPERatio() {
+		try {
+			return this.getCurrent().getFloat("PERatio");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getEPSEstimateNextQuarter() {
+		try {
+			return this.getCurrent().getFloat("EPSEstimateNextQuarter");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getMarketCapRealtime() {
+		try {
+			return this.getCurrent().getFloat("MarketCapRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public long getAverageDailyVolume() {
+		try {
+			return this.getCurrent().getLong("AverageDailyVolume");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	public String getPercentChangeFromYearLow() {
+		try {
+			return this.getCurrent().getString("PercentChangeFromYearLow");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getTickerTrend() {
+		try {
+			return this.getCurrent().getString("TickerTrend");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getChangeFromYearHigh() {
+		try {
+			return this.getCurrent().getFloat("ChangeFromYearHigh");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getLastTradeWithTime() {
+		try {
+			return this.getCurrent().getString("LastTradeWithTime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getPERatioRealtime() {
+		try {
+			return this.getCurrent().getFloat("PERatioRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getStockExchange() {
+		try {
+			return this.getCurrent().getString("StockExchange");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getPreviousClose() {
+		try {
+			return this.getCurrent().getFloat("PreviousClose");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getFiftydayMovingAverage() {
+		try {
+			return this.getCurrent().getFloat("FiftydayMovingAverage");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getLastTradeTime() {
+		try {
+			return this.getCurrent().getString("LastTradeTime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getDaysLow() {
+		try {
+			return this.getCurrent().getFloat("DaysLow");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getPriceEPSEstimateNextYear() {
+		try {
+			return this.getCurrent().getFloat("PriceEPSEstimateNextYear");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getDaysValueChange() {
+		try {
+			return this.getCurrent().getString("DaysValueChange");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getHighLimit() {
+		try {
+			return this.getCurrent().getFloat("HighLimit");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getTradeDate() {
+		try {
+			return this.getCurrent().getString("TradeDate");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getOneyrTargetPrice() {
+		try {
+			return this.getCurrent().getFloat("OneyrTargetPrice");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getChangeRealtime() {
+		try {
+			return this.getCurrent().getFloat("ChangeRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getExDividendDate() {
+		try {
+			return this.getCurrent().getString("ExDividendDate");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getYearLow() {
+		try {
+			return this.getCurrent().getFloat("YearLow");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getEPSEstimateNextYear() {
+		try {
+			return this.getCurrent().getFloat("EPSEstimateNextYear");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public long getVolume() {
+		try {
+			return this.getCurrent().getLong("Volume");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	public float getPricePaid() {
+		try {
+			return this.getCurrent().getFloat("PricePaid");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getAsk() {
+		try {
+			return this.getCurrent().getFloat("Ask");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getHoldingsValue() {
+		try {
+			return this.getCurrent().getString("HoldingsValue");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getChangeFromYearLow() {
+		try {
+			return this.getCurrent().getString("ChangeFromYearLow");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getDividendShare() {
+		try {
+			return this.getCurrent().getFloat("DividendShare");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getEBITDA() {
+		try {
+			return this.getCurrent().getString("EBITDA");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getPercebtChangeFromYearHigh() {
+		try {
+			return this.getCurrent().getString("PercebtChangeFromYearHigh");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getHoldingsGainRealtime() {
+		try {
+			return this.getCurrent().getString("HoldingsGainRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getPEGRatio() {
+		try {
+			return this.getCurrent().getFloat("PEGRatio");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getName() {
+		try {
+			return this.getCurrent().getString("Name");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getCommission() {
+		try {
+			return this.getCurrent().getString("Commission");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getDaysValueChangeRealtime() {
+		try {
+			return this.getCurrent().getString("DaysValueChangeRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getLastTradeRealtimeWithTime() {
+		try {
+			return this.getCurrent().getString("LastTradeRealtimeWithTime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getChangePercentRealtime() {
+		try {
+			return this.getCurrent().getString("ChangePercentRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public String getHoldingsValueRealtime() {
+		try {
+			return this.getCurrent().getString("HoldingsValueRealtime");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getEarningsShare() {
+		try {
+			return this.getCurrent().getFloat("EarningsShare");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getPriceBook() {
+		try {
+			return this.getCurrent().getFloat("PriceBook");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getShortRatio() {
+		try {
+			return this.getCurrent().getFloat("ShortRatio");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public float getSharesOwned() {
+		try {
+			return this.getCurrent().getFloat("SharesOwned");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+
+	public String getChangeinPercent() {
+		try {
+			return this.getCurrent().getString("ChangeinPercent");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public float getPriceSales() {
+		try {
+			return this.getCurrent().getFloat("PriceSales");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
 	}
-	public float getPriceEPSEstimateCurrentYear(){
-		return  this.getCurrent().getFloat("PriceEPSEstimateCurrentYear");
-	}
-	public float getBookValue(){
-		return  this.getCurrent().getFloat("BookValue");
-	}
-	public float getBid(){
-		return  this.getCurrent().getFloat("Bid");
-	}
-	public float getDaysHigh(){
-		return  this.getCurrent().getFloat("DaysHigh");
-	}
-	public float getChangeFromFiftydayMovingAverage(){
-		return  this.getCurrent().getFloat("ChangeFromFiftydayMovingAverage");
-	}
-	public float getOrderBookRealtime(){
-		return  this.getCurrent().getFloat("OrderBookRealtime");
-	}
-	public String getErrorIndicationreturnedforsymbolchangedinvalid(){
-		return  this.getCurrent().getString("ErrorIndicationreturnedforsymbolchangedinvalid");
-	}
-	public String getDaysRange(){
-		return  this.getCurrent().getString("DaysRange");
-	}
-	public String getMoreInfo(){
-		return  this.getCurrent().getString("MoreInfo");
-	}
-	public float getAnnualizedGain(){
-		return  this.getCurrent().getFloat("AnnualizedGain");
-	}
-	public String getChange_PercentChange(){
-		return  this.getCurrent().getString("Change_PercentChange");
-	}
-	public String getDaysRangeRealtime(){
-		return  this.getCurrent().getString("DaysRangeRealtime");
-	}
-	public float getLowLimit(){
-		return  this.getCurrent().getFloat("LowLimit");
-	}
-	public String getPercentChangeFromTwoHundreddayMovingAverage(){
-		return  this.getCurrent().getString("PercentChangeFromTwoHundreddayMovingAverage");
-	}
-	public float getChangeFromTwoHundreddayMovingAverage(){
-		return  this.getCurrent().getFloat("ChangeFromTwoHundreddayMovingAverage");
-	}
-	public float getDividendYield(){
-		return  this.getCurrent().getFloat("DividendYield");
-	}
-	public float getEPSEstimateCurrentYear(){
-		return  this.getCurrent().getFloat("EPSEstimateCurrentYear");
-	}
-	public String getLastTradeDate(){
-		return  this.getCurrent().getString("LastTradeDate");
-	}
-	public float getTwoHundreddayMovingAverage(){
-		return  this.getCurrent().getFloat("TwoHundreddayMovingAverage");
-	}
-	public float getAskRealtime(){
-		return  this.getCurrent().getFloat("AskRealtime");
-	}
-	public String getPercentChange(){
-		return  this.getCurrent().getString("PercentChange");
-	}
-	public String getDividendPayDate(){
-		return  this.getCurrent().getString("DividendPayDate");
-	}
-	public String getYearRange(){
-		return  this.getCurrent().getString("YearRange");
-	}
-	public String getsymbol(){
-		return  this.getCurrent().getString("symbol");
-	}
-	public String getPercentChangeFromFiftydayMovingAverage(){
-		return  this.getCurrent().getString("PercentChangeFromFiftydayMovingAverage");
-	}
-	public float getChange(){
-		return  this.getCurrent().getFloat("Change");
-	}
-	public float getHoldingsGainPercent(){
-		return  this.getCurrent().getFloat("HoldingsGainPercent");
-	}
-	public String getNotes(){
-		return  this.getCurrent().getString("Notes");
-	}
-	public float getHoldingsGain(){
-		return  this.getCurrent().getFloat("HoldingsGain");
-	}
-	public float getYearHigh(){
-		return  this.getCurrent().getFloat("YearHigh");
-	}
-	public String getSymbol(){
-		return  this.getCurrent().getString("Symbol");
-	}
-	public String getAfterHoursChangeRealtime(){
-		return  this.getCurrent().getString("AfterHoursChangeRealtime");
-	}
-	public String getHoldingsGainPercentRealtime(){
-		return  this.getCurrent().getString("HoldingsGainPercentRealtime");
-	}
-	public String getMarketCapitalization(){
-		return  this.getCurrent().getString("MarketCapitalization");
-	}
-	public float getBidRealtime(){
-		return  this.getCurrent().getFloat("BidRealtime");
-	}
-	public float getLastTradePriceOnly(){
-		return  this.getCurrent().getFloat("LastTradePriceOnly");
-	}
-	public float getPERatio(){
-		return  this.getCurrent().getFloat("PERatio");
-	}
-	public float getEPSEstimateNextQuarter(){
-		return  this.getCurrent().getFloat("EPSEstimateNextQuarter");
-	}
-	public float getMarketCapRealtime(){
-		return  this.getCurrent().getFloat("MarketCapRealtime");
-	}
-	public long getAverageDailyVolume(){
-		return  this.getCurrent().getLong("AverageDailyVolume");
-	}
-	public String getPercentChangeFromYearLow(){
-		return  this.getCurrent().getString("PercentChangeFromYearLow");
-	}
-	public String getTickerTrend(){
-		return  this.getCurrent().getString("TickerTrend");
-	}
-	public float getChangeFromYearHigh(){
-		return  this.getCurrent().getFloat("ChangeFromYearHigh");
-	}
-	public String getLastTradeWithTime(){
-		return  this.getCurrent().getString("LastTradeWithTime");
-	}
-	public float getPERatioRealtime(){
-		return  this.getCurrent().getFloat("PERatioRealtime");
-	}
-	public String getStockExchange(){
-		return  this.getCurrent().getString("StockExchange");
-	}
-	public float getPreviousClose(){
-		return  this.getCurrent().getFloat("PreviousClose");
-	}
-	public float getFiftydayMovingAverage(){
-		return  this.getCurrent().getFloat("FiftydayMovingAverage");
-	}
-	public String getLastTradeTime(){
-		return  this.getCurrent().getString("LastTradeTime");
-	}
-	public float getDaysLow(){
-		return  this.getCurrent().getFloat("DaysLow");
-	}
-	public float getPriceEPSEstimateNextYear(){
-		return  this.getCurrent().getFloat("PriceEPSEstimateNextYear");
-	}
-	public String getDaysValueChange(){
-		return  this.getCurrent().getString("DaysValueChange");
-	}
-	public float getHighLimit(){
-		return  this.getCurrent().getFloat("HighLimit");
-	}
-	public String getTradeDate(){
-		return  this.getCurrent().getString("TradeDate");
-	}
-	public float getOneyrTargetPrice(){
-		return  this.getCurrent().getFloat("OneyrTargetPrice");
-	}
-	public float getChangeRealtime(){
-		return  this.getCurrent().getFloat("ChangeRealtime");
-	}
-	public String getExDividendDate(){
-		return  this.getCurrent().getString("ExDividendDate");
-	}
-	public float getYearLow(){
-		return  this.getCurrent().getFloat("YearLow");
-	}
-	public float getEPSEstimateNextYear(){
-		return  this.getCurrent().getFloat("EPSEstimateNextYear");
-	}
-	public long getVolume(){
-		return  this.getCurrent().getLong("Volume");
-	}
-	public float getPricePaid(){
-		return  this.getCurrent().getFloat("PricePaid");
-	}
-	public float getAsk(){
-		return  this.getCurrent().getFloat("Ask");
-	}
-	public String getHoldingsValue(){
-		return  this.getCurrent().getString("HoldingsValue");
-	}
-	public String getChangeFromYearLow(){
-		return  this.getCurrent().getString("ChangeFromYearLow");
-	}
-	public float getDividendShare(){
-		return  this.getCurrent().getFloat("DividendShare");
-	}
-	public String getEBITDA(){
-		return  this.getCurrent().getString("EBITDA");
-	}
-	public String getPercebtChangeFromYearHigh(){
-		return  this.getCurrent().getString("PercebtChangeFromYearHigh");
-	}
-	public String getHoldingsGainRealtime(){
-		return  this.getCurrent().getString("HoldingsGainRealtime");
-	}
-	public float getPEGRatio(){
-		return  this.getCurrent().getFloat("PEGRatio");
-	}
-	public String getName(){
-		return  this.getCurrent().getString("Name");
-	}
-	public String getCommission(){
-		return  this.getCurrent().getString("Commission");
-	}
-	public String getDaysValueChangeRealtime(){
-		return  this.getCurrent().getString("DaysValueChangeRealtime");
-	}
-	public String getLastTradeRealtimeWithTime(){
-		return  this.getCurrent().getString("LastTradeRealtimeWithTime");
-	}
-	public String getChangePercentRealtime(){
-		return  this.getCurrent().getString("ChangePercentRealtime");
-	}
-	public String getHoldingsValueRealtime(){
-		return  this.getCurrent().getString("HoldingsValueRealtime");
-	}
-	public float getEarningsShare(){
-		return  this.getCurrent().getFloat("EarningsShare");
-	}
-	public float getPriceBook(){
-		return  this.getCurrent().getFloat("PriceBook");
-	}
-	public float getShortRatio(){
-		return  this.getCurrent().getFloat("ShortRatio");
-	}
-	public float getSharesOwned(){
-		return  this.getCurrent().getFloat("SharesOwned");
-	}
-	public String getChangeinPercent(){
-		return  this.getCurrent().getString("ChangeinPercent");
-	}
-	public float getPriceSales(){
-		return  this.getCurrent().getFloat("PriceSales");
-	}
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	public static void main(String[] args) {
-		
-		
-		YQLQuotes quote=new YQLQuotes("DAI.DE");
+			
+		YQLQuotes quote=new YQLQuotes("EURUSD");
 	//	quote.addSymbol("YHOO");
 	//	quote.addSymbol("DAI.DE");//PAH3.DE
 	//	quote.addSymbol("CCC3.DE");
