@@ -1,4 +1,4 @@
-package com.munch.exchange.model.core;
+package com.munch.exchange.model.core.historical;
 
 import java.util.Calendar;
 

@@ -1,4 +1,4 @@
-package com.munch.exchange.model.core;
+package com.munch.exchange.model.core.divident;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

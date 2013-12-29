@@ -1,19 +1,28 @@
-package com.munch.exchange.model.core;
+package com.munch.exchange.model.core.quote;
 
 import java.util.Calendar;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.tool.DateTool;
-import com.munch.exchange.model.xml.ParameterElement;
-import com.munch.exchange.model.xml.XmlElementIF;
+import com.munch.exchange.model.xml.XmlParameterElement;
 
-public class QuotePoint extends ParameterElement implements XmlElementIF {
+public class QuotePoint extends XmlParameterElement {
 	
 	static final String DateStr="date";
-	private Calendar date=Calendar.getInstance();
 	
+	static final String AverageDailyVolumeStr="averageDailyVolume";
+	static final String ChangeStr="change";
+	static final String DaysLowStr="daysLow";
+	static final String DaysHighStr="daysHigh";
+	static final String YearLowStr="yearLow";
+	static final String YearHighStr="yearHigh";
+	static final String MarketCapitalizationStr="marketCapitalization";
+	static final String LastTradePriceStr="lastTradePrice";
+	static final String VolumeStr="volume";
+	static final String LastTradeDateStr="lastTradeDate";
+	
+	private Calendar date=Calendar.getInstance();
 	
 	private long averageDailyVolume;
 	private float change;
@@ -32,6 +41,12 @@ public class QuotePoint extends ParameterElement implements XmlElementIF {
 	public Calendar getDate() {
 		return date;
 	}
+	
+
+	public void setDate(Calendar date) {
+		this.date = date;
+	}
+
 
 	public long getAverageDailyVolume() {
 		return averageDailyVolume;
@@ -131,69 +146,38 @@ public class QuotePoint extends ParameterElement implements XmlElementIF {
 	 *                                 *
 	 ***********************************/
 	
-	@Override
-	public String getTagName() {
-		return "quote";
+	protected void initAttribute(Element Root){
+		this.setDate(DateTool.StringToDate(Root.getAttribute(DateStr)));
+		this.setAverageDailyVolume(Long.parseLong(Root.getAttribute(AverageDailyVolumeStr)));
+		this.setChange(Float.valueOf(Root.getAttribute(ChangeStr)));
+		this.setDaysHigh(Float.valueOf(Root.getAttribute(DaysHighStr)));
+		this.setDaysLow(Float.valueOf(Root.getAttribute(DaysLowStr)));
+		this.setLastTradeDate(DateTool.StringToDate(Root.getAttribute(LastTradeDateStr)));
+		this.setLastTradePrice(Float.valueOf(Root.getAttribute(LastTradePriceStr)));
+		this.setMarketCapitalization(Root.getAttribute(MarketCapitalizationStr));
+		this.setVolume(Long.parseLong(Root.getAttribute(VolumeStr)));
+		this.setYearHigh(Float.valueOf(Root.getAttribute(YearHighStr)));
+		this.setYearLow(Float.valueOf(Root.getAttribute(YearLowStr)));
 	}
 	
-	@Override
-	public void init(Element Root){
-		/*
-		if(Root.getTagName().equals(this.getTagName())){
-			
-			this.setAdjClose(Float.valueOf(Root.getAttribute(AdjCloseStr)));
-			setDateString(Root.getAttribute(DateStr));
-			this.setHigh(Float.valueOf(Root.getAttribute(HighStr)));
-			this.setLow(Float.valueOf(Root.getAttribute(LowStr)));
-			this.setOpen(Float.valueOf(Root.getAttribute(OpenStr)));
-			this.setClose(Float.valueOf(Root.getAttribute(CloseStr)));
-			this.setVolume(Long.valueOf(Root.getAttribute(VolumeStr)));
-			
-			
-			NodeList Children=Root.getChildNodes();
-
-			for(int i=0;i<Children.getLength();i++){
-				Node child = Children.item(i);
-				if(child instanceof Element){
-					Element childElement=(Element)child;
-					
-					//Parameter
-					if(childElement.getTagName().equals(new Parameter().getTagName())){
-						this.setParameter(new Parameter(childElement));
-					}
-					
-				}
-			}
-			
-			
-		}
-		*/
-	}
+	protected void initChild(Element childElement){}
 	
 	
-	/**
-	 * export the user map in a xml element
-	 */
-	@Override
-	public Element toDomElement(Document doc){
-		/*
-		Element e=doc.createElement(this.getTagName());
-			
-		e.setAttribute(AdjCloseStr,String.valueOf(this.getAdjClose()));
-		e.setAttribute(DateStr, this.getDateString());
-		e.setAttribute(HighStr,String.valueOf(this.getHigh()));
-		e.setAttribute(LowStr,String.valueOf(this.getLow()));
-		e.setAttribute(OpenStr,String.valueOf(this.getOpen()));
+	protected void setAttribute(Element e){
+		e.setAttribute(DateStr,DateTool.dateToString( this.getDate()));
+		e.setAttribute(AverageDailyVolumeStr,String.valueOf(this.getAverageDailyVolume()));
+		e.setAttribute(ChangeStr,String.valueOf(this.getChange()));
+		e.setAttribute(DaysHighStr,String.valueOf(this.getDaysHigh()));
+		e.setAttribute(DaysLowStr,String.valueOf(this.getDaysLow()));
+		e.setAttribute(LastTradeDateStr,String.valueOf(this.getLastTradeDate()));
+		e.setAttribute(LastTradePriceStr,String.valueOf(this.getLastTradePrice()));
+		e.setAttribute(MarketCapitalizationStr,String.valueOf(this.getMarketCapitalization()));
 		e.setAttribute(VolumeStr,String.valueOf(this.getVolume()));
-		e.setAttribute(CloseStr,String.valueOf(this.getClose()));
-		
-		//Parameter
-		e.appendChild(this.getParameter().toDomElement(doc));
+		e.setAttribute(YearHighStr,String.valueOf(this.getYearHigh()));
+		e.setAttribute(YearLowStr,String.valueOf(this.getYearLow()));
+	}
 	
-		return e;
-		*/
-		return null;
-	  }
+	protected void appendChild(Element rootElement){}
 
 	
 }

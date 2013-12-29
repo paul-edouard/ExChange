@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.munch.exchange.model.core.QuotePoint;
+import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.model.xml.Parameter;
 import com.munch.exchange.services.internal.yql.json.JSONArray;
 import com.munch.exchange.services.internal.yql.json.JSONException;

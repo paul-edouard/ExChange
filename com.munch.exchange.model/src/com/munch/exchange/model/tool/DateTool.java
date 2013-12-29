@@ -9,13 +9,13 @@ public class DateTool {
 	
 	
 	public static String dateToString(Calendar date){
-		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		return format.format(date.getTime());
 	}
 	
 	
 	public static Calendar StringToDate(String dateStr){
-		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		try {
 			Date d=format.parse(dateStr);
 			if(d!=null){

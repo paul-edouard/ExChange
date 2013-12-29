@@ -1,4 +1,4 @@
-package com.munch.exchange.model.core;
+package com.munch.exchange.model.core.divident;
 
 import java.util.LinkedList;
 
@@ -12,6 +12,12 @@ import com.munch.exchange.model.xml.XmlElementIF;
 public class HistoricalDividend extends LinkedList<Dividend> implements
 		XmlElementIF {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1064128402077353719L;
+
+
 	/***********************************
 	 *                                 *
 	 *		       XML                 *

@@ -1,4 +1,4 @@
-package com.munch.exchange.model.core;
+package com.munch.exchange.model.core.historical;
 
 import java.util.LinkedList;
 
@@ -11,16 +11,21 @@ import com.munch.exchange.model.xml.XmlElementIF;
 
 public class HistoricalData extends LinkedList<HistoricalPoint> implements XmlElementIF {
 	
-	/***********************************
-	 *                                 *
-	 *		       XML                 *
-	 *                                 *
-	 ***********************************/
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5430509341617898712L;
+
+
+
 	/**
 	 * return the TAG Name used in the xml file
 	 */
-	public String getTagName(){return "historical_data";}
+	@Override
+	public String getTagName() {
+		return this.getClass().getSimpleName();
+	}
 	
 	
 	/**
@@ -62,10 +67,7 @@ public class HistoricalData extends LinkedList<HistoricalPoint> implements XmlEl
 		for(HistoricalPoint point : this){
 			Element h_p=point.toDomElement(doc);
 			e.appendChild(h_p);
-			
 		}
-		
-		
 		
 		return e;
 	  }

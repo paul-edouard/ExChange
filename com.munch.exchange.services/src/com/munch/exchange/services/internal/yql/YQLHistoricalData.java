@@ -12,8 +12,8 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.LinkedList;
 
-import com.munch.exchange.model.core.Dividend;
-import com.munch.exchange.model.core.HistoricalPoint;
+import com.munch.exchange.model.core.divident.Dividend;
+import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.services.internal.yql.json.JSONArray;
 import com.munch.exchange.services.internal.yql.json.JSONException;
 import com.munch.exchange.services.internal.yql.json.JSONObject;

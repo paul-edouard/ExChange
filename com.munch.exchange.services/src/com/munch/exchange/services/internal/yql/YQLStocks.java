@@ -3,6 +3,8 @@ package com.munch.exchange.services.internal.yql;
 import java.text.ParseException;
 import java.util.Calendar;
 
+import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.services.internal.yql.json.JSONException;
 import com.munch.exchange.services.internal.yql.json.JSONObject;
 
@@ -110,7 +112,7 @@ public class YQLStocks extends YQLTable {
 	public String getFundFamily(){
 		try {
 		return this.getStock().getString("FundFamily");
-		} catch (JSONException e) {e.printStackTrace();return null;}
+		} catch (JSONException e) {/*e.printStackTrace();*/return null;}
 	}
 	public String getCategory(){
 		try {
@@ -128,9 +130,26 @@ public class YQLStocks extends YQLTable {
 		} catch (JSONException e) {e.printStackTrace();return null;}
 	}
 	
+	
+	public ExchangeRate getExchangeRate(){
+		if(this.isStock()){
+			Stock stock=new Stock();
+			stock.setSymbol(this.getSymbol());
+			stock.setEnd(this.getEndDate());
+			stock.setIndustry(this.getIndustry());
+			stock.setSector(this.getSector());
+			stock.setStart(this.getStartDate());
+			return stock;
+		}
+		else if(this.isFund()){
+			return null;
+		}
+		return null;
+	}
+	
 	public static void main(String[] args) {
 		//YQLStocks stocks=new YQLStocks("CTYRX");
-		YQLStocks stocks=new YQLStocks("YHO.DE");
+		YQLStocks stocks=new YQLStocks("DAI.DE");
 		//YQLStocks stocks=new YQLStocks("YHOO");
 		//YHO.DE
 		//"YHOO"
