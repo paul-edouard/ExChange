@@ -26,26 +26,27 @@ public class Parameter implements XmlElementIF, Serializable {
 	private Type type;
 	private Collection<Parameter> childs;
 	
-	public enum Type implements Serializable{ INTEGER(1), STRING(2), FLOAT(3),NONE(0);
-		private int val;    
+	public enum Type implements Serializable {
+		INTEGER(1), STRING(2), FLOAT(3), NONE(0);
+		private int val;
 
-	  private Type(int value) {
-	    this.val = value;
-	  }
-	  
-	  private void fromString(String value) {
-		    this.val = Integer.parseInt(value);
-	  }
+		private Type(int value) {
+			this.val = value;
+		}
 
-	  public int getValue() {
-	    return val;
-	  }
-	  
-	 public String toString(){
-		 return String.valueOf(val);
-	 }
-	
-	}; 
+		private void fromString(String value) {
+			this.val = Integer.parseInt(value);
+		}
+
+		public int getValue() {
+			return val;
+		}
+
+		public String toString() {
+			return String.valueOf(val);
+		}
+
+	};
 	
 	
 	
@@ -224,6 +225,41 @@ public class Parameter implements XmlElementIF, Serializable {
 	public String toString() {
 		return "Parameter [key=" + key + ", value=" + value + ", type=" + type
 				+ ", childs=" + childs + "]";
+	}
+	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof Parameter)) {
+			return false;
+		}
+		Parameter other = (Parameter) obj;
+		if (key == null) {
+			if (other.key != null) {
+				return false;
+			}
+		} else if (!key.equals(other.key)) {
+			return false;
+		}
+		if (type != other.type) {
+			return false;
+		}
+		return true;
 	}
 
 	public String getTagName(){

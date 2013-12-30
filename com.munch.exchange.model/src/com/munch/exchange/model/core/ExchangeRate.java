@@ -9,11 +9,12 @@ import com.munch.exchange.model.xml.XmlParameterElement;
 
 public abstract class ExchangeRate extends XmlParameterElement {
 	
-	protected String name;
-	static final String NameStr="name";
+	public static final String FIELD_NAME="name";
+	public static final String FIELD_SYMBOL="symbol";
 	
+	protected String name;
 	protected String symbol;
-	static final String SymbolStr="symbol";
+	
 	
 	protected HistoricalData historicalData=new HistoricalData();
 	protected RecordedQuote recordedQuote=new RecordedQuote();
@@ -22,18 +23,25 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		return name;
 	}
 	public void setName(String name) {
-		this.name = name;
+		changes.firePropertyChange(FIELD_NAME, this.name,
+				this.name = name);
 	}
 	public String getSymbol() {
 		return symbol;
 	}
+	/*
 	public void setSymbol(String symbol) {
 		this.symbol = symbol;
 	}
+	*/
 	
 	
 	public HistoricalData getHistoricalData() {
 		return historicalData;
+	}
+	public void setSymbol(String symbol) {
+		changes.firePropertyChange(FIELD_SYMBOL, this.symbol, this.symbol = symbol);
+		//this.symbol = symbol;
 	}
 	public void setHistoricalData(HistoricalData historicalData) {
 		this.historicalData = historicalData;
@@ -46,6 +54,43 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	public void setRecordedQuote(RecordedQuote recordedQuote) {
 		this.recordedQuote = recordedQuote;
 	}
+	
+	
+	
+	@Override
+	public String toString() {
+		return "ExchangeRate [name=" + name + ", symbol=" + symbol
+				+ ", historicalData=" + historicalData + ", recordedQuote="
+				+ recordedQuote + "]";
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((symbol == null) ? 0 : symbol.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!super.equals(obj)) {
+			return false;
+		}
+		if (!(obj instanceof ExchangeRate)) {
+			return false;
+		}
+		ExchangeRate other = (ExchangeRate) obj;
+		if (symbol == null) {
+			if (other.symbol != null) {
+				return false;
+			}
+		} else if (!symbol.equals(other.symbol)) {
+			return false;
+		}
+		return true;
+	}
 	/***********************************
 	 *                                 *
 	 *		       XML                 *
@@ -56,14 +101,14 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	
 	
 	protected void initAttribute(Element rootElement){
-		this.setName(rootElement.getAttribute(NameStr));
-		this.setSymbol(rootElement.getAttribute(SymbolStr));
+		this.setName(rootElement.getAttribute(FIELD_NAME));
+		this.setSymbol(rootElement.getAttribute(FIELD_SYMBOL));
 	}
 	protected void initChild(Element childElement){}
 	
 	protected void setAttribute(Element rootElement){
-		rootElement.setAttribute(NameStr, this.getName());
-		rootElement.setAttribute(SymbolStr, this.getSymbol());
+		rootElement.setAttribute(FIELD_NAME, this.getName());
+		rootElement.setAttribute(FIELD_SYMBOL, this.getSymbol());
 	}
 	protected void appendChild(Element rootElement){
 	}

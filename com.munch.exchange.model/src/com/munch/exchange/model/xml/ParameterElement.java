@@ -1,10 +1,15 @@
 package com.munch.exchange.model.xml;
 
-import com.munch.exchange.model.xml.Parameter.Type;
-
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 
 public class ParameterElement {
+	
+	public static final String FIELD_PARAMETER = "parameter";
+	
+	protected PropertyChangeSupport changes = new PropertyChangeSupport(this);
+	
 	
 	/**********************
 	 *     PARAMETER      *
@@ -16,10 +21,13 @@ public class ParameterElement {
 			if(parameter==null)parameter=Parameter.createRoot(this.getClass());
 			return parameter;
 	}
-
+	
+	
 	public void setParameter(Parameter parameter) {
-			this.parameter = parameter;
+		changes.firePropertyChange(FIELD_PARAMETER, this.parameter,
+				this.parameter = parameter);
 	}
+	
 	
 	protected String getStringParam(String key){
 		Object o=getParam(key,Parameter.Type.STRING);
@@ -57,6 +65,51 @@ public class ParameterElement {
 		else
 			par_type.setValue(value);
 		
+	}
+	
+	
+	
+
+	@Override
+	public String toString() {
+		return "ParameterElement [parameter=" + parameter + "]";
+	}
+
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((parameter == null) ? 0 : parameter.hashCode());
+		return result;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ParameterElement other = (ParameterElement) obj;
+		if (parameter == null) {
+			if (other.parameter != null)
+				return false;
+		} else if (!parameter.equals(other.parameter))
+			return false;
+		return true;
+	}
+
+
+	public void addPropertyChangeListener(PropertyChangeListener l) {
+		changes.addPropertyChangeListener(l);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener l) {
+		changes.removePropertyChangeListener(l);
 	}
 
 }
