@@ -47,6 +47,14 @@ public class YQLCashFlow extends YQLTable {
 		return format;
 	}
 	
+	
+	
+	@Override
+	public boolean hasValidResult() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	public static void main(String[] args) {
 		YQLCashFlow cashFlow=new YQLCashFlow("yhoo");
 		cashFlow.setTimeFrameToAnnual();

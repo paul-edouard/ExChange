@@ -48,9 +48,23 @@ public abstract  class  YQLTable {
 		
 	}
 	
+	public abstract boolean hasValidResult();
 	
+	/*
+	public boolean hasResult(){
+		if( this.getResult()==null){
+			return false;
+		}
+		//else if(this.getResult().)
+		return true;
+	}
+	*/
 	
-	
+
+	@Override
+	public String toString() {
+		return "YQLTable [symbol=" + symbol + ", result=" + this.getResult() + "]";
+	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 

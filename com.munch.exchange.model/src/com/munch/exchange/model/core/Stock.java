@@ -9,10 +9,10 @@ import com.munch.exchange.model.tool.DateTool;
 
 public class Stock extends ExchangeRate {
 	
-	static final String StartStr="start";
-	static final String EndStr="end";
-	static final String SectorStr="sector";
-	static final String IndustryStr="industry";
+	static final String FIELD_Start="start";
+	static final String FIELD_End="end";
+	static final String FIELD_Sector="sector";
+	static final String FIELD_Industry="industry";
 	
 	//Data from YQLStocks
 	private Calendar start=Calendar.getInstance();
@@ -23,13 +23,15 @@ public class Stock extends ExchangeRate {
 	
 	protected HistoricalDividend historicalDividend=new HistoricalDividend();
 	
+	
+	
 	public Calendar getStart() {
 		return start;
 	}
 
 
 	public void setStart(Calendar start) {
-		this.start = start;
+		changes.firePropertyChange(FIELD_Start, this.start, this.start = start);
 	}
 
 
@@ -39,7 +41,7 @@ public class Stock extends ExchangeRate {
 
 
 	public void setEnd(Calendar end) {
-		this.end = end;
+		changes.firePropertyChange(FIELD_End, this.end, this.end = end);
 	}
 
 
@@ -49,7 +51,7 @@ public class Stock extends ExchangeRate {
 
 
 	public void setSector(String sector) {
-		this.sector = sector;
+		changes.firePropertyChange(FIELD_Sector, this.sector, this.sector = sector);
 	}
 
 
@@ -59,16 +61,28 @@ public class Stock extends ExchangeRate {
 
 
 	public void setIndustry(String industry) {
-		this.industry = industry;
+		changes.firePropertyChange(FIELD_Industry, this.industry, this.industry = industry);
 	}
-	
+
+
+	public HistoricalDividend getHistoricalDividend() {
+		return historicalDividend;
+	}
+
+
+	public void setHistoricalDividend(HistoricalDividend historicalDividend) {
+		//changes.firePropertyChange(FIELD, this.historicalDividend, this.historicalDividend = historicalDividend);
+		this.historicalDividend = historicalDividend;
+	}
+
+
 	@Override
 	protected void initAttribute(Element rootElement) {
 		
-		this.setEnd(DateTool.StringToDate(rootElement.getAttribute(EndStr)));
-		this.setStart(DateTool.StringToDate(rootElement.getAttribute(StartStr)));
-		this.setSector(rootElement.getAttribute(SectorStr));
-		this.setIndustry(rootElement.getAttribute(IndustryStr));
+		this.setEnd(DateTool.StringToDate(rootElement.getAttribute(FIELD_End)));
+		this.setStart(DateTool.StringToDate(rootElement.getAttribute(FIELD_Start)));
+		this.setSector(rootElement.getAttribute(FIELD_Sector));
+		this.setIndustry(rootElement.getAttribute(FIELD_Industry));
 		
 		super.initAttribute(rootElement);
 	}
@@ -77,11 +91,11 @@ public class Stock extends ExchangeRate {
 	@Override
 	protected void setAttribute(Element rootElement) {
 		
-		rootElement.setAttribute(EndStr,DateTool.dateToString( this.getEnd()));
-		rootElement.setAttribute(StartStr,DateTool.dateToString( this.getStart()));
+		rootElement.setAttribute(FIELD_End,DateTool.dateToString( this.getEnd()));
+		rootElement.setAttribute(FIELD_Start,DateTool.dateToString( this.getStart()));
 		
-		rootElement.setAttribute(SectorStr,this.getSector());
-		rootElement.setAttribute(IndustryStr,this.getIndustry());
+		rootElement.setAttribute(FIELD_Sector,this.getSector());
+		rootElement.setAttribute(FIELD_Industry,this.getIndustry());
 		
 		super.setAttribute(rootElement);
 	}

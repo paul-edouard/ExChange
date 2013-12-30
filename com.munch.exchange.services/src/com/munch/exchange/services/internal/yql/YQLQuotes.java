@@ -127,6 +127,7 @@ public class YQLQuotes  extends YQLTable {
 	
 	
 	public QuotePoint getCurrentQuotePoint(){
+		if(!this.hasValidResult())return null;
 		
 		QuotePoint point=new QuotePoint();
 		
@@ -146,6 +147,11 @@ public class YQLQuotes  extends YQLTable {
 	}
 	
 	
+	@Override
+	public boolean hasValidResult() {
+		return this.getChange()!=Float.NaN;
+	}
+
 	/*
 	 * Quote Data
 	 */

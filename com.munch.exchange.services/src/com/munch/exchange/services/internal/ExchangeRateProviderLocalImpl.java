@@ -47,6 +47,8 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	
 	@Override
 	public boolean save(ExchangeRate rate) {
+		if(rate==null)return false;
+		
 		File dir=this.getExchangeRateDir(rate);
 		if(dir==null)return false;
 		String exchangeRateFile=dir.getAbsolutePath()+File.separator+ExchangeRateStr;
@@ -61,6 +63,12 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		//TODO load from local
 		
 		YQLStocks yqlStocks=new YQLStocks(symbol);
+		System.out.println(yqlStocks);
+		if(!yqlStocks.hasValidResult()){
+			System.out.println("Cannot find the symbol \""+symbol+"\" on YQL");
+			return null;
+		}
+		
 		YQLQuotes yqlQuotes=new YQLQuotes(symbol);
 		ExchangeRate rate=yqlStocks.getExchangeRate();
 		if(rate!=null)

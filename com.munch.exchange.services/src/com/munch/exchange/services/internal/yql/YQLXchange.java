@@ -37,6 +37,15 @@ public class YQLXchange extends YQLTable {
 		return format;
 	}
 	
+	
+	
+	@Override
+	public boolean hasValidResult() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
 	public static void main(String[] args) {
 		YQLXchange xchange=new YQLXchange("EURUSD");
 		System.out.println(xchange.getResult().toString(1));

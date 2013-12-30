@@ -29,6 +29,8 @@ public class YQLHistoricalData extends YQLTable {
 	
 	private static String dividend_url="http://ichart.finance.yahoo.com/table.csv?s=";
 	
+	LinkedList<HistoricalPoint> plist=null;
+	
 	public YQLHistoricalData(String symbol, Calendar startDate, Calendar endDate ){
 		super();
 		this.symbol=symbol;
@@ -179,8 +181,9 @@ public class YQLHistoricalData extends YQLTable {
 	}
 	
 	public LinkedList<HistoricalPoint> getHisPointList(){
+		if(plist!=null)return plist;
 		
-		LinkedList<HistoricalPoint> plist=new LinkedList<HistoricalPoint>();
+		plist=new LinkedList<HistoricalPoint>();
 		JSONArray array=  this.getResult().getJSONArray("quote");
 		
 		for(int i=0;i<array.length();i++){
@@ -194,6 +197,11 @@ public class YQLHistoricalData extends YQLTable {
 	
 	
 	
+	@Override
+	public boolean hasValidResult() {
+		return !this.getHisPointList().isEmpty();
+	}
+
 	public static void main(String[] args) {
 		
 		Calendar date=Calendar.getInstance();

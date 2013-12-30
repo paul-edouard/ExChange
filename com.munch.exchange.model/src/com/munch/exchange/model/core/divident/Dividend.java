@@ -10,14 +10,15 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Parameter;
 import com.munch.exchange.model.xml.ParameterElement;
 import com.munch.exchange.model.xml.XmlElementIF;
 
 public class Dividend extends ParameterElement implements XmlElementIF {
 	
-	static final String ValueStr="value";
-	static final String DateStr="date";
+	static final String FIELD_Value="value";
+	static final String FIELD_Date="date";
 	
 	private float value=0;
 	private Calendar date=Calendar.getInstance();
@@ -54,12 +55,17 @@ public class Dividend extends ParameterElement implements XmlElementIF {
 		super();
 	}
 	
+	
+	
+	
+	
 	public float getValue() {
 		return value;
 	}
 
 	public void setValue(float value) {
-		this.value = value;
+		changes.firePropertyChange(FIELD_Value, this.value, this.value = value);
+		//this.value = value;
 	}
 
 	public Calendar getDate() {
@@ -67,34 +73,45 @@ public class Dividend extends ParameterElement implements XmlElementIF {
 	}
 
 	public void setDate(Calendar date) {
-		this.date = date;
-	}
-
-	public String getDateString(){
-		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		return format.format(date.getTime());
-	}
-	
-	public void setDateString(String dateStr){
-		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		try {
-			Date d=format.parse(dateStr);
-			if(d!=null){
-				date.setTime(d);
-			}
-			
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		changes.firePropertyChange(FIELD_Date, this.date, this.date = date);
+		//this.date = date;
 	}
 	
 	
 	
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((date == null) ? 0 : date.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!super.equals(obj)) {
+			return false;
+		}
+		if (!(obj instanceof Dividend)) {
+			return false;
+		}
+		Dividend other = (Dividend) obj;
+		if (date == null) {
+			if (other.date != null) {
+				return false;
+			}
+		} else if (!date.equals(other.date)) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
 	public String toString() {
-		return "Dividend [date=" + getDateString() + ", value=" + value + "]";
+		return "Dividend [date=" + DateTool.dateToString(getDate()) + ", value=" + value + "]";
 	}
 
 	/***********************************
@@ -107,8 +124,8 @@ public class Dividend extends ParameterElement implements XmlElementIF {
 	public Element toDomElement(Document doc) {
 		Element e=doc.createElement(this.getTagName());
 		
-		e.setAttribute(ValueStr,String.valueOf(this.getValue()));
-		e.setAttribute(DateStr, this.getDateString());
+		e.setAttribute(FIELD_Value,String.valueOf(this.getValue()));
+		e.setAttribute(FIELD_Date, DateTool.dateToString(this.getDate()));
 		
 		//Parameter
 		e.appendChild(this.getParameter().toDomElement(doc));
@@ -120,8 +137,8 @@ public class Dividend extends ParameterElement implements XmlElementIF {
 	public void init(Element Root) {
 		if(Root.getTagName().equals(this.getTagName())){
 			
-			this.setValue(Float.valueOf(Root.getAttribute(ValueStr)));
-			setDateString(Root.getAttribute(DateStr));
+			this.setValue(Float.valueOf(Root.getAttribute(FIELD_Value)));
+			this.setDate(DateTool.StringToDate(Root.getAttribute(FIELD_Date)));
 			
 			NodeList Children=Root.getChildNodes();
 

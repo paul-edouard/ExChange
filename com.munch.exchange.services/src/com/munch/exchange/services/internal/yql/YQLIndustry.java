@@ -40,6 +40,14 @@ public class YQLIndustry extends YQLTable {
 		return format;
 	}
 	
+	
+	@Override
+	public boolean hasValidResult() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
 	public static void main(String[] args) {
 		YQLIndustry industry=new YQLIndustry("851");
 		System.out.println(industry.getResult().toString(1));

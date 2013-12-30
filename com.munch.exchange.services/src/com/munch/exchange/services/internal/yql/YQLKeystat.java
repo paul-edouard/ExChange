@@ -21,6 +21,14 @@ public class YQLKeystat extends YQLTable {
 		return format;
 	}
 	
+	
+	
+	@Override
+	public boolean hasValidResult() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	public static void main(String[] args) {
 		YQLKeystat keystat=new YQLKeystat("yhoo");
 		System.out.println(keystat.getResult().toString(1));

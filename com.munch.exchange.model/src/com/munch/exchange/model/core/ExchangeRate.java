@@ -29,20 +29,15 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	public String getSymbol() {
 		return symbol;
 	}
-	/*
 	public void setSymbol(String symbol) {
-		this.symbol = symbol;
+		changes.firePropertyChange(FIELD_SYMBOL, this.symbol, this.symbol = symbol);
 	}
-	*/
 	
 	
 	public HistoricalData getHistoricalData() {
 		return historicalData;
 	}
-	public void setSymbol(String symbol) {
-		changes.firePropertyChange(FIELD_SYMBOL, this.symbol, this.symbol = symbol);
-		//this.symbol = symbol;
-	}
+	
 	public void setHistoricalData(HistoricalData historicalData) {
 		this.historicalData = historicalData;
 	}

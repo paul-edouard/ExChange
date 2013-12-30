@@ -32,6 +32,12 @@ public class YQLSectors extends YQLTable {
 		return format;
 	}
 	
+	@Override
+	public boolean hasValidResult() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	public static void main(String[] args) {
 		
 		YQLSectors sectors=new YQLSectors();

@@ -47,6 +47,14 @@ public class YQLBalanceSheet extends YQLTable {
 		return format;
 	}
 	
+	
+	
+	@Override
+	public boolean hasValidResult() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	public static void main(String[] args) {
 		YQLBalanceSheet balanceSheet=new YQLBalanceSheet("yhoo");
 		balanceSheet.setTimeFrameToAnnual();

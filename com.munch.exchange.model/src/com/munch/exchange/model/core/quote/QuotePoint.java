@@ -9,18 +9,18 @@ import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class QuotePoint extends XmlParameterElement {
 	
-	static final String DateStr="date";
+	static final String FIELD_Date="date";
 	
-	static final String AverageDailyVolumeStr="averageDailyVolume";
-	static final String ChangeStr="change";
-	static final String DaysLowStr="daysLow";
-	static final String DaysHighStr="daysHigh";
-	static final String YearLowStr="yearLow";
-	static final String YearHighStr="yearHigh";
-	static final String MarketCapitalizationStr="marketCapitalization";
-	static final String LastTradePriceStr="lastTradePrice";
-	static final String VolumeStr="volume";
-	static final String LastTradeDateStr="lastTradeDate";
+	static final String FIELD_Average_Daily_Volume="averageDailyVolume";
+	static final String FIELD_Change="change";
+	static final String FIELD_Days_Low="daysLow";
+	static final String FIELD_Days_High="daysHigh";
+	static final String FIELD_Year_Low="yearLow";
+	static final String FIELD_Year_High="yearHigh";
+	static final String FIELD_Market_Capitalization="marketCapitalization";
+	static final String FIELD_Last_Trade_Price="lastTradePrice";
+	static final String FIELD_Volume="volume";
+	static final String FIELD_Last_Trade_Date="lastTradeDate";
 	
 	private Calendar date=Calendar.getInstance();
 	
@@ -37,14 +37,14 @@ public class QuotePoint extends XmlParameterElement {
 	
 	private Calendar lastTradeDate=Calendar.getInstance();
 	
-	
+
 	public Calendar getDate() {
 		return date;
 	}
-	
+
 
 	public void setDate(Calendar date) {
-		this.date = date;
+		changes.firePropertyChange(FIELD_Date, this.date, this.date = date);
 	}
 
 
@@ -52,81 +52,139 @@ public class QuotePoint extends XmlParameterElement {
 		return averageDailyVolume;
 	}
 
+
 	public void setAverageDailyVolume(long averageDailyVolume) {
-		this.averageDailyVolume = averageDailyVolume;
+		changes.firePropertyChange(FIELD_Average_Daily_Volume, this.averageDailyVolume, this.averageDailyVolume = averageDailyVolume);
 	}
+
 
 	public float getChange() {
 		return change;
 	}
 
+
 	public void setChange(float change) {
+		changes.firePropertyChange(FIELD_Change, this.change, this.change = change);
 		this.change = change;
 	}
+
 
 	public float getDaysLow() {
 		return daysLow;
 	}
 
+
 	public void setDaysLow(float daysLow) {
-		this.daysLow = daysLow;
+		changes.firePropertyChange(FIELD_Days_Low, this.daysLow, this.daysLow = daysLow);
 	}
+
 
 	public float getDaysHigh() {
 		return daysHigh;
 	}
 
+
 	public void setDaysHigh(float daysHigh) {
-		this.daysHigh = daysHigh;
+		changes.firePropertyChange(FIELD_Days_High, this.daysHigh, this.daysHigh = daysHigh);
 	}
+
 
 	public float getYearLow() {
 		return yearLow;
 	}
 
+
 	public void setYearLow(float yearLow) {
-		this.yearLow = yearLow;
+		changes.firePropertyChange(FIELD_Year_Low, this.yearLow, this.yearLow = yearLow);
 	}
+
 
 	public float getYearHigh() {
 		return yearHigh;
 	}
 
+
 	public void setYearHigh(float yearHigh) {
-		this.yearHigh = yearHigh;
+		changes.firePropertyChange(FIELD_Year_High, this.yearHigh, this.yearHigh = yearHigh);
+		//this.yearHigh = yearHigh;
 	}
+
 
 	public String getMarketCapitalization() {
 		return marketCapitalization;
 	}
 
+
 	public void setMarketCapitalization(String marketCapitalization) {
-		this.marketCapitalization = marketCapitalization;
+		changes.firePropertyChange(FIELD_Market_Capitalization, this.marketCapitalization, this.marketCapitalization = marketCapitalization);
+		//this.marketCapitalization = marketCapitalization;
 	}
+
 
 	public float getLastTradePrice() {
 		return lastTradePrice;
 	}
 
+
 	public void setLastTradePrice(float lastTradePrice) {
-		this.lastTradePrice = lastTradePrice;
+		changes.firePropertyChange(FIELD_Last_Trade_Date, this.lastTradePrice, this.lastTradePrice = lastTradePrice);
+		//this.lastTradePrice = lastTradePrice;
 	}
+
 
 	public long getVolume() {
 		return volume;
 	}
 
+
 	public void setVolume(long volume) {
-		this.volume = volume;
+		changes.firePropertyChange(FIELD_Volume, this.volume, this.volume = volume);
+		//this.volume = volume;
 	}
+
 
 	public Calendar getLastTradeDate() {
 		return lastTradeDate;
 	}
 
+
 	public void setLastTradeDate(Calendar lastTradeDate) {
-		this.lastTradeDate = lastTradeDate;
+		changes.firePropertyChange(FIELD_Last_Trade_Date, this.lastTradeDate, this.lastTradeDate = lastTradeDate);
+		//this.lastTradeDate = lastTradeDate;
 	}
+
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((date == null) ? 0 : date.hashCode());
+		return result;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!super.equals(obj)) {
+			return false;
+		}
+		if (!(obj instanceof QuotePoint)) {
+			return false;
+		}
+		QuotePoint other = (QuotePoint) obj;
+		if (date == null) {
+			if (other.date != null) {
+				return false;
+			}
+		} else if (!date.equals(other.date)) {
+			return false;
+		}
+		return true;
+	}
+
 
 	@Override
 	public String toString() {
@@ -147,34 +205,34 @@ public class QuotePoint extends XmlParameterElement {
 	 ***********************************/
 	
 	protected void initAttribute(Element Root){
-		this.setDate(DateTool.StringToDate(Root.getAttribute(DateStr)));
-		this.setAverageDailyVolume(Long.parseLong(Root.getAttribute(AverageDailyVolumeStr)));
-		this.setChange(Float.valueOf(Root.getAttribute(ChangeStr)));
-		this.setDaysHigh(Float.valueOf(Root.getAttribute(DaysHighStr)));
-		this.setDaysLow(Float.valueOf(Root.getAttribute(DaysLowStr)));
-		this.setLastTradeDate(DateTool.StringToDate(Root.getAttribute(LastTradeDateStr)));
-		this.setLastTradePrice(Float.valueOf(Root.getAttribute(LastTradePriceStr)));
-		this.setMarketCapitalization(Root.getAttribute(MarketCapitalizationStr));
-		this.setVolume(Long.parseLong(Root.getAttribute(VolumeStr)));
-		this.setYearHigh(Float.valueOf(Root.getAttribute(YearHighStr)));
-		this.setYearLow(Float.valueOf(Root.getAttribute(YearLowStr)));
+		this.setDate(DateTool.StringToDate(Root.getAttribute(FIELD_Date)));
+		this.setAverageDailyVolume(Long.parseLong(Root.getAttribute(FIELD_Average_Daily_Volume)));
+		this.setChange(Float.valueOf(Root.getAttribute(FIELD_Change)));
+		this.setDaysHigh(Float.valueOf(Root.getAttribute(FIELD_Days_High)));
+		this.setDaysLow(Float.valueOf(Root.getAttribute(FIELD_Days_Low)));
+		this.setLastTradeDate(DateTool.StringToDate(Root.getAttribute(FIELD_Last_Trade_Date)));
+		this.setLastTradePrice(Float.valueOf(Root.getAttribute(FIELD_Last_Trade_Price)));
+		this.setMarketCapitalization(Root.getAttribute(FIELD_Market_Capitalization));
+		this.setVolume(Long.parseLong(Root.getAttribute(FIELD_Volume)));
+		this.setYearHigh(Float.valueOf(Root.getAttribute(FIELD_Year_High)));
+		this.setYearLow(Float.valueOf(Root.getAttribute(FIELD_Year_Low)));
 	}
 	
 	protected void initChild(Element childElement){}
 	
 	
 	protected void setAttribute(Element e){
-		e.setAttribute(DateStr,DateTool.dateToString( this.getDate()));
-		e.setAttribute(AverageDailyVolumeStr,String.valueOf(this.getAverageDailyVolume()));
-		e.setAttribute(ChangeStr,String.valueOf(this.getChange()));
-		e.setAttribute(DaysHighStr,String.valueOf(this.getDaysHigh()));
-		e.setAttribute(DaysLowStr,String.valueOf(this.getDaysLow()));
-		e.setAttribute(LastTradeDateStr,String.valueOf(this.getLastTradeDate()));
-		e.setAttribute(LastTradePriceStr,String.valueOf(this.getLastTradePrice()));
-		e.setAttribute(MarketCapitalizationStr,String.valueOf(this.getMarketCapitalization()));
-		e.setAttribute(VolumeStr,String.valueOf(this.getVolume()));
-		e.setAttribute(YearHighStr,String.valueOf(this.getYearHigh()));
-		e.setAttribute(YearLowStr,String.valueOf(this.getYearLow()));
+		e.setAttribute(FIELD_Date,DateTool.dateToString( this.getDate()));
+		e.setAttribute(FIELD_Average_Daily_Volume,String.valueOf(this.getAverageDailyVolume()));
+		e.setAttribute(FIELD_Change,String.valueOf(this.getChange()));
+		e.setAttribute(FIELD_Days_High,String.valueOf(this.getDaysHigh()));
+		e.setAttribute(FIELD_Days_Low,String.valueOf(this.getDaysLow()));
+		e.setAttribute(FIELD_Last_Trade_Date,String.valueOf(this.getLastTradeDate()));
+		e.setAttribute(FIELD_Last_Trade_Price,String.valueOf(this.getLastTradePrice()));
+		e.setAttribute(FIELD_Market_Capitalization,String.valueOf(this.getMarketCapitalization()));
+		e.setAttribute(FIELD_Volume,String.valueOf(this.getVolume()));
+		e.setAttribute(FIELD_Year_High,String.valueOf(this.getYearHigh()));
+		e.setAttribute(FIELD_Year_Low,String.valueOf(this.getYearLow()));
 	}
 	
 	protected void appendChild(Element rootElement){}

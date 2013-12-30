@@ -35,10 +35,19 @@ public class YQLStocks extends YQLTable {
 		return stock;
 	}
 	
+	
+	
 	/*
 	 * Common
 	 */
 	
+	@Override
+	public boolean hasValidResult() {
+		if(this.getResult()==null)return false;
+		
+		return this.getStartDate()!=null;
+	}
+
 	public String getSymbol(){
 		return this.getStock().getString("symbol");
 	}

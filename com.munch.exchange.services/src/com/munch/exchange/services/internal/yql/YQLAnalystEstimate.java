@@ -19,7 +19,12 @@ public class YQLAnalystEstimate extends YQLTable {
 		return format;
 	}
 	
-	
+	@Override
+	public boolean hasValidResult() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	public static void main(String[] args) {
 		YQLAnalystEstimate analystEstimate=new YQLAnalystEstimate("yhoo");
 		System.out.println(analystEstimate.getResult().toString(1));
