@@ -21,6 +21,7 @@ public class DateTool {
 			if(d!=null){
 				Calendar date=Calendar.getInstance();
 				date.setTime(d);
+				date.set(Calendar.MILLISECOND, 0);
 				return date;
 			}
 			return null;

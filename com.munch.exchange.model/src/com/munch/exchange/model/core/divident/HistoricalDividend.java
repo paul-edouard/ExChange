@@ -16,7 +16,11 @@ public class HistoricalDividend extends LinkedList<Dividend> implements
 	 * 
 	 */
 	private static final long serialVersionUID = 1064128402077353719L;
-
+	
+	public void sort(){
+		java.util.Collections.sort(this);
+	}
+	
 
 	/***********************************
 	 *                                 *
@@ -26,7 +30,7 @@ public class HistoricalDividend extends LinkedList<Dividend> implements
 	/**
 	 * return the TAG Name used in the xml file
 	 */
-	public String getTagName(){return "historical_divident";}
+	public String getTagName(){return this.getClass().getSimpleName();}
 	
 	/**
 	 * initializes the users map from a xml element

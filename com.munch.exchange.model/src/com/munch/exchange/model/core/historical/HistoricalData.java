@@ -11,13 +11,23 @@ import com.munch.exchange.model.xml.XmlElementIF;
 
 public class HistoricalData extends LinkedList<HistoricalPoint> implements XmlElementIF {
 	
+	/**
+	 *  // hier wird sortiert  
+	 *    Comparator<Rechteck> comparator = new QuadratheitComparator(); 
+	 *     java.util.Collections.sort( rechtecke, comparator );
+	 */
+	
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -5430509341617898712L;
 
-
+	
+	public void sort(){
+		java.util.Collections.sort(this);
+	}
+	
 
 	/**
 	 * return the TAG Name used in the xml file
@@ -43,7 +53,7 @@ public class HistoricalData extends LinkedList<HistoricalPoint> implements XmlEl
 				if(child instanceof Element){
 					Element childElement=(Element)child;
 					
-					//History Point
+					//Historical Point
 					HistoricalPoint point=new HistoricalPoint();
 					if(childElement.getTagName().equals(point.getTagName())){
 						point.init(childElement);

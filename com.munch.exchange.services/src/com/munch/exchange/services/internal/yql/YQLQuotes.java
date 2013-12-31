@@ -901,7 +901,7 @@ public class YQLQuotes  extends YQLTable {
 	
 	public static void main(String[] args) {
 			
-		YQLQuotes quote=new YQLQuotes("EURUSD");
+		YQLQuotes quote=new YQLQuotes("YHOO");
 	//	quote.addSymbol("YHOO");
 	//	quote.addSymbol("DAI.DE");//PAH3.DE
 	//	quote.addSymbol("CCC3.DE");
@@ -911,6 +911,9 @@ public class YQLQuotes  extends YQLTable {
 		
 		System.out.println("Date:"+quote.getLastTradeDate());
 		System.out.println("Time:"+quote.getLastTradeTime());
+		
+		System.out.println("Stock Exchange:"+quote.getStockExchange());
+		
 		
 		System.out.println(quote.getCurrentQuotePoint());
 		

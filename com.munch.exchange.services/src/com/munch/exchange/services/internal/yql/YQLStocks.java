@@ -158,8 +158,8 @@ public class YQLStocks extends YQLTable {
 	
 	public static void main(String[] args) {
 		//YQLStocks stocks=new YQLStocks("CTYRX");
-		YQLStocks stocks=new YQLStocks("DAI.DE");
-		//YQLStocks stocks=new YQLStocks("YHOO");
+		//YQLStocks stocks=new YQLStocks("AMZN");
+		YQLStocks stocks=new YQLStocks("AMG.DE");
 		//YHO.DE
 		//"YHOO"
 		//AAPL

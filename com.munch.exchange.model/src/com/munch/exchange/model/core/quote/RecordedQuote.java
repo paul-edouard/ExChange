@@ -16,7 +16,13 @@ public class RecordedQuote extends LinkedList<QuotePoint> implements
 	 * 
 	 */
 	private static final long serialVersionUID = -7882821093083414667L;
-
+	
+	
+	public void sort(){
+		java.util.Collections.sort(this);
+	}
+	
+	
 	@Override
 	public Element toDomElement(Document doc) {
 		Element e=doc.createElement(this.getTagName());

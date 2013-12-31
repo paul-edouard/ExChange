@@ -42,6 +42,14 @@ public abstract  class  YQLTable {
 		JSONObject query=message.getJSONObject("query");
 		if(query==null)return null;
 		
+		/*
+		for(Object obj:query.keySet()){
+			System.out.println("Keys:"+obj);
+			System.out.println(query.toString(1));
+			
+		}
+		*/
+		
 		result=query.getJSONObject("results");
 		
 		return result;

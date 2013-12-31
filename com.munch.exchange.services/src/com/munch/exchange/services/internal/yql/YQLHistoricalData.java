@@ -46,6 +46,7 @@ public class YQLHistoricalData extends YQLTable {
 	}
 	
 	
+	
 	public LinkedList<Dividend> getDividendList(){
 		String[] divs=getDividendData().split(";");
 		LinkedList<Dividend> l=new LinkedList<Dividend>();
@@ -205,9 +206,11 @@ public class YQLHistoricalData extends YQLTable {
 	public static void main(String[] args) {
 		
 		Calendar date=Calendar.getInstance();
-		date.set(2013, 03, 1);
+		date.set(2000, 00, 01);
+		
 		Calendar date2=Calendar.getInstance();
-		date2.set(2013, 03, 20);
+		date2.set(2000, 11, 31);
+		
 		
 		YQLHistoricalData hisData=new YQLHistoricalData("DAI.DE",date,date2);
 		for(HistoricalPoint point: hisData.getHisPointList()){

@@ -27,7 +27,7 @@ public interface IExchangeRateProvider {
 	 * @param rate
 	 * @return true on success false otherwise
 	 */
-	boolean save(ExchangeRate rate);
+	//boolean save(ExchangeRate rate);
 	
 	/**
 	 * try to load the exchange rate corresponding to the given symbol.
@@ -49,9 +49,7 @@ public interface IExchangeRateProvider {
 	//==================================
 	
 	
-	//==================================
-	//==         DIVIDENT             ==
-	//==================================
+	
 
 	
 }

@@ -4,12 +4,12 @@ import java.util.Calendar;
 
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.tool.DateTool;
-import com.munch.exchange.model.xml.XmlParameterElement;
 
-public class QuotePoint extends XmlParameterElement {
+public class QuotePoint extends DatePoint {
 	
-	static final String FIELD_Date="date";
+	
 	
 	static final String FIELD_Average_Daily_Volume="averageDailyVolume";
 	static final String FIELD_Change="change";
@@ -22,7 +22,6 @@ public class QuotePoint extends XmlParameterElement {
 	static final String FIELD_Volume="volume";
 	static final String FIELD_Last_Trade_Date="lastTradeDate";
 	
-	private Calendar date=Calendar.getInstance();
 	
 	private long averageDailyVolume;
 	private float change;
@@ -38,14 +37,7 @@ public class QuotePoint extends XmlParameterElement {
 	private Calendar lastTradeDate=Calendar.getInstance();
 	
 
-	public Calendar getDate() {
-		return date;
-	}
-
-
-	public void setDate(Calendar date) {
-		changes.firePropertyChange(FIELD_Date, this.date, this.date = date);
-	}
+	
 
 
 	public long getAverageDailyVolume() {
@@ -154,36 +146,7 @@ public class QuotePoint extends XmlParameterElement {
 	}
 
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((date == null) ? 0 : date.hashCode());
-		return result;
-	}
-
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (!super.equals(obj)) {
-			return false;
-		}
-		if (!(obj instanceof QuotePoint)) {
-			return false;
-		}
-		QuotePoint other = (QuotePoint) obj;
-		if (date == null) {
-			if (other.date != null) {
-				return false;
-			}
-		} else if (!date.equals(other.date)) {
-			return false;
-		}
-		return true;
-	}
+	
 
 
 	@Override
@@ -205,7 +168,7 @@ public class QuotePoint extends XmlParameterElement {
 	 ***********************************/
 	
 	protected void initAttribute(Element Root){
-		this.setDate(DateTool.StringToDate(Root.getAttribute(FIELD_Date)));
+		
 		this.setAverageDailyVolume(Long.parseLong(Root.getAttribute(FIELD_Average_Daily_Volume)));
 		this.setChange(Float.valueOf(Root.getAttribute(FIELD_Change)));
 		this.setDaysHigh(Float.valueOf(Root.getAttribute(FIELD_Days_High)));
@@ -216,13 +179,14 @@ public class QuotePoint extends XmlParameterElement {
 		this.setVolume(Long.parseLong(Root.getAttribute(FIELD_Volume)));
 		this.setYearHigh(Float.valueOf(Root.getAttribute(FIELD_Year_High)));
 		this.setYearLow(Float.valueOf(Root.getAttribute(FIELD_Year_Low)));
+		
+		super.initAttribute(Root);
 	}
 	
-	protected void initChild(Element childElement){}
 	
 	
 	protected void setAttribute(Element e){
-		e.setAttribute(FIELD_Date,DateTool.dateToString( this.getDate()));
+		
 		e.setAttribute(FIELD_Average_Daily_Volume,String.valueOf(this.getAverageDailyVolume()));
 		e.setAttribute(FIELD_Change,String.valueOf(this.getChange()));
 		e.setAttribute(FIELD_Days_High,String.valueOf(this.getDaysHigh()));
@@ -233,9 +197,9 @@ public class QuotePoint extends XmlParameterElement {
 		e.setAttribute(FIELD_Volume,String.valueOf(this.getVolume()));
 		e.setAttribute(FIELD_Year_High,String.valueOf(this.getYearHigh()));
 		e.setAttribute(FIELD_Year_Low,String.valueOf(this.getYearLow()));
+		
+		super.setAttribute(e);
 	}
-	
-	protected void appendChild(Element rootElement){}
 
 	
 }
