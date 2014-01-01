@@ -3,6 +3,7 @@ package com.munch.exchange.services.internal.yql;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import com.munch.exchange.services.internal.yql.json.JSONException;
 import com.munch.exchange.services.internal.yql.json.JSONObject;
 
 
@@ -42,15 +43,16 @@ public abstract  class  YQLTable {
 		JSONObject query=message.getJSONObject("query");
 		if(query==null)return null;
 		
-		/*
-		for(Object obj:query.keySet()){
-			System.out.println("Keys:"+obj);
-			System.out.println(query.toString(1));
-			
-		}
-		*/
+		if(query.get("results")==null)
+			return null;
 		
+		try{
 		result=query.getJSONObject("results");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 		
 		return result;
 		

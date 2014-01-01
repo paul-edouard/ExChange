@@ -191,7 +191,7 @@ public class QuotePoint extends DatePoint {
 		e.setAttribute(FIELD_Change,String.valueOf(this.getChange()));
 		e.setAttribute(FIELD_Days_High,String.valueOf(this.getDaysHigh()));
 		e.setAttribute(FIELD_Days_Low,String.valueOf(this.getDaysLow()));
-		e.setAttribute(FIELD_Last_Trade_Date,String.valueOf(this.getLastTradeDate()));
+		e.setAttribute(FIELD_Last_Trade_Date,DateTool.dateToString(this.getLastTradeDate()));
 		e.setAttribute(FIELD_Last_Trade_Price,String.valueOf(this.getLastTradePrice()));
 		e.setAttribute(FIELD_Market_Capitalization,String.valueOf(this.getMarketCapitalization()));
 		e.setAttribute(FIELD_Volume,String.valueOf(this.getVolume()));

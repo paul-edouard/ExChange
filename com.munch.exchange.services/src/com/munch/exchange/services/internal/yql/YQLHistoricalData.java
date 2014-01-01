@@ -185,11 +185,20 @@ public class YQLHistoricalData extends YQLTable {
 		if(plist!=null)return plist;
 		
 		plist=new LinkedList<HistoricalPoint>();
+		if(this.getResult()==null)
+			return plist;
+		
+		if(this.getResult().get("quote") instanceof JSONArray){
+		
 		JSONArray array=  this.getResult().getJSONArray("quote");
 		
 		for(int i=0;i<array.length();i++){
 			plist.add(this.createHisPoint(array.getJSONObject(i)));
 			//System.out.println(hisData.createHisPoint(array.getJSONObject(i)));
+		}
+		}
+		else if(this.getResult().get("quote") instanceof JSONObject){
+			plist.add(this.createHisPoint(this.getResult().getJSONObject("quote")));
 		}
 		
 		return plist;

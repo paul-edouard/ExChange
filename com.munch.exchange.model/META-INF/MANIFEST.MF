@@ -9,4 +9,5 @@ Export-Package: com.munch.exchange.model.core,
  com.munch.exchange.model.core.divident,
  com.munch.exchange.model.core.historical,
  com.munch.exchange.model.core.quote,
+ com.munch.exchange.model.tool,
  com.munch.exchange.model.xml

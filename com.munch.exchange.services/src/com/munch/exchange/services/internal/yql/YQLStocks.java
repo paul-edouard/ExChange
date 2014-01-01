@@ -159,13 +159,15 @@ public class YQLStocks extends YQLTable {
 	public static void main(String[] args) {
 		//YQLStocks stocks=new YQLStocks("CTYRX");
 		//YQLStocks stocks=new YQLStocks("AMZN");
-		YQLStocks stocks=new YQLStocks("AMG.DE");
+		YQLStocks stocks=new YQLStocks("^GDAXI");
 		//YHO.DE
 		//"YHOO"
 		//AAPL
 		//Fond  CTYRX
 		System.out.println(stocks.getResult().toString(1));
-		System.out.println(stocks.getEndDate().getTime());
+		//System.out.println(stocks.getEndDate().getTime());
+		//System.out.println(DateTool.dateToString(stocks.getStartDate()));
+		
 		//System.out.println(stocks.getCategory());
 		//System.out.println(stocks.isFund());
 	}

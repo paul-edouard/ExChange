@@ -143,6 +143,8 @@ public class YQLQuotes  extends YQLTable {
 		point.setYearHigh(this.getYearHigh());
 		point.setYearLow(this.getYearLow());
 		
+		point.setDate(this.getLastDateTime());
+		
 		return point;
 	}
 	
@@ -915,7 +917,7 @@ public class YQLQuotes  extends YQLTable {
 		System.out.println("Stock Exchange:"+quote.getStockExchange());
 		
 		
-		System.out.println(quote.getCurrentQuotePoint());
+		//System.out.println(quote.getCurrentQuotePoint());
 		
 		
 	}

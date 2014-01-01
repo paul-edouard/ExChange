@@ -502,7 +502,7 @@ public class JSONObject {
         if(object instanceof String){
         	String dateStr=(String) object;
         	SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
-        	Date d=format.parse(dateStr);
+        	Date d=format.parse(dateStr.replaceAll("NaN", "01"));
 			if(d!=null){
 				Calendar date=Calendar.getInstance();
 				date.setTime(d);

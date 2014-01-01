@@ -51,6 +51,10 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		changes.firePropertyChange(FIELD_End, this.end, this.end = end);
 	}
 	
+	public String getFullName(){
+		return this.getName()+" ("+this.getSymbol()+")";
+	}
+	
 	public String getName() {
 		return name;
 	}
