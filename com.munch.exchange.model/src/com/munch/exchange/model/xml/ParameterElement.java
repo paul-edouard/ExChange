@@ -6,7 +6,7 @@ import java.beans.PropertyChangeSupport;
 
 public class ParameterElement {
 	
-	public static final String FIELD_PARAMETER = "parameter";
+	public static final String FIELD_Parameter = "parameter";
 	
 	protected PropertyChangeSupport changes = new PropertyChangeSupport(this);
 	
@@ -24,7 +24,7 @@ public class ParameterElement {
 	
 	
 	public void setParameter(Parameter parameter) {
-		changes.firePropertyChange(FIELD_PARAMETER, this.parameter,
+		changes.firePropertyChange(FIELD_Parameter, this.parameter,
 				this.parameter = parameter);
 	}
 	

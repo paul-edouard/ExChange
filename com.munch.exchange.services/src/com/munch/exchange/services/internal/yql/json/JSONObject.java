@@ -509,6 +509,51 @@ public class JSONObject {
 				date.set(Calendar.HOUR_OF_DAY, 23);
 				date.set(Calendar.MINUTE, 59);
 				date.set(Calendar.SECOND, 59);
+				date.set(Calendar.MILLISECOND, 0);
+				
+				return date;
+			}
+        	
+        }
+        else{
+        	 throw new JSONException("JSONObject[" + quote(key) + "] not a String.");
+        }
+        
+       
+        return null;
+    }
+    
+    /**
+     * Get the value period associated with a key.
+     *
+     * @param key
+     *            A key string.
+     * @return The date associated with the key.
+     * @throws JSONException
+     *             if the key is not found.
+     * @throws ParseException 
+     *             if the Date has not the format "yyyy-MM-dd"
+     */
+    public Calendar getPeriod(String key) throws JSONException, ParseException {
+        if (key == null) {
+            throw new JSONException("Null key.");
+        }
+        Object object = this.opt(key);
+        if (object == null) {
+            throw new JSONException("JSONObject[" + quote(key) + "] not found.");
+        }
+        
+        if(object instanceof String){
+        	String dateStr=(String) object;
+        	SimpleDateFormat format=new SimpleDateFormat("MMM d, yyyy",Locale.ENGLISH);
+        	Date d=format.parse(dateStr.replaceAll("NaN", "01"));
+			if(d!=null){
+				Calendar date=Calendar.getInstance();
+				date.setTime(d);
+				date.set(Calendar.HOUR_OF_DAY, 23);
+				date.set(Calendar.MINUTE, 59);
+				date.set(Calendar.SECOND, 59);
+				date.set(Calendar.MILLISECOND, 0);
 				
 				return date;
 			}
