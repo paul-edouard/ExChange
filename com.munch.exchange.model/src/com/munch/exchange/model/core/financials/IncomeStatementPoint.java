@@ -289,30 +289,32 @@ public class IncomeStatementPoint extends FinancialPoint {
 	
 	@Override
 	public String toString() {
-		return "IncomeStatementPoint [ PeriodEnding="+DateTool.dateToString(PeriodEnding) + ", type=" + type+", TotalRevenue=" + TotalRevenue
-				+ ", CostofRevenue=" + CostofRevenue + ", GrossProfit="
-				+ GrossProfit + ", ResearchDevelopment=" + ResearchDevelopment
-				+ ", SellingGeneralandAdministrative="
-				+ SellingGeneralandAdministrative + ", NonRecurring="
-				+ NonRecurring + ", Others=" + Others
-				+ ", TotalOperatingExpenses=" + TotalOperatingExpenses
-				+ ", OperatingIncomeorLoss=" + OperatingIncomeorLoss
-				+ ", TotalOtherIncome_ExpensesNet="
-				+ TotalOtherIncome_ExpensesNet
-				+ ", EarningsBeforeInterestAndTaxes="
-				+ EarningsBeforeInterestAndTaxes + ", InterestExpense="
-				+ InterestExpense + ", IncomeBeforeTax=" + IncomeBeforeTax
-				+ ", IncomeTaxExpense=" + IncomeTaxExpense
-				+ ", MinorityInterest=" + MinorityInterest
-				+ ", NetIncomeFromContinuingOps=" + NetIncomeFromContinuingOps
-				+ ", DiscontinuedOperations=" + DiscontinuedOperations
-				+ ", ExtraordinaryItems=" + ExtraordinaryItems
-				+ ", EffectOfAccountingChanges=" + EffectOfAccountingChanges
-				+ ", OtherItems=" + OtherItems + ", NetIncome=" + NetIncome
-				+ ", PreferredStockAndOtherAdjustments="
-				+ PreferredStockAndOtherAdjustments
-				+ ", NetIncomeApplicableToCommonShares="
-				+ NetIncomeApplicableToCommonShares + "]";
+		return "IncomeStatementPoint [ PeriodEnding="+DateTool.dateToString(PeriodEnding) 
+				+ ", type=" + this.getPeriodType()
+				+ ", TotalRevenue=" + this.LongValueToString(TotalRevenue)
+				+ ", CostofRevenue=" +this.LongValueToString(CostofRevenue )
+				+ ", GrossProfit="+ this.LongValueToString(GrossProfit  )
+				+ ", ResearchDevelopment=" + this.LongValueToString(ResearchDevelopment)
+				+ ", SellingGeneralandAdministrative="+ this.LongValueToString(SellingGeneralandAdministrative )
+				+ ", NonRecurring="+ this.LongValueToString(NonRecurring )
+				+ ", Others=" + this.LongValueToString(Others)
+				+ ", TotalOperatingExpenses=" + this.LongValueToString(TotalOperatingExpenses)
+				+ ", OperatingIncomeorLoss=" + this.LongValueToString(OperatingIncomeorLoss)
+				+ ", TotalOtherIncome_ExpensesNet="+ this.LongValueToString(TotalOtherIncome_ExpensesNet)
+				+ ", EarningsBeforeInterestAndTaxes="+ this.LongValueToString(EarningsBeforeInterestAndTaxes )
+				+ ", InterestExpense=" + this.LongValueToString(InterestExpense )
+				+ ", IncomeBeforeTax=" + this.LongValueToString(IncomeBeforeTax)
+				+ ", IncomeTaxExpense=" + this.LongValueToString(IncomeTaxExpense)
+				+ ", MinorityInterest=" + this.LongValueToString(MinorityInterest)
+				+ ", NetIncomeFromContinuingOps=" + this.LongValueToString(NetIncomeFromContinuingOps)
+				+ ", DiscontinuedOperations=" + this.LongValueToString(DiscontinuedOperations)
+				+ ", ExtraordinaryItems=" + this.LongValueToString(ExtraordinaryItems)
+				+ ", EffectOfAccountingChanges=" + this.LongValueToString(EffectOfAccountingChanges)
+				+ ", OtherItems=" + this.LongValueToString(OtherItems )
+				+ ", NetIncome=" + this.LongValueToString(NetIncome)
+				+ ", PreferredStockAndOtherAdjustments="+ this.LongValueToString(PreferredStockAndOtherAdjustments)
+				+ ", NetIncomeApplicableToCommonShares="+ this.LongValueToString(NetIncomeApplicableToCommonShares)
+				+ "]";
 	}
 	@Override
 	protected void initAttribute(Element rootElement) {

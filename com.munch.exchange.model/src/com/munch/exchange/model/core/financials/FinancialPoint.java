@@ -1,6 +1,5 @@
 package com.munch.exchange.model.core.financials;
 
-import java.io.Serializable;
 import java.util.Calendar;
 
 import org.w3c.dom.Element;
@@ -11,35 +10,79 @@ import com.munch.exchange.model.tool.DateTool;
 public abstract class FinancialPoint extends DatePoint {
 	
 	static final String FIELD_PeriodEnding="PeriodEnding";
-	static final String FIELD_Type="type";
+	static final String FIELD_PeriodType="type";
+	
+	public static final String PeriodeTypeNone="none";
+	public static final String PeriodeTypeAnnual="annual";
+	public static final String PeriodeTypeQuaterly="quarterly";
 	
 	
 	protected Calendar PeriodEnding;
 	
-	protected Type type;
+	private String periodType=PeriodeTypeNone;
 	
-	public enum Type implements Serializable {
-		ANNUAL(1), QUATERLY(2), NONE(0);
-		private int val;
 
-		private Type(int value) {
-			this.val = value;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		/*
+		result = prime * result
+				+ ((PeriodEnding == null) ? 0 : PeriodEnding.hashCode());
+		*/
+		result = prime * result + ((periodType == null) ? 0 : periodType.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (this == obj) {
+			return true;
 		}
-
-		private void fromString(String value) {
-			this.val = Integer.parseInt(value);
+		/*
+		if (!super.equals(obj)) {
+			return false;
 		}
-
-		public int getValue() {
-			return val;
+		*/
+		//System.out.println("InList: "+this);
+		//System.out.println("CompareWith: "+obj+"\n");
+		if (!(obj instanceof FinancialPoint)) {
+			return false;
 		}
+		FinancialPoint other = (FinancialPoint) obj;
+		if (PeriodEnding == null) {
+			if (other.PeriodEnding != null) {
+				return false;
+			}
+		} else if (!PeriodEnding.equals(other.PeriodEnding)) {
+			return false;
+		}
+		if (!periodType.equals( other.periodType)) {
+			return false;
+		}
+		return true;
+	}
+	
+	
+	
 
-		public String toString() {
-			return String.valueOf(val);
+	@Override
+	public int compareTo(DatePoint o) {
+		if(o instanceof FinancialPoint){
+		//	FinancialPoint p=(FinancialPoint) o;
+			if(this.periodType.compareTo(((FinancialPoint) o).periodType)==-1)return -1;
+			if(this.periodType.compareTo(((FinancialPoint) o).periodType)==1)return 1;
 		}
 		
-		
+		return super.compareTo(o);
+	}
 
+	public String LongValueToString(long l){
+		if(l==Long.MIN_VALUE)return "-";
+		else{
+			return String.valueOf(l);
+		}
 	}
 
 	public Calendar getPeriodEnding() {
@@ -51,19 +94,22 @@ public abstract class FinancialPoint extends DatePoint {
 		//PeriodEnding = periodEnding;
 	}
 
-	public Type getType() {
-		return type;
+	
+	
+
+	public String getPeriodType() {
+		return periodType;
 	}
 
-	public void setType(Type type) {
-		changes.firePropertyChange(FIELD_Type, this.type, this.type = type);
-		//this.type = type;
+	public void setPeriodType(String periodType) {
+		changes.firePropertyChange(FIELD_PeriodType, this.periodType, this.periodType = periodType);
+		//this.periodType = periodType;
 	}
 
 	@Override
 	protected void initAttribute(Element rootElement) {
 		this.setPeriodEnding(DateTool.StringToDate(rootElement.getAttribute(FIELD_PeriodEnding)));
-		this.type.fromString(rootElement.getAttribute(FIELD_Type));
+		this.setPeriodType(rootElement.getAttribute(FIELD_PeriodType));
 		
 		super.initAttribute(rootElement);
 	}
@@ -71,9 +117,8 @@ public abstract class FinancialPoint extends DatePoint {
 	@Override
 	protected void setAttribute(Element rootElement) {
 		rootElement.setAttribute(FIELD_PeriodEnding, DateTool.dateToString( this.getPeriodEnding()));
-		rootElement.setAttribute(FIELD_Type, this.type.toString());
+		rootElement.setAttribute(FIELD_PeriodType, this.getPeriodType());
 		
-		// TODO Auto-generated method stub
 		super.setAttribute(rootElement);
 	};
 	

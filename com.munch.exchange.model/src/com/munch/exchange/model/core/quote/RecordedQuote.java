@@ -1,20 +1,23 @@
 package com.munch.exchange.model.core.quote;
 
-import java.util.LinkedList;
+import com.munch.exchange.model.core.DatePoint;
+import com.munch.exchange.model.core.DatePointList;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import com.munch.exchange.model.xml.XmlElementIF;
-
-public class RecordedQuote extends LinkedList<QuotePoint> implements
-		XmlElementIF {
+public class RecordedQuote extends DatePointList<QuotePoint> {
 
 	/**
 	 * 
 	 */
+	private static final long serialVersionUID = -5786399869426289076L;
+
+	@Override
+	protected DatePoint createPoint() {
+		return new QuotePoint();
+	}
+	
+	
+	
+	/*
 	private static final long serialVersionUID = -7882821093083414667L;
 	
 	
@@ -66,5 +69,6 @@ public class RecordedQuote extends LinkedList<QuotePoint> implements
 	public String getTagName() {
 		return this.getClass().getSimpleName();
 	}
+	*/
 
 }

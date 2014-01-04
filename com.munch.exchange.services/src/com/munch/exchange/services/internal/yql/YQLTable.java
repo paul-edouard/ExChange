@@ -32,7 +32,9 @@ public abstract  class  YQLTable {
 	protected abstract String getTable();
 	protected abstract String getFormat();
 	
-	
+	public void resetResult(){
+		result=null;
+	}
 	
 	public JSONObject getResult(){
 		if(result!=null)return result;

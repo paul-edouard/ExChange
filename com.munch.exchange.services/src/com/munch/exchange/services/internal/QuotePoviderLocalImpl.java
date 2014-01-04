@@ -3,6 +3,7 @@ package com.munch.exchange.services.internal;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.quote.QuotePoint;
@@ -33,7 +34,7 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 		
 		String lastDay=DateTool.dateToDayString(rate.getRecordedQuote().getLast().getDate());
 		
-		for(QuotePoint point:rate.getRecordedQuote()){
+		for(DatePoint point:rate.getRecordedQuote()){
 			String Day=DateTool.dateToDayString(point.getDate());
 			if(lastDay.equals(Day)){
 				dayQuotes.add(point);

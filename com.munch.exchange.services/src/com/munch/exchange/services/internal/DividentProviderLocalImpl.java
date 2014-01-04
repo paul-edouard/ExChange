@@ -3,6 +3,7 @@ package com.munch.exchange.services.internal;
 import java.io.File;
 import java.util.LinkedList;
 
+import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.divident.Dividend;
@@ -111,7 +112,7 @@ public static void main(String[] args) {
 		DividentProviderLocalImpl divProvider=new DividentProviderLocalImpl();
 		
 		divProvider.load(stock);
-		for(Dividend div:stock.getHistoricalDividend()){
+		for(DatePoint div:stock.getHistoricalDividend()){
 			System.out.println(div);
 		}
 

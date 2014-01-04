@@ -1,40 +1,31 @@
 package com.munch.exchange.model.core.divident;
 
-import java.util.LinkedList;
+import com.munch.exchange.model.core.DatePoint;
+import com.munch.exchange.model.core.DatePointList;
+import com.munch.exchange.model.core.quote.QuotePoint;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import com.munch.exchange.model.xml.XmlElementIF;
-
-public class HistoricalDividend extends LinkedList<Dividend> implements
-		XmlElementIF {
+public class HistoricalDividend extends DatePointList<Dividend> {
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1064128402077353719L;
 	
+	@Override
+	protected DatePoint createPoint() {
+		return new QuotePoint();
+	}
+	/*
+	
 	public void sort(){
 		java.util.Collections.sort(this);
 	}
 	
 
-	/***********************************
-	 *                                 *
-	 *		       XML                 *
-	 *                                 *
-	 ***********************************/
-	/**
-	 * return the TAG Name used in the xml file
-	 */
+	
 	public String getTagName(){return this.getClass().getSimpleName();}
 	
-	/**
-	 * initializes the users map from a xml element
-	 */
+	
 	public void init(Element Root){
 		
 		if(Root.getTagName().equals(this.getTagName())){
@@ -62,9 +53,7 @@ public class HistoricalDividend extends LinkedList<Dividend> implements
 	}
 	
 	
-	/**
-	 * export the user map in a xml element
-	 */
+	
 	public Element toDomElement(Document doc){
 		Element e=doc.createElement(this.getTagName());
 			
@@ -79,5 +68,5 @@ public class HistoricalDividend extends LinkedList<Dividend> implements
 		return e;
 	  }
 
-	
+	*/
 }

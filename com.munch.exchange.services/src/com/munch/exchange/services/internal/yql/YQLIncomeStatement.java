@@ -18,38 +18,29 @@ public class YQLIncomeStatement extends YQLTable {
 	
 	//private String timeframe="quarterly";
 	
-	private FinancialPoint.Type timeframeType=FinancialPoint.Type.QUATERLY;
+	private String timeframeType=FinancialPoint.PeriodeTypeNone;
 	
 	public YQLIncomeStatement(String symbol){
 		this.symbol=symbol;
 	}
 	
 	public String getTimeFrame(){
-		switch(this.timeframeType){
-			case QUATERLY: 
-				return "quarterly";
-			case ANNUAL:
-				return "annual";
-			case NONE:
-				return "";
-		}
-		return "";
-	}
-	
-	
-	public void setTimeframeType(FinancialPoint.Type timeframeType) {
-		this.timeframeType = timeframeType;
-	}
-
-	public FinancialPoint.Type getTimeframeType() {
 		return timeframeType;
 	}
 
+	public String getTimeframeType() {
+		return timeframeType;
+	}
+
+	public void setTimeframeType(String timeframeType) {
+		this.timeframeType = timeframeType;
+	}
+
 	public void setTimeFrameToQuaterly(){
-		this.timeframeType=FinancialPoint.Type.QUATERLY;
+		this.timeframeType=FinancialPoint.PeriodeTypeQuaterly;
 	}
 	public void setTimeFrameToAnnual(){
-		this.timeframeType=FinancialPoint.Type.ANNUAL;
+		this.timeframeType=FinancialPoint.PeriodeTypeAnnual;
 	}
 	
 	@Override
@@ -93,12 +84,9 @@ public class YQLIncomeStatement extends YQLTable {
 				IncomeStatementPoint point=createPoint(json);
 				System.out.println(point);
 				
-				//TODO
-				//plist.add(this.createHisPoint(array.getJSONObject(i)));
-				//System.out.println(hisData.createHisPoint(array.getJSONObject(i)));
+				plist.add(point);
+				
 			}
-			
-			
 		}
 		
 		
@@ -144,7 +132,7 @@ public class YQLIncomeStatement extends YQLTable {
 			e.printStackTrace();
 		}
 		
-		point.setType(this.getTimeframeType());
+		point.setPeriodType(this.getTimeframeType());
 		point.setDate(point.getPeriodEnding());
 		
 		return point;

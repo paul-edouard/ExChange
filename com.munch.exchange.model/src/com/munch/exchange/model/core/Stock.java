@@ -3,6 +3,7 @@ package com.munch.exchange.model.core;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.divident.HistoricalDividend;
+import com.munch.exchange.model.core.financials.HistoricalIncomeStatement;
 import com.munch.exchange.model.tool.DateTool;
 
 public class Stock extends ExchangeRate {
@@ -21,6 +22,7 @@ public class Stock extends ExchangeRate {
 	private String parentSymbol,parentName="";
 	
 	protected HistoricalDividend historicalDividend=new HistoricalDividend();
+	protected HistoricalIncomeStatement historicalIncomeStatement= new HistoricalIncomeStatement();
 	
 	
 
@@ -56,6 +58,20 @@ public class Stock extends ExchangeRate {
 	}
 	
 	
+	public HistoricalIncomeStatement getHistoricalIncomeStatement() {
+		return historicalIncomeStatement;
+	}
+
+
+
+	public void setHistoricalIncomeStatement(
+			HistoricalIncomeStatement historicalIncomeStatement) {
+		//changes.firePropertyChange(FIELD, this.historicalIncomeStatement, this.historicalIncomeStatement = historicalIncomeStatement);
+		this.historicalIncomeStatement = historicalIncomeStatement;
+	}
+
+
+
 	public boolean isParentUpdateNeeded(){
 		if(!this.getParentSymbol().isEmpty() && !this.getParentSymbol().equals(this.getSymbol())){
 			if(this.getParentName()==null || this.getParentName().isEmpty())

@@ -1,36 +1,41 @@
-package com.munch.exchange.model.core.historical;
+package com.munch.exchange.model.core;
 
-import com.munch.exchange.model.core.DatePoint;
-import com.munch.exchange.model.core.DatePointList;
+import java.util.LinkedList;
 
-public class HistoricalData extends DatePointList<HistoricalPoint>  {
-	
-	
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.munch.exchange.model.xml.XmlElementIF;
+
+public abstract class DatePointList<E extends DatePoint> extends LinkedList<DatePoint> implements XmlElementIF {
+
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -5430509341617898712L;
-	
-	
-	@Override
-	protected DatePoint createPoint() {
-		return new HistoricalPoint();
-	}
-	
-	/*
+	private static final long serialVersionUID = -7311134818088146079L;
+
 	public void sort(){
 		java.util.Collections.sort(this);
 	}
 	
 
-	
+	/**
+	 * return the TAG Name used in the xml file
+	 */
 	@Override
 	public String getTagName() {
 		return this.getClass().getSimpleName();
 	}
 	
 	
+	protected abstract DatePoint createPoint();
 	
+	
+	/**
+	 * initializes the users map from a xml element
+	 */
 	public void init(Element Root){
 		
 		if(Root.getTagName().equals(this.getTagName())){
@@ -44,10 +49,12 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 					Element childElement=(Element)child;
 					
 					//Historical Point
-					HistoricalPoint point=new HistoricalPoint();
+					DatePoint point=createPoint();
 					if(childElement.getTagName().equals(point.getTagName())){
 						point.init(childElement);
+						
 						this.add(point);
+						
 					}
 					
 				}
@@ -55,20 +62,24 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 			
 			
 		}
+		
+		
+		
 	}
 	
 	
-	
+	/**
+	 * export the user map in a xml element
+	 */
 	public Element toDomElement(Document doc){
 		Element e=doc.createElement(this.getTagName());
 			
-		for(HistoricalPoint point : this){
+		for(DatePoint point : this){
 			Element h_p=point.toDomElement(doc);
 			e.appendChild(h_p);
 		}
 		
 		return e;
 	  }
-	*/
 
 }

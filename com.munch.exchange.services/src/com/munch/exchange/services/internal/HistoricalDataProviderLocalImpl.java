@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalData;
@@ -43,7 +44,7 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 			map.put(i, new HistoricalData());
 		}
 		
-		for(HistoricalPoint point:rate.getHistoricalData()){
+		for(DatePoint point:rate.getHistoricalData()){
 			int year_point=point.getDate().get(Calendar.YEAR);
 			HistoricalData hisData=map.get(year_point);
 			hisData.add(point);
@@ -212,7 +213,7 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 		ExchangeRateProviderLocalImpl provider=new ExchangeRateProviderLocalImpl();
 		provider.init("D:\\Paul\\04_Programierung\\03_Boerse\\01_PROG_DATA");
 		
-		ExchangeRate rate=provider.load("ADS.DE");
+		ExchangeRate rate=provider.load("DAI.DE");
 		Stock stock=(Stock) rate;
 		
 		HistoricalDataProviderLocalImpl dataProvider=new HistoricalDataProviderLocalImpl();
