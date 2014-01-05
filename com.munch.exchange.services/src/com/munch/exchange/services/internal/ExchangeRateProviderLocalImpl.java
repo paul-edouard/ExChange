@@ -134,7 +134,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		//Try to load the exchange rate from the local data
 		ExchangeRate xchangeRate=findLocalRateFromSymbol(symbol);
 		if(xchangeRate!=null){
-			System.out.println("The ExchangeRate was found localy:\n \""+xchangeRate);
+			System.out.println("The exchange rate was found localy: "+xchangeRate.getFullName());
 			update(xchangeRate);
 			return xchangeRate;
 		}

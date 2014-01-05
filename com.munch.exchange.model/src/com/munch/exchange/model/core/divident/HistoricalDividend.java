@@ -2,7 +2,6 @@ package com.munch.exchange.model.core.divident;
 
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.DatePointList;
-import com.munch.exchange.model.core.quote.QuotePoint;
 
 public class HistoricalDividend extends DatePointList<Dividend> {
 	
@@ -13,7 +12,7 @@ public class HistoricalDividend extends DatePointList<Dividend> {
 	
 	@Override
 	protected DatePoint createPoint() {
-		return new QuotePoint();
+		return new Dividend();
 	}
 	/*
 	

@@ -103,177 +103,200 @@ public class CashFlowPoint extends FinancialPoint {
 		return NetIncome;
 	}
 
-	public void setNetIncome(long NetIncome) {
-		changes.firePropertyChange(FIELD_NetIncome,
-				NetIncome,
-				NetIncome = NetIncome);
+	public void setNetIncome(long netIncome) {
+		changes.firePropertyChange(FIELD_NetIncome, this.NetIncome,
+				this.NetIncome = netIncome);
 	}
 
 	public long getDepreciation() {
 		return Depreciation;
 	}
 
-	public void setDepreciation(long Depreciation) {
-		changes.firePropertyChange(FIELD_Depreciation,
-				Depreciation, Depreciation = Depreciation);
+	public void setDepreciation(long depreciation) {
+		changes.firePropertyChange(FIELD_Depreciation, this.Depreciation,
+				this.Depreciation = depreciation);
 	}
+	
 
 	public long getAdjustmentsToNetIncome() {
 		return AdjustmentsToNetIncome;
 	}
 
-	public void setAdjustmentsToNetIncome(long AdjustmentsToNetIncome) {
-		changes.firePropertyChange(FIELD_AdjustmentsToNetIncome, AdjustmentsToNetIncome,
-				AdjustmentsToNetIncome = AdjustmentsToNetIncome);
+	public void setAdjustmentsToNetIncome(long adjustmentsToNetIncome) {
+		changes.firePropertyChange(FIELD_AdjustmentsToNetIncome,
+				this.AdjustmentsToNetIncome,
+				this.AdjustmentsToNetIncome = adjustmentsToNetIncome);
 	}
 
 	public long getChangesInAccountsReceivables() {
 		return ChangesInAccountsReceivables;
 	}
 
-	public void setChangesInAccountsReceivables(long ChangesInAccountsReceivables) {
-		changes.firePropertyChange(FIELD_ChangesInAccountsReceivables, ChangesInAccountsReceivables,
-				ChangesInAccountsReceivables = ChangesInAccountsReceivables);
+	public void setChangesInAccountsReceivables(long changesInAccountsReceivables) {
+		changes.firePropertyChange(FIELD_ChangesInAccountsReceivables,
+				this.ChangesInAccountsReceivables,
+				this.ChangesInAccountsReceivables = changesInAccountsReceivables);
 	}
 
 	public long getChangesInLiabilities() {
 		return ChangesInLiabilities;
 	}
 
-	public void setChangesInLiabilities(long ChangesInLiabilities) {
-		changes.firePropertyChange(FIELD_ChangesInLiabilities, ChangesInLiabilities,
-				ChangesInLiabilities = ChangesInLiabilities);
+	public void setChangesInLiabilities(long changesInLiabilities) {
+		changes.firePropertyChange(FIELD_ChangesInLiabilities,
+				this.ChangesInLiabilities,
+				this.ChangesInLiabilities = changesInLiabilities);
 	}
 
 	public long getChangesInInventories() {
 		return ChangesInInventories;
 	}
 
-	public void setChangesInInventories(long ChangesInInventories) {
-		changes.firePropertyChange(FIELD_ChangesInInventories, ChangesInInventories,
-				ChangesInInventories = ChangesInInventories);
+	public void setChangesInInventories(long changesInInventories) {
+		changes.firePropertyChange(FIELD_ChangesInInventories,
+				this.ChangesInInventories,
+				this.ChangesInInventories = changesInInventories);
 	}
 
 	public long getChangesInOtherOperatingActivities() {
 		return ChangesInOtherOperatingActivities;
 	}
 
-	public void setChangesInOtherOperatingActivities(long ChangesInOtherOperatingActivities) {
-		changes.firePropertyChange(FIELD_ChangesInOtherOperatingActivities, ChangesInOtherOperatingActivities,
-				ChangesInOtherOperatingActivities = ChangesInOtherOperatingActivities);
+	public void setChangesInOtherOperatingActivities(
+			long changesInOtherOperatingActivities) {
+		changes.firePropertyChange(
+				FIELD_ChangesInOtherOperatingActivities,
+				this.ChangesInOtherOperatingActivities,
+				this.ChangesInOtherOperatingActivities = changesInOtherOperatingActivities);
 	}
 
 	public long getTotalCashFlowFromOperatingActivities() {
 		return TotalCashFlowFromOperatingActivities;
 	}
 
-	public void setTotalCashFlowFromOperatingActivities(long TotalCashFlowFromOperatingActivities) {
-		changes.firePropertyChange(FIELD_TotalCashFlowFromOperatingActivities,
-				TotalCashFlowFromOperatingActivities,
-				TotalCashFlowFromOperatingActivities = TotalCashFlowFromOperatingActivities);
+	public void setTotalCashFlowFromOperatingActivities(
+			long totalCashFlowFromOperatingActivities) {
+		changes.firePropertyChange(
+				FIELD_TotalCashFlowFromOperatingActivities,
+				this.TotalCashFlowFromOperatingActivities,
+				this.TotalCashFlowFromOperatingActivities = totalCashFlowFromOperatingActivities);
 	}
 
 	public long getCapitalExpenditures() {
 		return CapitalExpenditures;
 	}
 
-	public void setCapitalExpenditures(long CapitalExpenditures) {
-		changes.firePropertyChange(FIELD_CapitalExpenditures, CapitalExpenditures, CapitalExpenditures = CapitalExpenditures);
+	public void setCapitalExpenditures(long capitalExpenditures) {
+		changes.firePropertyChange(FIELD_CapitalExpenditures,
+				this.CapitalExpenditures,
+				this.CapitalExpenditures = capitalExpenditures);
 	}
 
 	public long getInvestments() {
 		return Investments;
 	}
 
-	public void setInvestments(long Investments) {
-		changes.firePropertyChange(FIELD_Investments, Investments,
-				Investments = Investments);
+	public void setInvestments(long investments) {
+		changes.firePropertyChange(FIELD_Investments, this.Investments,
+				this.Investments = investments);
 	}
 
 	public long getOtherCashflowsfromInvestingActivities() {
 		return OtherCashflowsfromInvestingActivities;
 	}
 
-	public void setOtherCashflowsfromInvestingActivities(long OtherCashflowsfromInvestingActivities) {
-		changes.firePropertyChange(FIELD_OtherCashflowsfromInvestingActivities,
-				OtherCashflowsfromInvestingActivities,
-				OtherCashflowsfromInvestingActivities = OtherCashflowsfromInvestingActivities);
+	public void setOtherCashflowsfromInvestingActivities(
+			long otherCashflowsfromInvestingActivities) {
+		changes.firePropertyChange(
+				FIELD_OtherCashflowsfromInvestingActivities,
+				this.OtherCashflowsfromInvestingActivities,
+				this.OtherCashflowsfromInvestingActivities = otherCashflowsfromInvestingActivities);
 	}
 
 	public long getTotalCashFlowsFromInvestingActivities() {
 		return TotalCashFlowsFromInvestingActivities;
 	}
 
-	public void setTotalCashFlowsFromInvestingActivities(long TotalCashFlowsFromInvestingActivities) {
-		changes.firePropertyChange(FIELD_TotalCashFlowsFromInvestingActivities, TotalCashFlowsFromInvestingActivities,
-				TotalCashFlowsFromInvestingActivities = TotalCashFlowsFromInvestingActivities);
+	public void setTotalCashFlowsFromInvestingActivities(
+			long totalCashFlowsFromInvestingActivities) {
+		changes.firePropertyChange(
+				FIELD_TotalCashFlowsFromInvestingActivities,
+				this.TotalCashFlowsFromInvestingActivities,
+				this.TotalCashFlowsFromInvestingActivities = totalCashFlowsFromInvestingActivities);
 	}
 
 	public long getDividendsPaid() {
 		return DividendsPaid;
 	}
 
-	public void setDividendsPaid(long DividendsPaid) {
-		changes.firePropertyChange(FIELD_DividendsPaid,
-				DividendsPaid,
-				DividendsPaid = DividendsPaid);
+	public void setDividendsPaid(long dividendsPaid) {
+		changes.firePropertyChange(FIELD_DividendsPaid, this.DividendsPaid,
+				this.DividendsPaid = dividendsPaid);
 	}
 
 	public long getSalePurchaseofStock() {
 		return SalePurchaseofStock;
 	}
 
-	public void setSalePurchaseofStock(long SalePurchaseofStock) {
-		changes.firePropertyChange(FIELD_SalePurchaseofStock, SalePurchaseofStock,
-				SalePurchaseofStock = SalePurchaseofStock);
+	public void setSalePurchaseofStock(long salePurchaseofStock) {
+		changes.firePropertyChange(FIELD_SalePurchaseofStock,
+				this.SalePurchaseofStock,
+				this.SalePurchaseofStock = salePurchaseofStock);
 	}
 
 	public long getNetBorrowings() {
 		return NetBorrowings;
 	}
 
-	public void setNetBorrowings(long NetBorrowings) {
-		changes.firePropertyChange(FIELD_NetBorrowings, NetBorrowings,
-				NetBorrowings = NetBorrowings);
+	public void setNetBorrowings(long netBorrowings) {
+		changes.firePropertyChange(FIELD_NetBorrowings, this.NetBorrowings,
+				this.NetBorrowings = netBorrowings);
 	}
 
 	public long getOtherCashFlowsfromFinancingActivities() {
 		return OtherCashFlowsfromFinancingActivities;
 	}
 
-	public void setOtherCashFlowsfromFinancingActivities(long OtherCashFlowsfromFinancingActivities) {
-		changes.firePropertyChange(FIELD_OtherCashFlowsfromFinancingActivities,
-				OtherCashFlowsfromFinancingActivities,
-				OtherCashFlowsfromFinancingActivities = OtherCashFlowsfromFinancingActivities);
+	public void setOtherCashFlowsfromFinancingActivities(
+			long otherCashFlowsfromFinancingActivities) {
+		changes.firePropertyChange(
+				FIELD_OtherCashFlowsfromFinancingActivities,
+				this.OtherCashFlowsfromFinancingActivities,
+				this.OtherCashFlowsfromFinancingActivities = otherCashFlowsfromFinancingActivities);
 	}
 
 	public long getTotalCashFlowsFromFinancingActivities() {
 		return TotalCashFlowsFromFinancingActivities;
 	}
 
-	public void setTotalCashFlowsFromFinancingActivities(long TotalCashFlowsFromFinancingActivities) {
-		changes.firePropertyChange(FIELD_TotalCashFlowsFromFinancingActivities,
-				TotalCashFlowsFromFinancingActivities,
-				TotalCashFlowsFromFinancingActivities = TotalCashFlowsFromFinancingActivities);
+	public void setTotalCashFlowsFromFinancingActivities(
+			long totalCashFlowsFromFinancingActivities) {
+		changes.firePropertyChange(
+				FIELD_TotalCashFlowsFromFinancingActivities,
+				this.TotalCashFlowsFromFinancingActivities,
+				this.TotalCashFlowsFromFinancingActivities = totalCashFlowsFromFinancingActivities);
 	}
 
 	public long getEffectOfExchangeRateChanges() {
 		return EffectOfExchangeRateChanges;
 	}
 
-	public void setEffectOfExchangeRateChanges(long EffectOfExchangeRateChanges) {
+	public void setEffectOfExchangeRateChanges(long effectOfExchangeRateChanges) {
 		changes.firePropertyChange(FIELD_EffectOfExchangeRateChanges,
-				EffectOfExchangeRateChanges,
-				EffectOfExchangeRateChanges = EffectOfExchangeRateChanges);
+				this.EffectOfExchangeRateChanges,
+				this.EffectOfExchangeRateChanges = effectOfExchangeRateChanges);
 	}
 
 	public long getChangeInCashandCashEquivalents() {
 		return ChangeInCashandCashEquivalents;
 	}
 
-	public void setChangeInCashandCashEquivalents(long ChangeInCashandCashEquivalents) {
-		changes.firePropertyChange(FIELD_ChangeInCashandCashEquivalents, ChangeInCashandCashEquivalents,
-				ChangeInCashandCashEquivalents = ChangeInCashandCashEquivalents);
+	public void setChangeInCashandCashEquivalents(
+			long changeInCashandCashEquivalents) {
+		changes.firePropertyChange(
+				FIELD_ChangeInCashandCashEquivalents,
+				this.ChangeInCashandCashEquivalents,
+				this.ChangeInCashandCashEquivalents = changeInCashandCashEquivalents);
 	}
 
 	
@@ -304,6 +327,7 @@ public class CashFlowPoint extends FinancialPoint {
 				+ ", ChangeInCashandCashEquivalents=" + this.LongValueToString(ChangeInCashandCashEquivalents )
 				+ "]";
 	}
+
 
 	@Override
 	protected void initAttribute(Element rootElement) {

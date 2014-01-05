@@ -14,5 +14,28 @@ public interface IFinancialsProvider {
 
 	
 	boolean updateIncomeStatement(Stock stock);
+	
+	
+	// ==================================
+	// ==        BALANCE SHEET         ==
+	// ==================================
+
+
+	boolean loadBalanceSheet(Stock stock);
+
+	
+	boolean updateBalanceSheet(Stock stock);
+	
+	
+	
+	// ==================================
+	// ==          CASH FLOW           ==
+	// ==================================
+
+	boolean loadCashFlow(Stock stock);
+
+	
+	boolean updateCashFlow(Stock stock);
+
 
 }

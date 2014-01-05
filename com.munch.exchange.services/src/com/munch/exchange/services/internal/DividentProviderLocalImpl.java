@@ -41,6 +41,7 @@ public class DividentProviderLocalImpl implements IDividentProvider {
 			HistoricalDividend hisDiv=new HistoricalDividend();
 			if( Xml.load(hisDiv, localDivFile.getAbsolutePath())){
 				stock.setHistoricalDividend(hisDiv);
+				System.out.println("Dividents localy found for "+stock.getFullName());
 				update(stock);
 				return true;
 			}

@@ -16,8 +16,6 @@ public class YQLIncomeStatement extends YQLTable {
 	private static String table="yahoo.finance.incomestatement";
 	private static String format="&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
 	
-	//private String timeframe="quarterly";
-	
 	private String timeframeType=FinancialPoint.PeriodeTypeNone;
 	
 	public YQLIncomeStatement(String symbol){
@@ -72,6 +70,10 @@ public class YQLIncomeStatement extends YQLTable {
 	public LinkedList<IncomeStatementPoint> getPointList(){
 		
 		LinkedList<IncomeStatementPoint> plist=new LinkedList<IncomeStatementPoint>();
+		
+		if(this.getResult()==null)return plist;
+		
+		if(!this.getResult().has("incomestatement"))return plist;
 		
 		JSONObject incomestatement=this.getResult().getJSONObject("incomestatement");
 		if(incomestatement==null)return plist;
