@@ -3,22 +3,36 @@ package com.munch.exchange.services.internal.yql;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import com.munch.exchange.model.core.financials.FinancialPoint;
+
 public class YQLBalanceSheet extends YQLTable {
 
 	private static String table="yahoo.finance.balancesheet";
 	private static String format="&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
 	
-	private String timeframe="quarterly";
+	private String timeframeType=FinancialPoint.PeriodeTypeNone;
 	
 	public YQLBalanceSheet(String symbol){
 		this.symbol=symbol;
 	}
 
+	public String getTimeFrame(){
+		return timeframeType;
+	}
+
+	public String getTimeframeType() {
+		return timeframeType;
+	}
+
+	public void setTimeframeType(String timeframeType) {
+		this.timeframeType = timeframeType;
+	}
+
 	public void setTimeFrameToQuaterly(){
-		this.timeframe="quarterly";
+		this.timeframeType=FinancialPoint.PeriodeTypeQuaterly;
 	}
 	public void setTimeFrameToAnnual(){
-		this.timeframe="annual";
+		this.timeframeType=FinancialPoint.PeriodeTypeAnnual;
 	}
 	
 	@Override
@@ -27,7 +41,7 @@ public class YQLBalanceSheet extends YQLTable {
 			String baseUrl=YQL.URL;
 			String query = "select * from "+this.getTable()
 							+" where symbol=\""+this.symbol+"\""
-							+" and timeframe=\""+this.timeframe+"\"";
+							+" and timeframe=\""+this.getTimeFrame()+"\"";
 			
 			return baseUrl + URLEncoder.encode(query, "UTF-8") +this.getFormat();
 			} catch (UnsupportedEncodingException e) {

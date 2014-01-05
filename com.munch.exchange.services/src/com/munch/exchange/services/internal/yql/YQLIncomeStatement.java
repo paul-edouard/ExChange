@@ -82,7 +82,7 @@ public class YQLIncomeStatement extends YQLTable {
 			for(int i=0;i<array.length();i++){
 				JSONObject json=array.getJSONObject(i);
 				IncomeStatementPoint point=createPoint(json);
-				System.out.println(point);
+				//System.out.println(point);
 				
 				plist.add(point);
 				
