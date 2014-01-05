@@ -26,7 +26,9 @@ public class YQLAnalystEstimate extends YQLTable {
 	}
 
 	public static void main(String[] args) {
-		YQLAnalystEstimate analystEstimate=new YQLAnalystEstimate("yhoo");
+		//AOI
+		//YQLAnalystEstimate analystEstimate=new YQLAnalystEstimate("APPL");
+		YQLAnalystEstimate analystEstimate=new YQLAnalystEstimate("PRLB");
 		System.out.println(analystEstimate.getResult().toString(1));
 	}
 

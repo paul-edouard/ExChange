@@ -330,7 +330,7 @@ public static void main(String[] args) {
 		ExchangeRateProviderLocalImpl provider=new ExchangeRateProviderLocalImpl();
 		provider.init("D:\\Paul\\04_Programierung\\03_Boerse\\01_PROG_DATA");
 		
-		ExchangeRate rate=provider.load("YHOO");
+		ExchangeRate rate=provider.load("AOI");
 		Stock stock=(Stock) rate;
 		
 		
