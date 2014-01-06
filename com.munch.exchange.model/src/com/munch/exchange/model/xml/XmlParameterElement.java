@@ -60,7 +60,7 @@ public abstract class XmlParameterElement extends ParameterElement implements
 	 * save the child data in a xml element
 	 * @param rootElement
 	 */
-	protected abstract void appendChild(Element rootElement);
+	protected abstract void appendChild(Element rootElement,Document doc );
 	
 	/**
 	 * export the user map in a xml element
@@ -74,7 +74,7 @@ public abstract class XmlParameterElement extends ParameterElement implements
 		//Parameter
 		e.appendChild(this.getParameter().toDomElement(doc));
 		//child
-		this.appendChild(e);
+		this.appendChild(e,doc);
 		
 		return e;
 	  }

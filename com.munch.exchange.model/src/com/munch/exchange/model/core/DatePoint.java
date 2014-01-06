@@ -2,6 +2,7 @@ package com.munch.exchange.model.core;
 
 import java.util.Calendar;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.tool.DateTool;
@@ -13,6 +14,8 @@ public abstract class DatePoint extends XmlParameterElement implements Comparabl
 	
 	protected Calendar date=Calendar.getInstance();
 	
+	
+
 	public Calendar getDate() {
 		return date;
 	}
@@ -75,7 +78,7 @@ public abstract class DatePoint extends XmlParameterElement implements Comparabl
 	}
 
 	@Override
-	protected void appendChild(Element rootElement) {}
+	protected void appendChild(Element rootElement,Document doc) {}
 	
 
 }

@@ -2,6 +2,7 @@ package com.munch.exchange.model.core;
 
 import java.util.Calendar;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.historical.HistoricalData;
@@ -166,7 +167,7 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		rootElement.setAttribute(FIELD_Symbol, this.getSymbol());
 		rootElement.setAttribute(FIELD_Stock_Exchange, this.getStockExchange());
 	}
-	protected void appendChild(Element rootElement){
+	protected void appendChild(Element rootElement,Document doc){
 	}
 	
 	

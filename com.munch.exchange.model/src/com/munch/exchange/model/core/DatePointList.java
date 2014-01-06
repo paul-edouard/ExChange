@@ -16,22 +16,35 @@ public abstract class DatePointList<E extends DatePoint> extends LinkedList<Date
 	 */
 	private static final long serialVersionUID = -7311134818088146079L;
 
-	public void sort(){
-		java.util.Collections.sort(this);
+	private String tagName="";
+	
+	public DatePointList(String tagName){
+		this.tagName=tagName;
 	}
 	
-
+	public DatePointList(){
+	}
+	
+	
 	/**
 	 * return the TAG Name used in the xml file
 	 */
+	
 	@Override
 	public String getTagName() {
+		if(!tagName.isEmpty())
+			return tagName;
 		return this.getClass().getSimpleName();
 	}
+	
+
 	
 	
 	protected abstract DatePoint createPoint();
 	
+	public void sort(){
+		java.util.Collections.sort(this);
+	}
 	
 	/**
 	 * initializes the users map from a xml element

@@ -1,5 +1,6 @@
 package com.munch.exchange.model.core.analystestimation;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.xml.XmlParameterElement;
@@ -20,7 +21,24 @@ public class Estimation extends XmlParameterElement {
 	private float CurrentYear=Float.NaN;
 	private float NextYear=Float.NaN;
 	
+	private String tagName="";
 	
+	public Estimation(String tagName){
+		super();
+		this.tagName=tagName;
+	}
+	public Estimation(String tagName,Element childElement){
+		super();
+		this.tagName=tagName;
+		this.init(childElement);
+	}
+	//
+
+	@Override
+	public String getTagName() {
+		if(!tagName.isEmpty())return this.tagName;
+		return super.getTagName();
+	}
 
 	public float getCurrentQtr() {
 		return CurrentQtr;
@@ -57,7 +75,15 @@ public class Estimation extends XmlParameterElement {
 		changes.firePropertyChange(FIELD_NextYear, this.NextYear,
 				this.NextYear = nextYear);
 	}
+	
+	
 
+	@Override
+	public String toString() {
+		return "Estimation [CurrentQtr=" + CurrentQtr + ", NextQtr=" + NextQtr
+				+ ", CurrentYear=" + CurrentYear + ", NextYear=" + NextYear
+				+ ", tagName=" + tagName + "]";
+	}
 	@Override
 	protected void initAttribute(Element rootElement) {
 		this.setCurrentQtr(Float.parseFloat(rootElement.getAttribute(FIELD_CurrentQtr)));
@@ -79,6 +105,6 @@ public class Estimation extends XmlParameterElement {
 	}
 
 	@Override
-	protected void appendChild(Element rootElement) {}
+	protected void appendChild(Element rootElement,Document doc) {}
 
 }
