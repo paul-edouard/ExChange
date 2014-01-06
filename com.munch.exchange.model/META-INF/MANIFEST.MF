@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: MUNCH
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: com.munch.exchange.model.core,
+ com.munch.exchange.model.core.analystestimation,
  com.munch.exchange.model.core.divident,
  com.munch.exchange.model.core.financials,
  com.munch.exchange.model.core.historical,

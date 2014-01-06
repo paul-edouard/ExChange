@@ -21,7 +21,7 @@ public class EarningsHistory extends XmlParameterElement {
 	private EstimationPointList EPSActual=new EstimationPointList(FIELD_EPSActual);
 	
 	
-	private class EstimationPointList extends DatePointList<EstimationPoint>{
+	public class EstimationPointList extends DatePointList<EstimationPoint>{
 
 		private static final long serialVersionUID = -8818279385417606669L;
 		

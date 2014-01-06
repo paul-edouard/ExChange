@@ -1,5 +1,7 @@
 package com.munch.exchange.model.core.analystestimation;
 
+import java.util.Calendar;
+
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.DatePoint;
@@ -10,8 +12,17 @@ public class EstimationPoint extends DatePoint {
 static final String FIELD_Value="value";
 	
 	
-	private float value=0;
+	private float value=Float.NaN;
 	
+	
+	public EstimationPoint(){
+		super();
+	}
+	
+	public EstimationPoint(Calendar date,float value){
+		this.date=date;
+		this.value=value;
+	}
 
 	public float getValue() {
 		return value;
