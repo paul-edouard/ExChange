@@ -30,7 +30,7 @@ public class YQLKeystat extends YQLTable {
 	}
 
 	public static void main(String[] args) {
-		YQLKeystat keystat=new YQLKeystat("yhoo");
+		YQLKeystat keystat=new YQLKeystat("AAPL");
 		System.out.println(keystat.getResult().toString(1));
 	}
 
