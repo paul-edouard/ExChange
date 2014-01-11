@@ -33,9 +33,42 @@ public class EarningsHistory extends XmlParameterElement {
 		protected DatePoint createPoint() {
 			return new EstimationPoint();
 		}
+		
+		public boolean update(EstimationPointList other){
+			boolean isUpdated=false;
+			if(!this.getTagName().equals(other.getTagName()))
+				return isUpdated;
+			
+			for(DatePoint point : other){
+				if(!this.contains(point)){
+					this.add(point);this.sort();isUpdated=true;
+				}
+			}
+			return isUpdated;
+		}
+		
 	}
 	
-
+	
+	public boolean update(EarningsHistory other){
+		boolean isUpdated=false;
+		if(!this.getTagName().equals(other.getTagName()))
+			return isUpdated;
+		
+		if(this.getDifference().update(other.getDifference()))
+			isUpdated=true;
+		if(this.getSurprise().update(other.getSurprise()))
+			isUpdated=true;
+		if(this.getEPSEst().update(other.getEPSEst()))
+			isUpdated=true;
+		if(this.getEPSActual().update(other.getEPSActual()))
+			isUpdated=true;
+		
+		
+		return isUpdated;
+		
+	}
+	
 	public EstimationPointList getDifference() {
 		return Difference;
 	}

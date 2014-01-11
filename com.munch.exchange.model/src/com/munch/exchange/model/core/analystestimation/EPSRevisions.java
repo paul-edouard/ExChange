@@ -19,6 +19,28 @@ public class EPSRevisions extends XmlParameterElement {
 	private Estimation DownLast30Days=new Estimation(FIELD_DownLast30Days);
 	private Estimation DownLast90Days=new Estimation(FIELD_DownLast90Days);
 	
+	public boolean update(EPSRevisions other){
+		boolean isUpdated=false;
+		if(!this.getTagName().equals(other.getTagName()))
+			return isUpdated;
+		
+		//System.out.println(this);
+		//System.out.println(other);
+		
+		if(this.getUpLast7Days().update(other.getUpLast7Days()))
+			isUpdated=true;
+		if(this.getUpLast30Days().update(other.getUpLast30Days()))
+			isUpdated=true;
+		if(this.getDownLast30Days().update(other.getDownLast30Days()))
+			isUpdated=true;
+		if(this.getDownLast90Days().update(other.getDownLast90Days()))
+			isUpdated=true;
+		
+		//System.out.println("IsUpdated: "+isUpdated);
+		
+		return isUpdated;
+		
+	}
 	
 	public Estimation getUpLast7Days() {
 		return UpLast7Days;

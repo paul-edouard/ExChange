@@ -20,6 +20,26 @@ public class EarningsEst extends XmlParameterElement {
 	private Estimation LowEstimate=new Estimation(FIELD_LowEstimate);
 	private Estimation HighEstimate=new Estimation(FIELD_HighEstimate);
 	
+	
+	public boolean update(EarningsEst other){
+		boolean isUpdated=false;
+		if(!this.getTagName().equals(other.getTagName()))
+			return isUpdated;
+		
+		if(this.getNoofAnalysts().update(other.getNoofAnalysts()))
+			isUpdated=true;
+		if(this.getYearAgoEPS().update(other.getYearAgoEPS()))
+			isUpdated=true;
+		if(this.getAvgEstimate().update(other.getAvgEstimate()))
+			isUpdated=true;
+		if(this.getLowEstimate().update(other.getLowEstimate()))
+			isUpdated=true;
+		if(this.getHighEstimate().update(other.getHighEstimate()))
+			isUpdated=true;
+		
+		return isUpdated;
+	}
+	
 	public Estimation getNoofAnalysts() {
 		return NoofAnalysts;
 	}

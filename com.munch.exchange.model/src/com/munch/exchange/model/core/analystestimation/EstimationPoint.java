@@ -36,7 +36,7 @@ static final String FIELD_Value="value";
 	
 	@Override
 	public String toString() {
-		return "Dividend [date=" + DateTool.dateToString(getDate()) + ", value=" + value + "]";
+		return "[date=" + DateTool.dateToString(getDate()) + "; value=" + value+"]" ;
 	}
 
 	/***********************************

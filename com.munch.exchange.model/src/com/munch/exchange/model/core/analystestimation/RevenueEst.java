@@ -21,7 +21,28 @@ public class RevenueEst extends XmlParameterElement {
 	private Estimation LowEstimate=new Estimation(FIELD_LowEstimate);
 	private Estimation HighEstimate=new Estimation(FIELD_HighEstimate);
 	private Estimation SalesGrowth=new Estimation(FIELD_SalesGrowth);
-
+	
+	public boolean update(RevenueEst other){
+		boolean isUpdated=false;
+		if(!this.getTagName().equals(other.getTagName()))
+			return isUpdated;
+		
+		if(this.getYearAgoSales().update(other.getYearAgoSales()))
+			isUpdated=true;
+		if(this.getNoofAnalysts().update(other.getNoofAnalysts()))
+			isUpdated=true;
+		if(this.getAvgEstimate().update(other.getAvgEstimate()))
+			isUpdated=true;
+		if(this.getLowEstimate().update(other.getLowEstimate()))
+			isUpdated=true;
+		if(this.getHighEstimate().update(other.getHighEstimate()))
+			isUpdated=true;
+		if(this.getSalesGrowth().update(other.getSalesGrowth()))
+			isUpdated=true;
+		
+		
+		return isUpdated;
+	}
 	
 
 	public Estimation getYearAgoSales() {

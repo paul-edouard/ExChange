@@ -46,6 +46,29 @@ public class XmlHashMap<K, V> extends HashMap<K, V> implements XmlElementIF {
 	
 	
 
+	public boolean update(XmlHashMap<K, V> other){
+		boolean isUpdated=false;
+		if(!this.getTagName().equals(other.getTagName()))
+			return isUpdated;
+		
+		//System.out.println(this);
+		//System.out.println(other);
+		
+		for(K key : other.keySet()){
+			if(!this.containsKey(key) || !other.get(key).equals(this.get(key))){
+				this.put(key, other.get(key));
+				isUpdated=true;
+			}
+		}
+		
+		
+		//System.out.println("IsUpdated: "+isUpdated);
+		
+		return isUpdated;
+	}
+	
+
+
 	@Override
 	public Element toDomElement(Document doc) {
 		Element e=doc.createElement(this.getTagName());

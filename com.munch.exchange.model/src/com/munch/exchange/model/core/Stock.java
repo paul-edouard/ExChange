@@ -2,6 +2,7 @@ package com.munch.exchange.model.core;
 
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.analystestimation.AnalystEstimation;
 import com.munch.exchange.model.core.divident.HistoricalDividend;
 import com.munch.exchange.model.core.financials.Financials;
 import com.munch.exchange.model.tool.DateTool;
@@ -16,6 +17,7 @@ public class Stock extends ExchangeRate {
 	static final String FIELD_Parent_Symbol="parentSymbol";
 	
 	static final String FIELD_Financials="Financials";
+	static final String FIELD_AnalystEstimation="AnalystEstimation";
 	
 	//Data from YQLStocks
 	private String sector,industry="";
@@ -28,6 +30,20 @@ public class Stock extends ExchangeRate {
 	
 	protected Financials Financials=new Financials();
 	
+	protected AnalystEstimation AnalystEstimation =new AnalystEstimation();
+	
+	
+
+	public AnalystEstimation getAnalystEstimation() {
+		return AnalystEstimation;
+	}
+
+	public void setAnalystEstimation(AnalystEstimation analystEstimation) {
+		changes.firePropertyChange(FIELD_AnalystEstimation, this.AnalystEstimation,
+				this.AnalystEstimation = analystEstimation);
+	}
+
+
 
 	public String getSector() {
 		return sector;

@@ -27,6 +27,34 @@ public class GrowthEst extends XmlParameterElement {
 	XmlHashMap<String, Float> NextQtr=new XmlHashMap<String, Float>(FIELD_NextQtr,String.class,Float.class);
 	
 	
+	public boolean update(GrowthEst other){
+		boolean isUpdated=false;
+		if(!this.getTagName().equals(other.getTagName()))
+			return isUpdated;
+		
+		if(this.getPEGRatio().update(other.getPEGRatio()))
+			isUpdated=true;
+		if(this.getPriceEarnings().update(other.getPriceEarnings()))
+			isUpdated=true;
+		if(this.getPast5Years().update(other.getPast5Years()))
+			isUpdated=true;
+		if(this.getThisYear().update(other.getThisYear()))
+			isUpdated=true;
+		if(this.getCurrentQtr().update(other.getCurrentQtr()))
+			isUpdated=true;
+		if(this.getNext5Years().update(other.getNext5Years()))
+			isUpdated=true;
+		if(this.getNextYear().update(other.getNextYear()))
+			isUpdated=true;
+		if(this.getNextQtr().update(other.getNextQtr()))
+			isUpdated=true;
+		
+		
+		return isUpdated;
+		
+	}
+	
+	
 	public XmlHashMap<String, Float> getPEGRatio() {
 		return PEGRatio;
 	}

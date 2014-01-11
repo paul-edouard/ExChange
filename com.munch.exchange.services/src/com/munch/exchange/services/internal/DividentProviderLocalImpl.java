@@ -33,6 +33,8 @@ public class DividentProviderLocalImpl implements IDividentProvider {
 	
 	@Override
 	public boolean load(Stock stock) {
+		if(stock==null)return false;
+		if(stock.getDataPath()==null)return false;
 		if(stock.getDataPath().isEmpty())return false;
 		//if(!stock.getHistoricalData().isEmpty())return false;
 		
@@ -51,7 +53,7 @@ public class DividentProviderLocalImpl implements IDividentProvider {
 		YQLHistoricalData hisData=new YQLHistoricalData(stock.getSymbol(), stock.getStart(), stock.getEnd());
 		LinkedList<Dividend> dividents=hisData.getDividendList();
 		if(dividents.isEmpty()){
-			System.out.println("No divident found for the stock: "+stock.getName()+"("+stock.getSymbol()+")");
+			System.out.println("No divident found for the stock: "+stock.getFullName());
 			return false;
 		}
 		else{

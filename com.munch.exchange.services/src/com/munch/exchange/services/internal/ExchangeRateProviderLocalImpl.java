@@ -170,6 +170,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		YQLStocks yqlStocks=new YQLStocks(rate.getSymbol());
 		if(!yqlStocks.hasValidResult()){
 			System.out.println("Cannot find the symbol \""+rate.getSymbol()+"\" on YQL");
+			System.out.println(yqlStocks.getResult().toString(1));
 			return isUpdated;
 		}
 		

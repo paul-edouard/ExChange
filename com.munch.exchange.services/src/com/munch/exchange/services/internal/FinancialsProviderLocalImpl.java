@@ -116,6 +116,8 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 
 	@Override
 	public boolean loadIncomeStatement(Stock stock) {
+		if(stock==null)return false;
+		if(stock.getDataPath()==null)return false;
 		if(stock.getDataPath().isEmpty())return false;
 		//if(!stock.getHistoricalData().isEmpty())return false;
 		
@@ -187,6 +189,8 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 	
 	@Override
 	public boolean loadBalanceSheet(Stock stock) {
+		if(stock==null)return false;
+		if(stock.getDataPath()==null)return false;
 		if(stock.getDataPath().isEmpty())return false;
 		//if(!stock.getHistoricalData().isEmpty())return false;
 		
@@ -259,6 +263,8 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 
 	@Override
 	public boolean loadCashFlow(Stock stock) {
+		if(stock==null)return false;
+		if(stock.getDataPath()==null)return false;
 		if(stock.getDataPath().isEmpty())return false;
 		//if(!stock.getHistoricalData().isEmpty())return false;
 		
@@ -330,7 +336,11 @@ public static void main(String[] args) {
 		ExchangeRateProviderLocalImpl provider=new ExchangeRateProviderLocalImpl();
 		provider.init("D:\\Paul\\04_Programierung\\03_Boerse\\01_PROG_DATA");
 		
-		ExchangeRate rate=provider.load("AOI");
+		//AAPL
+		//R
+		//O
+		
+		ExchangeRate rate=provider.load("E");
 		Stock stock=(Stock) rate;
 		
 		
@@ -352,6 +362,9 @@ public static void main(String[] args) {
 		QuotePoviderLocalImpl quoteProvider = new QuotePoviderLocalImpl();
 		quoteProvider.load(stock);
 		
+		//Analyst Estimation
+		AnalystEstimationProviderLocalImpl aeProvider=new AnalystEstimationProviderLocalImpl();
+		aeProvider.load(stock);
 
 	}
 

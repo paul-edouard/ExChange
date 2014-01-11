@@ -78,6 +78,8 @@ public class YQLCashFlow extends YQLTable {
 		JSONObject incomestatement=this.getResult().getJSONObject("cashflow");
 		if(incomestatement==null)return plist;
 		
+		if(!incomestatement.has("statement"))return plist;
+		
 		if(incomestatement.get("statement") instanceof JSONArray){
 			JSONArray array=  incomestatement.getJSONArray("statement");
 			

@@ -78,6 +78,8 @@ public LinkedList<BalanceSheetPoint> getPointList(){
 		JSONObject incomestatement=this.getResult().getJSONObject("balancesheet");
 		if(incomestatement==null)return plist;
 		
+		if(!incomestatement.has("statement"))return plist;
+		
 		if(incomestatement.get("statement") instanceof JSONArray){
 			JSONArray array=  incomestatement.getJSONArray("statement");
 			

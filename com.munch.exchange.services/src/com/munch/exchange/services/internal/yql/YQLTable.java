@@ -42,6 +42,8 @@ public abstract  class  YQLTable {
 		JSONObject message=YQL.getJSONObject(createUrl());
 		if(message==null)return null;
 		
+		//System.out.println(message.toString(1));
+		
 		JSONObject query=message.getJSONObject("query");
 		if(query==null)return null;
 		
@@ -52,7 +54,7 @@ public abstract  class  YQLTable {
 		result=query.getJSONObject("results");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 			return null;
 		}
 		

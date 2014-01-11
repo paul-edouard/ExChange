@@ -7,9 +7,16 @@ import java.util.Date;
 import java.util.Locale;
 
 import com.munch.exchange.model.core.analystestimation.AnalystEstimation;
+import com.munch.exchange.model.core.analystestimation.EPSRevisions;
+import com.munch.exchange.model.core.analystestimation.EPSTrends;
+import com.munch.exchange.model.core.analystestimation.EarningsEst;
 import com.munch.exchange.model.core.analystestimation.EarningsHistory;
 import com.munch.exchange.model.core.analystestimation.EarningsHistory.EstimationPointList;
+import com.munch.exchange.model.core.analystestimation.Estimation;
 import com.munch.exchange.model.core.analystestimation.EstimationPoint;
+import com.munch.exchange.model.core.analystestimation.GrowthEst;
+import com.munch.exchange.model.core.analystestimation.RevenueEst;
+import com.munch.exchange.model.xml.XmlHashMap;
 import com.munch.exchange.services.internal.yql.json.JSONObject;
 
 public class YQLAnalystEstimate extends YQLTable {
@@ -40,38 +47,156 @@ public class YQLAnalystEstimate extends YQLTable {
 	
 	public AnalystEstimation getEstimation(){
 		
+		AnalystEstimation estimation = new AnalystEstimation();
+		
 		if (this.getResult() == null)
 			return null;
-		if (!this.getResult().has("EarningsHistory"))
+		if (!this.getResult().has("results"))
 			return null;
-		if (!this.getResult().has("GrowthEst"))
+		JSONObject res=this.getResult().getJSONObject("results");
+		
+		if (!res.has(estimation.getEarningsHistory().getTagName()))
 			return null;
-		if (!this.getResult().has("RevenueEst"))
+		searchEarningsHistory(estimation.getEarningsHistory(), res
+				.getJSONObject(estimation.getEarningsHistory().getTagName()));
+		
+		if (!res.has(estimation.getGrowthEst().getTagName()))
 			return null;
-		if (!this.getResult().has("EPSTrends"))
+		searchGrowthEst(estimation.getGrowthEst(), res
+				.getJSONObject(estimation.getGrowthEst().getTagName()) );
+		
+		if (!res.has(estimation.getRevenueEst().getTagName()))
 			return null;
-		if (!this.getResult().has("EPSRevisions"))
+		searchRevenueEst(estimation.getRevenueEst(), res
+				.getJSONObject(estimation.getRevenueEst().getTagName()) );
+		
+		if (!res.has(estimation.getEPSTrends().getTagName()))
 			return null;
-		if (!this.getResult().has("EarningsEst"))
+		searchEPSTrends(estimation.getEPSTrends(), res
+				.getJSONObject(estimation.getEPSTrends().getTagName()) );
+		
+		if (!res.has(estimation.getEPSRevisions().getTagName()))
 			return null;
+		searchEPSRevisions(estimation.getEPSRevisions(), res
+				.getJSONObject(estimation.getEPSRevisions().getTagName()) );
+		
+		if (!res.has(estimation.getEarningsEst().getTagName()))
+			return null;
+		searchEarningsEst(estimation.getEarningsEst(), res
+				.getJSONObject(estimation.getEarningsEst().getTagName()) );
 
-		AnalystEstimation estimation = new AnalystEstimation();
-		searchEarningsHistory(estimation.getEarningsHistory(), this.getResult()
-				.getJSONObject("EarningsHistory"));
+		/*
+		System.out.println("Estimation: "+estimation.getEarningsHistory());
+		System.out.println("Estimation: "+estimation.getGrowthEst());
+		System.out.println("Estimation: "+estimation.getRevenueEst());
+		System.out.println("Estimation: "+estimation.getEPSTrends());
+		System.out.println("Estimation: "+estimation.getEPSRevisions());
+		System.out.println("Estimation: "+estimation.getEarningsEst());
+		*/
 		
-		
-		
-		return null;
+		return estimation;
 	}
 	
-	private void searchEarningsHistory(EarningsHistory a,JSONObject obj){
+	private void searchEarningsEst(EarningsEst e, JSONObject obj) {
+		getEstimationData(e.getNoofAnalysts(),obj);
+		getEstimationData(e.getYearAgoEPS(),obj);
+		getEstimationData(e.getAvgEstimate(),obj);
+		getEstimationData(e.getLowEstimate(),obj);
+		getEstimationData(e.getHighEstimate(),obj);
+	}
+	
+	private void searchEPSRevisions(EPSRevisions e, JSONObject obj) {
+		getEstimationData(e.getUpLast7Days(),obj);
+		getEstimationData(e.getUpLast30Days(),obj);
+		getEstimationData(e.getDownLast30Days(),obj);
+		getEstimationData(e.getDownLast90Days(),obj);
 		
+	}
+	
+	private void searchEPSTrends(EPSTrends e, JSONObject obj) {
+		getEstimationData(e.getCurrentEstimate(),obj);
+		getEstimationData(e.get_7DaysAgo(),obj);
+		getEstimationData(e.get_30DaysAgo(),obj);
+		getEstimationData(e.get_60DaysAgo(),obj);
+		getEstimationData(e.get_90DaysAgo(),obj);
+	}
+	
+	
+	/**
+	 * Search the revenue estimation
+	 * @param e
+	 * @param obj
+	 */
+	private void searchRevenueEst(RevenueEst e, JSONObject obj){
+		getEstimationData(e.getYearAgoSales(),obj);
+		getEstimationData(e.getNoofAnalysts(),obj);
+		getEstimationData(e.getAvgEstimate(),obj);
+		getEstimationData(e.getLowEstimate(),obj);
+		getEstimationData(e.getHighEstimate(),obj);
+		getEstimationData(e.getSalesGrowth(),obj);
+	}
+	
+	private void getEstimationData(Estimation e, JSONObject obj){
+		if (!obj.has(e.getTagName()))return;
+		JSONObject e_obj=obj.getJSONObject(e.getTagName());
+		if(e_obj==null)return;
+		
+		if(e_obj.has(Estimation.FIELD_CurrentQtr)){
+			e.setCurrentQtr(this.getFloat(e_obj.getString(Estimation.FIELD_CurrentQtr)));
+		}
+		if(e_obj.has(Estimation.FIELD_NextQtr)){
+			e.setNextQtr(this.getFloat(e_obj.getString(Estimation.FIELD_NextQtr)));
+		}
+		if(e_obj.has(Estimation.FIELD_CurrentYear)){
+			e.setCurrentYear(this.getFloat(e_obj.getString(Estimation.FIELD_CurrentYear)));
+		}
+		if(e_obj.has(Estimation.FIELD_NextYear)){
+			e.setNextYear(this.getFloat(e_obj.getString(Estimation.FIELD_NextYear)));
+		}
+		
+	}
+	
+	/**
+	 * search the growth estimation
+	 * @param e
+	 * @param obj
+	 */
+	private void searchGrowthEst(GrowthEst e, JSONObject obj){
+		
+		getGrowthEstData(e.getPEGRatio(),obj);
+		getGrowthEstData(e.getPriceEarnings(),obj);
+		getGrowthEstData(e.getPast5Years(),obj);
+		getGrowthEstData(e.getThisYear(),obj);
+		getGrowthEstData(e.getCurrentQtr(),obj);
+		getGrowthEstData(e.getNext5Years(),obj);
+		getGrowthEstData(e.getNextYear(),obj);
+		getGrowthEstData(e.getNextQtr(),obj);
+		
+	}
+	
+	private void getGrowthEstData(XmlHashMap<String, Float> map,JSONObject obj){
+		if (!obj.has(map.getTagName()))return;
+		JSONObject map_obj=obj.getJSONObject(map.getTagName());
+		if(map_obj==null)return;
+		for(Object key:map_obj.keySet()){
+			if(!(key instanceof String))continue;
+			String key_str=(String)key;
+			map.put(key_str, this.getFloat(map_obj.getString(key_str)));
+		}
+	}
+	
+	/**
+	 * search the Earning History Data
+	 * 
+	 * @param a
+	 * @param obj
+	 */
+	private void searchEarningsHistory(EarningsHistory a,JSONObject obj){
 		
 		addToEstimationPointList(a,a.getDifference(),obj);
 		addToEstimationPointList(a,a.getSurprise(),obj);
 		addToEstimationPointList(a,a.getEPSEst(),obj);
 		addToEstimationPointList(a,a.getEPSActual(),obj);
-	
 		
 	}
 	
@@ -92,10 +217,35 @@ public class YQLAnalystEstimate extends YQLTable {
 	}
 	
 	private Float getFloat(String val){
+		if(val.contains(",") && val.contains(".") ){
+			val=val.replace(",", "");
+		}
+		
 		if(val.equals("N/A"))return Float.NaN;
+		else if(val.endsWith("B")){
+			Float val_f= Float.valueOf(val.replace("B", ""));
+			return val_f*1000000000;
+		}
+		else if(val.endsWith("M")){
+			Float val_f= Float.valueOf(val.replace("M", ""));
+			return val_f*1000000;
+		}
+		else if(val.endsWith("T")){
+			Float val_f= Float.valueOf(val.replace("T", ""));
+			return val_f*1000;
+		}
+		else if(val.endsWith("%")){
+			Float val_f= Float.valueOf(val.replace("%", ""));
+			return val_f;
+		}
 		else{
-			String withoutPer=val.replace("%", "");
-			return Float.valueOf(withoutPer);
+			try{
+			return Float.valueOf(val);
+			}
+			catch(Exception e){
+				e.printStackTrace();
+				return Float.NaN;
+			}
 		}
 	}
 	
@@ -129,8 +279,9 @@ public class YQLAnalystEstimate extends YQLTable {
 		//AOI
 		//YQLAnalystEstimate analystEstimate=new YQLAnalystEstimate("APPL");
 		//YQLAnalystEstimate analystEstimate=new YQLAnalystEstimate("R");
-		YQLAnalystEstimate analystEstimate=new YQLAnalystEstimate("T");
+		YQLAnalystEstimate analystEstimate=new YQLAnalystEstimate("R");
 		System.out.println(analystEstimate.getResult().toString(1));
+		analystEstimate.getEstimation();
 	}
 
 }

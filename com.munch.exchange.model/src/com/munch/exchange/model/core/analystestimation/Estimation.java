@@ -9,10 +9,10 @@ public class Estimation extends XmlParameterElement {
 	
 	
 	
-	static final String FIELD_CurrentQtr="CurrentQtr";
-	static final String FIELD_NextQtr="NextQtr";
-	static final String FIELD_CurrentYear="CurrentYear";
-	static final String FIELD_NextYear="NextYear";
+	public static final String FIELD_CurrentQtr="CurrentQtr";
+	public static final String FIELD_NextQtr="NextQtr";
+	public static final String FIELD_CurrentYear="CurrentYear";
+	public static final String FIELD_NextYear="NextYear";
 	
 	
 	private float CurrentQtr=Float.NaN;
@@ -33,6 +33,35 @@ public class Estimation extends XmlParameterElement {
 		this.init(childElement);
 	}
 	//
+	
+	
+	public boolean update(Estimation other){
+		boolean isUpdated=false;
+		if(!this.getTagName().equals(other.getTagName()))
+			return isUpdated;
+		
+		//System.out.println(this);
+		//System.out.println(other);
+		
+		if(   !Float.isNaN(other.CurrentQtr) &&  this.CurrentQtr!=other.CurrentQtr){
+			this.setCurrentQtr(other.CurrentQtr);isUpdated=true;
+		}
+		if( !Float.isNaN(other.NextQtr) &&this.NextQtr!=other.NextQtr){
+			this.setNextQtr(other.NextQtr);isUpdated=true;
+		}
+		if( !Float.isNaN(other.CurrentYear) &&this.CurrentYear!=other.CurrentYear){
+			this.setCurrentYear(other.CurrentYear);isUpdated=true;
+		}
+		if( !Float.isNaN(other.NextYear) &&this.NextYear!=other.NextYear){
+			this.setNextYear(other.NextYear);isUpdated=true;
+		}
+		
+		//System.out.println("IsUpdated: "+isUpdated);
+		
+		return isUpdated;
+		
+	}
+	
 
 	@Override
 	public String getTagName() {

@@ -23,7 +23,35 @@ public class AnalystEstimation extends XmlParameterElement {
 	private EPSRevisions EPSRevisions=new EPSRevisions();
 	private EarningsEst EarningsEst=new EarningsEst();
 	
-
+	
+	
+	public boolean update(AnalystEstimation other){
+		boolean isUpdated=false;
+		if(!this.getTagName().equals(other.getTagName()))
+			return isUpdated;
+		
+		if(this.getEarningsHistory().update(other.getEarningsHistory())){
+			isUpdated=true;System.out.println("New His Data");
+		}
+		if(this.getGrowthEst().update(other.getGrowthEst())){
+			isUpdated=true;System.out.println("getGrowthEst");
+		}
+		if(this.getRevenueEst().update(other.getRevenueEst())){
+			isUpdated=true;System.out.println("getRevenueEst");
+		}
+		if(this.getEPSTrends().update(other.getEPSTrends())){
+			isUpdated=true;System.out.println("getEPSTrends");
+		}
+		if(this.getEPSRevisions().update(other.getEPSRevisions())){
+			isUpdated=true;System.out.println("getEPSRevisions");
+		}
+		if(this.getEarningsEst().update(other.getEarningsEst())){
+			isUpdated=true;System.out.println("getEarningsEst");
+		}
+		
+		
+		return isUpdated;
+	}
 
 	public EarningsHistory getEarningsHistory() {
 		return EarningsHistory;

@@ -123,6 +123,8 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 	
 	@Override
 	public boolean load(ExchangeRate rate) {
+		if(rate==null)return false;
+		if(rate.getDataPath()==null)return false;
 		if(rate.getDataPath().isEmpty())return false;
 		
 		// load from local

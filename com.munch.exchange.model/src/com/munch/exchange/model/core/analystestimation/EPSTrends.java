@@ -21,6 +21,27 @@ public class EPSTrends extends XmlParameterElement {
 	private Estimation _90DaysAgo=new Estimation(FIELD__90DaysAgo);
 	
 	
+	public boolean update(EPSTrends other){
+		boolean isUpdated=false;
+		if(!this.getTagName().equals(other.getTagName()))
+			return isUpdated;
+		
+		if(this.getCurrentEstimate().update(other.getCurrentEstimate()))
+			isUpdated=true;
+		if(this.get_7DaysAgo().update(other.get_7DaysAgo()))
+			isUpdated=true;
+		if(this.get_30DaysAgo().update(other.get_30DaysAgo()))
+			isUpdated=true;
+		if(this.get_60DaysAgo().update(other.get_60DaysAgo()))
+			isUpdated=true;
+		if(this.get_90DaysAgo().update(other.get_90DaysAgo()))
+			isUpdated=true;
+		
+		
+		return isUpdated;
+		
+	}
+	
 	public Estimation getCurrentEstimate() {
 		return CurrentEstimate;
 	}
