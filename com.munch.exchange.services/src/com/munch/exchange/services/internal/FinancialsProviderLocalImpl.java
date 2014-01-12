@@ -371,8 +371,8 @@ public static void main(String[] args) {
 		//AAPL
 		//R
 		//O
-		//String[] list={"AAPL","R","O","GOOG","L","P","A"};
-		String[] list={"DAI.DE"};
+		//String[] list={"AAPL","R","O","GOOG","L","P","A","H"};
+		String[] list={"Q"};
 		
 		
 		for(int i=0;i<list.length;i++){

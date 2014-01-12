@@ -2,8 +2,10 @@ package com.munch.exchange.services.internal;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.xml.Xml;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -117,6 +119,10 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 				XRate=new Stock();
 			}
 			
+			if(Indice.class.getSimpleName().equals(rateClassName)){
+				XRate=new Indice();
+			}
+			
 			if(XRate!=null && Xml.load(XRate, localFile)){
 				XRate.setDataPath(localRateFiles.get(symbol).getParent());
 				return XRate;
@@ -141,18 +147,36 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		//Try to load the given symbol directly from YQL
 		YQLStocks yqlStocks=new YQLStocks(symbol);
-		if(!yqlStocks.hasValidResult()){
+		YQLQuotes yqlQuotes=new YQLQuotes(symbol);
+		if(!yqlStocks.hasValidResult() && yqlQuotes.getResult()==null){
 			System.out.println("Cannot find the symbol \""+symbol+"\" on YQL");
 			return null;
 		}
 		
-		ExchangeRate rate=yqlStocks.getExchangeRate();
-		//Search the company name
-		if(rate!=null){
-			YQLQuotes yqlQuotes=new YQLQuotes(symbol);
-			rate.setName(yqlQuotes.getName());
-			rate.setStockExchange(yqlQuotes.getStockExchange());
+		ExchangeRate rate=null;
+		
+		if(yqlStocks.hasValidResult()){
+			rate=yqlStocks.getExchangeRate();
+			//Search the company name
+			if(rate!=null){
+				rate.setName(yqlQuotes.getName());
+				rate.setStockExchange(yqlQuotes.getStockExchange());
+			}
 		}
+		else{
+			rate=new Indice();
+			rate.setName(yqlQuotes.getName());
+			rate.setSymbol(symbol);
+			rate.setStockExchange(yqlQuotes.getStockExchange());
+			
+			System.out.println(rate);
+			//rate.setEnd(yqlQuotes.getl);
+			//TODO
+			//System.out.println(yqlQuotes.getResult().toString(1));
+			
+		}
+		
+		if(rate==null)return null;
 		
 		//Save the new Exchange Rate:
 		if(this.save(rate))
@@ -208,9 +232,15 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			
 			
 		}
+		else if(rate instanceof Indice){
+			Indice indice=(Indice)rate;
+			
+			
+		}
+		
 		
 		if(isUpdated){
-			System.out.println("The ExchangeRate was updated:\n \""+rate);
+			System.out.println("The ExchangeRate was updated:\n \""+rate.getFullName());
 			if(this.save(rate)){
 				System.out.println("The new Data were automaticaly saved!");
 			}
@@ -222,6 +252,29 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		return false;
 	}
+	
+	
+	@Override
+	public LinkedList<ExchangeRate> loadAll(Class<? extends ExchangeRate> clazz) {
+		
+		LinkedList<ExchangeRate> rates=new LinkedList<ExchangeRate>();
+		
+		String path= this.workspace + File.separator
+				+ clazz.getSimpleName();
+		File dir=new File(path);
+		File[] er_dirs=dir.listFiles();
+		for(int i=0;i<er_dirs.length;i++){
+			if(er_dirs[i].isDirectory()){	
+				ExchangeRate rate=this.load(er_dirs[i].getName());
+				if(rate!=null){
+					rates.add(rate);
+				}
+			}
+		}
+		
+		return rates;
+	}
+
 
 	public static void main(String[] args) {
 		
@@ -232,8 +285,9 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		//ExchangeRate rate=provider.load("AMZ.DE");
 		
-		ExchangeRate rate=provider.load("DTE.DE");
+		ExchangeRate rate=provider.load("^GDAXI");
 		
+		//provider.loadAll(Stock.class);
 		
 		/*
 		if(rate instanceof Stock){
@@ -248,4 +302,6 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 
 	}
 
+
+	
 }

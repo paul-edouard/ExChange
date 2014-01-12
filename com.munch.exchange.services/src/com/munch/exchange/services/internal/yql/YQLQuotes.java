@@ -911,7 +911,9 @@ public class YQLQuotes  extends YQLTable {
 	
 	public static void main(String[] args) {
 			
-		YQLQuotes quote=new YQLQuotes("YHOO");
+		//YQLQuotes quote=new YQLQuotes("YHOO");
+		YQLQuotes quote=new YQLQuotes("^GDAXI");
+		
 	//	quote.addSymbol("YHOO");
 	//	quote.addSymbol("DAI.DE");//PAH3.DE
 	//	quote.addSymbol("CCC3.DE");

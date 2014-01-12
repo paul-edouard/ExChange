@@ -1,5 +1,7 @@
 package com.munch.exchange.services;
 
+import java.util.LinkedList;
+
 import com.munch.exchange.model.core.ExchangeRate;
 
 public interface IExchangeRateProvider {
@@ -39,6 +41,13 @@ public interface IExchangeRateProvider {
 	ExchangeRate load(String symbol);
 	
 	/**
+	 * load all local Exchange rate of a given type
+	 * @param clazz
+	 * @return
+	 */
+	LinkedList<ExchangeRate> loadAll(Class<? extends ExchangeRate> clazz);
+	
+	/**
 	 * search the last data on the web. If new data are available, those data
 	 * will be automatically updated and saved.
 	 * 
@@ -46,7 +55,6 @@ public interface IExchangeRateProvider {
 	 * @return true on success and false if case of failure
 	 */
 	boolean update(ExchangeRate rate);
-	//==================================
 	
 	
 	
