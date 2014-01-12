@@ -57,6 +57,12 @@ public class ContentAndTerm extends XmlParameterElement {
 	public void setTerm(String term) {
 		changes.firePropertyChange(FIELD_Term, this.Term, this.Term = term);
 	}
+	
+
+	@Override
+	public String toString() {
+		return "[Content=" + Content + ", Term=" + Term+ "]";
+	}
 
 	@Override
 	protected void initAttribute(Element rootElement) {

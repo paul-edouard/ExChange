@@ -51,6 +51,12 @@ public class AnalystEstimationProviderLocalImpl implements
 		//try to load the data from YQL
 		YQLAnalystEstimate yAE=new YQLAnalystEstimate(stock.getSymbol());
 		AnalystEstimation AE=yAE.getEstimation();
+		if(AE==null && !stock.getParentName().isEmpty()){
+			yAE=new YQLAnalystEstimate(stock.getParentName());
+			AE=yAE.getEstimation();
+		}
+		
+		
 		if(AE==null){
 			System.out.println("No analyst estimation found for the stock: "+stock.getFullName());
 			return false;
@@ -72,6 +78,10 @@ public class AnalystEstimationProviderLocalImpl implements
 		//try to load the data from YQL
 		YQLAnalystEstimate yAE=new YQLAnalystEstimate(stock.getSymbol());
 		AnalystEstimation AE=yAE.getEstimation();
+		if(AE==null && !stock.getParentName().isEmpty()){
+			yAE=new YQLAnalystEstimate(stock.getParentName());
+			AE=yAE.getEstimation();
+		}
 		if(AE!=null){
 			if(stock.getAnalystEstimation().update(AE)){
 				isUpdated=true;
@@ -80,7 +90,7 @@ public class AnalystEstimationProviderLocalImpl implements
 		
 		
 		if(isUpdated){
-			System.out.println("The analyst estimate were updated:\n \""+stock);
+			System.out.println("The analyst estimate were updated:\n \""+stock.getFullName());
 			if(this.save(stock)){
 				System.out.println("The analyst estimate Data were automaticaly saved!");
 			}

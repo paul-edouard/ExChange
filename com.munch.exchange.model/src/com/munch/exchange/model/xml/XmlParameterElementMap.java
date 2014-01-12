@@ -31,6 +31,7 @@ public abstract class XmlParameterElementMap extends HashMap<String, XmlElementI
 		
 		for(String  k  : this.keySet()){
 			XmlElementIF v = this.get(k);
+			if(v==null)continue;
 			
 			Element k_v_element=doc.createElement(FIELD_Element);
 			k_v_element.setAttribute(FIELD_Key,k);
@@ -57,10 +58,16 @@ public abstract class XmlParameterElementMap extends HashMap<String, XmlElementI
 					//DatePoint point=createPoint();
 					if(childElement.getTagName().equals(FIELD_Element)){
 						String key=childElement.getAttribute(FIELD_Key);
-						this.put(key , getValue((Element)childElement.getFirstChild()));
+						NodeList Childs=childElement.getChildNodes();
+						for(int j=0;j<Childs.getLength();j++){
+							Node c = Childs.item(j);
+							if(c instanceof Element){
+								this.put(key , getValue((Element)c));
+								break;
+							}
 						
+						}
 					}
-					
 				}
 			}
 			

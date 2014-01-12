@@ -77,6 +77,16 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		yql.setTimeFrameToAnnual();
 		LinkedList<IncomeStatementPoint> a_points=yql.getPointList();
 		
+		//Try to find value from the parent
+		if(q_points.isEmpty() && a_points.isEmpty() && !stock.getParentName().isEmpty()){
+			yql=new YQLIncomeStatement(stock.getParentName());
+			yql.setTimeFrameToQuaterly();
+			q_points=yql.getPointList();
+			yql.resetResult();
+			yql.setTimeFrameToAnnual();
+			a_points=yql.getPointList();
+		}
+		
 		LinkedList<IncomeStatementPoint> res=new LinkedList<IncomeStatementPoint>();
 		
 		res.addAll(a_points);res.addAll(q_points);
@@ -92,6 +102,17 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		yql.setTimeFrameToAnnual();
 		LinkedList<CashFlowPoint> a_points=yql.getPointList();
 		
+		//Try to find value from the parent
+		if(q_points.isEmpty() && a_points.isEmpty() && !stock.getParentName().isEmpty()){
+				yql=new YQLCashFlow(stock.getParentName());
+				yql.setTimeFrameToQuaterly();
+				q_points=yql.getPointList();
+				yql.resetResult();
+				yql.setTimeFrameToAnnual();
+				a_points=yql.getPointList();
+		}
+		
+		
 		LinkedList<CashFlowPoint> res=new LinkedList<CashFlowPoint>();
 		
 		res.addAll(a_points);res.addAll(q_points);
@@ -106,6 +127,17 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		yql.resetResult();
 		yql.setTimeFrameToAnnual();
 		LinkedList<BalanceSheetPoint> a_points=yql.getPointList();
+		
+		//Try to find value from the parent
+		if(q_points.isEmpty() && a_points.isEmpty() && !stock.getParentName().isEmpty()){
+				yql=new YQLBalanceSheet(stock.getParentName());
+				yql.setTimeFrameToQuaterly();
+				q_points=yql.getPointList();
+				yql.resetResult();
+				yql.setTimeFrameToAnnual();
+				a_points=yql.getPointList();
+		}
+		
 		
 		LinkedList<BalanceSheetPoint> res=new LinkedList<BalanceSheetPoint>();
 		
@@ -339,8 +371,15 @@ public static void main(String[] args) {
 		//AAPL
 		//R
 		//O
+		//String[] list={"AAPL","R","O","GOOG","L","P","A"};
+		String[] list={"DAI.DE"};
 		
-		ExchangeRate rate=provider.load("E");
+		
+		for(int i=0;i<list.length;i++){
+		
+		System.out.println("\nGetting Data: "+list[i]);
+			
+		ExchangeRate rate=provider.load(list[i]);
 		Stock stock=(Stock) rate;
 		
 		
@@ -365,6 +404,12 @@ public static void main(String[] args) {
 		//Analyst Estimation
 		AnalystEstimationProviderLocalImpl aeProvider=new AnalystEstimationProviderLocalImpl();
 		aeProvider.load(stock);
+		
+		//Key Statistics
+		KeyStatisticsProviderLocalImpl ksProvider=new KeyStatisticsProviderLocalImpl();
+		ksProvider.load(stock);
+		
+		}
 
 	}
 

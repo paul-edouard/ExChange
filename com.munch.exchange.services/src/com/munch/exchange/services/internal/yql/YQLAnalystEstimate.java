@@ -142,16 +142,24 @@ public class YQLAnalystEstimate extends YQLTable {
 		if(e_obj==null)return;
 		
 		if(e_obj.has(Estimation.FIELD_CurrentQtr)){
-			e.setCurrentQtr(this.getFloat(e_obj.getString(Estimation.FIELD_CurrentQtr)));
+			Object o=e_obj.get(Estimation.FIELD_CurrentQtr);
+			if(o instanceof String)
+				e.setCurrentQtr(this.getFloat((String)o));
 		}
 		if(e_obj.has(Estimation.FIELD_NextQtr)){
-			e.setNextQtr(this.getFloat(e_obj.getString(Estimation.FIELD_NextQtr)));
+			Object o=e_obj.get(Estimation.FIELD_NextQtr);
+			if(o instanceof String)
+				e.setNextQtr(this.getFloat((String)o));
 		}
 		if(e_obj.has(Estimation.FIELD_CurrentYear)){
-			e.setCurrentYear(this.getFloat(e_obj.getString(Estimation.FIELD_CurrentYear)));
+			Object o=e_obj.get(Estimation.FIELD_CurrentYear);
+			if(o instanceof String)
+				e.setCurrentYear(this.getFloat((String)o));
 		}
 		if(e_obj.has(Estimation.FIELD_NextYear)){
-			e.setNextYear(this.getFloat(e_obj.getString(Estimation.FIELD_NextYear)));
+			Object o=e_obj.get(Estimation.FIELD_NextYear);
+			if(o instanceof String)
+				e.setNextYear(this.getFloat((String)o));
 		}
 		
 	}

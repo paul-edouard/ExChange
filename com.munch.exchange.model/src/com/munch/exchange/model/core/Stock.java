@@ -5,6 +5,7 @@ import org.w3c.dom.Element;
 import com.munch.exchange.model.core.analystestimation.AnalystEstimation;
 import com.munch.exchange.model.core.divident.HistoricalDividend;
 import com.munch.exchange.model.core.financials.Financials;
+import com.munch.exchange.model.core.keystat.KeyStatistics;
 import com.munch.exchange.model.tool.DateTool;
 
 public class Stock extends ExchangeRate {
@@ -18,6 +19,7 @@ public class Stock extends ExchangeRate {
 	
 	static final String FIELD_Financials="Financials";
 	static final String FIELD_AnalystEstimation="AnalystEstimation";
+	static final String FIELD_KeyStatistics="KeyStatistics";
 	
 	//Data from YQLStocks
 	private String sector,industry="";
@@ -32,7 +34,19 @@ public class Stock extends ExchangeRate {
 	
 	protected AnalystEstimation AnalystEstimation =new AnalystEstimation();
 	
+	protected KeyStatistics KeyStatistics=new KeyStatistics();
 	
+	
+	
+	
+	public KeyStatistics getKeyStatistics() {
+		return KeyStatistics;
+	}
+
+	public void setKeyStatistics(KeyStatistics keyStatistics) {
+		changes.firePropertyChange(FIELD_KeyStatistics, this.KeyStatistics,
+				this.KeyStatistics = keyStatistics);
+	}
 
 	public AnalystEstimation getAnalystEstimation() {
 		return AnalystEstimation;

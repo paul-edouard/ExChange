@@ -83,8 +83,16 @@ public class YQLQuotes  extends YQLTable {
 	private JSONObject getCurrent(){
 		if(this.symbols.size()>1)
 			return this.getQuote().getJSONObject(currentQuote);
-		else
-			return this.getResult().getJSONObject("quote");
+		else{
+			if(this.getResult()==null)return null;
+			if(this.getResult().has("quote")){
+				Object q=this.getResult().get("quote");
+				if(q instanceof JSONObject){
+					return (JSONObject) q;
+				}
+			}
+			return null;
+		}
 	}	
 	
 	protected String getTable(){
