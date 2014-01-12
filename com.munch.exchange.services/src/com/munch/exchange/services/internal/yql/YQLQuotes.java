@@ -93,7 +93,9 @@ public class YQLQuotes  extends YQLTable {
 			}
 			return null;
 		}
-	}	
+	}
+	
+	
 	
 	protected String getTable(){
 		return table;
@@ -159,6 +161,13 @@ public class YQLQuotes  extends YQLTable {
 	
 	@Override
 	public boolean hasValidResult() {
+		if(this.getCurrent()==null)return false;
+		
+		if(!this.getCurrent().has("Name"))return false;
+		
+		if(!(this.getCurrent().get("Name") instanceof String))return false;
+		
+		
 		return this.getChange()!=Float.NaN;
 	}
 
@@ -202,6 +211,12 @@ public class YQLQuotes  extends YQLTable {
 	}
 
 	public float getDaysHigh() {
+		
+		if(!this.getCurrent().has("DaysHigh"))return Float.NaN;
+		
+		if(!(this.getCurrent().get("DaysHigh") instanceof Float))
+			return Float.NaN;
+		
 		try {
 			return this.getCurrent().getFloat("DaysHigh");
 		} catch (JSONException e) {
@@ -405,7 +420,9 @@ public class YQLQuotes  extends YQLTable {
 	}
 
 	public float getChange() {
+		if(this.getCurrent()==null)return Float.NaN;
 		try {
+			
 			return this.getCurrent().getFloat("Change");
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -441,6 +458,12 @@ public class YQLQuotes  extends YQLTable {
 	}
 
 	public float getYearHigh() {
+		
+		if(!this.getCurrent().has("YearHigh"))return Float.NaN;
+		
+		if(!(this.getCurrent().get("YearHigh") instanceof Float))
+			return Float.NaN;
+		
 		try {
 			return this.getCurrent().getFloat("YearHigh");
 		} catch (JSONException e) {
@@ -477,8 +500,18 @@ public class YQLQuotes  extends YQLTable {
 	}
 
 	public String getMarketCapitalization() {
+		
+		
+		if(!this.getCurrent().has("MarketCapitalization")){
+			return "";
+		}
+		
 		try {
+			Object obj=this.getCurrent().get("MarketCapitalization");
+			if(!(obj instanceof String))return "";
+			
 			return this.getCurrent().getString("MarketCapitalization");
+			
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return "";
@@ -621,6 +654,12 @@ public class YQLQuotes  extends YQLTable {
 	}
 
 	public float getDaysLow() {
+		
+		if(!this.getCurrent().has("DaysLow"))return Float.NaN;
+		
+		if(!(this.getCurrent().get("DaysLow") instanceof Float))
+			return Float.NaN;
+		
 		try {
 			return this.getCurrent().getFloat("DaysLow");
 		} catch (JSONException e) {
@@ -693,6 +732,12 @@ public class YQLQuotes  extends YQLTable {
 	}
 
 	public float getYearLow() {
+		
+		if(!this.getCurrent().has("YearLow"))return Float.NaN;
+		
+		if(!(this.getCurrent().get("YearLow") instanceof Float))
+			return Float.NaN;
+		
 		try {
 			return this.getCurrent().getFloat("YearLow");
 		} catch (JSONException e) {
@@ -711,6 +756,13 @@ public class YQLQuotes  extends YQLTable {
 	}
 
 	public long getVolume() {
+		
+		if(!this.getCurrent().has("Volume"))return 0;
+		
+		if(!(this.getCurrent().get("Volume") instanceof Float))
+			return 0;
+		
+		
 		try {
 			return this.getCurrent().getLong("Volume");
 		} catch (JSONException e) {
@@ -801,6 +853,7 @@ public class YQLQuotes  extends YQLTable {
 	}
 
 	public String getName() {
+		
 		try {
 			return this.getCurrent().getString("Name");
 		} catch (JSONException e) {
@@ -912,8 +965,10 @@ public class YQLQuotes  extends YQLTable {
 	public static void main(String[] args) {
 			
 		//YQLQuotes quote=new YQLQuotes("YHOO");
-		YQLQuotes quote=new YQLQuotes("^GDAXI");
+		//YQLQuotes quote=new YQLQuotes("EURUSD=X");
+		YQLQuotes quote=new YQLQuotes("GCJ14.CMX");
 		
+		//GCJ14.CMX
 	//	quote.addSymbol("YHOO");
 	//	quote.addSymbol("DAI.DE");//PAH3.DE
 	//	quote.addSymbol("CCC3.DE");
@@ -923,8 +978,9 @@ public class YQLQuotes  extends YQLTable {
 		
 		System.out.println("Date:"+quote.getLastTradeDate());
 		System.out.println("Time:"+quote.getLastTradeTime());
+		System.out.println("Name:"+quote.getLastTradeTime());
 		
-		System.out.println("Stock Exchange:"+quote.getStockExchange());
+		//System.out.println("Stock Exchange:"+quote.getStockExchange());
 		
 		
 		//System.out.println(quote.getCurrentQuotePoint());

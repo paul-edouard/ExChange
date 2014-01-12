@@ -1,10 +1,12 @@
 package com.munch.exchange.services.internal;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.xml.Xml;
@@ -122,6 +124,9 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			if(Indice.class.getSimpleName().equals(rateClassName)){
 				XRate=new Indice();
 			}
+			if(Fund.class.getSimpleName().equals(rateClassName)){
+				XRate=new Fund();
+			}
 			
 			if(XRate!=null && Xml.load(XRate, localFile)){
 				XRate.setDataPath(localRateFiles.get(symbol).getParent());
@@ -148,7 +153,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		//Try to load the given symbol directly from YQL
 		YQLStocks yqlStocks=new YQLStocks(symbol);
 		YQLQuotes yqlQuotes=new YQLQuotes(symbol);
-		if(!yqlStocks.hasValidResult() && yqlQuotes.getResult()==null){
+		if(!yqlStocks.hasValidResult() && !yqlQuotes.hasValidResult()){
 			System.out.println("Cannot find the symbol \""+symbol+"\" on YQL");
 			return null;
 		}
@@ -158,7 +163,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		if(yqlStocks.hasValidResult()){
 			rate=yqlStocks.getExchangeRate();
 			//Search the company name
-			if(rate!=null){
+			if(rate!=null && yqlQuotes.hasValidResult()){
 				rate.setName(yqlQuotes.getName());
 				rate.setStockExchange(yqlQuotes.getStockExchange());
 			}
@@ -168,11 +173,6 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			rate.setName(yqlQuotes.getName());
 			rate.setSymbol(symbol);
 			rate.setStockExchange(yqlQuotes.getStockExchange());
-			
-			System.out.println(rate);
-			//rate.setEnd(yqlQuotes.getl);
-			//TODO
-			//System.out.println(yqlQuotes.getResult().toString(1));
 			
 		}
 		
@@ -191,21 +191,27 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		boolean isUpdated=false;
 		
-		YQLStocks yqlStocks=new YQLStocks(rate.getSymbol());
-		if(!yqlStocks.hasValidResult()){
-			System.out.println("Cannot find the symbol \""+rate.getSymbol()+"\" on YQL");
-			//System.out.println(yqlStocks.getResult().toString(1));
-			return isUpdated;
-		}
 		
 		// Update the End Date from YQL
-		if(rate instanceof Stock){
-			Stock stock=(Stock)rate;
-			if(!stock.getEnd().equals(yqlStocks.getEndDate())){
-				stock.setEnd(yqlStocks.getEndDate());
+		if(rate instanceof Stock || rate instanceof Fund){
+			
+			
+			YQLStocks yqlStocks=new YQLStocks(rate.getSymbol());
+			YQLQuotes yql_Quotes=new YQLQuotes(rate.getSymbol());
+			if(!yqlStocks.hasValidResult() && yql_Quotes.getResult()==null){
+				System.out.println("Cannot find the symbol \""+rate.getSymbol()+"\" on YQL");
+				return isUpdated;
+			}
+			
+			
+			
+			if(!rate.getEnd().equals(yqlStocks.getEndDate())){
+				rate.setEnd(yqlStocks.getEndDate());
 				isUpdated=true;
 			}
 			
+			if(rate instanceof Stock){
+			Stock stock=(Stock)rate;
 			if(stock.isParentUpdateNeeded()){
 				YQLStocks yqlStockParent=new YQLStocks(stock.getParentSymbol());
 				if(!yqlStockParent.hasValidResult()){
@@ -228,19 +234,20 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 				}
 				
 			}
-			
+			}
 			
 			
 		}
+		//Update for Indice
 		else if(rate instanceof Indice){
 			Indice indice=(Indice)rate;
-			
-			
+			indice.setEnd(Calendar.getInstance());
+			isUpdated=true;
 		}
 		
 		
 		if(isUpdated){
-			System.out.println("The ExchangeRate was updated:\n \""+rate.getFullName());
+			System.out.println("The ExchangeRate was updated: "+rate.getFullName());
 			if(this.save(rate)){
 				System.out.println("The new Data were automaticaly saved!");
 			}

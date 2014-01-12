@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.services.internal.yql.json.JSONException;
 import com.munch.exchange.services.internal.yql.json.JSONObject;
@@ -134,10 +135,19 @@ public class YQLStocks extends YQLTable {
 		} catch (JSONException e) {e.printStackTrace();return null;}
 	}
 	public String getYeartoDateReturn(){
+		if(this.getStock().has("Year-to-DateReturn")){
 		try {
 		return this.getStock().getString("Year-to-DateReturn");
-		} catch (JSONException e) {e.printStackTrace();return null;}
+		} catch (JSONException e) {e.printStackTrace();}}
+		
+		if(this.getStock().has("Yield")){
+		try {
+			return this.getStock().getString("Yield");
+		} catch (JSONException e) {e.printStackTrace();}}
+		
+		return "";
 	}
+	
 	
 	
 	public ExchangeRate getExchangeRate(){
@@ -151,7 +161,16 @@ public class YQLStocks extends YQLTable {
 			return stock;
 		}
 		else if(this.isFund()){
-			return null;
+			Fund fund=new Fund();
+			fund.setSymbol(this.getSymbol());
+			fund.setEnd(this.getEndDate());
+			fund.setStart(this.getStartDate());
+			
+			fund.setCategory(getCategory());
+			fund.setNetAssets(getNetAssets());
+			fund.setYeartoDateReturn(getYeartoDateReturn());
+			fund.setFundFamily(getFundFamily());
+			return fund;
 		}
 		return null;
 	}
@@ -159,7 +178,7 @@ public class YQLStocks extends YQLTable {
 	public static void main(String[] args) {
 		//YQLStocks stocks=new YQLStocks("CTYRX");
 		//YQLStocks stocks=new YQLStocks("AMZN");
-		YQLStocks stocks=new YQLStocks("CTYRX");
+		YQLStocks stocks=new YQLStocks("EURUSD=X");
 		//YHO.DE
 		//"YHOO"
 		//AAPL
