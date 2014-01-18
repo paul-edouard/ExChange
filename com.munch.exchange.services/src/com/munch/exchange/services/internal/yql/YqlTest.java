@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 
 import com.munch.exchange.services.internal.yql.json.JSONObject;
 import com.munch.exchange.services.internal.yql.json.JSONTokener;
@@ -21,7 +20,10 @@ public class YqlTest {
 		String fullUrlStr;
 		URL fullUrl;
 		try {
-			fullUrlStr = baseUrl + URLEncoder.encode(query, "UTF-8") + "&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
+			//fullUrlStr = baseUrl + URLEncoder.encode(query, "UTF-8") + "&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
+			
+			fullUrlStr="http://www.onvista.de/rohstoffe/kursliste.html?ID_NOTATION=24877915&RANGE=6M";
+			
 			fullUrl = new URL(fullUrlStr);
 			
 			InputStream is = fullUrl.openStream();

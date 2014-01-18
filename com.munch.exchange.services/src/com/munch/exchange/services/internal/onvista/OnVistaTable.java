@@ -1,4 +1,4 @@
-package com.munch.exchange.services.internal.yql;
+package com.munch.exchange.services.internal.onvista;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -8,50 +8,30 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.LinkedList;
 
-public class YahooFinance {
-	
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+public class OnVistaTable {
 	
 	public static final int bufferSize=1000;
 	
 	
 	//private static String quote_url="http://finance.yahoo.com/d/quotes.csv?s=";
 	
-	private static String quote_url="http://ichart.finance.yahoo.com/table.csv?s=";
 	
+	public OnVistaTable() {
 	
-	private LinkedList<String> stocks=new LinkedList<String>();
-	
-	private String options="snd1l1yrk2";
-	
-	
-
-	
-	public YahooFinance(String stock) {
-		super();
-		stocks.add(stock);
 	}
-	
-	public void addStock(String stock){
-		stocks.add(stock);
-	}
-	
 	
 	public String createUrl(){
-		//return quote_url+"DAI.DE&a=03&c=2010&d=03&e=24&f=2013&g=v&ignore=.csv";
-		return "http://www.onvista.de/rohstoffe/kursliste.html?ID_NOTATION=24877915&RANGE=6M";
-		/*
-		String stocks_str="";
-		for(String stock :stocks ){
-			stocks_str+=stock+"+";
-		}
-		stocks_str=stocks_str.substring(0, stocks_str.lastIndexOf("+"));
-		return quote_url+stocks_str+"&f="+options;
-		*/
+		return "http://www.onvista.de/rohstoffe/kursliste.html?ID_NOTATION=24877915&RANGE=6M";	
 	}
 	
-	public String getCurrentQuotes(){
+	public Element getHtmlPage(){
 		
 		try {
 		
@@ -72,13 +52,19 @@ public class YahooFinance {
 		// Input
 		DataInputStream dataIn = new DataInputStream(connection.getInputStream());
 		
+		
+		DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder=factory.newDocumentBuilder();
+		
+		Document doc=builder.parse(dataIn);
+		return doc.getDocumentElement();
 		///BufferedReader reader = new BufferedReader(new Read
-		return slurp(dataIn,bufferSize);
+		//return slurp(dataIn,bufferSize);
 		
 		
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "None!";
+			return null;
 		}
 	}
 	
@@ -111,10 +97,11 @@ public class YahooFinance {
 	}
 
 	public static void main(String[] args) {
-		YahooFinance j=new YahooFinance("GE");j.addStock("FDAX.EX");
-		System.out.println(j.createUrl());
+		OnVistaTable j=new OnVistaTable();
+		System.out.println(j.getHtmlPage());
 		
-		System.out.println(j.getCurrentQuotes());
+		
+		
 
 	}
 
