@@ -6,4 +6,5 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: MUNCH
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Require-Bundle: com.munch.exchange.model;bundle-version="1.0.0"
+Require-Bundle: com.munch.exchange.model;bundle-version="1.0.0",
+ com.munch.exchange.libs;bundle-version="1.0.0"

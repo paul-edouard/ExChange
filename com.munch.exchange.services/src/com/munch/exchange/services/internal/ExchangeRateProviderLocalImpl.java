@@ -5,6 +5,9 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
@@ -14,6 +17,7 @@ import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.internal.yql.YQLQuotes;
 import com.munch.exchange.services.internal.yql.YQLStocks;
 
+
 public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	
 	
@@ -21,10 +25,12 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	final private static String ExchangeRateStr="ExchangeRate.xml";
 	
 	
+	private static Logger logger = Logger.getLogger(ExchangeRateProviderLocalImpl.class);
 	
 	@Override
 	public void init(String workspace) {
 		this.workspace=workspace;
+		
 	}
 	
 	
@@ -59,8 +65,9 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		if(dir==null)return false;
 		String exchangeRateFile=dir.getAbsolutePath()+File.separator+ExchangeRateStr;
 		rate.setDataPath(dir.getAbsolutePath());
-		System.out.println("Writing file: "+exchangeRateFile);
-		// TODO Auto-generated method stub
+		logger.info("Writing file: "+exchangeRateFile);
+		//System.out.println("Writing file: "+exchangeRateFile);
+		
 		return Xml.save(rate, exchangeRateFile);
 	}
 	
@@ -145,7 +152,9 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		//Try to load the exchange rate from the local data
 		ExchangeRate xchangeRate=findLocalRateFromSymbol(symbol);
 		if(xchangeRate!=null){
-			System.out.println("The exchange rate was found localy: "+xchangeRate.getFullName());
+			//System.out.println("The exchange rate was found localy: "+xchangeRate.getFullName());
+			logger.info("The exchange rate was found localy: "+xchangeRate.getFullName());
+			
 			update(xchangeRate);
 			return xchangeRate;
 		}
@@ -154,7 +163,8 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		YQLStocks yqlStocks=new YQLStocks(symbol);
 		YQLQuotes yqlQuotes=new YQLQuotes(symbol);
 		if(!yqlStocks.hasValidResult() && !yqlQuotes.hasValidResult()){
-			System.out.println("Cannot find the symbol \""+symbol+"\" on YQL");
+			//System.out.println("Cannot find the symbol \""+symbol+"\" on YQL");
+			logger.info("Cannot find the symbol \""+symbol+"\" on YQL");
 			return null;
 		}
 		
@@ -199,7 +209,8 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			YQLStocks yqlStocks=new YQLStocks(rate.getSymbol());
 			YQLQuotes yql_Quotes=new YQLQuotes(rate.getSymbol());
 			if(!yqlStocks.hasValidResult() && yql_Quotes.getResult()==null){
-				System.out.println("Cannot find the symbol \""+rate.getSymbol()+"\" on YQL");
+				logger.info("Cannot find the symbol \""+rate.getSymbol()+"\" on YQL");
+				//System.out.println("Cannot find the symbol \""+rate.getSymbol()+"\" on YQL");
 				return isUpdated;
 			}
 			
@@ -215,7 +226,8 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			if(stock.isParentUpdateNeeded()){
 				YQLStocks yqlStockParent=new YQLStocks(stock.getParentSymbol());
 				if(!yqlStockParent.hasValidResult()){
-					System.out.println("Cannot find the given parent symbol \""+stock.getParentSymbol()+"\" on YQL");
+					logger.info("Cannot find the given parent symbol \""+stock.getParentSymbol()+"\" on YQL");
+					//System.out.println("Cannot find the given parent symbol \""+stock.getParentSymbol()+"\" on YQL");
 				}
 				else{
 					YQLQuotes yqlQuotes=new YQLQuotes(stock.getParentSymbol());
@@ -247,12 +259,12 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		
 		if(isUpdated){
-			System.out.println("The ExchangeRate was updated: "+rate.getFullName());
+			logger.info("The ExchangeRate was updated: "+rate.getFullName());
 			if(this.save(rate)){
-				System.out.println("The new Data were automaticaly saved!");
+				logger.info("The new Data were automaticaly saved!");
 			}
 			else{
-				System.out.println("Error: cannot save the updated data!");
+				logger.info("Error: cannot save the updated data!");
 				return false;
 			}
 		}
@@ -285,6 +297,11 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 
 	public static void main(String[] args) {
 		
+		//ExchangeRateProviderLocalImpl.logger.setLevel(Level.INFO);
+		
+		// Set up a simple configuration that logs on the console.
+	    BasicConfigurator.configure();
+
 		
 		ExchangeRateProviderLocalImpl provider=new ExchangeRateProviderLocalImpl();
 		provider.init("D:\\Paul\\04_Programierung\\03_Boerse\\01_PROG_DATA");

@@ -9,11 +9,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 public class OnVistaTable {
 	
@@ -28,10 +27,10 @@ public class OnVistaTable {
 	}
 	
 	public String createUrl(){
-		return "http://www.onvista.de/rohstoffe/kursliste.html?ID_NOTATION=24877915&RANGE=6M";	
+		return "http://www.onvista.de/rohstoffe/kursliste.html?ID_NOTATION=24877915&RANGE=24M";	
 	}
 	
-	public Element getHtmlPage(){
+	public String getHtmlPage(){
 		
 		try {
 		
@@ -53,13 +52,8 @@ public class OnVistaTable {
 		DataInputStream dataIn = new DataInputStream(connection.getInputStream());
 		
 		
-		DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
-		DocumentBuilder builder=factory.newDocumentBuilder();
-		
-		Document doc=builder.parse(dataIn);
-		return doc.getDocumentElement();
 		///BufferedReader reader = new BufferedReader(new Read
-		//return slurp(dataIn,bufferSize);
+		return slurp(dataIn,bufferSize);
 		
 		
 		} catch (Exception e) {
@@ -98,8 +92,15 @@ public class OnVistaTable {
 
 	public static void main(String[] args) {
 		OnVistaTable j=new OnVistaTable();
-		System.out.println(j.getHtmlPage());
+		String html=j.getHtmlPage();
+		System.out.println(html);
 		
+		Document doc = Jsoup.parse(html);
+		System.out.println(doc.getAllElements().size());
+		Elements table=doc.getElementsByTag("table");
+		for(Element e:doc.getElementsByTag("tr")){
+			System.out.println(e.nodeName()+": "+e.text());
+		}
 		
 		
 
