@@ -8,26 +8,56 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Calendar;
+import java.util.LinkedList;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+
+import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.tool.DateTool;
 
 public class OnVistaTable {
 	
 	public static final int bufferSize=1000;
 	
 	
+	private Calendar startDate;
+	private String interval="Y1";
+	private String notationId="";
+	
+	
 	//private static String quote_url="http://finance.yahoo.com/d/quotes.csv?s=";
 	
+	LinkedList<HistoricalPoint> plist=null;
 	
-	public OnVistaTable() {
+	public OnVistaTable(String notationId, Calendar startDate, String interval) {
+		this.notationId=notationId;
+		this.startDate=startDate;
+		this.interval=interval;
+	}
 	
+	public OnVistaTable(String notationId, Calendar startDate) {
+		this.notationId=notationId;
+		this.startDate=startDate;
 	}
 	
 	public String createUrl(){
-		return "http://www.onvista.de/rohstoffe/kursliste.html?ID_NOTATION=24877915&RANGE=24M";	
+		//return "http://www.onvista.de/rohstoffe/kursliste.html?ID_NOTATION=24877915&RANGE=24M";
+		//http://www.onvista.de/onvista/times+sales/popup/historische-kurse/?notationId=8381868&dateStart=01.01.2014&interval=M1
+		
+		//String url="http://www.onvista.de/onvista/boxes/historicalquote/export.csv?";
+		String url="http://www.onvista.de/onvista/times+sales/popup/historische-kurse/?";
+		url+="notationId="+this.notationId;
+		url+="&dateStart="+DateTool.OnVistadateToDayString(this.startDate);
+		url+="&interval="+this.interval;
+		url+="&assetName=Dollarkurs&exchange=außerbörslich";
+		//System.out.println("Url: "+url);
+		
+		return url;
+		
+		
 	}
 	
 	public String getHtmlPage(){
@@ -89,18 +119,83 @@ public class OnVistaTable {
 	  }
 	  return out.toString();
 	}
-
-	public static void main(String[] args) {
-		OnVistaTable j=new OnVistaTable();
-		String html=j.getHtmlPage();
-		System.out.println(html);
+	
+	
+	public HistoricalPoint createHistoricalPoint(String line){
+		
+			
+		//System.out.println(line);
+		
+			HistoricalPoint point=new HistoricalPoint();
+			
+			String[] data=line.split(";");
+			if(data.length!=6 || data[0].equals("Datum"))return null;
+			
+			for(int i=1;i<6;i++){
+				data[i]=data[i].replace(".", "").replace(",", ".");
+			}
+			point.setDate(DateTool.OnVistaStringToDay(data[0]));
+			
+			point.setOpen(Float.parseFloat(data[1]));
+			point.setLow(Float.parseFloat(data[2]));
+			point.setHigh(Float.parseFloat(data[3]));
+			point.setClose(Float.parseFloat(data[4]));
+			point.setVolume(Long.parseLong(data[5]));
+			
+			//System.out.println(point);
+			
+			return point;
+		
+	}
+	
+	public LinkedList<HistoricalPoint> getHisPointList(){
+		if(plist!=null)return plist;
+		
+		plist=new LinkedList<HistoricalPoint>();
+		
+		String html=this.getHtmlPage();
+	//	System.out.println(html);
+		if(html==null || html.isEmpty())
+			return plist;
+		
 		
 		Document doc = Jsoup.parse(html);
-		System.out.println(doc.getAllElements().size());
-		Elements table=doc.getElementsByTag("table");
-		for(Element e:doc.getElementsByTag("tr")){
-			System.out.println(e.nodeName()+": "+e.text());
+		for(Element e:doc.getAllElements()){
+			if(e.nodeName().equals("tr")){
+				HistoricalPoint point=createHistoricalPoint(e.text().replace(" ", ";"));
+				if(point!=null){
+					plist.add(point);
+				}
+			}
 		}
+		/*
+		String[] lines=html.split("\n");
+		
+		for(int i=0;i<lines.length;i++){
+			//System.out.println(e.nodeName()+": "+e.text());
+			HistoricalPoint point=createHistoricalPoint(lines[i]);
+			if(point!=null){
+				plist.add(point);
+			}
+			
+		}
+		*/
+		return plist;
+	}
+	
+
+	public static void main(String[] args) {
+		
+		//24877915
+		OnVistaTable j=new OnVistaTable("24877915", DateTool.OnVistaStringToDay("01.01.2013"));
+		//OnVistaTable j=new OnVistaTable("8381868", DateTool.OnVistaStringToDay("01.01.2013"));
+		//System.out.println(j.getHtmlPage());
+		
+		for(HistoricalPoint p: j.getHisPointList()){
+			System.out.println(p);
+		}
+		
+		
 		
 		
 

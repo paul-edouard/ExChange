@@ -39,6 +39,35 @@ public class DateTool {
 		return format.format(date.getTime());
 	}
 	
+	public static String OnVistadateToDayString(Calendar date){
+		SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy");
+		return format.format(date.getTime());
+	}
+	
+	
+	public static Calendar OnVistaStringToDay(String dateStr){
+		SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy");
+		try {
+			Date d=format.parse(dateStr);
+			if(d!=null){
+				Calendar date=Calendar.getInstance();
+				date.setTime(d);
+				date.set(Calendar.MILLISECOND, 0);
+				date.set(Calendar.HOUR_OF_DAY, 0);
+				date.set(Calendar.MINUTE, 0);
+				date.set(Calendar.SECOND, 0);
+				
+				return date;
+			}
+			return null;
+			
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();return null;
+		}
+		
+	}
+	
 	public static Calendar StringToDay(String dateStr){
 		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
 		try {

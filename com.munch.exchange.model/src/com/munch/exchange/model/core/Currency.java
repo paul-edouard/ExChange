@@ -2,6 +2,8 @@ package com.munch.exchange.model.core;
 
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.tool.DateTool;
+
 public class Currency extends ExchangeRate{
 	
 	static final String FIELD_Category="Category";
@@ -11,6 +13,12 @@ public class Currency extends ExchangeRate{
 	private String OnVistaId="";
 	
 	
+	public Currency() {
+		super();
+		
+		this.setStart(DateTool.StringToDay("1990-01-01"));
+		
+	}
 	
 	public String getOnVistaId() {
 		return OnVistaId;

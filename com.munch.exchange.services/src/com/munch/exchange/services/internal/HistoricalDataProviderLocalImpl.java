@@ -6,6 +6,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import com.munch.exchange.model.core.Commodity;
+import com.munch.exchange.model.core.Currency;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
@@ -14,6 +16,7 @@ import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Xml;
 import com.munch.exchange.services.IHistoricalDataProvider;
+import com.munch.exchange.services.internal.onvista.OnVistaTable;
 import com.munch.exchange.services.internal.yql.YQLHistoricalData;
 
 public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider {
@@ -143,10 +146,23 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 			System.out.println("Interval:" + DateTool.dateToString(intervals[i])+
 					" to "+DateTool.dateToString(intervals[i+1]));
 			
-			YQLHistoricalData hisData = new YQLHistoricalData(rate.getSymbol(),
-					intervals[i], intervals[i+1]);
+			LinkedList<HistoricalPoint> points =new LinkedList<HistoricalPoint>();
 			
-			LinkedList<HistoricalPoint> points =hisData.getHisPointList();
+			if(rate instanceof Commodity || rate instanceof Currency){
+				String id="";
+				if(rate instanceof Commodity)
+					id=((Commodity) rate).getOnVistaId();
+				else
+					id=((Currency) rate).getOnVistaId();
+				OnVistaTable table=new OnVistaTable(id, intervals[i],"Y1");
+				points =table.getHisPointList();
+			}
+			else{
+				YQLHistoricalData hisData = new YQLHistoricalData(rate.getSymbol(),
+					intervals[i], intervals[i+1]);
+				points =hisData.getHisPointList();
+			}
+			
 			if (points.isEmpty()) {
 				System.out.println("No historical found for "
 						+ rate.getName() + "(" + rate.getSymbol() + ")"+
@@ -176,10 +192,23 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 		boolean isUpdated = false;
 		int yearLimit=Integer.MAX_VALUE;
 		
-		YQLHistoricalData hisData = new YQLHistoricalData(rate.getSymbol(),
+		LinkedList<HistoricalPoint> points =new LinkedList<HistoricalPoint>();
+		
+		if(rate instanceof Commodity || rate instanceof Currency){
+			String id="";
+			if(rate instanceof Commodity)
+				id=((Commodity) rate).getOnVistaId();
+			else
+				id=((Currency) rate).getOnVistaId();
+			OnVistaTable table=new OnVistaTable(id, rate.getHistoricalData().getLast().getDate(),"Y1");
+			points =table.getHisPointList();
+		}
+		else{
+			YQLHistoricalData hisData = new YQLHistoricalData(rate.getSymbol(),
 				rate.getHistoricalData().getLast().getDate(), rate.getEnd());
-		LinkedList<HistoricalPoint> points = hisData.getHisPointList();
-
+			points = hisData.getHisPointList();
+		}
+		
 		for (HistoricalPoint point : points) {
 			if (!rate.getHistoricalData().contains(point)) {
 				int point_year = point.getDate().get(Calendar.YEAR);

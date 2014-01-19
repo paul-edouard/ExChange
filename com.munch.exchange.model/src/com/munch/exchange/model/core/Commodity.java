@@ -2,6 +2,8 @@ package com.munch.exchange.model.core;
 
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.tool.DateTool;
+
 public class Commodity extends ExchangeRate {
 	
 	//A commodity start with !
@@ -12,7 +14,12 @@ public class Commodity extends ExchangeRate {
 	private String Category="";
 	private String OnVistaId="";
 	
-	
+	public Commodity() {
+		super();
+		
+		this.setStart(DateTool.StringToDay("1990-01-01"));
+		
+	}
 	
 	public String getOnVistaId() {
 		return OnVistaId;

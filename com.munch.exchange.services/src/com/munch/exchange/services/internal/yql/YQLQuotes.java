@@ -214,8 +214,8 @@ public class YQLQuotes  extends YQLTable {
 		
 		if(!this.getCurrent().has("DaysHigh"))return Float.NaN;
 		
-		if(!(this.getCurrent().get("DaysHigh") instanceof Float))
-			return Float.NaN;
+		//if(!(this.getCurrent().get("DaysHigh") instanceof Float))
+		//	return Float.NaN;
 		
 		try {
 			return this.getCurrent().getFloat("DaysHigh");
@@ -461,8 +461,8 @@ public class YQLQuotes  extends YQLTable {
 		
 		if(!this.getCurrent().has("YearHigh"))return Float.NaN;
 		
-		if(!(this.getCurrent().get("YearHigh") instanceof Float))
-			return Float.NaN;
+		//if(!(this.getCurrent().get("YearHigh") instanceof Float))
+		//	return Float.NaN;
 		
 		try {
 			return this.getCurrent().getFloat("YearHigh");
@@ -657,8 +657,8 @@ public class YQLQuotes  extends YQLTable {
 		
 		if(!this.getCurrent().has("DaysLow"))return Float.NaN;
 		
-		if(!(this.getCurrent().get("DaysLow") instanceof Float))
-			return Float.NaN;
+		//if(!(this.getCurrent().get("DaysLow") instanceof Float))
+		//	return Float.NaN;
 		
 		try {
 			return this.getCurrent().getFloat("DaysLow");
@@ -735,8 +735,8 @@ public class YQLQuotes  extends YQLTable {
 		
 		if(!this.getCurrent().has("YearLow"))return Float.NaN;
 		
-		if(!(this.getCurrent().get("YearLow") instanceof Float))
-			return Float.NaN;
+		//if(!(this.getCurrent().get("YearLow") instanceof Float))
+		//	return Float.NaN;
 		
 		try {
 			return this.getCurrent().getFloat("YearLow");
@@ -759,8 +759,8 @@ public class YQLQuotes  extends YQLTable {
 		
 		if(!this.getCurrent().has("Volume"))return 0;
 		
-		if(!(this.getCurrent().get("Volume") instanceof Float))
-			return 0;
+		//if(!(this.getCurrent().get("Volume") instanceof Float))
+		//	return 0;
 		
 		
 		try {
@@ -965,8 +965,8 @@ public class YQLQuotes  extends YQLTable {
 	public static void main(String[] args) {
 			
 		//YQLQuotes quote=new YQLQuotes("YHOO");
-		//YQLQuotes quote=new YQLQuotes("EURUSD=X");
-		YQLQuotes quote=new YQLQuotes("GCJ14.CMX");
+		YQLQuotes quote=new YQLQuotes("EURUSD=X");
+		//YQLQuotes quote=new YQLQuotes("GCJ14.CMX");
 		//287639=X
 		//GCJ14.CMX
 	//	quote.addSymbol("YHOO");

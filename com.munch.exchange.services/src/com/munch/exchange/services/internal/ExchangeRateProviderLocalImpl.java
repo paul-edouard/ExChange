@@ -164,11 +164,18 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 	}
 	
+	
+	/**
+	 * load a rate from a given symbol string.
+	 * If the symbol contains ";" then a rate of type Commodity will be assumed
+	 * Ex: Commodity_Name;Yql_Symbol
+	 */
+	
 	@Override
 	public ExchangeRate load(String symbol) {
 		
 		//Try to load the exchange rate from the local data
-		ExchangeRate xchangeRate=findLocalRateFromSymbol(symbol);
+		ExchangeRate xchangeRate=findLocalRateFromSymbol(symbol.split(";")[0]);
 		if(xchangeRate!=null){
 			//System.out.println("The exchange rate was found localy: "+xchangeRate.getFullName());
 			logger.info("The exchange rate was found localy: "+xchangeRate.getFullName());
@@ -176,6 +183,46 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			update(xchangeRate);
 			return xchangeRate;
 		}
+		
+		
+		//Test if the string contains ";". In this case the first loading of a commodity will be assumed
+		//Name;YqlId;OnVistaId
+		//For Gold "Gold;GCJ14.CMX;24877915"
+		if (symbol.contains(";")) {
+			String[] data = symbol.split(";");
+
+			if (data[0].endsWith("=X")) {
+				logger.info("Currency string recognize: " + symbol);
+				Currency rate = new Currency();
+				rate.setSymbol(data[0]);
+				rate.setName(data[0].substring(0,3)+" to "+data[0].substring(3,6));
+				
+				if (data.length > 1)
+					rate.setOnVistaId(data[1]);
+
+				update(rate);
+				return rate;
+
+			} else {
+				logger.info("Commodity string recognize: " + symbol);
+				Commodity rate = new Commodity();
+				rate.setName(data[0]);
+
+				if (data.length > 1) {
+					rate.setSymbol(data[1]);
+					YQLQuotes yqlQuotes = new YQLQuotes(data[1]);
+					if (yqlQuotes.hasValidResult()) {
+						rate.setStockExchange(yqlQuotes.getStockExchange());
+					}
+				}
+				if (data.length > 2)
+					rate.setOnVistaId(data[2]);
+
+				update(rate);
+				return rate;
+			}
+		}
+		
 		
 		//Try to load the given symbol directly from YQL
 		YQLStocks yqlStocks=new YQLStocks(symbol);
@@ -274,6 +321,16 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			indice.setEnd(Calendar.getInstance());
 			isUpdated=true;
 		}
+		else if(rate instanceof Commodity){
+			Commodity com=(Commodity) rate;
+			com.setEnd(Calendar.getInstance());
+			isUpdated=true;
+		}
+		else if(rate instanceof Currency){
+			Currency com=(Currency) rate;
+			com.setEnd(Calendar.getInstance());
+			isUpdated=true;
+		}
 		
 		
 		if(isUpdated){
@@ -327,7 +384,13 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		//ExchangeRate rate=provider.load("AMZ.DE");
 		
-		ExchangeRate rate=provider.load("^GDAXI");
+		//ExchangeRate rate=provider.load("^GDAXI");
+		
+		ExchangeRate rate=provider.load("Gold;GCJ14.CMX;24877915");
+		//ExchangeRate rate=provider.load("Gold;GCJ14.CMX;24877915");
+		
+		//ExchangeRate rate=provider.load("Gold");
+		
 		
 		//provider.loadAll(Stock.class);
 		
