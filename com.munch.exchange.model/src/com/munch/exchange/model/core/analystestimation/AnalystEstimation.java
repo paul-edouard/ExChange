@@ -31,22 +31,22 @@ public class AnalystEstimation extends XmlParameterElement {
 			return isUpdated;
 		
 		if(this.getEarningsHistory().update(other.getEarningsHistory())){
-			isUpdated=true;System.out.println("New His Data");
+			isUpdated=true;
 		}
 		if(this.getGrowthEst().update(other.getGrowthEst())){
-			isUpdated=true;System.out.println("getGrowthEst");
+			isUpdated=true;
 		}
 		if(this.getRevenueEst().update(other.getRevenueEst())){
-			isUpdated=true;System.out.println("getRevenueEst");
+			isUpdated=true;
 		}
 		if(this.getEPSTrends().update(other.getEPSTrends())){
-			isUpdated=true;System.out.println("getEPSTrends");
+			isUpdated=true;
 		}
 		if(this.getEPSRevisions().update(other.getEPSRevisions())){
-			isUpdated=true;System.out.println("getEPSRevisions");
+			isUpdated=true;//System.out.println("getEPSRevisions");
 		}
 		if(this.getEarningsEst().update(other.getEarningsEst())){
-			isUpdated=true;System.out.println("getEarningsEst");
+			isUpdated=true;//System.out.println("getEarningsEst");
 		}
 		
 		

@@ -25,7 +25,7 @@ public class InternalTest {
 		//String[] list={"AAPL","R","O","GOOG","L","P","A","H", "^GDAXI","^TECDAX","OIL","CTYRX"};
 		//String[] list={"^GDAXI","^TECDAX","OIL","CTYRX"};
 		//String[] list={"^GDAXI","Gold;GCJ14.CMX;24877915"};
-		String[] list={"^GDAXI","EURUSD=X;8381868","EURCHF=X;8362186"};
+		String[] list={"AAPL","R","O","GOOG","L","P","A","H", "^GDAXI","^TECDAX","OIL","CTYRX","EURUSD=X;8381868","EURCHF=X;8362186"};
 		
 		
 		for(int i=0;i<list.length;i++){

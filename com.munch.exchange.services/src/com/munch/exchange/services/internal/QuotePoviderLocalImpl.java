@@ -112,7 +112,7 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 		
 		YQLQuotes quote=new YQLQuotes(rate.getSymbol());
 		QuotePoint point=quote.getCurrentQuotePoint();
-		if (!rate.getRecordedQuote().contains(point)) {
+		if (!rate.getRecordedQuote().contains(point) && point!=null) {
 			
 			rate.getRecordedQuote().addLast(point);
 			rate.getRecordedQuote().sort();
