@@ -967,7 +967,7 @@ public class YQLQuotes  extends YQLTable {
 		//YQLQuotes quote=new YQLQuotes("YHOO");
 		//YQLQuotes quote=new YQLQuotes("EURUSD=X");
 		YQLQuotes quote=new YQLQuotes("GCJ14.CMX");
-		
+		//287639=X
 		//GCJ14.CMX
 	//	quote.addSymbol("YHOO");
 	//	quote.addSymbol("DAI.DE");//PAH3.DE
@@ -978,7 +978,8 @@ public class YQLQuotes  extends YQLTable {
 		
 		System.out.println("Date:"+quote.getLastTradeDate());
 		System.out.println("Time:"+quote.getLastTradeTime());
-		System.out.println("Name:"+quote.getLastTradeTime());
+		System.out.println("Name:"+quote.getName());
+		System.out.println("StockExchange:"+quote.getStockExchange());
 		
 		//System.out.println("Stock Exchange:"+quote.getStockExchange());
 		

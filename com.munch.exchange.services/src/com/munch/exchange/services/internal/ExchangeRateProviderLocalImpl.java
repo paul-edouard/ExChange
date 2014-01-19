@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
+import com.munch.exchange.model.core.Commodity;
+import com.munch.exchange.model.core.Currency;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
@@ -35,6 +37,13 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	
 	
 	private String getExchangeRatePath(ExchangeRate rate) {
+		
+		if(rate instanceof Commodity){
+			return this.workspace + File.separator
+					+ rate.getClass().getSimpleName() + File.separator
+					+ rate.getName();
+		}
+		
 		return this.workspace + File.separator
 				+ rate.getClass().getSimpleName() + File.separator
 				+ rate.getSymbol();
@@ -131,8 +140,17 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			if(Indice.class.getSimpleName().equals(rateClassName)){
 				XRate=new Indice();
 			}
+			
 			if(Fund.class.getSimpleName().equals(rateClassName)){
 				XRate=new Fund();
+			}
+			
+			if(Commodity.class.getSimpleName().equals(rateClassName)){
+				XRate=new Commodity();
+			}
+			
+			if(Currency.class.getSimpleName().equals(rateClassName)){
+				XRate=new Currency();
 			}
 			
 			if(XRate!=null && Xml.load(XRate, localFile)){
