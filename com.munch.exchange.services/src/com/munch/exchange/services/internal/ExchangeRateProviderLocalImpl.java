@@ -31,6 +31,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	
 	@Override
 	public void init(String workspace) {
+		logger.info("Service initialisation, setting the workspace: "+workspace);
 		this.workspace=workspace;
 		
 	}

@@ -2,6 +2,7 @@ package com.munch.exchange.lifecycle;
 
 import javax.inject.Inject;
 
+import org.apache.log4j.BasicConfigurator;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.e4.ui.workbench.lifecycle.PostContextCreate;
@@ -15,6 +16,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.osgi.service.prefs.BackingStoreException;
 
 import com.munch.exchange.dialog.WorkspaceDialog;
+import com.munch.exchange.services.IExchangeRateProvider;
 
 @SuppressWarnings("restriction")
 public class Manager {
@@ -28,11 +30,32 @@ public class Manager {
 	@Preference(nodePath = "com.munch.exchange", value = "workspace")
 	private String workspace;
 	
+	/*
+	@PostContextCreate
+	void postContextCreate(RemoteService remoteService, IEclipseContext parent){
+		//BasicConfigurator.configure();
+		this.remoteService=remoteService;
+		//create and start the login interface
+		closeCalled=login(parent);
+		
+		//save the session in the eclipse context
+		parent.set(ClientSession.class,session);
+		
+		//save the Remote Service in the eclipse context
+		//parent.set(RemoteService.class,this.remoteService);
+		
+	}
+	*/
+	
+	private IExchangeRateProvider exchangeRateProvider;
 	
 	@PostContextCreate
 	public void postContextCreate(@Preference IEclipsePreferences prefs,
-			IApplicationContext appContext, Display display) {
-
+			IApplicationContext appContext, Display display, IExchangeRateProvider exchangeRateProvider) {
+		
+		
+		BasicConfigurator.configure();
+		
 		final Shell shell = new Shell(SWT.TOOL | SWT.NO_TRIM);
 		WorkspaceDialog dialog = new WorkspaceDialog(shell);
 		if (workspaces != null) {
@@ -64,6 +87,11 @@ public class Manager {
 				e.printStackTrace();
 			}
 		}
+		
+		//Initialize the service
+		this.exchangeRateProvider=exchangeRateProvider;
+		this.exchangeRateProvider.init(dialog.getLastWorkspace());
+		
 		
 	}
 
