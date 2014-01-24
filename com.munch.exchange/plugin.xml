@@ -2,30 +2,6 @@
 <plugin>
 
    <extension
-         id="product"
-         point="org.eclipse.core.runtime.products">
-      <product
-            name="com.munch.exchange"
-            application="org.eclipse.e4.ui.workbench.swt.E4Application">
-         <property
-               name="applicationCSS"
-               value="platform:/plugin/com.munch.exchange/css/default.css">
-         </property>
-         <property
-               name="appName"
-               value="com.munch.exchange">
-         </property>
-         <property
-               name="lifeCycleURI"
-               value="bundleclass://com.munch.exchange/com.munch.exchange.lifecycle.Manager">
-         </property>
-         <property
-               name="windowImages"
-               value="icons/chart_curve.png">
-         </property>
-      </product>
-   </extension>
-   <extension
          id="exchangeProduct"
          point="org.eclipse.core.runtime.products">
       <product
@@ -39,21 +15,13 @@
                name="windowImages"
                value="icons/chart_curve.png">
          </property>
-      </product>
-   </extension>
-   <extension
-         id="eclipseproduct"
-         point="org.eclipse.core.runtime.products">
-      <product
-            application="org.eclipse.e4.ui.workbench.swt.E4Application"
-            name="ExChange">
          <property
-               name="windowImages"
-               value="icons/chart_curve.png">
+               name="applicationCSS"
+               value="platform:/plugin/com.munch.exchange/css/default.css">
          </property>
          <property
-               name="appName"
-               value="ExChange">
+               name="lifeCycleURI"
+               value="bundleclass://com.munch.exchange/com.munch.exchange.lifecycle.Manager">
          </property>
       </product>
    </extension>

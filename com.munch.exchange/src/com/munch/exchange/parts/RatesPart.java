@@ -5,6 +5,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
+import org.eclipse.e4.core.contexts.ContextInjectionFactory;
+import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
@@ -17,14 +19,14 @@ import org.eclipse.swt.widgets.Composite;
 
 public class RatesPart {
 	
+	@Inject
+	IEclipseContext context;
 	
 	@Inject
 	ESelectionService selectionService;
 	
 	private TreeViewer treeViewer;
-	
-	
-	//public static final String PART_ID="de.femodeling.e4.client.partdescriptor.projecteditor";
+	private RatesTreeContentProvider contentProvider;
 	
 	
 	@Inject
@@ -46,6 +48,13 @@ public class RatesPart {
 				
 			}
 		});
+		
+		
+		contentProvider=ContextInjectionFactory.make( RatesTreeContentProvider.class,context);
+		treeViewer.setContentProvider(contentProvider);
+		treeViewer.setLabelProvider(new RatesTreeLabelProvider());
+		treeViewer.setInput(contentProvider.getRoot());
+		
 	}
 	
 	

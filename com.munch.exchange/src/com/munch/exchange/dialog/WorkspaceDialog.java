@@ -152,7 +152,12 @@ public class WorkspaceDialog extends TitleAreaDialog {
 	protected void createButtonsForButtonBar(Composite parent) {
 		button = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
 				true);
-		button.setEnabled(false);
+		//button.setEnabled(false);
+		
+		File dir=new File(combo.getText());
+		button.setEnabled(dir.isDirectory());
+		
+		
 		createButton(parent, IDialogConstants.CANCEL_ID,
 				IDialogConstants.CANCEL_LABEL, false);
 	}

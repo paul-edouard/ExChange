@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core;
 
 import java.util.Calendar;
+import java.util.UUID;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -17,8 +18,9 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	static final String FIELD_End="end";
 	
 	public static final String FIELD_Name="name";
+	public static final String FIELD_UUID="uuid";
 	public static final String FIELD_Symbol="symbol";
-	public static final String FIELD_Data_Path="symbol";
+	public static final String FIELD_Data_Path="data_path";
 	public static final String FIELD_Stock_Exchange="stockExchange";
 	
 	protected Calendar start=Calendar.getInstance();
@@ -32,6 +34,7 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	protected HistoricalData historicalData=new HistoricalData();
 	protected RecordedQuote recordedQuote=new RecordedQuote();
 	
+	protected String uuid=UUID.randomUUID().toString();
 	
 	public Calendar getStart() {
 		return start;
@@ -97,6 +100,16 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	
 	
 	
+	public String getUUID() {
+		return uuid;
+	}
+
+
+	public void setUUID(String uuid) {
+	changes.firePropertyChange(FIELD_UUID, this.uuid, this.uuid = uuid);
+	}
+	
+
 	public String getStockExchange() {
 		return stockExchange;
 	}
@@ -104,6 +117,10 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		changes.firePropertyChange(FIELD_Stock_Exchange, this.stockExchange, this.stockExchange = stockExchange);
 		//this.stockExchange = stockExchange;
 	}
+	
+	
+	
+	
 	@Override
 	public String toString() {
 		return "ExchangeRate [name=" + name + ", symbol=" + symbol
@@ -154,6 +171,8 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		
 		this.setName(rootElement.getAttribute(FIELD_Name));
 		this.setSymbol(rootElement.getAttribute(FIELD_Symbol));
+		this.setUUID(rootElement.getAttribute(FIELD_UUID));
+		
 		this.setStockExchange(rootElement.getAttribute(FIELD_Stock_Exchange));
 	}
 	protected void initChild(Element childElement){}
@@ -165,6 +184,8 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		
 		rootElement.setAttribute(FIELD_Name, this.getName());
 		rootElement.setAttribute(FIELD_Symbol, this.getSymbol());
+		rootElement.setAttribute(FIELD_UUID, this.getUUID());
+		
 		rootElement.setAttribute(FIELD_Stock_Exchange, this.getStockExchange());
 	}
 	protected void appendChild(Element rootElement,Document doc){
