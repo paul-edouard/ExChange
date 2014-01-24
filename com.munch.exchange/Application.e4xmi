@@ -4,9 +4,12 @@
     <children xsi:type="advanced:PerspectiveStack" xmi:id="_hCNcR2TNEeOTfZ5LPzv9Rg">
       <children xsi:type="advanced:Perspective" xmi:id="_hCNcSGTNEeOTfZ5LPzv9Rg">
         <children xsi:type="basic:PartSashContainer" xmi:id="_hCNcSWTNEeOTfZ5LPzv9Rg">
-          <children xsi:type="basic:PartStack" xmi:id="_hCNcSmTNEeOTfZ5LPzv9Rg">
+          <children xsi:type="basic:PartStack" xmi:id="_hCNcSmTNEeOTfZ5LPzv9Rg" elementId="de.femodeling.e4.client.partstack.left">
             <children xsi:type="basic:Part" xmi:id="_hCNcS2TNEeOTfZ5LPzv9Rg" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.SamplePart" label="Sample Part"/>
-            <children xsi:type="basic:Part" xmi:id="_h70vUGTOEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.part.info" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.InfoPart" label="Info" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png"/>
+            <children xsi:type="basic:Part" xmi:id="_h70vUGTOEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.part.info" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.InfoPart" label="Info2" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png"/>
+            <children xsi:type="basic:Part" xmi:id="_fcohEIUwEeO8JejmZH0Bqw" elementId="com.munch.exchange.part.rates" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.RatesPart" label="Rates" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png">
+              <toolbar xmi:id="_lUDAYIUwEeO8JejmZH0Bqw" elementId="com.munch.exchange.toolbar.0"/>
+            </children>
           </children>
         </children>
       </children>

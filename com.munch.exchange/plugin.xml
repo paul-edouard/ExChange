@@ -5,7 +5,7 @@
          id="product"
          point="org.eclipse.core.runtime.products">
       <product
-            name="ExChange"
+            name="com.munch.exchange"
             application="org.eclipse.e4.ui.workbench.swt.E4Application">
          <property
                name="applicationCSS"
@@ -13,7 +13,7 @@
          </property>
          <property
                name="appName"
-               value="ExChange">
+               value="com.munch.exchange">
          </property>
          <property
                name="lifeCycleURI"
@@ -38,6 +38,22 @@
          <property
                name="windowImages"
                value="icons/chart_curve.png">
+         </property>
+      </product>
+   </extension>
+   <extension
+         id="eclipseproduct"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.eclipse.e4.ui.workbench.swt.E4Application"
+            name="ExChange">
+         <property
+               name="windowImages"
+               value="icons/chart_curve.png">
+         </property>
+         <property
+               name="appName"
+               value="ExChange">
          </property>
       </product>
    </extension>
