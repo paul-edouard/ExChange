@@ -358,6 +358,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 				+ clazz.getSimpleName();
 		File dir=new File(path);
 		File[] er_dirs=dir.listFiles();
+		if(er_dirs==null)return rates;
 		for(int i=0;i<er_dirs.length;i++){
 			if(er_dirs[i].isDirectory()){	
 				ExchangeRate rate=this.load(er_dirs[i].getName());
