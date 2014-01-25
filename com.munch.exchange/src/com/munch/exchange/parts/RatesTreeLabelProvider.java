@@ -1,14 +1,39 @@
 package com.munch.exchange.parts;
 
+import javax.inject.Inject;
+
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
+import com.munch.exchange.IImageKeys;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.parts.RatesTreeContentProvider.RateContainer;
+import com.munch.exchange.services.IBundleResourceLoader;
+
+
 
 public class RatesTreeLabelProvider implements ILabelProvider {
+	
+	
+	private Image rateGroupImage;
+	
+	@Inject
+	IBundleResourceLoader loader;
+	
+	
+	private Image getRateContainerImage() {
+		if(rateGroupImage==null){
+			rateGroupImage=loader.loadImage(getClass(),IImageKeys.RATE_CONTAINER );
+		}
+		return rateGroupImage;
+	}
+
+	public RatesTreeLabelProvider() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
 	@Override
 	public void addListener(ILabelProviderListener listener) {
@@ -36,7 +61,9 @@ public class RatesTreeLabelProvider implements ILabelProvider {
 
 	@Override
 	public Image getImage(Object element) {
-		// TODO Auto-generated method stub
+		if(element instanceof RateContainer){
+			return this.getRateContainerImage();
+		}
 		return null;
 	}
 

@@ -52,7 +52,7 @@ public class RatesPart {
 		
 		contentProvider=ContextInjectionFactory.make( RatesTreeContentProvider.class,context);
 		treeViewer.setContentProvider(contentProvider);
-		treeViewer.setLabelProvider(new RatesTreeLabelProvider());
+		treeViewer.setLabelProvider(ContextInjectionFactory.make( RatesTreeLabelProvider.class,context));
 		treeViewer.setInput(contentProvider.getRoot());
 		
 	}

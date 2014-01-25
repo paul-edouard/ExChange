@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="com.munch.exchange.services.bundleresource">
+   <implementation class="com.munch.exchange.services.internal.BundleResourceLoaderImpl"/>
+   <service>
+      <provide interface="com.munch.exchange.services.IBundleResourceLoader"/>
+   </service>
+</scr:component>

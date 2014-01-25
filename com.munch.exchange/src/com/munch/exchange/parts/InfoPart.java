@@ -29,6 +29,7 @@ public class InfoPart {
 		parent.setLayout(new GridLayout(1, false));
 		
 		Button btnAsk = new Button(parent, SWT.NONE);
+		btnAsk.setImage(null);
 		btnAsk.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
