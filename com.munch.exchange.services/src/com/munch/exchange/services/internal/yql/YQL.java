@@ -8,6 +8,9 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.apache.log4j.Logger;
+
+import com.munch.exchange.services.internal.ExchangeRateProviderLocalImpl;
 import com.munch.exchange.services.internal.yql.json.JSONObject;
 import com.munch.exchange.services.internal.yql.json.JSONTokener;
 
@@ -16,6 +19,8 @@ import com.munch.exchange.services.internal.yql.json.JSONTokener;
 public class YQL {
 	
 	protected static String URL="http://query.yahooapis.com/v1/public/yql?q=";
+	
+	private static Logger logger = Logger.getLogger(YQL.class);
 	
 	
 	/**
@@ -67,6 +72,8 @@ public class YQL {
 		
 		JSONObject result=null;
 		try {
+			
+		//	logger.info("Testing URL: "+url);
 			URL fullUrl = new URL(url);
 			
 			InputStream is = fullUrl.openStream();

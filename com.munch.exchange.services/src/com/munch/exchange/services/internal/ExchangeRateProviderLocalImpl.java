@@ -381,14 +381,18 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 
 		
 		ExchangeRateProviderLocalImpl provider=new ExchangeRateProviderLocalImpl();
-		provider.init("D:\\Paul\\04_Programierung\\03_Boerse\\01_PROG_DATA");
+		//provider.init("D:\\Paul\\04_Programierung\\03_Boerse\\01_PROG_DATA");
+		provider.init("C:\\Documents and Settings\\Polo\\Bureau\\ExChangeData");
 		//provider.save(rate);
 		
-		//ExchangeRate rate=provider.load("AMZ.DE");
+		ExchangeRate rate=provider.load("xcbv");
+		if(rate==null){
+			logger.info("Data no found");
+		}
 		
 		//ExchangeRate rate=provider.load("^GDAXI");
 		
-		ExchangeRate rate=provider.load("Gold;GCJ14.CMX;24877915");
+		//ExchangeRate rate=provider.load("Gold;GCJ14.CMX;24877915");
 		//ExchangeRate rate=provider.load("Gold;GCJ14.CMX;24877915");
 		
 		//ExchangeRate rate=provider.load("Gold");

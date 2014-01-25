@@ -161,14 +161,15 @@ public class YQLQuotes  extends YQLTable {
 	
 	@Override
 	public boolean hasValidResult() {
+		if(this.getResult()==null)return false;
+		
 		if(this.getCurrent()==null)return false;
 		
 		if(!this.getCurrent().has("Name"))return false;
 		
 		if(!(this.getCurrent().get("Name") instanceof String))return false;
 		
-		
-		return this.getChange()!=Float.NaN;
+		return !Float.isNaN(this.getChange());
 	}
 
 	/*

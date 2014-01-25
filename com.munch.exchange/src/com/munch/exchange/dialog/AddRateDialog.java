@@ -1,5 +1,6 @@
 package com.munch.exchange.dialog;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
@@ -32,6 +33,9 @@ public class AddRateDialog extends TitleAreaDialog {
 	private Button buttonOk;
 	
 	private IExchangeRateProvider exchangeRateProvider;
+	
+	private static Logger logger = Logger.getLogger(AddRateDialog.class);
+	
 
 	/**
 	 * Create the dialog.
@@ -66,7 +70,8 @@ public class AddRateDialog extends TitleAreaDialog {
 			public void modifyText(ModifyEvent e) {
 				String text=SymbolText.getText();
 				buttonOk.setEnabled(!text.isEmpty());
-				AddRateDialog.this.setMessage("Add a new rate to the list by downloading it to from Yahoo Finance or OnVista");
+				AddRateDialog.this.setErrorMessage(null);
+				//AddRateDialog.this.
 			}
 		});
 		SymbolText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -132,10 +137,13 @@ public class AddRateDialog extends TitleAreaDialog {
 			search_str+=";"+CurrencyName.getText();
 		}
 		
+		logger.info("search String: "+search_str);
+		
+		
 		ExchangeRate rate=  exchangeRateProvider.load(search_str);
 		if(rate==null){
 			this.setErrorMessage("Cannot find the given symbol \""+SymbolText.getText()+
-					"on Yahoo Finance!\nPlease check this string");
+					"\" on Yahoo Finance!\nPlease check this string");
 			return;
 		}
 		
@@ -147,7 +155,7 @@ public class AddRateDialog extends TitleAreaDialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 300);
+		return new Point(450, 254);
 	}
 
 }

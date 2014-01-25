@@ -24,8 +24,7 @@ public class AddRateHandler {
 		if (dialog.open() == Window.OK) {
 			System.out.println("OK pressed");
 		}
-		//WorkspaceDialog dialog = new WorkspaceDialog(shell);
-		//if (dialog.open() != Window.OK) {
+		
 	}
 	
 	
