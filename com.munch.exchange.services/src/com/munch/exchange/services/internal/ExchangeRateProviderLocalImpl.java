@@ -26,6 +26,9 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	private String workspace;
 	final private static String ExchangeRateStr="ExchangeRate.xml";
 	
+	private HashMap<String, ExchangeRate> RateCacheMap=new HashMap<String, ExchangeRate>();
+	
+	
 	
 	private static Logger logger = Logger.getLogger(ExchangeRateProviderLocalImpl.class);
 	
@@ -165,21 +168,44 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 	}
 	
+	/**
+	 * test if a given symbol is already used from a exchange rate
+	 */
+	@Override
+	public boolean isSymbolAlreadyUsed(String symbol) {
+		HashMap<String, File> map=findAllLocalRateFiles();
+		return map.containsKey(symbol);
+	}
+	
 	
 	/**
 	 * load a rate from a given symbol string.
 	 * If the symbol contains ";" then a rate of type Commodity will be assumed
 	 * Ex: Commodity_Name;Yql_Symbol
 	 */
-	
 	@Override
 	public ExchangeRate load(String symbol) {
+		//Try to find the Exchange rate from cache
+		//Find directly from the UUID
+		if(RateCacheMap.containsKey(symbol))
+			return RateCacheMap.get(symbol);
+		//Find from the symbol
+		for(ExchangeRate rate:RateCacheMap.values()){
+			//logger.info("Searching value: "+rate.getSymbol()+ " test:"+symbol);
+			if(rate.getSymbol().equals(symbol))
+				return rate;
+		}
+		
+		
 		
 		//Try to load the exchange rate from the local data
 		ExchangeRate xchangeRate=findLocalRateFromSymbol(symbol.split(";")[0]);
 		if(xchangeRate!=null){
 			//System.out.println("The exchange rate was found localy: "+xchangeRate.getFullName());
 			logger.info("The exchange rate was found localy: "+xchangeRate.getFullName());
+			
+			//Add the rate in the map
+			RateCacheMap.put(xchangeRate.getUUID(), xchangeRate);
 			
 			update(xchangeRate);
 			return xchangeRate;
@@ -200,7 +226,10 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 				
 				if (data.length > 1)
 					rate.setOnVistaId(data[1]);
-
+				
+				//Add the rate in the map
+				RateCacheMap.put(rate.getUUID(), rate);
+				
 				update(rate);
 				return rate;
 
@@ -218,6 +247,10 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 				}
 				if (data.length > 2)
 					rate.setOnVistaId(data[2]);
+				
+				//Add the rate in the map
+				RateCacheMap.put(rate.getUUID(), rate);
+				
 
 				update(rate);
 				return rate;
@@ -255,8 +288,12 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		if(rate==null)return null;
 		
 		//Save the new Exchange Rate:
-		if(this.save(rate))
-		return rate;
+		if(this.save(rate)){
+			//Add the rate in the map
+			RateCacheMap.put(rate.getUUID(), rate);
+			
+			return rate;
+		}
 		else
 			return null;
 		
@@ -412,6 +449,9 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 
 	}
+
+
+	
 
 
 	

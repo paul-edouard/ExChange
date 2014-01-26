@@ -23,13 +23,14 @@ public interface IExchangeRateProvider {
 	//==================================
 	//==         EXCHANGE RATE        ==
 	//==================================
+	
 	/**
-	 * save the given exchange rate
+	 * test if the symbol was already used. If yes the function return true
 	 * 
-	 * @param rate
-	 * @return true on success false otherwise
+	 * @param symbol
+	 * @return
 	 */
-	//boolean save(ExchangeRate rate);
+	boolean isSymbolAlreadyUsed(String symbol);
 	
 	/**
 	 * try to load the exchange rate corresponding to the given symbol.

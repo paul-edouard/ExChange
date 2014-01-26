@@ -18,7 +18,17 @@ package com.munch.exchange;
 
 public interface IImageKeys {
 	
+	//Rate Container
 	public static final String RATE_CONTAINER = "icons/packages.gif";
+	public static final String RATE_CONTAINER_STOCKS = "icons/packages.gif";
+	public static final String RATE_CONTAINER_FUNDS = "icons/newspaper.png";
+	public static final String RATE_CONTAINER_INDICES = "icons/chart_line.png";
+	public static final String RATE_CONTAINER_COMMODITIES = "icons/ruby.png";
+	public static final String RATE_CONTAINER_CURRENCIES = "icons/money_dollar.png";
+	
+	//Rate
+	public static final String RATE_COMMON = "icons/bullet_black.png";
+	
 	
 	/*
 	public static final String GROUP = "icons/package_obj.gif";

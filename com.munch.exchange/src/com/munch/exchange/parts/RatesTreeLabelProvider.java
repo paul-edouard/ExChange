@@ -2,8 +2,8 @@ package com.munch.exchange.parts;
 
 import javax.inject.Inject;
 
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 
 import com.munch.exchange.IImageKeys;
@@ -14,78 +14,135 @@ import com.munch.exchange.services.IBundleResourceLoader;
 
 
 
-public class RatesTreeLabelProvider implements ILabelProvider {
+public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 	
 	
-	private Image rateGroupImage;
+	private Image rateContainerImage;
+	private Image rateStocksImage;
+	private Image rateFundsImage;
+	private Image rateIndicesImage;
+	private Image rateCommoditiesImage;
+	private Image rateCurrenciesImage;
+	
+	private Image rateImage;
+	
+	
 	
 	@Inject
 	IBundleResourceLoader loader;
 	
 	
+	
+	
 	private Image getRateContainerImage() {
-		if(rateGroupImage==null){
-			rateGroupImage=loader.loadImage(getClass(),IImageKeys.RATE_CONTAINER );
+		if(rateContainerImage==null){
+			rateContainerImage=loader.loadImage(getClass(),IImageKeys.RATE_CONTAINER );
 		}
-		return rateGroupImage;
+		return rateContainerImage;
 	}
-
-	public RatesTreeLabelProvider() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public void addListener(ILabelProviderListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void dispose() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public boolean isLabelProperty(Object element, String property) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void removeListener(ILabelProviderListener listener) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Image getImage(Object element) {
-		if(element instanceof RateContainer){
-			return this.getRateContainerImage();
+	
+	public Image getRateStocksImage() {
+		if(rateStocksImage==null){
+			rateStocksImage=loader.loadImage(getClass(),IImageKeys.RATE_CONTAINER_STOCKS );
 		}
-		return null;
+		return rateStocksImage;
+	}
+
+	public Image getRateFundsImage() {
+		if(rateFundsImage==null){
+			rateFundsImage=loader.loadImage(getClass(),IImageKeys.RATE_CONTAINER_FUNDS );
+		}
+		return rateFundsImage;
+	}
+
+	public Image getRateIndicesImage() {
+		if(rateIndicesImage==null){
+			rateIndicesImage=loader.loadImage(getClass(),IImageKeys.RATE_CONTAINER_INDICES );
+		}
+		return rateIndicesImage;
+	}
+
+	public Image getRateCommoditiesImage() {
+		if(rateCommoditiesImage==null){
+			rateCommoditiesImage=loader.loadImage(getClass(),IImageKeys.RATE_CONTAINER_COMMODITIES );
+		}
+		return rateCommoditiesImage;
+	}
+
+	public Image getRateCurrenciesImage() {
+		if(rateCurrenciesImage==null){
+			rateCurrenciesImage=loader.loadImage(getClass(),IImageKeys.RATE_CONTAINER_CURRENCIES );
+		}
+		return rateCurrenciesImage;
+	}
+
+
+
+	
+
+	public Image getRateImage() {
+		if(rateImage==null){
+			rateImage=loader.loadImage(getClass(),IImageKeys.RATE_COMMON );
+		}
+		return rateImage;
 	}
 
 	@Override
-	public String getText(Object element) {
+	public void update(ViewerCell cell) {
+		Object element=cell.getElement();
+		//Text
 		if(element instanceof RateContainer){
 			RateContainer rate=(RateContainer) element;
-			return rate.getName()+ " ["+rate.getChilds().size()+"]";
-			
+			if(rate.getLoadingState().isEmpty()){
+				cell.setText( rate.getName()+ " ["+rate.getChilds().size()+"]");
+			}
+			else{
+				cell.setText( rate.getName()+ ": "+rate.getLoadingState());
+			}
+			/*
+			FontData[] datas=cell.getFont().getFontData();
+			for(FontData data:datas){
+				data.setStyle(SWT.BOLD);
+			}
+			cell.getFont().
+			*/
+					//cell.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
 		}
 		else if(element instanceof Stock){
 			Stock stock=(Stock) element;
-			return stock.getFullName()+" ["+stock.getIndustry()+", "+stock.getSector()+"]";
+			cell.setText(stock.getFullName()+" ["+stock.getIndustry()+", "+stock.getSector()+"]");
 		}
 		else if(element instanceof ExchangeRate){
 			ExchangeRate rate=(ExchangeRate) element;
-			
-				return rate.getFullName();
-			
+			cell.setText(rate.getFullName());
+		}
+		
+		//Image
+		if(element instanceof RateContainer){
+			RateContainer rate=(RateContainer) element;
+			if(rate.getName().equals(RatesTreeContentProvider.STOCKS_CONTAINER)){
+				cell.setImage(getRateStocksImage());
+			}
+			else if (rate.getName().equals(RatesTreeContentProvider.INDICES_CONTAINER)){
+				cell.setImage(getRateIndicesImage());
+			}
+			else if (rate.getName().equals(RatesTreeContentProvider.FUNDS_CONTAINER)){
+				cell.setImage(getRateFundsImage());
+			}
+			else if (rate.getName().equals(RatesTreeContentProvider.COMMODITIES_CONTAINER)){
+				cell.setImage(getRateCommoditiesImage());
+			}
+			else if (rate.getName().equals(RatesTreeContentProvider.CURRENCIES_CONTAINER)){
+				cell.setImage(getRateCurrenciesImage());
+			}
 			
 		}
-		return null;
+		else{
+			cell.setImage(getRateImage());
+		}
+		
+		
+		super.update(cell);
 	}
 
 }

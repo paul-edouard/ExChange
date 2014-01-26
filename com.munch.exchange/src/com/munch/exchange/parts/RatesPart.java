@@ -19,6 +19,9 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
+import com.munch.exchange.IEventConstant;
+import com.munch.exchange.model.core.ExchangeRate;
+
 
 public class RatesPart {
 	
@@ -56,8 +59,38 @@ public class RatesPart {
 		contentProvider=ContextInjectionFactory.make( RatesTreeContentProvider.class,context);
 		treeViewer.setContentProvider(contentProvider);
 		treeViewer.setLabelProvider(ContextInjectionFactory.make( RatesTreeLabelProvider.class,context));
+		//treeViewer.setLabelProvider(new TestLabelProvider());
+		
 		treeViewer.setInput(contentProvider.getRoot());
 		
+	}
+	
+	
+	@Inject
+	private void addRate(@Optional  @UIEventTopic(IEventConstant.RATE_NEW) ExchangeRate rate ){
+		
+		if(treeViewer!=null && rate!=null){
+			contentProvider.addExChangeRate(rate);
+			Object[] elements=treeViewer.getExpandedElements();
+			treeViewer.refresh();
+			treeViewer.setExpandedElements(elements);
+			
+			
+			
+		}
+	}
+	
+	@Inject
+	private void loadingRate(@Optional  @UIEventTopic(IEventConstant.RATE_LOADING) ExchangeRate rate ){
+		if(treeViewer!=null && rate!=null){
+			treeViewer.refresh();
+		}
+	}
+	@Inject
+	private void loadedRate(@Optional  @UIEventTopic(IEventConstant.RATE_LOADED) ExchangeRate rate ){
+		if(treeViewer!=null && rate!=null){
+			treeViewer.refresh();
+		}
 	}
 	
 	

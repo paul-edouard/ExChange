@@ -4,22 +4,20 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.wb.swt.ResourceManager;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.wb.swt.ResourceManager;
 
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -27,12 +25,14 @@ import com.munch.exchange.services.IExchangeRateProvider;
 public class AddRateDialog extends TitleAreaDialog {
 	private Text SymbolText;
 	private Text OnVistaIdText;
-	private Text CurrencyName;
+	private Text CommodityName;
 	private Button btnOnVistaId;
-	private Button btnCurrencyName;
+	private Button btnCommodityName;
 	private Button buttonOk;
 	
 	private IExchangeRateProvider exchangeRateProvider;
+	
+	private ExchangeRate rate;
 	
 	private static Logger logger = Logger.getLogger(AddRateDialog.class);
 	
@@ -45,6 +45,11 @@ public class AddRateDialog extends TitleAreaDialog {
 		super(parentShell);
 		setHelpAvailable(false);
 		this.exchangeRateProvider=exchangeRateProvider;
+	}
+	
+	
+	public ExchangeRate getRate() {
+		return rate;
 	}
 
 	/**
@@ -82,10 +87,10 @@ public class AddRateDialog extends TitleAreaDialog {
 			public void widgetSelected(SelectionEvent e) {
 				
 				OnVistaIdText.setEnabled(btnOnVistaId.getSelection());
-				btnCurrencyName.setEnabled(btnOnVistaId.getSelection());
+				btnCommodityName.setEnabled(btnOnVistaId.getSelection());
 				if(!btnOnVistaId.getSelection()){
-					btnCurrencyName.setSelection(false);
-					CurrencyName.setEnabled(false);
+					btnCommodityName.setSelection(false);
+					CommodityName.setEnabled(false);
 				}
 				
 			}
@@ -96,19 +101,19 @@ public class AddRateDialog extends TitleAreaDialog {
 		OnVistaIdText.setEnabled(false);
 		OnVistaIdText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
-		btnCurrencyName = new Button(container, SWT.CHECK);
-		btnCurrencyName.addSelectionListener(new SelectionAdapter() {
+		btnCommodityName = new Button(container, SWT.CHECK);
+		btnCommodityName.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				CurrencyName.setEnabled(btnCurrencyName.getSelection());
+				CommodityName.setEnabled(btnCommodityName.getSelection());
 			}
 		});
-		btnCurrencyName.setText("Currency Name:");
-		btnCurrencyName.setEnabled(false);
+		btnCommodityName.setText("Commodity Name:");
+		btnCommodityName.setEnabled(false);
 		
-		CurrencyName = new Text(container, SWT.BORDER);
-		CurrencyName.setEnabled(false);
-		CurrencyName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		CommodityName = new Text(container, SWT.BORDER);
+		CommodityName.setEnabled(false);
+		CommodityName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
 		return area;
 	}
@@ -130,20 +135,32 @@ public class AddRateDialog extends TitleAreaDialog {
 	protected void okPressed() {
 		
 		String search_str=SymbolText.getText();
+		
+		//Test if the symbol is already used
+		if(this.btnCommodityName.getSelection()){
+			search_str=CommodityName.getText();
+		}
+		if(exchangeRateProvider.isSymbolAlreadyUsed(search_str)){
+			this.setErrorMessage("The given symbol \""+SymbolText.getText()+
+					"\" is already used!\nPlease enter a other one.");
+			return;
+		}
+		
+		
 		if(this.btnOnVistaId.getSelection()){
-			search_str+=";"+OnVistaIdText.getText();
+			search_str=SymbolText.getText()+";"+OnVistaIdText.getText();
 		}
-		if(this.btnCurrencyName.getSelection()){
-			search_str+=";"+CurrencyName.getText();
+		if(this.btnCommodityName.getSelection()){
+			search_str=CommodityName.getText()+";"+SymbolText.getText()+";"+OnVistaIdText.getText();
 		}
 		
-		logger.info("search String: "+search_str);
+		//logger.info("search String: "+search_str);
 		
 		
-		ExchangeRate rate=  exchangeRateProvider.load(search_str);
+		rate=  exchangeRateProvider.load(search_str);
 		if(rate==null){
 			this.setErrorMessage("Cannot find the given symbol \""+SymbolText.getText()+
-					"\" on Yahoo Finance!\nPlease check this string");
+					"\" on Yahoo Finance!\nPlease check if it is correct spelled.");
 			return;
 		}
 		
@@ -157,5 +174,7 @@ public class AddRateDialog extends TitleAreaDialog {
 	protected Point getInitialSize() {
 		return new Point(450, 254);
 	}
+	
+	
 
 }
