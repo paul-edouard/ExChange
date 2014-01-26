@@ -58,6 +58,14 @@ public interface IExchangeRateProvider {
 	boolean update(ExchangeRate rate);
 	
 	
+	/**
+	 * remove the rate
+	 * @param rate
+	 * @return
+	 */
+	boolean delete(ExchangeRate rate);
+	
+	
 	
 
 	

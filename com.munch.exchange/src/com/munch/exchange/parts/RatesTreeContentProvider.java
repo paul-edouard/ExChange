@@ -144,10 +144,36 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 		else if(rate instanceof Currency){
 			container=(RateContainer) root.getChild(CURRENCIES_CONTAINER);
 			container.getChilds().add(rate);
-			return container;
+			
 		}
 		
 		return container;
+	}
+	
+	public void deleteExChangeRate(ExchangeRate rate){
+		RateContainer container=null;
+		if(rate instanceof Stock){
+			container=(RateContainer) root.getChild(STOCKS_CONTAINER);
+			container.getChilds().remove(rate);
+		}
+		else if(rate instanceof Indice){
+			container=(RateContainer) root.getChild(INDICES_CONTAINER);
+			container.getChilds().remove(rate);
+			
+		}
+		else if(rate instanceof Commodity){
+			container=(RateContainer) root.getChild(COMMODITIES_CONTAINER);
+			container.getChilds().remove(rate);
+			
+		}
+		else if(rate instanceof Fund){
+			container=(RateContainer) root.getChild(FUNDS_CONTAINER);
+			container.getChilds().remove(rate);
+		}
+		else if(rate instanceof Currency){
+			container=(RateContainer) root.getChild(CURRENCIES_CONTAINER);
+			container.getChilds().remove(rate);
+		}
 	}
 	
 	

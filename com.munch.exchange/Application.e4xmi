@@ -5,7 +5,16 @@
       <children xsi:type="advanced:Perspective" xmi:id="_hCNcSGTNEeOTfZ5LPzv9Rg">
         <children xsi:type="basic:PartSashContainer" xmi:id="_hCNcSWTNEeOTfZ5LPzv9Rg">
           <children xsi:type="basic:PartStack" xmi:id="_hCNcSmTNEeOTfZ5LPzv9Rg" elementId="de.femodeling.e4.client.partstack.left">
-            <children xsi:type="basic:Part" xmi:id="_hCNcS2TNEeOTfZ5LPzv9Rg" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.SamplePart" label="Sample Part"/>
+            <children xsi:type="basic:Part" xmi:id="_fcohEIUwEeO8JejmZH0Bqw" elementId="com.munch.exchange.part.rates" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.RatesOverviewPart" label="Rates Overview" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png">
+              <handlers xmi:id="_2X_CQIXPEeOHHYCHtnBtIA" elementId="com.munch.exchange.handler.rates.add" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.AddRateHandler" command="_EztE8IXQEeOHHYCHtnBtIA"/>
+              <handlers xmi:id="_iD3JEIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.handler.delete_rate" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.DeleteRateHandler" command="_q70BMIaQEeOL4pkNq6bgJQ"/>
+              <menus xsi:type="menu:PopupMenu" xmi:id="_blA2UIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.popupmenu.rates_overview" label="Rate Overview">
+                <children xsi:type="menu:HandledMenuItem" xmi:id="_yR7TIIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.handledmenuitem.delete_rate" label="Delete" iconURI="platform:/plugin/com.munch.exchange/icons/delete.png" command="_q70BMIaQEeOL4pkNq6bgJQ"/>
+              </menus>
+              <toolbar xmi:id="_lUDAYIUwEeO8JejmZH0Bqw" elementId="com.munch.exchange.toolbar.rates">
+                <children xsi:type="menu:HandledToolItem" xmi:id="_tSYvsIXPEeOHHYCHtnBtIA" elementId="com.munch.exchange.handledtoolitem.rates.add" label="add" iconURI="platform:/plugin/com.munch.exchange/icons/add.png" tooltip="Add a new rate" command="_EztE8IXQEeOHHYCHtnBtIA"/>
+              </toolbar>
+            </children>
             <children xsi:type="basic:Part" xmi:id="_h70vUGTOEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.part.info" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.InfoPart" label="Info3" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png">
               <menus xmi:id="_gP-wsIXMEeOHHYCHtnBtIA" elementId="com.munch.exchange.menu.infomenu" label="Info Menu" iconURI="platform:/plugin/com.munch.exchange/icons/package.gif">
                 <children xsi:type="menu:HandledMenuItem" xmi:id="_qp6Y8IXMEeOHHYCHtnBtIA" elementId="com.munch.exchange.handledmenuitem.test" label="Test" iconURI="platform:/plugin/com.munch.exchange/icons/package.gif" tooltip="Test" command="_hCNcPWTNEeOTfZ5LPzv9Rg"/>
@@ -23,12 +32,6 @@
                     <children xsi:type="menu:HandledMenuItem" xmi:id="_W3ZwYIXPEeOHHYCHtnBtIA" elementId="com.munch.exchange.handledmenuitem.0" label="Unter Menu" iconURI="platform:/plugin/com.munch.exchange/icons/save_edit.png" tooltip="Unter Menu" command="_hCNcPWTNEeOTfZ5LPzv9Rg"/>
                   </menu>
                 </children>
-              </toolbar>
-            </children>
-            <children xsi:type="basic:Part" xmi:id="_fcohEIUwEeO8JejmZH0Bqw" elementId="com.munch.exchange.part.rates" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.RatesPart" label="Rates" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png">
-              <handlers xmi:id="_2X_CQIXPEeOHHYCHtnBtIA" elementId="com.munch.exchange.handler.rates.add" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.AddRateHandler" command="_EztE8IXQEeOHHYCHtnBtIA"/>
-              <toolbar xmi:id="_lUDAYIUwEeO8JejmZH0Bqw" elementId="com.munch.exchange.toolbar.rates">
-                <children xsi:type="menu:HandledToolItem" xmi:id="_tSYvsIXPEeOHHYCHtnBtIA" elementId="com.munch.exchange.handledtoolitem.rates.add" label="add" iconURI="platform:/plugin/com.munch.exchange/icons/package.gif" command="_EztE8IXQEeOHHYCHtnBtIA"/>
               </toolbar>
             </children>
           </children>
@@ -71,6 +74,7 @@
   <commands xmi:id="_hCNcOmTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.file.save" commandName="saveCommand"/>
   <commands xmi:id="_hCNcPWTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.help.aboutAction" commandName="aboutCommand"/>
   <commands xmi:id="_EztE8IXQEeOHHYCHtnBtIA" elementId="com.munch.exchange.command.rate.add" commandName="AddRate" description="add a new exchqnge rate to the rate tree"/>
+  <commands xmi:id="_q70BMIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.command.delete_rate" commandName="DeleteRate"/>
   <addons xmi:id="_hCM1ImTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.core.commands.service" contributionURI="bundleclass://org.eclipse.e4.core.commands/org.eclipse.e4.core.commands.CommandServiceAddon"/>
   <addons xmi:id="_hCM1I2TNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ui.contexts.service" contributionURI="bundleclass://org.eclipse.e4.ui.services/org.eclipse.e4.ui.services.ContextServiceAddon"/>
   <addons xmi:id="_hCM1JGTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ui.bindings.service" contributionURI="bundleclass://org.eclipse.e4.ui.bindings/org.eclipse.e4.ui.bindings.BindingServiceAddon"/>

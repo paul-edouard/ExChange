@@ -12,6 +12,7 @@ import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
+import org.eclipse.e4.ui.workbench.swt.modeling.EMenuService;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -23,7 +24,7 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
 
 
-public class RatesPart {
+public class RatesOverviewPart {
 	
 	@Inject
 	IEclipseContext context;
@@ -31,12 +32,15 @@ public class RatesPart {
 	@Inject
 	ESelectionService selectionService;
 	
+	@Inject
+	EMenuService menuService;
+	
 	private TreeViewer treeViewer;
 	private RatesTreeContentProvider contentProvider;
 	
 	
 	@Inject
-	public RatesPart() {
+	public RatesOverviewPart() {
 		//TODO Your code here
 	}
 	
@@ -63,6 +67,9 @@ public class RatesPart {
 		
 		treeViewer.setInput(contentProvider.getRoot());
 		
+		menuService.registerContextMenu(treeViewer.getTree(), "com.munch.exchange.popupmenu.rates_overview");
+		
+		
 	}
 	
 	
@@ -74,9 +81,16 @@ public class RatesPart {
 			Object[] elements=treeViewer.getExpandedElements();
 			treeViewer.refresh();
 			treeViewer.setExpandedElements(elements);
-			
-			
-			
+		}
+	}
+	
+	@Inject
+	private void deleteRate(@Optional  @UIEventTopic(IEventConstant.RATE_DELETE) ExchangeRate rate ){
+		if(treeViewer!=null && rate!=null){
+			contentProvider.deleteExChangeRate(rate);
+			Object[] elements=treeViewer.getExpandedElements();
+			treeViewer.refresh();
+			treeViewer.setExpandedElements(elements);
 		}
 	}
 	
@@ -92,6 +106,7 @@ public class RatesPart {
 			treeViewer.refresh();
 		}
 	}
+	
 	
 	
 	@PreDestroy

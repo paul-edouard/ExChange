@@ -407,6 +407,32 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		return rates;
 	}
+	
+	@Override
+	public boolean delete(ExchangeRate rate) {
+		String path=getExchangeRatePath(rate);
+		if(deleteDirRec(new File(path))){
+			this.RateCacheMap.remove(rate.getUUID());
+			return true;
+		}
+		
+		return false;
+	}
+	
+	
+	private boolean deleteDirRec(File dir){
+		File[] files=dir.listFiles();
+		for(int i=0;i<files.length;i++){
+			if(files[i].isFile()){
+				files[i].delete();}
+			else{
+				deleteDirRec(files[i]);
+			}
+		}
+		
+		return dir.delete();
+		
+	}
 
 
 	public static void main(String[] args) {
@@ -449,6 +475,9 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 
 	}
+
+
+	
 
 
 	
