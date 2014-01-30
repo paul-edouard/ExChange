@@ -28,6 +28,11 @@ public interface IImageKeys {
 	
 	//Rate
 	public static final String RATE_COMMON = "icons/bullet_black.png";
+	public static final String RATE_STOCK = "icons/chart_curve.png";
+	public static final String RATE_FUND = "icons/newspaper.png";
+	public static final String RATE_INDICE = "icons/chart_line.png";
+	public static final String RATE_COMMODITY = "icons/ruby.png";
+	public static final String RATE_CURRENCY = "icons/money_dollar.png";
 	
 	
 	/*
