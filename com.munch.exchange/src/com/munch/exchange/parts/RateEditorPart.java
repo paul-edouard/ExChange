@@ -17,12 +17,17 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.parts.composite.RateCommonInfoGroup;
 import com.munch.exchange.parts.composite.RateTitle;
+import com.munch.exchange.parts.composite.StockInfoGroup;
+import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.services.IKeyStatisticProvider;
 
 public class RateEditorPart {
 	
@@ -39,6 +44,11 @@ public class RateEditorPart {
 	@Inject
 	IEclipseContext context;
 	
+	@Inject
+	IKeyStatisticProvider keyStatisticProvider; 
+	
+	@Inject
+	IExchangeRateProvider exchangeRateProvider;
 	
 	RateTitle compositeTitle;
 	
@@ -50,7 +60,7 @@ public class RateEditorPart {
 	}
 	
 	@PostConstruct
-	public void postConstruct(Composite parent) {
+	public void postConstruct(Composite parent,Shell shell) {
 		
 		
 		
@@ -68,7 +78,6 @@ public class RateEditorPart {
 		//Create a context instance
 		IEclipseContext localContact=EclipseContextFactory.create();
 		localContact.set(Composite.class, compositeOverview);
-		//localContact.set(ExchangeRate.class, rate);
 		localContact.setParent(context);
 		
 		compositeTitle=ContextInjectionFactory.make( RateTitle.class,localContact);
@@ -80,7 +89,13 @@ public class RateEditorPart {
 		composite_Info.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		composite_Info.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
-		RateCommonInfoGroup grpInfo = new RateCommonInfoGroup(composite_Info, SWT.NONE,rate);
+		/*RateCommonInfoGroup grpInfo =*/ new RateCommonInfoGroup(composite_Info, SWT.NONE,rate);
+		
+		if(rate instanceof Stock){
+			//keyStatisticProvider.load((Stock) rate);
+		
+			new StockInfoGroup(composite_Info,(Stock) rate,shell,exchangeRateProvider);
+		}
 		
 		m_bindingContext = initDataBindings();
 		//TODO Your code here

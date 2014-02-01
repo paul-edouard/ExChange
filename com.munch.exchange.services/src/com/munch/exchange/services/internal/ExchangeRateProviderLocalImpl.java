@@ -71,7 +71,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	}
 	
 	
-	private boolean save(ExchangeRate rate) {
+	public boolean save(ExchangeRate rate) {
 		if(rate==null)return false;
 		
 		File dir=this.getExchangeRateDir(rate);
@@ -298,6 +298,34 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			return null;
 		
 	}
+	
+	public Stock loadStock(String symbol){
+		YQLStocks yqlStocks=new YQLStocks(symbol);
+		YQLQuotes yqlQuotes=new YQLQuotes(symbol);
+		if(!yqlStocks.hasValidResult() && !yqlQuotes.hasValidResult()){
+			logger.info("Cannot find the symbol \""+symbol+"\" on YQL");
+			return null;
+		}
+		
+		ExchangeRate rate=yqlStocks.getExchangeRate();
+		
+		if(yqlStocks.hasValidResult()){
+			rate=yqlStocks.getExchangeRate();
+			//Search the company name
+			if(rate!=null && yqlQuotes.hasValidResult()){
+				rate.setName(yqlQuotes.getName());
+				rate.setStockExchange(yqlQuotes.getStockExchange());
+			}
+			
+			if(rate instanceof Stock){
+				return (Stock) rate;
+			}
+		}
+	
+		
+		return null;
+	}
+	
 
 	@Override
 	public synchronized boolean update(ExchangeRate rate) {

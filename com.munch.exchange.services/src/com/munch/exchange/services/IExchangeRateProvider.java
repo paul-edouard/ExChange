@@ -3,6 +3,7 @@ package com.munch.exchange.services;
 import java.util.LinkedList;
 
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Stock;
 
 public interface IExchangeRateProvider {
 	
@@ -65,6 +66,21 @@ public interface IExchangeRateProvider {
 	 */
 	boolean delete(ExchangeRate rate);
 	
+	
+	/**
+	 * Save the given rate
+	 * @param rate
+	 * @return
+	 */
+	boolean save(ExchangeRate rate);
+	
+	/**
+	 * try to find a stock on YQL
+	 * 
+	 * @param symbol
+	 * @return
+	 */
+	Stock loadStock(String symbol);
 	
 	/**
 	 * return all the cached rate

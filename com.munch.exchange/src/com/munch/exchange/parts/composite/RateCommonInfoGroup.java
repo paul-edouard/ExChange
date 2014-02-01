@@ -27,11 +27,11 @@ public class RateCommonInfoGroup extends Group {
 	private DateTime dateTimeEnd;
 
 	public RateCommonInfoGroup(Composite parent, int style,ExchangeRate rate) {
-		super(parent, SWT.NONE);
+		super(parent, style);
 		
 		this.rate=rate;
 		
-		setText("Info");
+		setText("Common");
 		setLayout(new GridLayout(2, false));
 		
 		Label label_Name = new Label(this, SWT.NONE);
@@ -72,7 +72,7 @@ public class RateCommonInfoGroup extends Group {
 		dateTimeEnd = new DateTime(this, SWT.BORDER);
 		dateTimeEnd.setEnabled(false);
 		dateTimeEnd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		new Label(this, SWT.NONE);
+		
 		m_bindingContext = initDataBindings();
 		// TODO Auto-generated constructor stub
 	}

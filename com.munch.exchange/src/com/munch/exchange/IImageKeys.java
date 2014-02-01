@@ -34,6 +34,9 @@ public interface IImageKeys {
 	public static final String RATE_COMMODITY = "icons/ruby.png";
 	public static final String RATE_CURRENCY = "icons/money_dollar.png";
 	
+	//Quote
+	public static final String QUOTE_UP = "icons/2uparrow_16x16.png";
+	public static final String QUOTE_DOWN = "icons/2downarrow_16x16.png";
 	
 	/*
 	public static final String GROUP = "icons/package_obj.gif";
