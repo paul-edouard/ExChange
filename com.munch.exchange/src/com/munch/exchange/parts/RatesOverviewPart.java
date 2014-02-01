@@ -10,7 +10,6 @@ import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
 import org.eclipse.e4.core.contexts.ContextInjectionFactory;
-import org.eclipse.e4.core.contexts.EclipseContextFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.ui.di.Focus;
@@ -37,6 +36,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.IImageKeys;
+import com.munch.exchange.job.QuoteLoader;
 import com.munch.exchange.model.core.Commodity;
 import com.munch.exchange.model.core.Currency;
 import com.munch.exchange.model.core.ExchangeRate;
@@ -75,11 +75,11 @@ public class RatesOverviewPart {
 	
 	private TreeViewer treeViewer;
 	private RatesTreeContentProvider contentProvider;
-	
+	private QuoteLoader quoteLoader;
 	
 	@Inject
 	public RatesOverviewPart() {
-		//TODO Your code here
+		
 	}
 	
 	@PostConstruct
@@ -131,6 +131,9 @@ public class RatesOverviewPart {
 		menuService.registerContextMenu(treeViewer.getTree(), "com.munch.exchange.popupmenu.rates_overview");
 		
 		
+		//Create and start the quote loader
+		quoteLoader=ContextInjectionFactory.make( QuoteLoader.class,context);
+		
 	}
 	
 	
@@ -157,7 +160,6 @@ public class RatesOverviewPart {
 		//add the part to the corresponding Stack
 		MPartStack myStack=(MPartStack)modelService.find("com.munch.exchange.partstack.rightup", application);
 		myStack.getChildren().add(part);
-				
 		//Open the part
 		partService.showPart(part, PartState.ACTIVATE);
 	
@@ -166,6 +168,8 @@ public class RatesOverviewPart {
 	
 	private MPart createRateEditorPart(ExchangeRate rate){
 		MPart part = partService.createPart(RateEditorPart.RATE_EDITOR_ID);
+		
+		//MPart part =MBasicFactory.INSTANCE.createPartDescrip;
 		
 		part.setLabel(rate.getName());
 		part.setIconURI(getIconURI(rate));
@@ -200,7 +204,7 @@ public class RatesOverviewPart {
 	}
 	
 	private void setRateEditorPartContext(MPart part,ExchangeRate rate){
-		part.setContext(EclipseContextFactory.create());
+		part.setContext(context.createChild());
 		part.getContext().set(ExchangeRate.class, rate);
 		part.getContext().set(MDirtyable.class, new MyMDirtyable(part));
 	}
@@ -255,11 +259,31 @@ public class RatesOverviewPart {
 		}
 	}
 	
+	/*
+	@Inject
+	private void quoteUpdate(@Optional  @UIEventTopic(IEventConstant.QUOTE_UPDATE) ExchangeRate rate ){
+		logger.info("Message recieved: Quote update!");
+	}
+	@Inject
+	private void quoteLoaded(@Optional  @UIEventTopic(IEventConstant.QUOTE_LOADED) ExchangeRate rate ){
+		logger.info("Message recieved: Quote loaded!");
+	}
+	*/
+	
 	
 	
 	@PreDestroy
 	public void preDestroy() {
-		//TODO Your code here
+		
+		//Stop the quote loader
+		try {
+			quoteLoader.cancel();
+			quoteLoader.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		
 	}
 	
 	

@@ -21,7 +21,7 @@
               <children xsi:type="basic:Part" xmi:id="_Zb_CYIkDEeOSs_sLuwXLrA" elementId="com.munch.exchange.part.dummy" toBeRendered="false" visible="false"/>
             </children>
             <children xsi:type="basic:PartStack" xmi:id="_qoPGQIjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partstack.rightdown" containerData="20">
-              <children xsi:type="basic:Part" xmi:id="_h70vUGTOEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.part.info" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.InfoPart" label="Info3" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png">
+              <children xsi:type="basic:Part" xmi:id="_h70vUGTOEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.part.info" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.InfoPart" label="Info" iconURI="platform:/plugin/com.munch.exchange/icons/console_view.gif">
                 <menus xmi:id="_gP-wsIXMEeOHHYCHtnBtIA" elementId="com.munch.exchange.menu.infomenu" label="Info Menu" iconURI="platform:/plugin/com.munch.exchange/icons/package.gif">
                   <children xsi:type="menu:HandledMenuItem" xmi:id="_qp6Y8IXMEeOHHYCHtnBtIA" elementId="com.munch.exchange.handledmenuitem.test" label="Test" iconURI="platform:/plugin/com.munch.exchange/icons/package.gif" tooltip="Test" command="_hCNcPWTNEeOTfZ5LPzv9Rg"/>
                 </menus>

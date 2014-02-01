@@ -184,7 +184,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	 * Ex: Commodity_Name;Yql_Symbol
 	 */
 	@Override
-	public ExchangeRate load(String symbol) {
+	public synchronized ExchangeRate load(String symbol) {
 		//Try to find the Exchange rate from cache
 		//Find directly from the UUID
 		if(RateCacheMap.containsKey(symbol))
@@ -300,7 +300,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	}
 
 	@Override
-	public boolean update(ExchangeRate rate) {
+	public synchronized boolean update(ExchangeRate rate) {
 		
 		boolean isUpdated=false;
 		
@@ -387,7 +387,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	
 	
 	@Override
-	public LinkedList<ExchangeRate> loadAll(Class<? extends ExchangeRate> clazz) {
+	public synchronized LinkedList<ExchangeRate> loadAll(Class<? extends ExchangeRate> clazz) {
 		
 		LinkedList<ExchangeRate> rates=new LinkedList<ExchangeRate>();
 		
@@ -409,7 +409,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	}
 	
 	@Override
-	public boolean delete(ExchangeRate rate) {
+	public synchronized boolean delete(ExchangeRate rate) {
 		String path=getExchangeRatePath(rate);
 		if(deleteDirRec(new File(path))){
 			this.RateCacheMap.remove(rate.getUUID());
@@ -432,6 +432,13 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		return dir.delete();
 		
+	}
+	
+	@Override
+	public synchronized LinkedList<ExchangeRate> getCachedRates() {
+		LinkedList<ExchangeRate> rates=new LinkedList<ExchangeRate>();
+		rates.addAll(RateCacheMap.values());
+		return rates;
 	}
 
 
@@ -475,6 +482,9 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 
 	}
+
+
+	
 
 
 	

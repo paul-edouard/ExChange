@@ -1,4 +1,4 @@
-package com.munch.exchange.services.internal;
+package com.munch.exchange.services.internal.test;
 
 import org.apache.log4j.BasicConfigurator;
 
@@ -8,6 +8,13 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.services.internal.AnalystEstimationProviderLocalImpl;
+import com.munch.exchange.services.internal.DividentProviderLocalImpl;
+import com.munch.exchange.services.internal.ExchangeRateProviderLocalImpl;
+import com.munch.exchange.services.internal.FinancialsProviderLocalImpl;
+import com.munch.exchange.services.internal.HistoricalDataProviderLocalImpl;
+import com.munch.exchange.services.internal.KeyStatisticsProviderLocalImpl;
+import com.munch.exchange.services.internal.QuotePoviderLocalImpl;
 
 public class InternalTest {
 

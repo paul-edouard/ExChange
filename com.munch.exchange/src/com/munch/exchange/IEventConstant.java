@@ -10,5 +10,10 @@ public interface IEventConstant {
 	String RATE_LOADING = "RATE/LOADING";
 	String RATE_LOADED = "RATE/LOADED";
 	
+	//QUOTE
+	String QUOTE_ALLTOPICS = "QUOTE/*";
+	String QUOTE_LOADED = "QUOTE/LOADED";
+	String QUOTE_UPDATE = "QUOTE/UPDATE";
+	
 
 }

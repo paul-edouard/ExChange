@@ -66,6 +66,11 @@ public interface IExchangeRateProvider {
 	boolean delete(ExchangeRate rate);
 	
 	
+	/**
+	 * return all the cached rate
+	 * @return
+	 */
+	LinkedList<ExchangeRate> getCachedRates();
 	
 
 	

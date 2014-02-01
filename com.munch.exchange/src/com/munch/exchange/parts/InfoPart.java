@@ -10,11 +10,8 @@ import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 
 public class InfoPart {
@@ -27,19 +24,6 @@ public class InfoPart {
 	@PostConstruct
 	public void postConstruct(Composite parent) {
 		parent.setLayout(new GridLayout(1, false));
-		
-		Button btnAsk = new Button(parent, SWT.NONE);
-		btnAsk.setImage(null);
-		btnAsk.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseDown(MouseEvent e) {
-				//YahooFinance j=new YahooFinance("GE");j.addStock("FDAX.EX");j.addStock("MSFT");
-				//j.addStock("DAI.DE");
-				//styledText.append(j.getCurrentQuotes()+"\n");
-				styledText.append("Coucou\n");
-			}
-		});
-		btnAsk.setText("Get Info!");
 		
 		ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		GridData gd_scrolledComposite = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);

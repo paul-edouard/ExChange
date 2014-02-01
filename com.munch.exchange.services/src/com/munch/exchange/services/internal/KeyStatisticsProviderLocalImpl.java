@@ -93,6 +93,7 @@ public class KeyStatisticsProviderLocalImpl implements IKeyStatisticProvider {
 			System.out.println("The key statistics were updated: \""+stock.getFullName());
 			if(this.save(stock)){
 				System.out.println("The key statistics Data were automaticaly saved!");
+				return true;
 			}
 			else{
 				System.out.println("Error: cannot save the key statistics data!");

@@ -161,6 +161,9 @@ public class YQLQuotes  extends YQLTable {
 	
 	@Override
 	public boolean hasValidResult() {
+		
+		//System.out.println(this.getResult().toString(1));
+		
 		if(this.getResult()==null)return false;
 		
 		if(this.getCurrent()==null)return false;
@@ -169,7 +172,7 @@ public class YQLQuotes  extends YQLTable {
 		
 		if(!(this.getCurrent().get("Name") instanceof String))return false;
 		
-		return !Float.isNaN(this.getChange());
+		return !Float.isNaN(this.getLastTradePriceOnly());
 	}
 
 	/*
@@ -219,6 +222,12 @@ public class YQLQuotes  extends YQLTable {
 		//	return Float.NaN;
 		
 		try {
+			
+			Object obj=this.getCurrent().get("DaysHigh");
+			if(obj.toString().equals("null"))
+				return Float.NaN;
+			
+			
 			return this.getCurrent().getFloat("DaysHigh");
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -424,8 +433,20 @@ public class YQLQuotes  extends YQLTable {
 		if(this.getCurrent()==null)return Float.NaN;
 		try {
 			
+			Object obj=this.getCurrent().get("Change");
+			if(obj.toString().equals("null"))
+				return Float.NaN;
+			
+			
+			if(obj instanceof String){
+				String obj_str=(String) obj;
+				if(obj_str.equals("null"))
+					return Float.NaN;
+			}
+			
 			return this.getCurrent().getFloat("Change");
 		} catch (JSONException e) {
+			//System.out.println( "After Exeption: "+this.getCurrent().get("Change"));
 			e.printStackTrace();
 			return Float.NaN;
 		}
@@ -466,6 +487,11 @@ public class YQLQuotes  extends YQLTable {
 		//	return Float.NaN;
 		
 		try {
+			
+			Object obj=this.getCurrent().get("YearHigh");
+			if(obj.toString().equals("null"))
+				return Float.NaN;
+			
 			return this.getCurrent().getFloat("YearHigh");
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -662,6 +688,11 @@ public class YQLQuotes  extends YQLTable {
 		//	return Float.NaN;
 		
 		try {
+			
+			Object obj=this.getCurrent().get("DaysLow");
+			if(obj.toString().equals("null"))
+				return Float.NaN;
+			
 			return this.getCurrent().getFloat("DaysLow");
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -740,6 +771,11 @@ public class YQLQuotes  extends YQLTable {
 		//	return Float.NaN;
 		
 		try {
+			
+			Object obj=this.getCurrent().get("YearLow");
+			if(obj.toString().equals("null"))
+				return Float.NaN;
+			
 			return this.getCurrent().getFloat("YearLow");
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -765,6 +801,11 @@ public class YQLQuotes  extends YQLTable {
 		
 		
 		try {
+			
+			Object obj=this.getCurrent().get("Volume");
+			if(obj.toString().equals("null"))
+				return 0;
+			
 			return this.getCurrent().getLong("Volume");
 		} catch (JSONException e) {
 			e.printStackTrace();

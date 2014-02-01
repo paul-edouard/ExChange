@@ -44,12 +44,9 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 	
 	RateLoader loader=new RateLoader();
 
+	@Inject
 	public RatesTreeContentProvider() {
 		super();
-		// TODO Auto-generated constructor stub
-		//System.out.println("RatesTreeContentProvider contructor called");
-		
-		
 	}
 
 	@Override
@@ -276,7 +273,7 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 				if(i>3)i=0;
 				
 				Thread.sleep(500);
-				
+
 			}
 			}catch(InterruptedException e){
 				

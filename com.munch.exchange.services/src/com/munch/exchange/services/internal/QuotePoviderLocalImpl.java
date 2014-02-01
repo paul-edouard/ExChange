@@ -3,9 +3,11 @@ package com.munch.exchange.services.internal;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
-import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.model.core.quote.RecordedQuote;
 import com.munch.exchange.model.tool.DateTool;
@@ -14,6 +16,8 @@ import com.munch.exchange.services.IQuoteProvider;
 import com.munch.exchange.services.internal.yql.YQLQuotes;
 
 public class QuotePoviderLocalImpl implements IQuoteProvider {
+	
+	private static Logger logger = Logger.getLogger(QuotePoviderLocalImpl.class);
 	
 	final private static String QuoteStr="Quote";
 	
@@ -54,7 +58,7 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 		RecordedQuote dayQuotes=lastQuotes(rate);
 		
 		File f=new File(getSavePath(rate)+File.separator+String.valueOf(currentDay)+".xml");
-		System.out.println("Writing file: "+f.getAbsolutePath());
+		logger.info("Writing file: "+f.getAbsolutePath());
 		if(!Xml.save(dayQuotes, f.getAbsolutePath()))
 				return false;
 		
@@ -95,7 +99,7 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 		// load from local
 		RecordedQuote LocalQuotes=loadLocalData(rate);
 		if(LocalQuotes!=null){
-			System.out.println("Quotes localy found for \""+rate.getFullName());
+			logger.info("Quotes localy found for \""+rate.getFullName());
 			rate.setRecordedQuote(LocalQuotes);
 			update(rate);
 			return true;
@@ -112,21 +116,23 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 		
 		YQLQuotes quote=new YQLQuotes(rate.getSymbol());
 		QuotePoint point=quote.getCurrentQuotePoint();
+		//logger.info("Current Point:"+point);
 		if (!rate.getRecordedQuote().contains(point) && point!=null) {
 			
 			rate.getRecordedQuote().addLast(point);
 			rate.getRecordedQuote().sort();
-			System.out.println("Quote Point added: "+point);
+			logger.info("Quote Point added: "+point);
 			isUpdated = true;
 		}
 		
 		if(isUpdated){
-			System.out.println("The ExchangeRate was updated: \""+rate.getFullName());
+			logger.info("The ExchangeRate was updated: \""+rate.getFullName());
 			if(this.saveCurrent(rate)){
-				System.out.println("The new quote were automaticaly saved!");
+				logger.info("The new quote were automaticaly saved!");
+				return true;
 			}
 			else{
-				System.out.println("Error: cannot save the updated quote!");
+				logger.error("Error: cannot save the updated quote!");
 				return false;
 			}
 		}
@@ -136,22 +142,23 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 	
 	public static void main(String[] args) {
 		
+		 BasicConfigurator.configure();
 		
 		ExchangeRateProviderLocalImpl provider=new ExchangeRateProviderLocalImpl();
 		provider.init("D:\\Paul\\04_Programierung\\03_Boerse\\01_PROG_DATA");
 		
-		ExchangeRate rate=provider.load("ADS.DE");
-		Stock stock=(Stock) rate;
+		ExchangeRate rate=provider.load("EURUSD=X");
+		//Stock stock=(Stock) rate;
 		
 		QuotePoviderLocalImpl dataProvider=new QuotePoviderLocalImpl();
 		
-		dataProvider.load(stock);
+		dataProvider.load(rate);
 		
-		//System.out.println(stock.getRecordedQuote().getLast().getParameter().getChild("PercentChangeFromTwoHundreddayMovingAverage").getValue());
+		//logger.info(stock.getRecordedQuote().getLast().getParameter().getChild("PercentChangeFromTwoHundreddayMovingAverage").getValue());
 		
 		/*
 		for(HistoricalPoint point:stock.getHistoricalData()){
-			System.out.println(point);
+			logger.info(point);
 		}
 		*/
 
