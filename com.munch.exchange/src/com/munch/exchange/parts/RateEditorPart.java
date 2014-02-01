@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.TabItem;
 
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.parts.composite.OverviewRateChart;
 import com.munch.exchange.parts.composite.RateCommonInfoGroup;
 import com.munch.exchange.parts.composite.RateTitle;
 import com.munch.exchange.parts.composite.StockInfoGroup;
@@ -96,6 +97,9 @@ public class RateEditorPart {
 		
 			new StockInfoGroup(composite_Info,(Stock) rate,shell,exchangeRateProvider);
 		}
+		
+		OverviewRateChart chart=new OverviewRateChart(compositeOverview);
+		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 		m_bindingContext = initDataBindings();
 		//TODO Your code here
