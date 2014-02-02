@@ -8,17 +8,27 @@ import com.munch.exchange.model.tool.DateTool;
 public class HistoricalPoint extends DatePoint {
 	
 	
-	static final String FIELD_Low="low";
-	static final String FIELD_Open="open";
-	static final String FIELD_Adj_Close="adj_close";
-	static final String FIELD_Close="close";
-	static final String FIELD_High="high";
-	static final String FIELD_Volume="volume";
+	public static final String FIELD_Low="low";
+	public static final String FIELD_Open="open";
+	public static final String FIELD_Adj_Close="adj_close";
+	public static final String FIELD_Close="close";
+	public static final String FIELD_High="high";
+	public static final String FIELD_Volume="volume";
 
 	
 	private float low,open,adj_close,high,close=0;
 	private long volume=0;
 
+	
+	public float get(String field){
+		if(field.equals(FIELD_Low))return this.getLow();
+		else if(field.equals(FIELD_Open))return this.getOpen();
+		else if(field.equals(FIELD_Adj_Close))return this.getAdjClose();
+		else if(field.equals(FIELD_Close))return this.getClose();
+		else if(field.equals(FIELD_High))return this.getHigh();
+		else if(field.equals(FIELD_Volume))return this.getVolume();
+		else return Float.NaN;
+	}
 	
 
 	public float getLow() {

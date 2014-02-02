@@ -163,7 +163,7 @@ public class OnVistaTable {
 		for(Element e:doc.getAllElements()){
 			if(e.nodeName().equals("tr")){
 				HistoricalPoint point=createHistoricalPoint(e.text().replace(" ", ";"));
-				if(point!=null){
+				if(point!=null && !plist.contains(point)){
 					plist.add(point);
 				}
 			}

@@ -23,7 +23,7 @@ public class QuoteLoader extends Job {
 	private static Logger logger = Logger.getLogger(QuoteLoader.class);
 	
 	boolean stop=false;
-	public static final int RESTART_TIMEOUT=10000;
+	public static final int RESTART_TIMEOUT=20000;
 	
 	
 	@Inject

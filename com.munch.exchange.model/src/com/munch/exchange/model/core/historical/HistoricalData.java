@@ -1,5 +1,8 @@
 package com.munch.exchange.model.core.historical;
 
+import org.jfree.data.time.Day;
+import org.jfree.data.time.TimeSeries;
+
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.DatePointList;
 
@@ -15,6 +18,22 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	@Override
 	protected DatePoint createPoint() {
 		return new HistoricalPoint();
+	}
+	
+	
+	
+	public TimeSeries getTimeSeries(String field, int numberOfDays){
+		 TimeSeries series = new TimeSeries(field);
+		 
+		 int maxDays=this.size();
+		 for(int i=numberOfDays;i>0;i--){
+			 if(maxDays-i>=0){
+				 HistoricalPoint point=(HistoricalPoint)this.get(maxDays-i);
+				 series.add(new Day(point.getDate().getTime()),point.get(field));
+			 }
+		 }
+		 
+		 return series;
 	}
 	
 	/*

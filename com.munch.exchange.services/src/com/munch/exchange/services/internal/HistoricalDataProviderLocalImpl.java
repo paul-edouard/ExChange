@@ -170,7 +170,10 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 						" to "+DateTool.dateToString(intervals[i+1]));
 				
 			} else {
-				hisDatas.addAll(points);
+				for(HistoricalPoint point :points){
+					if(!hisDatas.contains(point))
+						hisDatas.add(point);
+				}
 				hisDatas.sort();
 			}
 		}

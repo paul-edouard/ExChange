@@ -51,7 +51,9 @@ public class RateEditorPart {
 	@Inject
 	IExchangeRateProvider exchangeRateProvider;
 	
-	RateTitle compositeTitle;
+	RateTitle titleComposite;
+	OverviewRateChart chartComposite;
+	RateCommonInfoGroup commonInfoComposite;
 	
 	//private Label lblTitle;
 	
@@ -62,7 +64,6 @@ public class RateEditorPart {
 	
 	@PostConstruct
 	public void postConstruct(Composite parent,Shell shell) {
-		
 		
 		
 		TabFolder tabFolder = new TabFolder(parent, SWT.BOTTOM);
@@ -81,46 +82,46 @@ public class RateEditorPart {
 		localContact.set(Composite.class, compositeOverview);
 		localContact.setParent(context);
 		
-		compositeTitle=ContextInjectionFactory.make( RateTitle.class,localContact);
+		//////////////////////////////////
+		//Create the Title Composite
+		//////////////////////////////////
+		titleComposite=ContextInjectionFactory.make( RateTitle.class,localContact);
 		//Composite compositeTitle = new Composite(compositeOverview, SWT.NONE);
-		compositeTitle.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		titleComposite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		
+		//////////////////////////////////
+		//Create the Info Composite
+		//////////////////////////////////
 		Composite composite_Info = new Composite(compositeOverview, SWT.NONE);
 		composite_Info.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		composite_Info.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
-		/*RateCommonInfoGroup grpInfo =*/ new RateCommonInfoGroup(composite_Info, SWT.NONE,rate);
+		commonInfoComposite = new RateCommonInfoGroup(composite_Info, SWT.NONE,rate);
 		
 		if(rate instanceof Stock){
-			//keyStatisticProvider.load((Stock) rate);
-		
 			new StockInfoGroup(composite_Info,(Stock) rate,shell,exchangeRateProvider);
 		}
 		
-		OverviewRateChart chart=new OverviewRateChart(compositeOverview);
-		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
-		m_bindingContext = initDataBindings();
-		//TODO Your code here
+		//////////////////////////////////
+		//Create the Overview Chart
+		//////////////////////////////////
+		chartComposite=ContextInjectionFactory.make(OverviewRateChart.class,localContact);
+		//chart=new OverviewRateChart(compositeOverview);
+		chartComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
 	}
 	
-	/*
-	@Inject
-	private void quoteLoaded(@Optional  @UIEventTopic(IEventConstant.QUOTE_LOADED) String rate_uuid ){
-		logger.info("Message recieved: Quote loaded!");
-	}
-	
-	@Inject
-	private void quoteUpdate(@Optional  @UIEventTopic(IEventConstant.QUOTE_UPDATE) String rate_uuid ){
-		logger.info("Message recieved: Quote update!");
-	}
-	*/
 	
 	@PreDestroy
 	public void preDestroy() {
-
-		//TODO Your code here
+		
+		//Clear the historical Data
+		if(!rate.getHistoricalData().isEmpty()){
+			rate.getHistoricalData().clear();
+		}
+		
 	}
 	
 	
@@ -134,15 +135,5 @@ public class RateEditorPart {
 	public void save() {
 		//TODO Your code here
 	}
-	protected DataBindingContext initDataBindings() {
-		DataBindingContext bindingContext = new DataBindingContext();
-		//
-		/*
-		IObservableValue observeTextLblNewLabelObserveWidget = WidgetProperties.text().observe(lblTitle);
-		IObservableValue fullNameRateObserveValue = BeanProperties.value("fullName").observe(rate);
-		bindingContext.bindValue(observeTextLblNewLabelObserveWidget, fullNameRateObserveValue, null, null);
-		*/
-		//
-		return bindingContext;
-	}
+	
 }
