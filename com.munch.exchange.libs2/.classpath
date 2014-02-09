@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry exported="true" kind="lib" path="apache-commons.jar"/>
+	<classpathentry exported="true" kind="lib" path="javax.persistence.jar"/>
+	<classpathentry exported="true" kind="lib" path="javax.ws.rs.jar"/>
+	<classpathentry exported="true" kind="lib" path="jersey-bundle-1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.slf4j.jar"/>
+	<classpathentry exported="true" kind="lib" path="org-apache-commons-lang.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-aop-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-aspects-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-beans-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-build-src-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-context-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-context-support-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-core-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-expression-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-framework-bom-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-instrument-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-instrument-tomcat-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-jdbc-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-jms-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-messaging-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-orm-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-oxm-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-test-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-tx-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-web-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-webmvc-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-webmvc-portlet-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="spring-websocket-4.0.1.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="xmlpull-xpp3-1.1.4c.jar"/>
+	<classpathentry exported="true" kind="lib" path="xstream-1.4.7.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
