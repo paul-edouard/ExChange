@@ -24,6 +24,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.web.client.RestTemplate;
 
+import com.coherentlogic.fred.client.IServiceKey;
 import com.coherentlogic.fred.client.core.builders.QueryBuilder;
 import com.coherentlogic.fred.client.core.domain.AggregationMethod;
 import com.coherentlogic.fred.client.core.domain.Categories;
@@ -88,7 +89,7 @@ public class QueryBuilderTest {
      * system. Make sure to restart your IDE and/or OS shell once this has been
      * set.
      */
-    static final String API_KEY = "a28aa79a79d4fddce67d87b7743848a9"; // System.getenv(FRED_API_KEY);
+    static final String API_KEY = IServiceKey.API_KEY; // System.getenv(FRED_API_KEY);
 
     private final ApplicationContext context
         = new FileSystemXmlApplicationContext (
