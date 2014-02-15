@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Neuroph
+Bundle-SymbolicName: com.munch.exchange.neuroph
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: MUNCH
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
