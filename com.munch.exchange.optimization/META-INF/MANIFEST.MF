@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Optimization
+Bundle-SymbolicName: com.munch.exchange.optimization
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: MUNCH
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7

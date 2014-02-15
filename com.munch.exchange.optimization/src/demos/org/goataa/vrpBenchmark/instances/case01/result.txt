@@ -1,0 +1,11 @@
+Total Errors        : 0
+Total Costs         : 43900
+Total Time Error    : 0
+Container Errors    : 0
+Driver Errors       : 0
+Order Errors        : 0
+Truck Errors        : 0
+Pickup Time Error   : 0
+Delivery Time Error : 0
+Truck Costs         : 6900
+Driver Costs        : 37000
