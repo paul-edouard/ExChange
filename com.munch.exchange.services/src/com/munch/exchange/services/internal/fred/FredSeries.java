@@ -1,5 +1,6 @@
 package com.munch.exchange.services.internal.fred;
 
+import java.util.Calendar;
 import java.util.List;
 
 import com.coherentlogic.fred.client.IServiceKey;
@@ -17,7 +18,6 @@ public class FredSeries {
 	private EconomicData economicData=null;
 	
 	
-	
 	public FredSeries(String symbol) {
 		super();
 		this.symbol = symbol;
@@ -32,9 +32,30 @@ public class FredSeries {
 				
 				economicData.setName(series.getTitle());
 				economicData.setSymbol(series.getId());
-				//economicData.set
 				
+				Calendar start=Calendar.getInstance();
+				start.setTime(series.getObservationStart());
+				economicData.setStart(start);
 				
+				Calendar end=Calendar.getInstance();
+				end.setTime(series.getObservationEnd());
+				economicData.setStart(end);
+				
+				economicData.setFrequency(series.getFrequency());
+				economicData.setFrequencyShort(series.getFrequencyShort());
+				
+				economicData.setUnits(series.getUnits());
+				economicData.setUnitsShort(series.getUnitsShort());
+				
+				economicData.setSeasonalAdjustment(series.getSeasonalAdjustment());
+				economicData.setSeasonalAdjustmentShort(series.getSeasonalAdjustmentShort());
+				
+				Calendar lastUpdate=Calendar.getInstance();
+				lastUpdate.setTime(series.getLastUpdated());
+				economicData.setLastUpdated(lastUpdate);
+				economicData.setPopularity(String.valueOf(series.getPopularity()));
+				economicData.setNotes(series.getNotes());
+		
 				
 			}
 			
@@ -77,13 +98,12 @@ public class FredSeries {
 
 
 	public static void main(String[] args) {
-		FredSeries s=new FredSeries("GNPCA");
-		Seriess result=s.getResult();
+		//CPIAUCSL
+		//FredSeries s=new FredSeries("GNPCA");
+		FredSeries s=new FredSeries("CPIAUCSL");
+		System.out.println(s.getEconomicData());
 		
-		List<Series> seriesList = result.getSeriesList();
-		for(Series se:seriesList ){
-			System.out.println(se.getTitle());
-		}
+		//TODO Implement Caterogy search!
 		
 	}
 
