@@ -168,6 +168,10 @@ public class AddRateDialog extends TitleAreaDialog {
 	protected void okPressed() {
 		
 		String search_str=SymbolText.getText();
+		boolean modus=comboRateType.getText().startsWith("Yahoo Finance Symbol");
+		if(!modus){
+			search_str="FRED_"+SymbolText.getText();
+		}
 		//Test if the symbol is already used
 		if(this.btnCommodityName.getSelection()){
 			search_str=CommodityName.getText();
@@ -178,20 +182,16 @@ public class AddRateDialog extends TitleAreaDialog {
 			return;
 		}
 		
-		
-		if(this.btnOnVistaId.getSelection()){
-			search_str=SymbolText.getText()+";"+OnVistaIdText.getText();
+		if(modus){
+			if(this.btnOnVistaId.getSelection()){
+				search_str=SymbolText.getText()+";"+OnVistaIdText.getText();
+			}
+			if(this.btnCommodityName.getSelection()){
+				search_str=CommodityName.getText()+";"+SymbolText.getText()+";"+OnVistaIdText.getText();
+			}
 		}
-		if(this.btnCommodityName.getSelection()){
-			search_str=CommodityName.getText()+";"+SymbolText.getText()+";"+OnVistaIdText.getText();
-		}
 		
-		boolean modus=comboRateType.getText().startsWith("Yahoo Finance Symbol");
-		if(!modus){
-			search_str="FRED_"+SymbolText.getText();
-		}
-		//logger.info("search String: "+search_str);
-		
+	
 		rate=  exchangeRateProvider.load(search_str);
 		if(rate==null){
 			this.setErrorMessage("Cannot find the given symbol \""+SymbolText.getText()+

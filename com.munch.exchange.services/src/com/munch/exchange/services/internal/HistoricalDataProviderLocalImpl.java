@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import com.munch.exchange.model.core.Commodity;
 import com.munch.exchange.model.core.Currency;
 import com.munch.exchange.model.core.DatePoint;
+import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalData;
@@ -16,6 +17,7 @@ import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Xml;
 import com.munch.exchange.services.IHistoricalDataProvider;
+import com.munch.exchange.services.internal.fred.FredObservations;
 import com.munch.exchange.services.internal.onvista.OnVistaTable;
 import com.munch.exchange.services.internal.yql.YQLHistoricalData;
 
@@ -157,6 +159,12 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 				OnVistaTable table=new OnVistaTable(id, intervals[i],"Y1");
 				points =table.getHisPointList();
 			}
+			else if(rate instanceof EconomicData){
+				EconomicData ed=(EconomicData)rate;
+				FredObservations obs=new FredObservations(ed.getId(),intervals[i], intervals[i+1]);
+				points=obs.getObservations();
+				
+			}
 			else{
 				YQLHistoricalData hisData = new YQLHistoricalData(rate.getSymbol(),
 					intervals[i], intervals[i+1]);
@@ -205,6 +213,12 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 				id=((Currency) rate).getOnVistaId();
 			OnVistaTable table=new OnVistaTable(id, rate.getHistoricalData().getLast().getDate(),"Y1");
 			points =table.getHisPointList();
+		}
+		else if(rate instanceof EconomicData){
+			EconomicData ed=(EconomicData)rate;
+			FredObservations obs=new FredObservations(ed.getId(),rate.getHistoricalData().getLast().getDate(), rate.getEnd());
+			points=obs.getObservations();
+			
 		}
 		else{
 			YQLHistoricalData hisData = new YQLHistoricalData(rate.getSymbol(),
