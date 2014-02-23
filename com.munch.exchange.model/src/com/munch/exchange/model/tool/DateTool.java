@@ -91,6 +91,29 @@ public class DateTool {
 		
 	}
 	
+	public static Calendar StringToMs(String dateStr){
+		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ssX");
+		try {
+			Date d=format.parse(dateStr);
+			if(d!=null){
+				Calendar date=Calendar.getInstance();
+				date.setTime(d);
+				date.set(Calendar.MILLISECOND, 0);
+				date.set(Calendar.HOUR_OF_DAY, 0);
+				date.set(Calendar.MINUTE, 0);
+				date.set(Calendar.SECOND, 0);
+				
+				return date;
+			}
+			return null;
+			
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();return null;
+		}
+		
+	}
+	
 	public static Calendar[] splitIntervalInYears(Calendar date_A,Calendar date_B){
 		
 		int year_first=date_A.get(Calendar.YEAR);

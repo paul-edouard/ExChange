@@ -1,20 +1,19 @@
 package com.munch.exchange.services.internal.fred;
 
-import java.util.Calendar;
-import java.util.List;
-
-import com.coherentlogic.fred.client.IServiceKey;
-import com.coherentlogic.fred.client.core.builders.QueryBuilder;
-import com.coherentlogic.fred.client.core.domain.Series;
-import com.coherentlogic.fred.client.core.domain.Seriess;
 import com.munch.exchange.model.core.EconomicData;
+import com.munch.exchange.model.tool.DateTool;
+import com.munch.exchange.services.internal.yql.json.JSONArray;
+import com.munch.exchange.services.internal.yql.json.JSONObject;
 
 public class FredSeries {
 	
 	static final String FRED_SERIES_HTTP_PATH = "http://api.stlouisfed.org/fred/series";
 	
+	
+	//http://api.stlouisfed.org/fred/series?series_id=GNPCA&api_key=abcdefghijklmnopqrstuvwxyz123456&file_type=json
+	
 	private String symbol;
-	private Seriess result=null;
+	//private Seriess result=null;
 	private EconomicData economicData=null;
 	
 	
@@ -22,41 +21,63 @@ public class FredSeries {
 		super();
 		this.symbol = symbol;
 	}
-
+	
+	public FredSeries(EconomicData economicData) {
+		super();
+		this.symbol = economicData.getId();
+	}
+	
+	private String createUrl(){
+		String url=FredApi.URL+"series?";
+		url+="series_id="+this.symbol+"&";
+		url+="api_key="+IServiceKey.API_KEY+"&";
+		url+="file_type=json";
+		return url;
+	}
+	
+	public JSONObject getJSONObject(){
+		return FredApi.getJSONObject(this.createUrl());
+	}
+	
+	
 	public EconomicData getEconomicData(){
 		
 		if(economicData==null){
-			Series series=getFirstSeries();
+			//Series series=getFirstSeries();
+			
+			JSONObject series=getFirstSeries();
+			
+			
 			if(series!=null){
+			//	System.out.println(series);
 				economicData=new EconomicData();
 				
-				economicData.setName(series.getTitle());
-				economicData.setSymbol(series.getId());
+				economicData.setName(series.getString("title"));
+				economicData.setSymbol(EconomicData.FRED_SYMBOL_PREFIX+series.getString("id"));
+				economicData.setId(series.getString("id"));
 				
-				Calendar start=Calendar.getInstance();
-				start.setTime(series.getObservationStart());
-				economicData.setStart(start);
 				
-				Calendar end=Calendar.getInstance();
-				end.setTime(series.getObservationEnd());
-				economicData.setStart(end);
+				economicData.setStart(DateTool.StringToDay(series.getString("observation_start")));
+				economicData.setEnd(DateTool.StringToDay(series.getString("observation_end")));
 				
-				economicData.setFrequency(series.getFrequency());
-				economicData.setFrequencyShort(series.getFrequencyShort());
+				economicData.setFrequency(series.getString("frequency"));
+				economicData.setFrequencyShort(series.getString("frequency_short"));
 				
-				economicData.setUnits(series.getUnits());
-				economicData.setUnitsShort(series.getUnitsShort());
+				economicData.setUnits(series.getString("units"));
+				economicData.setUnitsShort(series.getString("units_short"));
 				
-				economicData.setSeasonalAdjustment(series.getSeasonalAdjustment());
-				economicData.setSeasonalAdjustmentShort(series.getSeasonalAdjustmentShort());
+				economicData.setSeasonalAdjustment(series.getString("seasonal_adjustment"));
+				economicData.setSeasonalAdjustmentShort(series.getString("seasonal_adjustment_short"));
 				
-				Calendar lastUpdate=Calendar.getInstance();
-				lastUpdate.setTime(series.getLastUpdated());
-				economicData.setLastUpdated(lastUpdate);
-				economicData.setPopularity(String.valueOf(series.getPopularity()));
-				economicData.setNotes(series.getNotes());
+				
+				economicData.setLastUpdated(DateTool.StringToMs(series.getString("last_updated")));
+				economicData.setPopularity(String.valueOf(series.getInt("popularity")));
+				economicData.setNotes(series.getString("notes"));
+				
+				//Find out the series categories
+				FredSeriesCategory fredSeriesCategory=new FredSeriesCategory(economicData);
+				economicData.setCategories(fredSeriesCategory.getCategories());
 		
-				
 			}
 			
 			
@@ -66,7 +87,22 @@ public class FredSeries {
 		
 	}
 	
-	private Series getFirstSeries(){
+	private JSONObject getFirstSeries(){
+		JSONObject obj=this.getJSONObject();
+		JSONArray  array=obj.getJSONArray("seriess");
+		for(int i=0;i<array.length();i++){
+			//Object o=array.get(i);
+			if(array.get(i) instanceof JSONObject){
+				JSONObject j_o=(JSONObject) array.get(i);
+				return j_o;
+		//		System.out.println(j_o);
+			}
+			
+		}
+		return null;
+		
+		
+		/*
 		if(getResult()==null)return null;
 		
 		List<Series> seriesList = getResult().getSeriesList();
@@ -75,8 +111,10 @@ public class FredSeries {
 		}
 		
 		return null;
+		*/
 	}
 	
+	/*
 	private Seriess getResult() {
 		if(result==null){
 			 QueryBuilder builder = new QueryBuilder (
@@ -94,7 +132,7 @@ public class FredSeries {
 		return result;
 	}
 
-
+	*/
 
 
 	public static void main(String[] args) {
@@ -102,6 +140,8 @@ public class FredSeries {
 		//FredSeries s=new FredSeries("GNPCA");
 		FredSeries s=new FredSeries("CPIAUCSL");
 		System.out.println(s.getEconomicData());
+		
+		
 		
 		//TODO Implement Caterogy search!
 		

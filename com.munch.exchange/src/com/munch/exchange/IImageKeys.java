@@ -25,6 +25,7 @@ public interface IImageKeys {
 	public static final String RATE_CONTAINER_INDICES = "icons/chart_line.png";
 	public static final String RATE_CONTAINER_COMMODITIES = "icons/ruby.png";
 	public static final String RATE_CONTAINER_CURRENCIES = "icons/money_dollar.png";
+	public static final String RATE_CONTAINER_ECONOMIC_DATAS = "icons/money_dollar.png";
 	
 	//Rate
 	public static final String RATE_COMMON = "icons/bullet_black.png";
@@ -33,6 +34,7 @@ public interface IImageKeys {
 	public static final String RATE_INDICE = "icons/chart_line.png";
 	public static final String RATE_COMMODITY = "icons/ruby.png";
 	public static final String RATE_CURRENCY = "icons/money_dollar.png";
+	public static final String RATE_ECONOMIC_DATA = "icons/money_dollar.png";
 	
 	//Quote
 	public static final String QUOTE_UP = "icons/2uparrow_16x16.png";

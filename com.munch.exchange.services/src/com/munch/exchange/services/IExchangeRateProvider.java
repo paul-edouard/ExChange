@@ -7,7 +7,6 @@ import com.munch.exchange.model.core.Stock;
 
 public interface IExchangeRateProvider {
 	
-	//public enum Type { LOCAL, FTP}
 	
 	//==================================
 	//==   SERVICE INITIALIZATION     ==
@@ -88,6 +87,18 @@ public interface IExchangeRateProvider {
 	 */
 	LinkedList<ExchangeRate> getCachedRates();
 	
+	//==================================
+	//==        ECONOMICAL DATA       ==
+	//==================================
+	
+	/**
+	 * try to load the economical Data corresponding to the given symbol.
+	 * If no local symbol found the data will be search on the web
+	 * 
+	 * @param symbol
+	 * @return null if no economical data found 
+	 */
+	//EconomicData loadEconomicalData(String symbol);
 
 	
 }

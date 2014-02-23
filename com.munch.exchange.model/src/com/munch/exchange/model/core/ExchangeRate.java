@@ -16,6 +16,7 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	
 	static final String FIELD_Start="start";
 	static final String FIELD_End="end";
+	static final String FIELD_LastUpdate="LastUpdate";
 	
 	public static final String FIELD_Name="name";
 	public static final String FIELD_UUID="uuid";
@@ -23,8 +24,10 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	public static final String FIELD_Data_Path="data_path";
 	public static final String FIELD_Stock_Exchange="stockExchange";
 	
+	
 	protected Calendar start=Calendar.getInstance();
 	protected Calendar end=Calendar.getInstance();
+	protected Calendar lastUpdate=null;
 	
 	protected String name="";
 	protected String symbol="";
@@ -121,6 +124,17 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	
 	
 	
+
+	public Calendar getLastUpdate() {
+		return lastUpdate;
+	}
+
+
+	public void setLastUpdate(Calendar lastUpdate) {
+	changes.firePropertyChange(FIELD_LastUpdate, this.lastUpdate, this.lastUpdate = lastUpdate);}
+	
+
+
 	@Override
 	public String toString() {
 		return "ExchangeRate [name=" + name + ", symbol=" + symbol
@@ -168,6 +182,7 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		
 		this.setEnd(DateTool.StringToDate(rootElement.getAttribute(FIELD_End)));
 		this.setStart(DateTool.StringToDate(rootElement.getAttribute(FIELD_Start)));
+		this.setLastUpdate(DateTool.StringToDate(rootElement.getAttribute(FIELD_LastUpdate)));
 		
 		this.setName(rootElement.getAttribute(FIELD_Name));
 		this.setSymbol(rootElement.getAttribute(FIELD_Symbol));
@@ -181,6 +196,7 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		
 		rootElement.setAttribute(FIELD_End,DateTool.dateToString( this.getEnd()));
 		rootElement.setAttribute(FIELD_Start,DateTool.dateToString( this.getStart()));
+		rootElement.setAttribute(FIELD_LastUpdate,DateTool.dateToString( this.getLastUpdate()));
 		
 		rootElement.setAttribute(FIELD_Name, this.getName());
 		rootElement.setAttribute(FIELD_Symbol, this.getSymbol());

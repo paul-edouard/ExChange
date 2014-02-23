@@ -7,6 +7,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 
 import com.munch.exchange.IImageKeys;
+import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.parts.RatesTreeContentProvider.RateContainer;
@@ -23,6 +24,7 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 	private Image rateIndicesImage;
 	private Image rateCommoditiesImage;
 	private Image rateCurrenciesImage;
+	private Image rateEconomicDatasImage;
 	
 	private Image rateImage;
 	
@@ -75,10 +77,13 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 		}
 		return rateCurrenciesImage;
 	}
-
-
-
 	
+	public Image getEconomicDatasImage() {
+		if(rateEconomicDatasImage==null){
+			rateEconomicDatasImage=loader.loadImage(getClass(),IImageKeys.RATE_CONTAINER_ECONOMIC_DATAS );
+		}
+		return rateEconomicDatasImage;
+	}
 
 	public Image getRateImage() {
 		if(rateImage==null){
@@ -112,6 +117,10 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 			Stock stock=(Stock) element;
 			cell.setText(stock.getFullName()+" ["+stock.getIndustry()+", "+stock.getSector()+"]");
 		}
+		else if(element instanceof EconomicData){
+			EconomicData economicData=(EconomicData) element;
+			cell.setText(economicData.getName()+" ("+economicData.getId()+")");
+		}
 		else if(element instanceof ExchangeRate){
 			ExchangeRate rate=(ExchangeRate) element;
 			cell.setText(rate.getFullName());
@@ -133,6 +142,9 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 				cell.setImage(getRateCommoditiesImage());
 			}
 			else if (rate.getName().equals(RatesTreeContentProvider.CURRENCIES_CONTAINER)){
+				cell.setImage(getRateCurrenciesImage());
+			}
+			else if (rate.getName().equals(RatesTreeContentProvider.ECONOMICDATA_CONTAINER)){
 				cell.setImage(getRateCurrenciesImage());
 			}
 			

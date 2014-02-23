@@ -10,12 +10,15 @@ import org.apache.log4j.Logger;
 
 import com.munch.exchange.model.core.Commodity;
 import com.munch.exchange.model.core.Currency;
+import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Xml;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.services.internal.fred.FredSeries;
 import com.munch.exchange.services.internal.yql.YQLQuotes;
 import com.munch.exchange.services.internal.yql.YQLStocks;
 
@@ -28,8 +31,6 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 	
 	private HashMap<String, ExchangeRate> RateCacheMap=new HashMap<String, ExchangeRate>();
 	
-	
-	
 	private static Logger logger = Logger.getLogger(ExchangeRateProviderLocalImpl.class);
 	
 	@Override
@@ -38,7 +39,6 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		this.workspace=workspace;
 		
 	}
-	
 	
 	private String getExchangeRatePath(ExchangeRate rate) {
 		
@@ -69,8 +69,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		if(!dir.isDirectory())return null;
 		return dir;
 	}
-	
-	
+
 	public boolean save(ExchangeRate rate) {
 		if(rate==null)return false;
 		
@@ -83,7 +82,6 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		return Xml.save(rate, exchangeRateFile);
 	}
-	
 	
 	/**
 	 * find all exchange rates file saved in the local workspace
@@ -157,6 +155,11 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 				XRate=new Currency();
 			}
 			
+			if(EconomicData.class.getSimpleName().equals(rateClassName)){
+				XRate=new EconomicData();
+			}
+			
+			
 			if(XRate!=null && Xml.load(XRate, localFile)){
 				XRate.setDataPath(localRateFiles.get(symbol).getParent());
 				return XRate;
@@ -197,13 +200,10 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		}
 		
 		
-		
 		//Try to load the exchange rate from the local data
 		ExchangeRate xchangeRate=findLocalRateFromSymbol(symbol.split(";")[0]);
 		if(xchangeRate!=null){
-			//System.out.println("The exchange rate was found localy: "+xchangeRate.getFullName());
 			logger.info("The exchange rate was found localy: "+xchangeRate.getFullName());
-			
 			//Add the rate in the map
 			RateCacheMap.put(xchangeRate.getUUID(), xchangeRate);
 			
@@ -215,6 +215,84 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		//Test if the string contains ";". In this case the first loading of a commodity will be assumed
 		//Name;YqlId;OnVistaId
 		//For Gold "Gold;GCJ14.CMX;24877915"
+		ExchangeRate rate=loadExchangeRateOrCommodity(symbol);
+		if(rate!=null)return rate;
+		
+		//Loading economic data
+		rate=loadEconomicData(symbol);
+		if(rate!=null)return rate;
+		
+		//Try to load the given symbol directly from YQL
+		YQLStocks yqlStocks=new YQLStocks(symbol);
+		YQLQuotes yqlQuotes=new YQLQuotes(symbol);
+		if(!yqlStocks.hasValidResult() && !yqlQuotes.hasValidResult()){
+			logger.info("Cannot find the symbol \""+symbol+"\" on YQL");
+			return null;
+		}
+		
+		//ExchangeRate rate=null;
+		
+		if(yqlStocks.hasValidResult()){
+			rate=yqlStocks.getExchangeRate();
+			//Search the company name
+			if(rate!=null && yqlQuotes.hasValidResult()){
+				rate.setName(yqlQuotes.getName());
+				rate.setStockExchange(yqlQuotes.getStockExchange());
+			}
+		}
+		else{
+			rate=new Indice();
+			rate.setName(yqlQuotes.getName());
+			rate.setSymbol(symbol);
+			rate.setStockExchange(yqlQuotes.getStockExchange());
+			
+		}
+		
+		if(rate==null)return null;
+		
+		//Save the new Exchange Rate:
+		if(this.save(rate)){
+			//Add the rate in the map
+			RateCacheMap.put(rate.getUUID(), rate);
+			
+			return rate;
+		}
+		else
+			return null;
+		
+	}
+	
+	private ExchangeRate loadEconomicData(String symbol){
+		if(!symbol.startsWith(EconomicData.FRED_SYMBOL_PREFIX))return null;
+		
+		//Get the series id
+		String[] data = symbol.split("_");
+		if(data.length<2)return null;
+		String seriesId="";
+		for(int i=1;i<data.length;i++){seriesId+=data[i];}
+		if(seriesId.isEmpty())return null;
+		
+		//Search the series on FRED
+		logger.info("Economic Data string recognize: " + seriesId);
+		FredSeries f_s=new FredSeries(seriesId);
+		EconomicData ec_data=f_s.getEconomicData();
+		
+		//Add the rate in the map
+		RateCacheMap.put(ec_data.getUUID(), ec_data);
+		
+		update(ec_data);
+		
+		return ec_data;
+		
+	}
+	
+	
+	/**
+	 * search the given symbol on Yql but also on Vista
+	 * @param symbol
+	 * @return
+	 */
+	private ExchangeRate loadExchangeRateOrCommodity(String symbol){
 		if (symbol.contains(";")) {
 			String[] data = symbol.split(";");
 
@@ -256,47 +334,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 				return rate;
 			}
 		}
-		
-		
-		//Try to load the given symbol directly from YQL
-		YQLStocks yqlStocks=new YQLStocks(symbol);
-		YQLQuotes yqlQuotes=new YQLQuotes(symbol);
-		if(!yqlStocks.hasValidResult() && !yqlQuotes.hasValidResult()){
-			//System.out.println("Cannot find the symbol \""+symbol+"\" on YQL");
-			logger.info("Cannot find the symbol \""+symbol+"\" on YQL");
-			return null;
-		}
-		
-		ExchangeRate rate=null;
-		
-		if(yqlStocks.hasValidResult()){
-			rate=yqlStocks.getExchangeRate();
-			//Search the company name
-			if(rate!=null && yqlQuotes.hasValidResult()){
-				rate.setName(yqlQuotes.getName());
-				rate.setStockExchange(yqlQuotes.getStockExchange());
-			}
-		}
-		else{
-			rate=new Indice();
-			rate.setName(yqlQuotes.getName());
-			rate.setSymbol(symbol);
-			rate.setStockExchange(yqlQuotes.getStockExchange());
-			
-		}
-		
-		if(rate==null)return null;
-		
-		//Save the new Exchange Rate:
-		if(this.save(rate)){
-			//Add the rate in the map
-			RateCacheMap.put(rate.getUUID(), rate);
-			
-			return rate;
-		}
-		else
-			return null;
-		
+		return null;
 	}
 	
 	public Stock loadStock(String symbol){
@@ -326,12 +364,20 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		return null;
 	}
 	
-
 	@Override
 	public synchronized boolean update(ExchangeRate rate) {
 		
 		boolean isUpdated=false;
 		
+		Calendar today=Calendar.getInstance();
+		if(rate.getLastUpdate()!=null && 
+				DateTool.dateToDayString( rate.getLastUpdate()).equals(DateTool.dateToDayString(today))){
+			return isUpdated;
+		}
+		else{
+			rate.setLastUpdate(today);
+			isUpdated=true;
+		}
 		
 		// Update the End Date from YQL
 		if(rate instanceof Stock || rate instanceof Fund){
@@ -344,7 +390,6 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 				//System.out.println("Cannot find the symbol \""+rate.getSymbol()+"\" on YQL");
 				return isUpdated;
 			}
-			
 			
 			
 			if(!rate.getEnd().equals(yqlStocks.getEndDate())){
@@ -397,6 +442,17 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			com.setEnd(Calendar.getInstance());
 			isUpdated=true;
 		}
+		else if(rate instanceof EconomicData){
+			EconomicData com=(EconomicData) rate;
+			
+			FredSeries f_s=new FredSeries(com);
+			EconomicData n_ed=f_s.getEconomicData();
+			
+			com.setEnd(n_ed.getEnd());
+			
+			isUpdated=true;
+		}
+		
 		
 		
 		if(isUpdated){
@@ -412,7 +468,6 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		return false;
 	}
-	
 	
 	@Override
 	public synchronized LinkedList<ExchangeRate> loadAll(Class<? extends ExchangeRate> clazz) {
@@ -447,7 +502,6 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		return false;
 	}
 	
-	
 	private boolean deleteDirRec(File dir){
 		File[] files=dir.listFiles();
 		for(int i=0;i<files.length;i++){
@@ -468,6 +522,14 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		rates.addAll(RateCacheMap.values());
 		return rates;
 	}
+	
+	/*
+	@Override
+	public EconomicData loadEconomicalData(String symbol) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	*/
 
 
 	public static void main(String[] args) {
@@ -510,6 +572,9 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 
 	}
+
+
+	
 
 
 	

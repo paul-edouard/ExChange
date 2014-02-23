@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.services.events.IEventBroker;
 
 import com.munch.exchange.IEventConstant;
+import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IQuoteProvider;
@@ -59,6 +60,7 @@ public class QuoteLoader extends Job {
 		
 		
 		for(ExchangeRate rate:list){
+			if(rate instanceof EconomicData)continue;
 			
 			monitor.subTask("Loading quote from "+rate.getFullName());
 			if(rate.getRecordedQuote().isEmpty()){

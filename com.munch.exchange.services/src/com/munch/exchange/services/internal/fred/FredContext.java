@@ -1,20 +1,16 @@
 package com.munch.exchange.services.internal.fred;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
-import org.springframework.web.client.RestTemplate;
+
+
 
 public enum FredContext {
 
 	INSTANCE;
-
+/*
 	static final String FRED_REST_TEMPLATE_ID = "fredRestTemplate";
+	static final String FRED_APPLICATION_CONTEXT_XML = "resources/spring/application-context.xml";
 
-	private final ApplicationContext context = new FileSystemXmlApplicationContext(
-			"resources/spring/application-context.xml");
+	private  ApplicationContext context =null;
 
 	private RestTemplate restTemplate = null;
 
@@ -24,6 +20,19 @@ public enum FredContext {
 	
 	@Before
 	private void setUp() throws Exception {
+		File f=new File(FRED_APPLICATION_CONTEXT_XML);
+		if(f.exists()){
+			context = new FileSystemXmlApplicationContext(FRED_APPLICATION_CONTEXT_XML);
+		}
+		else{
+			
+			Bundle bundle = FrameworkUtil.getBundle(this.getClass());
+			URL url = FileLocator.find(bundle, new Path(FRED_APPLICATION_CONTEXT_XML), null);
+			context = new FileSystemXmlApplicationContext(url.toString());
+			
+			
+		}
+		
 		restTemplate = (RestTemplate) context.getBean(FRED_REST_TEMPLATE_ID);
 	}
 
@@ -45,5 +54,5 @@ public enum FredContext {
 		
 		return restTemplate;
 	}
-
+*/
 }

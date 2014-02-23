@@ -16,6 +16,7 @@ import org.eclipse.jface.viewers.Viewer;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.Commodity;
 import com.munch.exchange.model.core.Currency;
+import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
@@ -31,6 +32,7 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 	public static String FUNDS_CONTAINER="Funds";
 	public static String COMMODITIES_CONTAINER="Commodities";
 	public static String CURRENCIES_CONTAINER="Currencies";
+	public static String ECONOMICDATA_CONTAINER="Economic Datas";
 	
 	
 	RateContainer root;
@@ -141,7 +143,10 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 		else if(rate instanceof Currency){
 			container=(RateContainer) root.getChild(CURRENCIES_CONTAINER);
 			container.getChilds().add(rate);
-			
+		}
+		else if(rate instanceof EconomicData){
+			container=(RateContainer) root.getChild(ECONOMICDATA_CONTAINER);
+			container.getChilds().add(rate);
 		}
 		
 		return container;
@@ -169,6 +174,10 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 		}
 		else if(rate instanceof Currency){
 			container=(RateContainer) root.getChild(CURRENCIES_CONTAINER);
+			container.getChilds().remove(rate);
+		}
+		else if(rate instanceof EconomicData){
+			container=(RateContainer) root.getChild(ECONOMICDATA_CONTAINER);
 			container.getChilds().remove(rate);
 		}
 	}
@@ -338,6 +347,9 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			
 			//Currencies
 			loadRateContainer(monitor, CURRENCIES_CONTAINER,Currency.class);
+			
+			//Economic Data
+			loadRateContainer(monitor, ECONOMICDATA_CONTAINER,EconomicData.class);
 			
 			return Status.OK_STATUS;
 		}

@@ -12,6 +12,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -35,6 +36,9 @@ public class AddRateDialog extends TitleAreaDialog {
 	private ExchangeRate rate;
 	
 	private static Logger logger = Logger.getLogger(AddRateDialog.class);
+	private Combo comboRateType;
+	private Label lblRateType;
+	private Label lblYahooFinanceSymbol;
 	
 
 	/**
@@ -66,7 +70,36 @@ public class AddRateDialog extends TitleAreaDialog {
 		container.setLayout(new GridLayout(2, false));
 		container.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
-		Label lblYahooFinanceSymbol = new Label(container, SWT.NONE);
+		lblRateType = new Label(container, SWT.NONE);
+		lblRateType.setText("Rate Type:");
+		
+		comboRateType = new Combo(container, SWT.NONE);
+		comboRateType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboRateType.setText("Yahoo Finance Symbol, ex: DAE.DE");
+		comboRateType.add("Yahoo Finance Symbol, ex: DAE.DE");
+		comboRateType.add("Federal Reserve Bank St. Louis Symbol, ex: CPIAUCSL");
+		
+		comboRateType.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				System.out.println(comboRateType.getText());
+				boolean modus=comboRateType.getText().startsWith("Yahoo Finance Symbol");
+				btnOnVistaId.setVisible(modus);
+				OnVistaIdText.setVisible(modus);
+				btnCommodityName.setVisible(modus);
+				CommodityName.setVisible(modus);
+				
+				if(modus){
+					lblYahooFinanceSymbol.setText("Yahoo Finance Symbol:");
+				}
+				else{
+					lblYahooFinanceSymbol.setText("St. Louis Symbol:");
+				}
+				
+			}
+		});
+		
+		
+		lblYahooFinanceSymbol = new Label(container, SWT.NONE);
 		lblYahooFinanceSymbol.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		lblYahooFinanceSymbol.setText("Yahoo Finance Symbol:");
 		
@@ -135,7 +168,6 @@ public class AddRateDialog extends TitleAreaDialog {
 	protected void okPressed() {
 		
 		String search_str=SymbolText.getText();
-		
 		//Test if the symbol is already used
 		if(this.btnCommodityName.getSelection()){
 			search_str=CommodityName.getText();
@@ -154,8 +186,11 @@ public class AddRateDialog extends TitleAreaDialog {
 			search_str=CommodityName.getText()+";"+SymbolText.getText()+";"+OnVistaIdText.getText();
 		}
 		
+		boolean modus=comboRateType.getText().startsWith("Yahoo Finance Symbol");
+		if(!modus){
+			search_str="FRED_"+SymbolText.getText();
+		}
 		//logger.info("search String: "+search_str);
-		
 		
 		rate=  exchangeRateProvider.load(search_str);
 		if(rate==null){

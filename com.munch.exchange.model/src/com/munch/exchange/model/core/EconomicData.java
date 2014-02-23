@@ -1,15 +1,19 @@
 package com.munch.exchange.model.core;
 
+
 import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.tool.DateTool;
-import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class EconomicData extends ExchangeRate {
 
+	
+	public static final String FRED_SYMBOL_PREFIX = "FRED_";
 	
 	static final String FIELD_Frequency="frequency";
 	static final String FIELD_FrequencyShort="frequencyShort";
@@ -23,6 +27,8 @@ public class EconomicData extends ExchangeRate {
 	static final String FIELD_LastUpdated="lastUpdated";
 	static final String FIELD_Popularity="popularity";
 	static final String FIELD_Notes="notes";
+	static final String FIELD_Categories="categories";
+	static final String FIELD_Id="id";
 	
 	
 	private String frequency;
@@ -38,6 +44,10 @@ public class EconomicData extends ExchangeRate {
 	private String popularity;
 	private String notes;
 	
+	private String id;
+	
+	private List<EconomicDataCategory> categories=new LinkedList<EconomicDataCategory>(); 
+	
 	
 	public EconomicData() {
 		super();
@@ -48,6 +58,25 @@ public class EconomicData extends ExchangeRate {
 	public String getFrequency() {
 		return frequency;
 	}
+	
+	public String getId() {
+		return id;
+	}
+
+
+	public void setId(String id) {
+	changes.firePropertyChange(FIELD_Id, this.id, this.id = id);}
+	
+
+
+	public List<EconomicDataCategory> getCategories() {
+		return categories;
+	}
+
+
+	public void setCategories(List<EconomicDataCategory> categories) {
+	changes.firePropertyChange(FIELD_Categories, this.categories, this.categories = categories);}
+	
 
 
 	public void setFrequency(String frequency) {
@@ -177,9 +206,19 @@ public class EconomicData extends ExchangeRate {
 		this.setPopularity(rootElement.getAttribute(FIELD_Popularity));
 		this.setNotes(rootElement.getAttribute(FIELD_Notes));
 		
-		
+		this.setId(rootElement.getAttribute(FIELD_Id));
 		
 		super.initAttribute(rootElement);
+	}
+	
+	@Override
+	protected void initChild(Element childElement) {
+		EconomicDataCategory cat=new EconomicDataCategory();
+		if(childElement.getTagName().equals(cat.getTagName())){
+			cat.init(childElement);
+			this.getCategories().add(cat);
+		}
+		
 	}
 
 
@@ -200,100 +239,20 @@ public class EconomicData extends ExchangeRate {
 		rootElement.setAttribute(FIELD_Popularity, this.getPopularity());
 		rootElement.setAttribute(FIELD_Notes, this.getNotes());
 		
+		rootElement.setAttribute(FIELD_Id, this.getId());
+		
 		super.setAttribute(rootElement);
 	}
 	
-	
-	public class EconomicDataCategory extends XmlParameterElement{
-		
-		static final String FIELD_Id="id";
-		static final String FIELD_ParentId="parentId";
-		static final String FIELD_Name="name";
-		static final String FIELD_Parent="parent";
-		
-		private String id;
-		private String parentId;
-		private String name;
-		private EconomicDataCategory parent;
-		
-		
-		
-
-		private String getId() {
-			return id;
-		}
-
-		private void setId(String id) {
-		changes.firePropertyChange(FIELD_Id, this.id, this.id = id);}
-		
-
-		private String getParentId() {
-			return parentId;
-		}
-
-		private void setParentId(String parentId) {
-		changes.firePropertyChange(FIELD_ParentId, this.parentId, this.parentId = parentId);}
-		
-
-		private String getName() {
-			return name;
-		}
-
-		private void setName(String name) {
-		changes.firePropertyChange(FIELD_Name, this.name, this.name = name);}
-		
-
-		private EconomicDataCategory getParent() {
-			return parent;
-		}
-
-		private void setParent(EconomicDataCategory parent) {
-		changes.firePropertyChange(FIELD_Parent, this.parent, this.parent = parent);}
-		
-
-		@Override
-		protected void initAttribute(Element rootElement) {
-			this.setId(rootElement.getAttribute(FIELD_Id));
-			this.setParentId(rootElement.getAttribute(FIELD_ParentId));
-			this.setName(rootElement.getAttribute(FIELD_Name));
-			
-		}
-
-		@Override
-		protected void initChild(Element childElement) {
-			if(childElement.getTagName().equals(this.getTagName())){
-				EconomicDataCategory cat=new EconomicDataCategory();
-				cat.init(childElement);
-				this.setParent(cat);
-			}
-			
-		}
-
-		@Override
-		protected void setAttribute(Element rootElement) {
-			rootElement.setAttribute(FIELD_Id, this.getId());
-			rootElement.setAttribute(FIELD_ParentId, this.getParentId());
-			rootElement.setAttribute(FIELD_Name, this.getName());
-			
-		}
-
-		@Override
-		protected void appendChild(Element rootElement, Document doc) {
-			//Parameter
-			rootElement.appendChild(this.getParent().toDomElement(doc));
-			
-		}
-
-		@Override
-		public String toString() {
-			return "EconomicDataCategory [id=" + id + ", parentId=" + parentId
-					+ ", name=" + name + ", parent=" + parent + "]";
-		}
-		
-		
-		
+	@Override
+	protected void appendChild(Element rootElement, Document doc) {
+		for(EconomicDataCategory cat:this.getCategories())
+			rootElement.appendChild(cat.toDomElement(doc));
 		
 	}
+	
+	
+	
 	
 	
 	
