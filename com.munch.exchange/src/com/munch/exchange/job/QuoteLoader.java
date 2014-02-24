@@ -2,6 +2,7 @@ package com.munch.exchange.job;
 
 import java.util.Calendar;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -58,28 +59,56 @@ public class QuoteLoader extends Job {
 		
 		if (monitor.isCanceled()) return Status.CANCEL_STATUS;
 		
+		List<ExchangeRate> rateToLoad=new LinkedList<ExchangeRate>();
+		List<ExchangeRate> rateToUpdate=new LinkedList<ExchangeRate>();
 		
 		for(ExchangeRate rate:list){
 			if(rate instanceof EconomicData)continue;
 			
-			monitor.subTask("Loading quote from "+rate.getFullName());
+			//monitor.subTask("Loading quote from "+rate.getFullName());
 			if(rate.getRecordedQuote().isEmpty()){
+				rateToLoad.add(rate);
+				/*
 				logger.info("Loading quote: "+rate.getFullName());
 				if(quoteProvider.load(rate)){
 					//logger.info("Message send: Quote loaded!");
 					eventBroker.post(IEventConstant.QUOTE_LOADED,rate.getUUID());
 				}
+				*/
 			}
 			else{
+				rateToUpdate.add(rate);
+				/*
 				logger.info("Update quote: "+rate.getFullName());
 				if(quoteProvider.update(rate)){
 					//logger.info("Message send: Quote update!");
 					eventBroker.post(IEventConstant.QUOTE_UPDATE,rate.getUUID());
 				}
+				*/
 			}
 			
+			/*
 			monitor.worked(1);
 			if (monitor.isCanceled()) return Status.CANCEL_STATUS;
+			*/
+		}
+		
+		if (monitor.isCanceled()) return Status.CANCEL_STATUS;
+		
+		if(rateToLoad.size()>0){
+			logger.info("Loading quotes: "+rateToLoad.size());
+			quoteProvider.load(rateToLoad);
+			for(ExchangeRate rate:rateToLoad){
+				eventBroker.post(IEventConstant.QUOTE_LOADED,rate.getUUID());
+			}
+		}
+		
+		if(rateToUpdate.size()>0){
+			logger.info("Update quotes: "+rateToUpdate.size());
+			quoteProvider.update(rateToUpdate);
+			for(ExchangeRate rate:rateToUpdate){
+				eventBroker.post(IEventConstant.QUOTE_UPDATE,rate.getUUID());
+			}
 		}
 		
 		

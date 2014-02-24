@@ -14,6 +14,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.munch.exchange.IEventConstant;
@@ -116,8 +117,10 @@ public class RateTitle extends Composite {
 	
 	
 	@Inject
-	private void quoteLoaded(@Optional  @UIEventTopic(IEventConstant.QUOTE_LOADED) String rate_uuid ){
+	private void quoteLoaded(@Optional  @UIEventTopic(IEventConstant.QUOTE_LOADED) String rate_uuid,Shell shell ){
 		//logger.info("Message recieved: Quote loaded!");
+		if(shell==null)return;
+		if(shell.getDisplay().isDisposed())return;
 		
 		if(rate_uuid==null || rate_uuid.isEmpty()){
 			return;
@@ -137,7 +140,10 @@ public class RateTitle extends Composite {
 	}
 	
 	@Inject
-	private void quoteUpdate(@Optional  @UIEventTopic(IEventConstant.QUOTE_UPDATE) String rate_uuid ){
+	private void quoteUpdate(@Optional  @UIEventTopic(IEventConstant.QUOTE_UPDATE) String rate_uuid ,Shell shell){
+		
+		if(shell==null)return;
+		if(shell.getDisplay().isDisposed())return;
 		//logger.info("Message recieved: Quote update!");
 		if(rate_uuid==null || rate_uuid.isEmpty()){
 			return;

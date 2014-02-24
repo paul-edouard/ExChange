@@ -1,5 +1,7 @@
 package com.munch.exchange.services;
 
+import java.util.List;
+
 import com.munch.exchange.model.core.ExchangeRate;
 
 public interface IQuoteProvider {
@@ -15,6 +17,7 @@ public interface IQuoteProvider {
 	 * @return null if no exchange
 	 */
 	boolean load(ExchangeRate rate);
+	boolean load(List<ExchangeRate> rate);
 
 	/**
 	 * search if new historical data are available
@@ -23,5 +26,6 @@ public interface IQuoteProvider {
 	 * @return true on success and false if case of failure
 	 */
 	boolean update(ExchangeRate rate);
+	boolean update(List<ExchangeRate> rate);
 
 }

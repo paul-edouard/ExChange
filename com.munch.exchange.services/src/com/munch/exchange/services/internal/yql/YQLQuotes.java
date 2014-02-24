@@ -138,7 +138,7 @@ public class YQLQuotes  extends YQLTable {
 	
 	public QuotePoint getCurrentQuotePoint(){
 		if(!this.hasValidResult())return null;
-		
+		//TODO
 		QuotePoint point=new QuotePoint();
 		
 		point.setAverageDailyVolume(this.getAverageDailyVolume());
@@ -218,8 +218,6 @@ public class YQLQuotes  extends YQLTable {
 		
 		if(!this.getCurrent().has("DaysHigh"))return Float.NaN;
 		
-		//if(!(this.getCurrent().get("DaysHigh") instanceof Float))
-		//	return Float.NaN;
 		
 		try {
 			
@@ -1007,7 +1005,7 @@ public class YQLQuotes  extends YQLTable {
 	public static void main(String[] args) {
 			
 		//YQLQuotes quote=new YQLQuotes("YHOO");
-		YQLQuotes quote=new YQLQuotes("EURUSD=X");
+		YQLQuotes quote=new YQLQuotes("DAI.DE");
 		//YQLQuotes quote=new YQLQuotes("GCJ14.CMX");
 		//287639=X
 		//GCJ14.CMX
