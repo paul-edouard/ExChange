@@ -8,6 +8,10 @@
             application="org.eclipse.e4.ui.workbench.swt.E4Application"
             name="ExChange">
          <property
+               name="lifeCycleURI"
+               value="bundleclass://com.munch.exchange/com.munch.exchange.lifecycle.Manager">
+         </property>
+         <property
                name="appName"
                value="ExChange">
          </property>
@@ -20,8 +24,8 @@
                value="platform:/plugin/com.munch.exchange/css/default.css">
          </property>
          <property
-               name="lifeCycleURI"
-               value="bundleclass://com.munch.exchange/com.munch.exchange.lifecycle.Manager">
+               name="applicationXMI"
+               value="com.munch.exchange/Application.e4xmi">
          </property>
       </product>
    </extension>

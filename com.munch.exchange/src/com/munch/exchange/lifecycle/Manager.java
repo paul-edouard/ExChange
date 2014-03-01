@@ -49,6 +49,7 @@ public class Manager {
 	
 	private IExchangeRateProvider exchangeRateProvider;
 	
+	//@ProcessAdditions
 	@PostContextCreate
 	public void postContextCreate(@Preference IEclipsePreferences prefs,
 			IApplicationContext appContext, Display display, IExchangeRateProvider exchangeRateProvider) {
@@ -56,7 +57,14 @@ public class Manager {
 		
 		BasicConfigurator.configure();
 		
+		
+		
 		final Shell shell = new Shell(SWT.TOOL | SWT.NO_TRIM);
+		
+		/*
+		boolean res = MessageDialog.openConfirm(shell, "Delete rate?",
+				"Do you really want to delete the project: \""+"\"?");
+		*/
 		WorkspaceDialog dialog = new WorkspaceDialog(shell);
 		if (workspaces != null) {
 			dialog.setWorkspaces(workspaces);

@@ -14,7 +14,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.munch.exchange.IEventConstant;
@@ -117,14 +116,18 @@ public class RateTitle extends Composite {
 	
 	
 	@Inject
-	private void quoteLoaded(@Optional  @UIEventTopic(IEventConstant.QUOTE_LOADED) String rate_uuid,Shell shell ){
+	private void quoteLoaded(@Optional  @UIEventTopic(IEventConstant.QUOTE_LOADED) String rate_uuid/*,@Optional Shell shell*/ ){
+		
+		if(this.isDisposed())return;
 		//logger.info("Message recieved: Quote loaded!");
+		/*
 		if(shell==null)return;
 		if(shell.getDisplay().isDisposed())return;
-		
+		*/
 		if(rate_uuid==null || rate_uuid.isEmpty()){
 			return;
 		}
+		
 		
 		ExchangeRate incoming=exchangeRateProvider.load(rate_uuid);
 		if(incoming==null || rate==null || lblFulleName==null || lblQuote==null){
@@ -140,14 +143,19 @@ public class RateTitle extends Composite {
 	}
 	
 	@Inject
-	private void quoteUpdate(@Optional  @UIEventTopic(IEventConstant.QUOTE_UPDATE) String rate_uuid ,Shell shell){
+	private void quoteUpdate(@Optional  @UIEventTopic(IEventConstant.QUOTE_UPDATE) String rate_uuid /*,@Optional Shell shell*/){
 		
+		if(this.isDisposed())return;
+		
+		/*
 		if(shell==null)return;
 		if(shell.getDisplay().isDisposed())return;
 		//logger.info("Message recieved: Quote update!");
+		 */
 		if(rate_uuid==null || rate_uuid.isEmpty()){
 			return;
 		}
+		
 		
 		ExchangeRate incoming=exchangeRateProvider.load(rate_uuid);
 		if(incoming==null || rate==null || lblFulleName==null || lblQuote==null){
@@ -167,6 +175,8 @@ public class RateTitle extends Composite {
 	
 	public  void setLabelValues(){
 		
+		
+		
 		lblFulleName.setText(rate.getFullName());
 		
 		
@@ -183,7 +193,7 @@ public class RateTitle extends Composite {
 			lblChange.setText(String.valueOf(point.getChange())+" ("+String.format("%.2f", per)+"%)");
 			if(per>0){
 				labelIcon.setImage(this.getUpImage());
-				lblChange.setForeground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+				lblChange.setForeground(SWTResourceManager.getColor(SWT.COLOR_GREEN));
 			}
 			else if(per<0){
 				labelIcon.setImage(this.getDownImage());

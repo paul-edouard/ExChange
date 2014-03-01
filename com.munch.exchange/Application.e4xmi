@@ -48,7 +48,7 @@
     <mainMenu xmi:id="_hCNcQGTNEeOTfZ5LPzv9Rg" elementId="menu:org.eclipse.ui.main.menu">
       <children xsi:type="menu:Menu" xmi:id="_hCNcQWTNEeOTfZ5LPzv9Rg" label="File">
         <children xsi:type="menu:HandledMenuItem" xmi:id="_hCNcQmTNEeOTfZ5LPzv9Rg" label="Open" iconURI="platform:/plugin/com.munch.exchange/icons/sample.png" command="_hCNcN2TNEeOTfZ5LPzv9Rg"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_hCNcQ2TNEeOTfZ5LPzv9Rg" label="Save" iconURI="platform:/plugin/com.munch.exchange/icons/save_edit.png" command="_hCNcOmTNEeOTfZ5LPzv9Rg"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_hCNcQ2TNEeOTfZ5LPzv9Rg" label="Save 2" iconURI="platform:/plugin/com.munch.exchange/icons/save_edit.png" command="_hCNcOmTNEeOTfZ5LPzv9Rg"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_hCNcRGTNEeOTfZ5LPzv9Rg" label="Quit" command="_hCNcM2TNEeOTfZ5LPzv9Rg"/>
       </children>
       <children xsi:type="menu:Menu" xmi:id="_hCNcRWTNEeOTfZ5LPzv9Rg" label="Help">
