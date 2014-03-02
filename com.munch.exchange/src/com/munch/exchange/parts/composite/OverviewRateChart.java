@@ -167,6 +167,7 @@ public class OverviewRateChart extends Composite {
             //renderer.setSeriesPaint(1, new Color(0xA6D96A));
             //renderer.setSeriesPaint(2, new Color(0xFDAE61));
             //renderer.setSeriesPaint(3, new Color(0xFFFFBF));
+     
         }
         
         
@@ -189,6 +190,8 @@ public class OverviewRateChart extends Composite {
 			ChartUtilities.applyCurrentTheme(chart);
 			renderer2.setBarPainter(new StandardXYBarPainter());
 			renderer2.setShadowVisible(false);
+			renderer2.setBarAlignmentFactor(0.5);
+		
 		}
         
         return chart;
