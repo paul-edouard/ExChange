@@ -2,18 +2,51 @@ package com.munch.exchange.model.core.quote;
 
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.DatePointList;
+import com.munch.exchange.model.core.historical.HistoricalPoint;
 
 public class RecordedQuote extends DatePointList<QuotePoint> {
 
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = -5786399869426289076L;
-
+	
+	
+	public static final String FIELD_IsUpdated="IsUpdated";
+	
+	private boolean isUpdated=false;
+	
+	
+	
 	@Override
 	protected DatePoint createPoint() {
 		return new QuotePoint();
 	}
+
+	public boolean isUpdated() {
+		return isUpdated;
+	}
+
+	public void setUpdated(boolean isUpdated) {
+	this.isUpdated = isUpdated;
+	}
+	
+	public HistoricalPoint createLastHistoricalPoint(){
+		QuotePoint point=(QuotePoint)this.getLast();
+		if(point==null)return null;
+		
+		HistoricalPoint hist_p=new HistoricalPoint();
+		hist_p.setDate(point.getDate());
+		hist_p.setAdjClose(point.getLastTradePrice());
+		hist_p.setClose(point.getLastTradePrice());
+		hist_p.setHigh(point.getDaysHigh());
+		hist_p.setLow(point.getDaysLow());
+		hist_p.setOpen(point.getLastTradePrice());
+		hist_p.setVolume(point.getAverageDailyVolume());
+		return hist_p;
+		
+	}
+	
+	
+	
 	
 	
 	

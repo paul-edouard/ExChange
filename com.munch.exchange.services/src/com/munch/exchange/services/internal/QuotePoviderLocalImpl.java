@@ -153,7 +153,7 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 			logger.info("Quote Point added: "+point);
 			isUpdated = true;
 		}
-		
+		rate.getRecordedQuote().setUpdated(isUpdated);
 		if(isUpdated){
 			logger.info("The ExchangeRate was updated: \""+rate.getFullName());
 			if(this.saveCurrent(rate)){
@@ -181,7 +181,8 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 		HashMap<String, QuotePoint> map=quote.getQuoteMap();
 		
 		for(ExchangeRate rate : rates){
-			boolean isUpdated = false;
+			//boolean isUpdated = false;
+			rate.getRecordedQuote().setUpdated(false);
 			
 			if(!map.containsKey(rate.getSymbol()))continue;
 			
@@ -191,11 +192,11 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 				rate.getRecordedQuote().addLast(point);
 				rate.getRecordedQuote().sort();
 				logger.info("Quote Point added: "+point);
-				isUpdated = true;
+				rate.getRecordedQuote().setUpdated(true);
 				atLeastOneUpdate=true;
 			}
 			
-			if(isUpdated){
+			if(rate.getRecordedQuote().isUpdated()){
 				logger.info("The ExchangeRate was updated: \""+rate.getFullName());
 				if(this.saveCurrent(rate)){
 					logger.info("The new quote were automaticaly saved!");

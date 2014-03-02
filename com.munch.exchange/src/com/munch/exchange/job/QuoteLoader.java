@@ -68,52 +68,48 @@ public class QuoteLoader extends Job {
 			//monitor.subTask("Loading quote from "+rate.getFullName());
 			if(rate.getRecordedQuote().isEmpty()){
 				rateToLoad.add(rate);
-				/*
-				logger.info("Loading quote: "+rate.getFullName());
-				if(quoteProvider.load(rate)){
-					//logger.info("Message send: Quote loaded!");
-					eventBroker.post(IEventConstant.QUOTE_LOADED,rate.getUUID());
-				}
-				*/
 			}
 			else{
 				rateToUpdate.add(rate);
-				/*
-				logger.info("Update quote: "+rate.getFullName());
-				if(quoteProvider.update(rate)){
-					//logger.info("Message send: Quote update!");
-					eventBroker.post(IEventConstant.QUOTE_UPDATE,rate.getUUID());
-				}
-				*/
 			}
-			
-			/*
-			monitor.worked(1);
-			if (monitor.isCanceled()) return Status.CANCEL_STATUS;
-			*/
 		}
 		
 		if (monitor.isCanceled()) return Status.CANCEL_STATUS;
 		
+		
+		int totalUpdatedRates=0;
+		
 		if(rateToLoad.size()>0){
-			logger.info("Loading quotes: "+rateToLoad.size());
+			//logger.info("Loading quotes: "+rateToLoad.size());
 			quoteProvider.load(rateToLoad);
+			int numberOfUpdated=0;
 			for(ExchangeRate rate:rateToLoad){
 				eventBroker.post(IEventConstant.QUOTE_LOADED,rate.getUUID());
+				if(rate.getRecordedQuote().isUpdated()){
+					numberOfUpdated++;
+				}
 			}
+			totalUpdatedRates+=numberOfUpdated;
+			logger.info("Loaded & updated quotes: "+numberOfUpdated+"/"+rateToLoad.size());
 		}
 		
 		if(rateToUpdate.size()>0){
-			logger.info("Update quotes: "+rateToUpdate.size());
+			//logger.info("Update quotes: "+rateToUpdate.size());
 			quoteProvider.update(rateToUpdate);
+			int numberOfUpdated=0;
 			for(ExchangeRate rate:rateToUpdate){
-				eventBroker.post(IEventConstant.QUOTE_UPDATE,rate.getUUID());
+				if(rate.getRecordedQuote().isUpdated()){
+				eventBroker.post(IEventConstant.QUOTE_UPDATE,rate.getUUID());numberOfUpdated++;
+				}
 			}
+			totalUpdatedRates+=numberOfUpdated;
+			logger.info("Updated quotes: "+numberOfUpdated+"/"+rateToUpdate.size());
 		}
 		
-		
-		
-		schedule(RESTART_TIMEOUT);
+		if(totalUpdatedRates>0)
+			schedule(RESTART_TIMEOUT);
+		else
+			schedule(RESTART_TIMEOUT*3);
 		return Status.OK_STATUS;
 		
 	}
