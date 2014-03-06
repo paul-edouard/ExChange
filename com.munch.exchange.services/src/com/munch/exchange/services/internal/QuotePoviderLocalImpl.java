@@ -180,11 +180,19 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 		}
 		HashMap<String, QuotePoint> map=quote.getQuoteMap();
 		
+		/*
+		for(String key:map.keySet()){
+			System.out.println("Key: "+key+", Value: "+map.get(key));
+		}
+		*/
+		
 		for(ExchangeRate rate : rates){
 			//boolean isUpdated = false;
 			rate.getRecordedQuote().setUpdated(false);
 			
 			if(!map.containsKey(rate.getSymbol()))continue;
+			
+			//System.out.println("Synbol: "+rate.getSymbol());
 			
 			QuotePoint point=map.get(rate.getSymbol());
 			if (!rate.getRecordedQuote().contains(point) && point!=null) {
@@ -200,11 +208,11 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 				logger.info("The ExchangeRate was updated: \""+rate.getFullName());
 				if(this.saveCurrent(rate)){
 					logger.info("The new quote were automaticaly saved!");
-					return true;
+					//return true;
 				}
 				else{
 					logger.error("Error: cannot save the updated quote!");
-					return false;
+					//return false;
 				}
 			}
 			

@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.TabItem;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.parts.composite.OverviewRateChart;
+import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.composite.RateCommonInfoGroup;
 import com.munch.exchange.parts.composite.RateTitle;
 import com.munch.exchange.parts.composite.StockInfoGroup;
@@ -53,7 +54,9 @@ public class RateEditorPart {
 	
 	RateTitle titleComposite;
 	OverviewRateChart chartComposite;
+	RateChart RateChart;
 	RateCommonInfoGroup commonInfoComposite;
+	Shell shell;
 	
 	//private Label lblTitle;
 	
@@ -64,13 +67,24 @@ public class RateEditorPart {
 	
 	@PostConstruct
 	public void postConstruct(Composite parent,Shell shell) {
-		
+		this.shell=shell;
 		
 		TabFolder tabFolder = new TabFolder(parent, SWT.BOTTOM);
 		tabFolder.setBounds(0, 0, 122, 43);
 		
+		createOverviewTabFolderItem(tabFolder, "Overview");
+		createChartTabFolder(tabFolder, "Chart");
+	}
+	
+	/**
+	 * create the overview Tab folder
+	 * 
+	 * @param tabFolder
+	 * @param title
+	 */
+	private void createOverviewTabFolderItem(TabFolder tabFolder, String title){
 		TabItem tbtmNewItem = new TabItem(tabFolder, SWT.NONE);
-		tbtmNewItem.setText("Overview");
+		tbtmNewItem.setText(title);
 		
 		Composite compositeOverview = new Composite(tabFolder, SWT.NONE);
 		tbtmNewItem.setControl(compositeOverview);
@@ -110,9 +124,29 @@ public class RateEditorPart {
 		chartComposite=ContextInjectionFactory.make(OverviewRateChart.class,localContact);
 		//chart=new OverviewRateChart(compositeOverview);
 		chartComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		
 	}
 	
+	
+	private void createChartTabFolder(TabFolder tabFolder, String title){
+		TabItem tbtmNewItem = new TabItem(tabFolder, SWT.NONE);
+		tbtmNewItem.setText(title);
+		
+		Composite compositeChart = new Composite(tabFolder, SWT.NONE);
+		tbtmNewItem.setControl(compositeChart);
+		compositeChart.setLayout(new GridLayout(1, false));
+		
+		//Create a context instance
+		IEclipseContext localContact=EclipseContextFactory.create();
+		localContact.set(Composite.class, compositeChart);
+		localContact.setParent(context);
+				
+		//////////////////////////////////
+		//Create the Title Composite
+		//////////////////////////////////
+		RateChart=ContextInjectionFactory.make( RateChart.class,localContact);
+		RateChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+	}
 	
 	@PreDestroy
 	public void preDestroy() {
