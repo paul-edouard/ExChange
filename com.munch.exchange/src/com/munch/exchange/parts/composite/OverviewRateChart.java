@@ -7,6 +7,8 @@ import java.util.Calendar;
 
 import javax.inject.Inject;
 
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -31,11 +33,14 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
+import com.munch.exchange.IEventConstant;
+import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
+import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IHistoricalDataProvider;
 
 public class OverviewRateChart extends Composite {
@@ -43,9 +48,11 @@ public class OverviewRateChart extends Composite {
 	private JFreeChart chart;
 	private ExchangeRate rate;
 	private IHistoricalDataProvider historicalDataProvider;
+	private IExchangeRateProvider exchangeRateProvider;
 	private int numberOfDays=100;
 	private ChartComposite c_comp;
 	private Combo LastDays;
+	private Label lblLastDays;
 	
 	/**
 	 * Create the composite.
@@ -53,14 +60,15 @@ public class OverviewRateChart extends Composite {
 	 * @param style
 	 */
 	@Inject
-	public OverviewRateChart(Composite parent,ExchangeRate r, IHistoricalDataProvider historicalDataProvider) {
+	public OverviewRateChart(Composite parent,ExchangeRate r, IHistoricalDataProvider historicalDataProvider,
+			IExchangeRateProvider exchangeRateProvider) {
 		super(parent,  SWT.NONE );
 		
 		this.rate=r;
 		this.historicalDataProvider=historicalDataProvider;
-		loadHistoricalData();
+		this.exchangeRateProvider=exchangeRateProvider;
 		
-	    
+		
 	    //PieDataset dataset = createDataset();
         // based on the dataset we create the chart
         chart = createChart(/*dataset, "My Title"*/);
@@ -70,8 +78,9 @@ public class OverviewRateChart extends Composite {
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
         
-        Label lblLastDays = new Label(composite, SWT.NONE);
-        lblLastDays.setText("Plot last Days: ");
+        lblLastDays = new Label(composite, SWT.NONE);
+        //lblLastDays.setText("Plot last Days: ");
+        lblLastDays.setText("Loading ");
         
         LastDays = new Combo(composite, SWT.NONE);
         LastDays.setText("100");
@@ -108,12 +117,62 @@ public class OverviewRateChart extends Composite {
 		
         c_comp=new ChartComposite(this, SWT.NONE, chart);
         c_comp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-        c_comp.setRedraw(true);
-        c_comp.pack();
+       // c_comp.setRedraw(true);
+       // c_comp.pack();
+        
+        c_comp.setVisible(false);
+        LastDays.setVisible(false);
       
-		
+        fireHistoricalData();
 	}
 	
+	@Inject
+	private void historicalDataLoading(
+			@Optional @UIEventTopic(IEventConstant.HISTORICAL_DATA_LOADING) String rate_uuid_per) {
+		
+		if (this.isDisposed())
+			return;
+		if (rate_uuid_per == null || rate_uuid_per.isEmpty())
+			return;
+		
+		String[] s=rate_uuid_per.split(";");
+		if(s.length!=2)return;
+		
+		String rate_uuid=s[0];
+		
+		
+
+		ExchangeRate incoming = exchangeRateProvider.load(rate_uuid);
+		if (incoming == null || rate == null || c_comp == null
+				|| LastDays == null || lblLastDays == null)
+			return;
+		if (!incoming.getUUID().equals(rate.getUUID()))
+			return;
+
+		 lblLastDays.setText("Loading "+s[1]+"%");
+		this.layout();
+	}
+	
+	@Inject
+	private void historicalDataLoaded(
+			@Optional @UIEventTopic(IEventConstant.HISTORICAL_DATA_LOADED) String rate_uuid) {
+
+		if (this.isDisposed())
+			return;
+		if (rate_uuid == null || rate_uuid.isEmpty())
+			return;
+
+		ExchangeRate incoming = exchangeRateProvider.load(rate_uuid);
+		if (incoming == null || rate == null || c_comp == null
+				|| LastDays == null || lblLastDays == null)
+			return;
+		if (!incoming.getUUID().equals(rate.getUUID()))
+			return;
+
+		
+		fireHistoricalData();
+		this.layout();
+	}
 	
 	private void resetChartDataSet(){
 		this.chart.getXYPlot().setDataset(0, createDataset(HistoricalPoint.FIELD_Close,numberOfDays));
@@ -122,9 +181,14 @@ public class OverviewRateChart extends Composite {
 		}
 	}
 	
-	private void loadHistoricalData(){
-		if(rate.getHistoricalData().isEmpty()){
-			historicalDataProvider.load(rate);
+	private void fireHistoricalData(){
+		if(!rate.getHistoricalData().isEmpty()){
+			//historicalDataProvider.load(rate);
+			resetChartDataSet();
+			
+			c_comp.setVisible(true);
+		    LastDays.setVisible(true);
+		    lblLastDays.setText("Plot last Days: ");
 		}
 	}
 	
@@ -197,6 +261,10 @@ public class OverviewRateChart extends Composite {
         return chart;
 
     }
+    
+    
+   
+    
 	
 	/**
      * Creates a sample dataset.
@@ -204,14 +272,19 @@ public class OverviewRateChart extends Composite {
      * @return A sample dataset.
      */
     private XYDataset createDataset(String field,int days) {
-    	Calendar LastHisPtDate=rate.getHistoricalData().getLast().getDate();
-    	Calendar LastQuoteDate=rate.getRecordedQuote().getLast().getDate();
+    	
+    	
     	
     	TimeSeries series=rate.getHistoricalData().getTimeSeries(field, days);
+    	
+    	if(!(rate instanceof EconomicData) && !rate.getHistoricalData().isEmpty()){
+    	Calendar LastHisPtDate=rate.getHistoricalData().getLast().getDate();
+    	Calendar LastQuoteDate=rate.getRecordedQuote().getLast().getDate();
     	if(!DateTool.dateToDayString(LastHisPtDate).equals(DateTool.dateToDayString(LastQuoteDate))){
     		 HistoricalPoint point=rate.getRecordedQuote().createLastHistoricalPoint();
     		 if(point!=null)
     			 series.add(new Day(point.getDate().getTime()),point.get(field));
+    	}
     	}
     	
     	TimeSeriesCollection collection=new TimeSeriesCollection(series);

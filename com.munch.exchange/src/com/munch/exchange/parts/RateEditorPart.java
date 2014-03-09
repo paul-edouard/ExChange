@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 
+import com.munch.exchange.job.HistoricalDataLoader;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.parts.composite.OverviewRateChart;
@@ -57,6 +58,7 @@ public class RateEditorPart {
 	RateChart RateChart;
 	RateCommonInfoGroup commonInfoComposite;
 	Shell shell;
+	HistoricalDataLoader historicalDataLoader;
 	
 	//private Label lblTitle;
 	
@@ -74,6 +76,11 @@ public class RateEditorPart {
 		
 		createOverviewTabFolderItem(tabFolder, "Overview");
 		createChartTabFolder(tabFolder, "Chart");
+		
+		//Start Loading Data
+		historicalDataLoader=ContextInjectionFactory.make( HistoricalDataLoader.class,context);
+		historicalDataLoader.schedule();
+		
 	}
 	
 	/**

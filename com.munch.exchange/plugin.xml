@@ -17,7 +17,7 @@
          </property>
          <property
                name="windowImages"
-               value="icons/chart_curve.png">
+               value="icons/16/stock-market-icon.png,icons/32/stock-market-icon.png,icons/48/stock-market-icon.png,icons/64/stock-market-icon.png,icons/128/stock-market-icon.png">
          </property>
          <property
                name="applicationCSS"

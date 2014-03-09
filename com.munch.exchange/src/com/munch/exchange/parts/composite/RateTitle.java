@@ -18,7 +18,9 @@ import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.IImageKeys;
+import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.services.IBundleResourceLoader;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -109,7 +111,7 @@ public class RateTitle extends Composite {
 	 * if not loaded the quote will be loaded
 	 */
 	private void searchLastQuote(){
-		if(rate.getRecordedQuote().isEmpty()){
+		if(rate.getRecordedQuote().isEmpty() && !(rate instanceof EconomicData)){
 			quoteProvider.load(rate);
 		}
 	}
@@ -169,6 +171,24 @@ public class RateTitle extends Composite {
 		setLabelValues();
 	}
 	
+	@Inject
+	private void historicalDataLoaded(@Optional  @UIEventTopic(IEventConstant.HISTORICAL_DATA_LOADED) String rate_uuid ){
+		
+		
+		if(this.isDisposed())return;
+		if(rate_uuid==null || rate_uuid.isEmpty())return;
+		
+		
+		ExchangeRate incoming=exchangeRateProvider.load(rate_uuid);
+		if(incoming==null || rate==null || lblFulleName==null || lblQuote==null)return;
+		if(!incoming.getUUID().equals(rate.getUUID()))return;
+		
+		
+		if(rate instanceof EconomicData){
+			setLabelValuesEconomicData();
+		}
+	}
+	
 	
 	
 	
@@ -176,51 +196,112 @@ public class RateTitle extends Composite {
 	public  void setLabelValues(){
 		
 		
-		
 		lblFulleName.setText(rate.getFullName());
 		
-		
-		
-		if(!rate.getRecordedQuote().isEmpty()){
-			
-			QuotePoint point=(QuotePoint) rate.getRecordedQuote().getLast();
-			
-			//Quote
-			lblQuote.setText(String.valueOf(point.getLastTradePrice()));
-			
-			//Change
-			float per=point.getChange()*100/point.getLastTradePrice();
-			lblChange.setText(String.valueOf(point.getChange())+" ("+String.format("%.2f", per)+"%)");
-			if(per>0){
-				labelIcon.setImage(this.getUpImage());
-				lblChange.setForeground(SWTResourceManager.getColor(SWT.COLOR_GREEN));
-			}
-			else if(per<0){
-				labelIcon.setImage(this.getDownImage());
-				lblChange.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
-			}
-			else{
-				labelIcon.setImage(null);
-			}
-				
-			
-			
-			//Date Time
-			Calendar date_paris=Calendar.getInstance();
-			date_paris.setTimeInMillis(point.getLastTradeDate().getTimeInMillis()+3600*1000*6);
-			
-			SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss");
-			lblLasttradedate.setText(format.format(date_paris.getTime()));
-			lblLasttradedate.setRedraw(true);
-			lblLasttradedate.redraw();
-			lblLasttradedate.update();
-			
-			
+		if(rate instanceof EconomicData){
+			setLabelValuesEconomicData();
+		}
+		else{
+			setLabelValueCommonRate();
 		}
 		
 	}
 	
+	/**
+	 * set the label values for Economic data
+	 */
+	private void setLabelValuesEconomicData(){
+		
+		if(rate.getHistoricalData().isEmpty())return;
+		
+		//logger.info("HISTORICAL DATA LOADED 2: "+rate.getFullName());
+		
+		HistoricalPoint lastPoint=(HistoricalPoint)rate.getHistoricalData().getLast();
+		
+		// Quote
+		lblQuote.setText(String.valueOf(lastPoint.getClose()));
+		//lblQuote.update();
+		
+		//logger.info("HISTORICAL DATA LOADED 3: "+String.valueOf(lastPoint.getClose()));
+		
+		if(rate.getHistoricalData().size()==1)return;
+		
+		HistoricalPoint lastPoint_1=(HistoricalPoint)rate.getHistoricalData().get(rate.getHistoricalData().size()-2);
+		
+		// Change
+		float per = (lastPoint.getClose()- lastPoint_1.getClose())* 100 / lastPoint_1.getClose();
+		lblChange.setText(String.valueOf(lastPoint.getClose()- lastPoint_1.getClose()) + " ("
+				+ String.format("%.2f", per) + "%)");
+		if (per > 0) {
+			labelIcon.setImage(this.getUpImage());
+			lblChange.setForeground(SWTResourceManager
+					.getColor(SWT.COLOR_GREEN));
+		} else if (per < 0) {
+			labelIcon.setImage(this.getDownImage());
+			lblChange.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
+		} else {
+			labelIcon.setImage(null);
+		}
+		
+		// Date Time
+		Calendar date_paris = Calendar.getInstance();
+		date_paris
+						.setTimeInMillis(lastPoint.getDate().getTimeInMillis() + 3600 * 1000 * 6);
+
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss");
+		lblLasttradedate.setText(format.format(date_paris.getTime()));
+		
+		//Force Redrawing
+		this.layout();
+		
+		
+		
+	}
 	
+	/**
+	 * set the values for common rate
+	 * 
+	 */
+	private void  setLabelValueCommonRate(){
+		
+		if(rate.getRecordedQuote().isEmpty())return;
+			
+		QuotePoint point = (QuotePoint) rate.getRecordedQuote().getLast();
+
+		// Quote
+		lblQuote.setText(String.valueOf(point.getLastTradePrice()));
+		lblQuote.setVisible(true);
+
+		// Change
+		float per = point.getChange() * 100 / point.getLastTradePrice();
+		lblChange.setText(String.valueOf(point.getChange()) + " ("
+				+ String.format("%.2f", per) + "%)");
+		if (per > 0) {
+			labelIcon.setImage(this.getUpImage());
+			lblChange.setForeground(SWTResourceManager
+					.getColor(SWT.COLOR_GREEN));
+		} else if (per < 0) {
+			labelIcon.setImage(this.getDownImage());
+			lblChange.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
+		} else {
+			labelIcon.setImage(null);
+		}
+		labelIcon.setVisible(true);
+
+		// Date Time
+		Calendar date_paris = Calendar.getInstance();
+		date_paris
+				.setTimeInMillis(point.getLastTradeDate().getTimeInMillis() + 3600 * 1000 * 6);
+
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss");
+		lblLasttradedate.setText(format.format(date_paris.getTime()));
+		lblLasttradedate.setVisible(true);
+		
+		
+		//Force Redrawing
+		this.layout();
+			
+	}
 	
 
 	public Image getUpImage() {

@@ -182,7 +182,8 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		
 		this.setEnd(DateTool.StringToDate(rootElement.getAttribute(FIELD_End)));
 		this.setStart(DateTool.StringToDate(rootElement.getAttribute(FIELD_Start)));
-		this.setLastUpdate(DateTool.StringToDate(rootElement.getAttribute(FIELD_LastUpdate)));
+		if(rootElement.hasAttribute(FIELD_LastUpdate))
+			this.setLastUpdate(DateTool.StringToDate(rootElement.getAttribute(FIELD_LastUpdate)));
 		
 		this.setName(rootElement.getAttribute(FIELD_Name));
 		this.setSymbol(rootElement.getAttribute(FIELD_Symbol));

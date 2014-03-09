@@ -37,8 +37,8 @@ public interface IImageKeys {
 	public static final String RATE_ECONOMIC_DATA = "icons/money_dollar.png";
 	
 	//Quote
-	public static final String QUOTE_UP = "icons/2uparrow_16x16.png";
-	public static final String QUOTE_DOWN = "icons/2downarrow_16x16.png";
+	public static final String QUOTE_UP = "icons/32/Stock-Index-Up-icon.png";
+	public static final String QUOTE_DOWN = "icons/32/Stock-Index-Down-icon.png";
 	
 	/*
 	public static final String GROUP = "icons/package_obj.gif";

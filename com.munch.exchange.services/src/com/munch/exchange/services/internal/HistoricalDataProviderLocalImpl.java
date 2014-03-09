@@ -58,12 +58,14 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 		return map;
 	}
 	
+	
+	
 	/**
 	 * save all the historical data found
 	 * @param rate
 	 * @return
 	 */
-	private boolean saveAll(ExchangeRate rate) {
+	public boolean saveAll(ExchangeRate rate) {
 		if(rate==null)return false;
 		
 		HashMap<Integer,HistoricalData > map=splitHisData(rate);
@@ -105,15 +107,7 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 	
 	private HistoricalData loadLocalData(ExchangeRate rate){
 
-		File localDir = new File(getSavePath(rate));
-		File[] Xmlfiles = localDir.listFiles(new FilenameFilter() {
-
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.toLowerCase().endsWith(".xml");
-			}
-		});
-
+		File[] Xmlfiles = searchXmlFiles(rate);
 		if(Xmlfiles.length==0)return null;
 		
 		HistoricalData hisDatas = new HistoricalData();
@@ -125,6 +119,34 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 		
 		return hisDatas;
 	}
+	
+	
+	private File[] searchXmlFiles(ExchangeRate rate){
+		File localDir = new File(getSavePath(rate));
+		File[] Xmlfiles = localDir.listFiles(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.toLowerCase().endsWith(".xml");
+			}
+		});
+		
+		return Xmlfiles;
+	}
+	
+	@Override
+	public boolean hasLocalData(ExchangeRate rate){
+		File[] Xmlfiles = searchXmlFiles(rate);
+		if(Xmlfiles.length==0)return false;
+		return Xmlfiles.length>1;
+	}
+	
+	@Override
+	public Calendar[] getIntervals(ExchangeRate rate){
+		Calendar[] intervals=DateTool.splitIntervalInYears(rate.getStart(), rate.getEnd());
+		return intervals;
+	}
+	
 	
 	@Override
 	public boolean load(ExchangeRate rate) {
@@ -142,60 +164,65 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 		}
 
 		// try to load the data from YQL
-		Calendar[] intervals=DateTool.splitIntervalInYears(rate.getStart(), rate.getEnd());
+		Calendar[] intervals=getIntervals(rate);
 		HistoricalData hisDatas = new HistoricalData();
 		for(int i=0;i<intervals.length;i=i+2){
-			System.out.println("Interval:" + DateTool.dateToString(intervals[i])+
-					" to "+DateTool.dateToString(intervals[i+1]));
-			
-			LinkedList<HistoricalPoint> points =new LinkedList<HistoricalPoint>();
-			
-			if(rate instanceof Commodity || rate instanceof Currency){
-				String id="";
-				if(rate instanceof Commodity)
-					id=((Commodity) rate).getOnVistaId();
-				else
-					id=((Currency) rate).getOnVistaId();
-				OnVistaTable table=new OnVistaTable(id, intervals[i],"Y1");
-				points =table.getHisPointList();
-			}
-			else if(rate instanceof EconomicData){
-				EconomicData ed=(EconomicData)rate;
-				FredObservations obs=new FredObservations(ed.getId(),intervals[i], intervals[i+1]);
-				points=obs.getObservations();
-				
-			}
-			else{
-				YQLHistoricalData hisData = new YQLHistoricalData(rate.getSymbol(),
-					intervals[i], intervals[i+1]);
-				points =hisData.getHisPointList();
-			}
-			
-			if (points.isEmpty()) {
-				System.out.println("No historical found for "
-						+ rate.getName() + "(" + rate.getSymbol() + ")"+
-						"in the interval:" + DateTool.dateToString(intervals[i])+
-						" to "+DateTool.dateToString(intervals[i+1]));
-				
-			} else {
-				for(HistoricalPoint point :points){
-					if(!hisDatas.contains(point))
-						hisDatas.add(point);
-				}
-				hisDatas.sort();
-			}
+			loadInterval(rate,hisDatas,intervals[i],intervals[i+1]);
 		}
 		
+	
+		return save(rate,hisDatas);
+	}
+	
+	@Override
+	public boolean save(ExchangeRate rate,HistoricalData hisDatas ){
 		if(!hisDatas.isEmpty()){
 			rate.setHistoricalData(hisDatas);
 			if (saveAll(rate))
 				return true;
 		}
-		
-			
-		
-		
 		return false;
+	}
+	
+	@Override
+	public void loadInterval(ExchangeRate rate, HistoricalData hisDatas,Calendar start,Calendar end){
+		System.out.println("Interval:" + DateTool.dateToString(start) + " to "
+				+ DateTool.dateToString(end));
+
+		LinkedList<HistoricalPoint> points = new LinkedList<HistoricalPoint>();
+
+		if (rate instanceof Commodity || rate instanceof Currency) {
+			String id = "";
+			if (rate instanceof Commodity)
+				id = ((Commodity) rate).getOnVistaId();
+			else
+				id = ((Currency) rate).getOnVistaId();
+			OnVistaTable table = new OnVistaTable(id, start, "Y1");
+			points = table.getHisPointList();
+		} else if (rate instanceof EconomicData) {
+			EconomicData ed = (EconomicData) rate;
+			FredObservations obs = new FredObservations(ed.getId(), start, end);
+			points = obs.getObservations();
+
+		} else {
+			YQLHistoricalData hisData = new YQLHistoricalData(rate.getSymbol(),
+					start, end);
+			points = hisData.getHisPointList();
+		}
+
+		if (points.isEmpty()) {
+			System.out.println("No historical found for " + rate.getName()
+					+ "(" + rate.getSymbol() + ")" + "in the interval:"
+					+ DateTool.dateToString(start) + " to "
+					+ DateTool.dateToString(end));
+
+		} else {
+			for (HistoricalPoint point : points) {
+				if (!hisDatas.contains(point))
+					hisDatas.add(point);
+			}
+			hisDatas.sort();
+		}
 	}
 
 	@Override

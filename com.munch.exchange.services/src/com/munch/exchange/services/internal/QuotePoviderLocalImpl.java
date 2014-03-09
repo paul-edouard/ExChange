@@ -146,7 +146,7 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 		YQLQuotes quote=new YQLQuotes(rate.getSymbol());
 		QuotePoint point=quote.getCurrentQuotePoint();
 		//logger.info("Current Point:"+point);
-		if (!rate.getRecordedQuote().contains(point) && point!=null) {
+		if (!rate.getRecordedQuote().contains(point) && point!=null && point.getLastTradePrice()>0) {
 			
 			rate.getRecordedQuote().addLast(point);
 			rate.getRecordedQuote().sort();
@@ -195,7 +195,7 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 			//System.out.println("Synbol: "+rate.getSymbol());
 			
 			QuotePoint point=map.get(rate.getSymbol());
-			if (!rate.getRecordedQuote().contains(point) && point!=null) {
+			if (!rate.getRecordedQuote().contains(point) && point!=null && point.getLastTradePrice()>0) {
 				
 				rate.getRecordedQuote().addLast(point);
 				rate.getRecordedQuote().sort();

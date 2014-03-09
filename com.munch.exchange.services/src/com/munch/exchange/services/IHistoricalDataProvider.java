@@ -1,6 +1,9 @@
 package com.munch.exchange.services;
 
+import java.util.Calendar;
+
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.historical.HistoricalData;
 
 public interface IHistoricalDataProvider {
 	
@@ -23,5 +26,36 @@ public interface IHistoricalDataProvider {
 	 * @return true on success and false if case of failure
 	 */
 	boolean update(ExchangeRate rate);
+	
+	
+	/**
+	 * check if the rate has local data
+	 * @param rate
+	 * @return
+	 */
+	boolean hasLocalData(ExchangeRate rate);
+	
+	/**
+	 * return the number of years of data
+	 * @param rate
+	 * @return
+	 */
+	Calendar[] getIntervals(ExchangeRate rate);
+	
+	/**
+	 * load the historical data from a given interval
+	 * 
+	 * @param rate
+	 * @param start
+	 * @param end
+	 */
+	void loadInterval(ExchangeRate rate, HistoricalData hisDatas,Calendar start,Calendar end);
+	
+	/**
+	 * save all the historical data found
+	 * @param rate
+	 * @return
+	 */
+	boolean save(ExchangeRate rate,HistoricalData hisDatas );
 
 }
