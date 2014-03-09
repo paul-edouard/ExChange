@@ -28,6 +28,7 @@ import com.munch.exchange.parts.composite.OverviewRateChart;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.composite.RateCommonInfoGroup;
 import com.munch.exchange.parts.composite.RateTitle;
+import com.munch.exchange.parts.composite.RateWeb;
 import com.munch.exchange.parts.composite.StockInfoGroup;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IKeyStatisticProvider;
@@ -55,7 +56,8 @@ public class RateEditorPart {
 	
 	RateTitle titleComposite;
 	OverviewRateChart chartComposite;
-	RateChart RateChart;
+	RateChart rateChart;
+	RateWeb rateWeb;
 	RateCommonInfoGroup commonInfoComposite;
 	Shell shell;
 	HistoricalDataLoader historicalDataLoader;
@@ -76,6 +78,7 @@ public class RateEditorPart {
 		
 		createOverviewTabFolderItem(tabFolder, "Overview");
 		createChartTabFolder(tabFolder, "Chart");
+		createWebTabFolder(tabFolder,"Web");
 		
 		//Start Loading Data
 		historicalDataLoader=ContextInjectionFactory.make( HistoricalDataLoader.class,context);
@@ -148,10 +151,31 @@ public class RateEditorPart {
 		localContact.setParent(context);
 				
 		//////////////////////////////////
-		//Create the Title Composite
+		//Create the Chart Composite
 		//////////////////////////////////
-		RateChart=ContextInjectionFactory.make( RateChart.class,localContact);
-		RateChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		rateChart=ContextInjectionFactory.make( RateChart.class,localContact);
+		rateChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+	}
+	
+	private void createWebTabFolder(TabFolder tabFolder, String title){
+		TabItem tbtmNewItem = new TabItem(tabFolder, SWT.NONE);
+		tbtmNewItem.setText(title);
+		
+		Composite compositeWeb = new Composite(tabFolder, SWT.NONE);
+		tbtmNewItem.setControl(compositeWeb);
+		compositeWeb.setLayout(new GridLayout(1, false));
+		
+		//Create a context instance
+		IEclipseContext localContact=EclipseContextFactory.create();
+		localContact.set(Composite.class, compositeWeb);
+		localContact.setParent(context);
+				
+		//////////////////////////////////
+		//Create the Web Composite
+		//////////////////////////////////
+		rateWeb=ContextInjectionFactory.make( RateWeb.class,localContact);
+		rateWeb.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 	}
 	
