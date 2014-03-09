@@ -169,8 +169,12 @@ public class YQLQuotes  extends YQLTable {
 		if(this.getCurrent()==null)return false;
 		
 		if(!this.getCurrent().has("Name"))return false;
-		
 		if(!(this.getCurrent().get("Name") instanceof String))return false;
+		
+		if(!this.getCurrent().has("StockExchange") )return false;
+		if(!(this.getCurrent().get("StockExchange") instanceof String ))return false;
+		
+		//if(!this.getCurrent().has("StockExchange"))return false;
 		
 		return !Float.isNaN(this.getLastTradePriceOnly());
 	}
