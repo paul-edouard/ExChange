@@ -24,6 +24,9 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	public static final String FIELD_Data_Path="data_path";
 	public static final String FIELD_Stock_Exchange="stockExchange";
 	
+	public static final String FIELD_ISIN="ISIN";
+	public static final String FIELD_WKN="WKN";
+	
 	
 	protected Calendar start=Calendar.getInstance();
 	protected Calendar end=Calendar.getInstance();
@@ -34,11 +37,39 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	protected String dataPath="";
 	protected String stockExchange="";
 	
+	protected String ISIN="";
+	protected String WKN="";
+	
+	
 	protected HistoricalData historicalData=new HistoricalData();
 	protected RecordedQuote recordedQuote=new RecordedQuote();
 	
 	protected String uuid=UUID.randomUUID().toString();
 	
+	
+	
+	
+	
+	public String getISIN() {
+		return ISIN;
+	}
+
+
+	public void setISIN(String iSIN) {
+		changes.firePropertyChange(FIELD_ISIN, this.ISIN, this.ISIN = iSIN);
+	}
+
+
+	public String getWKN() {
+		return WKN;
+	}
+
+
+	public void setWKN(String wKN) {
+		changes.firePropertyChange(FIELD_WKN, this.WKN, this.WKN = wKN);
+	}
+
+
 	public Calendar getStart() {
 		return start;
 	}
@@ -189,6 +220,11 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		this.setSymbol(rootElement.getAttribute(FIELD_Symbol));
 		this.setUUID(rootElement.getAttribute(FIELD_UUID));
 		
+		if(rootElement.hasAttribute(FIELD_ISIN))
+			this.setISIN(rootElement.getAttribute(FIELD_ISIN));
+		if(rootElement.hasAttribute(FIELD_WKN))
+			this.setWKN(rootElement.getAttribute(FIELD_WKN));
+		
 		this.setStockExchange(rootElement.getAttribute(FIELD_Stock_Exchange));
 	}
 	protected void initChild(Element childElement){}
@@ -203,6 +239,9 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		rootElement.setAttribute(FIELD_Name, this.getName());
 		rootElement.setAttribute(FIELD_Symbol, this.getSymbol());
 		rootElement.setAttribute(FIELD_UUID, this.getUUID());
+		
+		rootElement.setAttribute(FIELD_ISIN, this.getISIN());
+		rootElement.setAttribute(FIELD_WKN, this.getWKN());
 		
 		rootElement.setAttribute(FIELD_Stock_Exchange, this.getStockExchange());
 	}

@@ -78,17 +78,22 @@ public class AddRateDialog extends TitleAreaDialog {
 		comboRateType.setText("Yahoo Finance Symbol, ex: DAE.DE");
 		comboRateType.add("Yahoo Finance Symbol, ex: DAE.DE");
 		comboRateType.add("Federal Reserve Bank St. Louis Symbol, ex: CPIAUCSL");
+		comboRateType.add("ISIN, ex: US9843321061");
 		
 		comboRateType.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				System.out.println(comboRateType.getText());
-				boolean modus=comboRateType.getText().startsWith("Yahoo Finance Symbol");
+				boolean modus=(comboRateType.getText().startsWith("Yahoo Finance Symbol") || 
+						comboRateType.getText().startsWith("ISIN"));
 				btnOnVistaId.setVisible(modus);
 				OnVistaIdText.setVisible(modus);
 				btnCommodityName.setVisible(modus);
 				CommodityName.setVisible(modus);
 				
-				if(modus){
+				if(modus && !comboRateType.getText().startsWith("ISIN")){
+					lblYahooFinanceSymbol.setText("ISIN:");
+				}
+				else if(modus && comboRateType.getText().startsWith("ISIN")){
 					lblYahooFinanceSymbol.setText("Yahoo Finance Symbol:");
 				}
 				else{
@@ -168,10 +173,22 @@ public class AddRateDialog extends TitleAreaDialog {
 	protected void okPressed() {
 		
 		String search_str=SymbolText.getText();
-		boolean modus=comboRateType.getText().startsWith("Yahoo Finance Symbol");
+		boolean modus=comboRateType.getText().startsWith("Yahoo Finance Symbol") || comboRateType.getText().startsWith("ISIN") ;
 		if(!modus){
 			search_str="FRED_"+SymbolText.getText();
 		}
+		//Search the Yahoo Symbol
+		String isin=search_str;
+		if(comboRateType.getText().startsWith("ISIN")){
+			search_str=exchangeRateProvider.getYahooSymbolFromIsin(isin);
+			if(search_str.isEmpty()){
+				this.setErrorMessage("The given isin \""+SymbolText.getText()+
+						"\" can not be found on Yahoo!\nPlease enter a other one.");
+				return;
+			}
+				
+		}
+		
 		//Test if the symbol is already used
 		if(this.btnCommodityName.getSelection()){
 			search_str=CommodityName.getText();
@@ -197,6 +214,10 @@ public class AddRateDialog extends TitleAreaDialog {
 			this.setErrorMessage("Cannot find the given symbol \""+SymbolText.getText()+
 					"\" on Yahoo Finance!\nPlease check if it is correct spelled.");
 			return;
+		}
+		if(comboRateType.getText().startsWith("ISIN")){
+			rate.setISIN(isin);
+			exchangeRateProvider.save(rate);
 		}
 		
 		super.okPressed();

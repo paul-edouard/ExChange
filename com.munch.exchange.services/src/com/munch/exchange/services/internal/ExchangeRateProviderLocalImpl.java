@@ -19,6 +19,7 @@ import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Xml;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.internal.fred.FredSeries;
+import com.munch.exchange.services.internal.yql.YQLIsin;
 import com.munch.exchange.services.internal.yql.YQLQuotes;
 import com.munch.exchange.services.internal.yql.YQLStocks;
 
@@ -571,6 +572,13 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		
 
+	}
+
+	@Override
+	public String getYahooSymbolFromIsin(String isin) {
+		YQLIsin y_i=new YQLIsin(isin);
+		if(!y_i.hasValidResult())return "";
+		return y_i.getYahooSymbol();
 	}
 
 

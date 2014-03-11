@@ -8,7 +8,13 @@ import javax.inject.Inject;
 import org.apache.log4j.Logger;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -46,6 +52,7 @@ public class RateTitle extends Composite {
 	private Image upImage;
 	private Image downImage;
 	private Label labelIcon;
+	private Label lblIsin;
 
 	/**
 	 * Create the composite.
@@ -89,8 +96,52 @@ public class RateTitle extends Composite {
 		lblChange.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, true, false, 1, 1));
 		lblChange.setForeground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		lblChange.setBackground(SWTResourceManager.getColor(SWT.COLOR_BLUE));
-		//lblChange.setText("Change");
-		new Label(this, SWT.NONE);
+		
+		lblIsin = new Label(this, SWT.NONE);
+		lblIsin.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				InputDialog in_dia=new InputDialog(RateTitle.this.getShell(), "Enter ISIN", "Please enter the ISIN", "", new IInputValidator() {
+					
+					@Override
+					public String isValid(String newText) {
+						String symbol=RateTitle.this.exchangeRateProvider.getYahooSymbolFromIsin(newText);
+						if(symbol.isEmpty())return "ISIN no found on Yahoo!";
+						if(!symbol.equals(RateTitle.this.rate.getSymbol())){
+							return "ISIN and Yahoo symbol doesn't match!\nSymbol found: "+symbol;
+						}
+						
+						
+						return null;
+					}
+				});
+				
+				if (in_dia.open() == Window.OK) {
+					RateTitle.this.rate.setISIN(in_dia.getValue());
+					RateTitle.this.exchangeRateProvider.save(RateTitle.this.rate);
+					lblIsin.setText(RateTitle.this.rate.getISIN());
+					lblIsin.pack();
+				}
+				
+			}
+		});
+		lblIsin.addMouseTrackListener(new MouseTrackAdapter() {
+			@Override
+			public void mouseEnter(MouseEvent e) {
+				lblIsin.setFont(SWTResourceManager.getFont("Segoe UI", 10, SWT.BOLD| SWT.ITALIC));
+			}
+			@Override
+			public void mouseExit(MouseEvent e) {
+				lblIsin.setFont(SWTResourceManager.getFont("Segoe UI", 10, SWT.BOLD));
+			}
+			
+		});
+		lblIsin.setText("ISIN");
+		lblIsin.setFont(SWTResourceManager.getFont("Segoe UI", 10, SWT.BOLD));
+		lblIsin.setForeground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+		lblIsin.setBackground(SWTResourceManager.getColor(SWT.COLOR_BLUE));
+		
+		
 		new Label(this, SWT.NONE);
 		new Label(this, SWT.NONE);
 		
@@ -197,6 +248,13 @@ public class RateTitle extends Composite {
 		
 		
 		lblFulleName.setText(rate.getFullName());
+		
+		if(rate.getISIN().isEmpty()){
+			lblIsin.setText("Set ISIN");
+		}
+		else{
+			lblIsin.setText(rate.getISIN());
+		}
 		
 		if(rate instanceof EconomicData){
 			setLabelValuesEconomicData();

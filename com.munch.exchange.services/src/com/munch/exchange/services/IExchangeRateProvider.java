@@ -19,6 +19,14 @@ public interface IExchangeRateProvider {
 	void init(String workspace);
 	//==================================
 	
+	//==================================
+	//==           SEARCH             ==
+	//==================================
+	
+	String getYahooSymbolFromIsin(String isin);
+	
+	
+	
 	
 	//==================================
 	//==         EXCHANGE RATE        ==
