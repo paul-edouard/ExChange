@@ -77,8 +77,9 @@ public class RateEditorPart {
 		tabFolder.setBounds(0, 0, 122, 43);
 		
 		createOverviewTabFolderItem(tabFolder, "Overview");
-		createChartTabFolder(tabFolder, "Chart");
 		createWebTabFolder(tabFolder,"Web");
+		createChartTabFolder(tabFolder, "Chart");
+		
 		
 		//Start Loading Data
 		historicalDataLoader=ContextInjectionFactory.make( HistoricalDataLoader.class,context);
@@ -143,7 +144,11 @@ public class RateEditorPart {
 		
 		Composite compositeChart = new Composite(tabFolder, SWT.NONE);
 		tbtmNewItem.setControl(compositeChart);
-		compositeChart.setLayout(new GridLayout(1, false));
+		GridLayout gridLayout = new GridLayout(1, false);
+		gridLayout.marginHeight = 0;
+		//gridLayout.verticalSpacing = 0;
+		gridLayout.marginWidth = 0;
+		compositeChart.setLayout(gridLayout);
 		
 		//Create a context instance
 		IEclipseContext localContact=EclipseContextFactory.create();
@@ -164,7 +169,12 @@ public class RateEditorPart {
 		
 		Composite compositeWeb = new Composite(tabFolder, SWT.NONE);
 		tbtmNewItem.setControl(compositeWeb);
-		compositeWeb.setLayout(new GridLayout(1, false));
+		
+		GridLayout gridLayout = new GridLayout(1, false);
+		gridLayout.marginHeight = 0;
+		//gridLayout.verticalSpacing = 0;
+		gridLayout.marginWidth = 0;
+		compositeWeb.setLayout(gridLayout);
 		
 		//Create a context instance
 		IEclipseContext localContact=EclipseContextFactory.create();

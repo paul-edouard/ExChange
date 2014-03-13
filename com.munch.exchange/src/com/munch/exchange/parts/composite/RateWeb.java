@@ -2,41 +2,190 @@ package com.munch.exchange.parts.composite;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 
 import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.ProgressAdapter;
+import org.eclipse.swt.browser.ProgressEvent;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.wb.swt.SWTResourceManager;
 
+import com.munch.exchange.model.core.Commodity;
+import com.munch.exchange.model.core.Currency;
 import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Fund;
+import com.munch.exchange.model.core.Indice;
+import com.munch.exchange.model.core.Stock;
 
 public class RateWeb extends Composite {
 	
 	private static Logger logger = Logger.getLogger(RateWeb.class);
+	private Combo comboWebSites;
+	private Button btnBack;
+	private Button btnNext;
+	private Browser browser;
+	
+	private LinkedHashMap<String, String> webSiteMap=new LinkedHashMap<String, String>();
+	private Text textURI;
+	private ProgressBar progressBar;
+	private LinkedList<String> visitedWebSites=new LinkedList<String>();
 	
 	@Inject
 	public RateWeb(Composite parent,ExchangeRate rate) {
 		super(parent, SWT.NONE);
-		setLayout(new GridLayout(1, false));
+		createWebSiteMap(rate);
 		
-		Browser browser = new Browser(this, SWT.NONE);
+		GridLayout gridLayout = new GridLayout(1, false);
+		gridLayout.marginHeight = 0;
+		gridLayout.verticalSpacing = 0;
+		gridLayout.marginWidth = 0;
+		setLayout(gridLayout);
+		
+		Composite composite = new Composite(this, SWT.NONE);
+		composite.setBackground(SWTResourceManager.getColor(SWT.COLOR_BLUE));
+		GridLayout gl_composite = new GridLayout(5, false);
+		composite.setLayout(gl_composite);
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		comboWebSites = new Combo(composite, SWT.NONE);
+		for(String key:webSiteMap.keySet()){
+			comboWebSites.add(key);
+			comboWebSites.setText(key);
+		}
+		
+		comboWebSites.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				textURI.setText(webSiteMap.get(comboWebSites.getText()));
+			}
+		});
+		
+		btnBack = new Button(composite, SWT.NONE);
+		btnBack.setEnabled(false);
+		btnBack.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+			}
+		});
+		btnBack.setText("<<");
+		
+		btnNext = new Button(composite, SWT.NONE);
+		btnNext.setEnabled(false);
+		btnNext.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+			}
+		});
+		btnNext.setText(">>");
+		
+		textURI = new Text(composite, SWT.BORDER);
+		textURI.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				if(!textURI.getText().isEmpty()){
+					progressBar.setVisible(true);
+					browser.setUrl(textURI.getText());
+				}
+			}
+		});
+		GridData gd_textURI = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+		gd_textURI.widthHint = 215;
+		textURI.setLayoutData(gd_textURI);
+		
+		progressBar = new ProgressBar(composite, SWT.NONE);
+		GridData gd_progressBar = new GridData(SWT.RIGHT, SWT.FILL, false, false, 1, 1);
+		gd_progressBar.widthHint = 72;
+		progressBar.setLayoutData(gd_progressBar);
+		
+		
+		
+		
+		
+		
+		browser = new Browser(this, SWT.NONE);
+		browser.addProgressListener(new ProgressAdapter() {
+			@Override
+			public void changed(ProgressEvent event) {
+				//System.out.println("Changed: "+event.current);
+				progressBar.setSelection(event.current);
+				progressBar.setMaximum(event.total);
+			}
+			@Override
+			public void completed(ProgressEvent event) {
+				System.out.println("completed");
+				progressBar.setVisible(false);
+				if(!visitedWebSites.contains(browser.getUrl())){
+					visitedWebSites.add(browser.getUrl());
+				}
+				//if(visitedWebSites.size()>0)
+			}
+		});
+		
 		browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		browser.setUrl(getYahooURL(rate));
 		
+		textURI.setText(webSiteMap.get(comboWebSites.getText()));
+		
+	}
+	
+	private void createWebSiteMap(ExchangeRate rate){
+		if(!(rate instanceof EconomicData)){
+			webSiteMap.put("Yahoo Finance",getYahooURL(rate) );
+			String dibaURL=getDiBaURL(rate);
+			if(!dibaURL.isEmpty()){
+				webSiteMap.put("DiBa",dibaURL );
+			}
+			
+		}
+		else{
+			webSiteMap.put("St Louis Fed",getStLouisURL(rate) );
+		}
 		
 		
 	}
 	
 	
-	private String getYahooURL(ExchangeRate rate){
+	private String getDiBaURL(ExchangeRate rate){
 		
+		if(rate.getISIN().isEmpty())return "";
+		
+		String baseUrl="https://wertpapiere.ing-diba.de/DE/Showpage.aspx?pageID=";
+		if(rate instanceof Stock){
+			baseUrl+="23&ISIN="+rate.getISIN()+"&";
+		}
+		else if(rate instanceof Indice){
+			baseUrl+="45&ISIN="+rate.getISIN()+"&";
+		}
+		else if(rate instanceof Currency){
+			baseUrl+="57&ISIN="+rate.getISIN()+"&";
+		}
+		else if(rate instanceof Commodity){
+			baseUrl+="52&ISIN="+rate.getISIN()+"&";
+		}
+		else if(rate instanceof Fund){
+			baseUrl+="40&ISIN="+rate.getISIN()+"&";
+		}
+		
+		//https://wertpapiere.ing-diba.de/DE/Showpage.aspx?pageID=23&ISIN=DE0007664039&
+		
+		return baseUrl;
+	}
+	
+	private String getStLouisURL(ExchangeRate rate){
 		if(rate instanceof EconomicData){
-			
 			String baseUrl="http://research.stlouisfed.org/fred2/series/";
 			try {
 				return baseUrl + URLEncoder.encode(((EconomicData) rate).getId(), "UTF-8");
@@ -44,11 +193,13 @@ public class RateWeb extends Composite {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
 		}
+		return "";
+	}
+	
+	private String getYahooURL(ExchangeRate rate){
 		
-		//http://research.stlouisfed.org/fred2/series/UNRATE
-		else{
+		
 		String baseUrl="http://finance.yahoo.com/q?s=";
 		try {
 			return baseUrl + URLEncoder.encode(rate.getSymbol(), "UTF-8");
@@ -56,8 +207,8 @@ public class RateWeb extends Composite {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		}
-		return null;
+		
+		return "";
 		
 	}
 
