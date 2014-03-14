@@ -41,12 +41,12 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		
 		 XYSeries series = new XYSeries(field);
 		 int maxDays=this.size();
-		 int k=numberOfDays;
+		 int k=0;
 		 for(int i=numberOfDays;i>0;i--){
 			 if(maxDays-i>=0){
 				 HistoricalPoint point=(HistoricalPoint)this.get(maxDays-i);
 				 if(point.getVolume()>0){
-					 series.add(k,point.get(field));k--;
+					 series.add(k,point.get(field));k++;
 				 }
 			 }
 		 }

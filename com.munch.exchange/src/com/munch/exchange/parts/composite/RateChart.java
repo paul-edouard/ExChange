@@ -210,10 +210,14 @@ public class RateChart extends Composite {
 	        
 	        NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
 	        domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+	        domainAxis.setAutoRange(true);
+	        domainAxis.setLowerMargin(0.01);
+	        domainAxis.setUpperMargin(0.01);
+	        
 	        //domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 	        
 	        NumberAxis rangeAxis1 = (NumberAxis) plot.getRangeAxis();
-	        rangeAxis1.setLowerMargin(0.40);  // to leave room for volume bars
+	        rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
 	        DecimalFormat format = new DecimalFormat("00.00");
 	        rangeAxis1.setNumberFormatOverride(format);
 	        rangeAxis1.setAutoRangeIncludesZero(false);
