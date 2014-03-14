@@ -12,6 +12,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.ProgressAdapter;
 import org.eclipse.swt.browser.ProgressEvent;
+import org.eclipse.swt.browser.TitleEvent;
+import org.eclipse.swt.browser.TitleListener;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.MouseAdapter;
@@ -72,6 +76,7 @@ public class RateWeb extends Composite {
 		comboWebSites.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				textURI.setText(webSiteMap.get(comboWebSites.getText()));
+				browser.setUrl(textURI.getText());
 			}
 		});
 		
@@ -80,6 +85,11 @@ public class RateWeb extends Composite {
 		btnBack.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
+				int index=visitedWebSites.indexOf(browser.getUrl());
+				if(index-1>=0){
+					textURI.setText(visitedWebSites.get(index-1));
+					browser.setUrl(textURI.getText());
+				}
 			}
 		});
 		btnBack.setText("<<");
@@ -89,16 +99,30 @@ public class RateWeb extends Composite {
 		btnNext.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
+				int index=visitedWebSites.indexOf(browser.getUrl());
+				if(index+1<visitedWebSites.size()-1){
+					textURI.setText(visitedWebSites.get(index+1));
+					browser.setUrl(textURI.getText());
+				}
 			}
 		});
 		btnNext.setText(">>");
 		
+		
 		textURI = new Text(composite, SWT.BORDER);
+		textURI.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				//System.out.println("keyCode"+e.keyCode);
+				if (e.keyCode == 13) 
+				{browser.setUrl(textURI.getText());}
+				//e.
+			}
+		});
 		textURI.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				if(!textURI.getText().isEmpty()){
 					progressBar.setVisible(true);
-					browser.setUrl(textURI.getText());
 				}
 			}
 		});
@@ -117,6 +141,35 @@ public class RateWeb extends Composite {
 		
 		
 		browser = new Browser(this, SWT.NONE);
+		browser.addTitleListener(new TitleListener() {
+			public void changed(TitleEvent event) {
+				System.out.println("Title Change: "+event.title+", URL"+browser.getUrl());
+				if(!textURI.getText().equals(browser.getUrl())){
+					textURI.setText(browser.getUrl());
+				}
+				
+				if(!visitedWebSites.contains(browser.getUrl())){
+					visitedWebSites.add(browser.getUrl());
+				}
+				if(visitedWebSites.size()<=1)return;
+				
+				int index=visitedWebSites.indexOf(browser.getUrl());
+				if(index==0){
+					btnNext.setEnabled(true);
+					btnBack.setEnabled(false);
+				}
+				else if(index<visitedWebSites.size()-1) {
+					btnNext.setEnabled(true);
+					btnBack.setEnabled(true);
+				}
+				else{
+					btnNext.setEnabled(false);
+					btnBack.setEnabled(true);
+				}
+				
+				
+			}
+		});
 		browser.addProgressListener(new ProgressAdapter() {
 			@Override
 			public void changed(ProgressEvent event) {
@@ -128,9 +181,7 @@ public class RateWeb extends Composite {
 			public void completed(ProgressEvent event) {
 				System.out.println("completed");
 				progressBar.setVisible(false);
-				if(!visitedWebSites.contains(browser.getUrl())){
-					visitedWebSites.add(browser.getUrl());
-				}
+				
 				//if(visitedWebSites.size()>0)
 			}
 		});
@@ -138,10 +189,14 @@ public class RateWeb extends Composite {
 		browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 		textURI.setText(webSiteMap.get(comboWebSites.getText()));
+		browser.setUrl(textURI.getText());
 		
 	}
 	
 	private void createWebSiteMap(ExchangeRate rate){
+		
+		webSiteMap.put("Google",getGoogleURL(rate));
+		
 		if(!(rate instanceof EconomicData)){
 			webSiteMap.put("Yahoo Finance",getYahooURL(rate) );
 			String dibaURL=getDiBaURL(rate);
@@ -195,6 +250,18 @@ public class RateWeb extends Composite {
 			}
 		}
 		return "";
+	}
+	
+	private String getGoogleURL(ExchangeRate rate){
+		
+		String baseUrl="https://www.google.de/#q=";
+		if(rate instanceof EconomicData){
+			return baseUrl + ((EconomicData)rate).getId();
+		}
+		else if(!rate.getISIN().isEmpty()){
+			return  baseUrl +rate.getISIN();
+		}
+		return baseUrl +rate.getSymbol();
 	}
 	
 	private String getYahooURL(ExchangeRate rate){
