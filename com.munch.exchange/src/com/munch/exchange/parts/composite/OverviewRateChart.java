@@ -41,13 +41,11 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.services.IExchangeRateProvider;
-import com.munch.exchange.services.IHistoricalDataProvider;
 
 public class OverviewRateChart extends Composite {
 	
 	private JFreeChart chart;
 	private ExchangeRate rate;
-	private IHistoricalDataProvider historicalDataProvider;
 	private IExchangeRateProvider exchangeRateProvider;
 	private int numberOfDays=100;
 	private ChartComposite c_comp;
@@ -60,12 +58,11 @@ public class OverviewRateChart extends Composite {
 	 * @param style
 	 */
 	@Inject
-	public OverviewRateChart(Composite parent,ExchangeRate r, IHistoricalDataProvider historicalDataProvider,
+	public OverviewRateChart(Composite parent,ExchangeRate r,
 			IExchangeRateProvider exchangeRateProvider) {
 		super(parent,  SWT.NONE );
 		
 		this.rate=r;
-		this.historicalDataProvider=historicalDataProvider;
 		this.exchangeRateProvider=exchangeRateProvider;
 		
 		
@@ -273,8 +270,6 @@ public class OverviewRateChart extends Composite {
      */
     private XYDataset createDataset(String field,int days) {
     	
-    	
-    	
     	TimeSeries series=rate.getHistoricalData().getTimeSeries(field, days);
     	
     	if(!(rate instanceof EconomicData) && !rate.getHistoricalData().isEmpty()){
@@ -293,41 +288,7 @@ public class OverviewRateChart extends Composite {
     }
 	
 	
-	/**
-     * Creates a sample dataset 
-     */
-    /*
-    private  PieDataset createDataset() {
-        DefaultPieDataset result = new DefaultPieDataset();
-        result.setValue("Linux", 29);
-        result.setValue("Mac", 20);
-        result.setValue("Windows", 51);
-        return result;
-        
-    }
-    */
-
 	
-	/**
-     * Creates a chart
-     */
-    /*
-    private JFreeChart createChart(PieDataset dataset, String title) {
-        
-        JFreeChart chart = ChartFactory.createPieChart3D(title,          // chart title
-            dataset,                // data
-            true,                   // include legend
-            true,
-            false);
-
-        PiePlot3D plot = (PiePlot3D) chart.getPlot();
-        plot.setStartAngle(290);
-        plot.setDirection(Rotation.CLOCKWISE);
-        plot.setForegroundAlpha(0.5f);
-        return chart;
-        
-    }
-    */
 
 	@Override
 	protected void checkSubclass() {

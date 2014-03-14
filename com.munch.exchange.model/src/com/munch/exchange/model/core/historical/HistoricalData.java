@@ -2,6 +2,7 @@ package com.munch.exchange.model.core.historical;
 
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
+import org.jfree.data.xy.XYSeries;
 
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.DatePointList;
@@ -30,6 +31,23 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 			 if(maxDays-i>=0){
 				 HistoricalPoint point=(HistoricalPoint)this.get(maxDays-i);
 				 series.add(new Day(point.getDate().getTime()),point.get(field));
+			 }
+		 }
+		 
+		 return series;
+	}
+	
+	public XYSeries getXYSeries(String field, int numberOfDays){
+		
+		 XYSeries series = new XYSeries(field);
+		 int maxDays=this.size();
+		 int k=numberOfDays;
+		 for(int i=numberOfDays;i>0;i--){
+			 if(maxDays-i>=0){
+				 HistoricalPoint point=(HistoricalPoint)this.get(maxDays-i);
+				 if(point.getVolume()>0){
+					 series.add(k,point.get(field));k--;
+				 }
 			 }
 		 }
 		 
