@@ -3,7 +3,6 @@ package com.munch.exchange.parts.composite;
 import java.awt.BasicStroke;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import javax.inject.Inject;
 
@@ -27,19 +26,16 @@ import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 import com.munch.exchange.IEventConstant;
-import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
-import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.services.IExchangeRateProvider;
 
 public class OverviewRateChart extends Composite {
@@ -272,6 +268,7 @@ public class OverviewRateChart extends Composite {
     	
     	TimeSeries series=rate.getHistoricalData().getTimeSeries(field, days);
     	
+    	/*
     	if(!(rate instanceof EconomicData) && !rate.getHistoricalData().isEmpty()){
     	Calendar LastHisPtDate=rate.getHistoricalData().getLast().getDate();
     	Calendar LastQuoteDate=rate.getRecordedQuote().getLast().getDate();
@@ -280,7 +277,7 @@ public class OverviewRateChart extends Composite {
     		 if(point!=null)
     			 series.add(new Day(point.getDate().getTime()),point.get(field));
     	}
-    	}
+    	}*/
     	
     	TimeSeriesCollection collection=new TimeSeriesCollection(series);
     	//collection.getSeries(series);

@@ -1,5 +1,8 @@
 package com.munch.exchange.model.core;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import java.util.LinkedList;
 
 import org.w3c.dom.Document;
@@ -11,10 +14,15 @@ import com.munch.exchange.model.xml.XmlElementIF;
 
 public abstract class DatePointList<E extends DatePoint> extends LinkedList<DatePoint> implements XmlElementIF {
 
+	
+	public static final String FIELD_LastQuoteChanged = "LastQuoteChanged";
+	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -7311134818088146079L;
+	
+	protected PropertyChangeSupport changes = new PropertyChangeSupport(this);
 
 	private String tagName="";
 	
@@ -37,9 +45,69 @@ public abstract class DatePointList<E extends DatePoint> extends LinkedList<Date
 		return this.getClass().getSimpleName();
 	}
 	
+	@Override
+	public void addLast(DatePoint e) {
+		DatePoint oldLast=null;
+		if(this.size()>0)oldLast=this.getLast();
+		
+		changes.firePropertyChange(FIELD_LastQuoteChanged, oldLast, e);
+		super.addLast(e);
+	}
 
+	@Override
+	public boolean add(DatePoint e) {
+		DatePoint oldLast=null;
+		if(this.size()>0)oldLast=this.getLast();
+		
+		changes.firePropertyChange(FIELD_LastQuoteChanged, oldLast, e);
+		return super.add(e);
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends DatePoint> c) {
+		DatePoint oldLast=null;
+		if(this.size()>0)oldLast=this.getLast();
+		
+		if(super.addAll(c)){
+			changes.firePropertyChange(FIELD_LastQuoteChanged, oldLast, this.getLast());
+			return true;
+		}
+		
+		return false;
+	}
+
+	@Override
+	public boolean addAll(int index, Collection<? extends DatePoint> c) {
+		DatePoint oldLast=null;
+		if(this.size()>0)oldLast=this.getLast();
+		
+		if(super.addAll(index, c)){
+			changes.firePropertyChange(FIELD_LastQuoteChanged, oldLast, this.getLast());
+			return true;
+		}
+		
+		return false;
+	}
+
+	@Override
+	public void add(int index, DatePoint element) {
+		
+		DatePoint oldLast=null;
+		if(this.size()>0)oldLast=this.getLast();
+		
+		super.add(index, element);
+		changes.firePropertyChange(FIELD_LastQuoteChanged, oldLast, this.getLast());
+	}
+
+	@Override
+	public DatePoint pollLast() {
+		DatePoint oldLast=super.pollLast();
+		changes.firePropertyChange(FIELD_LastQuoteChanged, oldLast, this.getLast());
+		return oldLast;
+	}
 	
 	
+
 	protected abstract DatePoint createPoint();
 	
 	public void sort(){
@@ -94,5 +162,13 @@ public abstract class DatePointList<E extends DatePoint> extends LinkedList<Date
 		
 		return e;
 	  }
+	
+	public void addPropertyChangeListener(PropertyChangeListener l) {
+		changes.addPropertyChangeListener(l);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener l) {
+		changes.removePropertyChangeListener(l);
+	}
 
 }

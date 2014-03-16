@@ -1,18 +1,24 @@
 package com.munch.exchange.model.core;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Calendar;
 import java.util.UUID;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.historical.HistoricalData;
+import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.quote.RecordedQuote;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 
 public abstract class ExchangeRate extends XmlParameterElement {
+	
+	private static Logger logger = Logger.getLogger(ExchangeRate.class);
 	
 	static final String FIELD_Start="start";
 	static final String FIELD_End="end";
@@ -23,6 +29,7 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	public static final String FIELD_Symbol="symbol";
 	public static final String FIELD_Data_Path="data_path";
 	public static final String FIELD_Stock_Exchange="stockExchange";
+	public static final String FIELD_Recorded_Quote="recorded_quote";
 	
 	public static final String FIELD_ISIN="ISIN";
 	public static final String FIELD_WKN="WKN";
@@ -120,8 +127,22 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	public RecordedQuote getRecordedQuote() {
 		return recordedQuote;
 	}
-	public void setRecordedQuote(RecordedQuote recordedQuote) {
-		this.recordedQuote = recordedQuote;
+	public void setRecordedQuote(RecordedQuote nrecordedQuote) {
+		changes.firePropertyChange(FIELD_Recorded_Quote, this.recordedQuote, this.recordedQuote = nrecordedQuote);
+		this.recordedQuote.addPropertyChangeListener(new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				logger.info("Recorded Quote from "+name+ ", has Changed: "+evt.getPropertyName()+", value: "+evt.getNewValue());
+				if(evt.getPropertyName().equals(RecordedQuote.FIELD_LastQuoteChanged)){
+					 HistoricalPoint point=recordedQuote.createLastHistoricalPoint();
+					 historicalData.setLastHisPointFromQuote(point);
+				}
+				
+			}
+		});
+		
+		
 	}
 	
 	public String getDataPath() {
@@ -149,7 +170,7 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	}
 	public void setStockExchange(String stockExchange) {
 		changes.firePropertyChange(FIELD_Stock_Exchange, this.stockExchange, this.stockExchange = stockExchange);
-		//this.stockExchange = stockExchange;
+		
 	}
 	
 	
