@@ -3,6 +3,7 @@ package com.munch.exchange.parts.composite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.text.DecimalFormat;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -27,11 +28,20 @@ import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
-import org.jfree.chart.ChartFactory;
+import org.goataa.impl.algorithms.ea.SimpleGenerationalEA;
+import org.goataa.impl.algorithms.ea.selection.TournamentSelection;
+import org.goataa.impl.searchOperations.strings.real.binary.DoubleArrayWeightedMeanCrossover;
+import org.goataa.impl.searchOperations.strings.real.nullary.DoubleArrayUniformCreation;
+import org.goataa.impl.searchOperations.strings.real.unary.DoubleArrayAllNormalMutation;
+import org.goataa.impl.termination.StepLimit;
+import org.goataa.impl.utils.BufferedStatistics;
+import org.goataa.impl.utils.Individual;
+import org.goataa.spec.INullarySearchOperation;
+import org.goataa.spec.ISOOptimizationAlgorithm;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
-import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
@@ -43,6 +53,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 import com.munch.exchange.IEventConstant;
+import com.munch.exchange.job.objectivefunc.MovingAverageObjFunc;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
@@ -61,7 +72,7 @@ public class RateChart extends Composite {
 	private JFreeChart chart;
 	private ExchangeRate rate;
 	private IExchangeRateProvider exchangeRateProvider;
-	private int numberOfDays=100;
+
 	private Composite compositeChart;
 	private Button btnCheckButtonAvg;
 	private Combo comboMovingAvg1;
@@ -70,6 +81,10 @@ public class RateChart extends Composite {
 	private Text textMovAvgByLimit;
 	private Text textMovAvgSellLimit;
 	private Label labelMovAvgProfit;
+	
+	private int numberOfDays=100;
+	private float maxProfit=0;
+	private float keepAndOld=0;
 
 	/**
 	 * Create the composite.
@@ -274,7 +289,45 @@ public class RateChart extends Composite {
 			public void mouseDown(MouseEvent e) {
 				resetChartDataSet();
 				
+				//TODO
+				int maxSteps = 1000;
+				
+				
+				
+				 SimpleGenerationalEA<double[], double[]> GA=new SimpleGenerationalEA<double[], double[]>();
+				 GA.setBinarySearchOperation(DoubleArrayWeightedMeanCrossover.DOUBLE_ARRAY_WEIGHTED_MEAN_CROSSOVER);
+				 
+				 //NullarySearchOperation
+				 INullarySearchOperation<double[]> create=new DoubleArrayUniformCreation(3, 0.0d, 20.0d);
+				 GA.setNullarySearchOperation(create);
+				 
+				 //SelectionAlgorithm
+				 GA.setSelectionAlgorithm(new TournamentSelection(2));
+				 
+				 //UnarySearchOperation
+				 GA.setUnarySearchOperation(new DoubleArrayAllNormalMutation(-10.0d, 10.0d));
+				 
+				 XYSeries profitSeries = new XYSeries("Profit Series");
+				 
+				 MovingAverageObjFunc func=new MovingAverageObjFunc(
+						 HistoricalPoint.FIELD_Close,
+						 PENALTY,
+						 profitSeries,
+						 rate.getHistoricalData().getNoneEmptyPoints(),
+						 maxProfit,
+						 0,
+						 numberOfDays
+						 );
+				 GA.setObjectiveFunction(func);
+				 
+				 testRuns(GA,1,maxSteps);
+				
 			}
+			
+			
+			
+			
+			
 		});
 		btnMovAvgOpt.setText("Opt.");
 		comboMovingAvg1.addModifyListener(new ModifyListener() {
@@ -292,6 +345,39 @@ public class RateChart extends Composite {
 
 	}
 	
+	
+	/**
+	   * Perform the test runs
+	   *
+	   * @param algorithm
+	   *          the algorithm configuration to test
+	   * @param runs
+	   *          the number of runs to perform
+	   * @param steps
+	   *          the number of steps to execute per run
+	   */
+	@SuppressWarnings("unchecked")
+	 private static final void testRuns(
+		      final ISOOptimizationAlgorithm<?, double[], ?> algorithm,
+		      final int runs, final int steps) {
+		    int i;
+		    BufferedStatistics stat;
+		    List<Individual<?, double[]>> solutions;
+		    Individual<?, double[]> individual;
+
+		    stat = new BufferedStatistics();
+		    algorithm.setTerminationCriterion(new StepLimit(steps));
+
+		    for (i = 0; i < runs; i++) {
+		      algorithm.setRandSeed(i);
+		      solutions = ((List<Individual<?, double[]>>) (algorithm.call()));
+		      individual = solutions.get(0);
+		      stat.add(individual.v);
+		    }
+
+		    System.out.println(stat.getConfiguration(false) + ' '
+		        + algorithm.toString(false));
+		  }
 	
 	
 	@Inject
@@ -323,15 +409,18 @@ public class RateChart extends Composite {
 	}
 	
 	private void resetChartDataSet(){
-		this.chart.getXYPlot().setDataset(0, createDataset(HistoricalPoint.FIELD_Close,numberOfDays));
+		
+		CombinedDomainXYPlot combinedPlot=(CombinedDomainXYPlot) chart.getPlot();
+		
+		XYPlot plot1=(XYPlot)combinedPlot.getSubplots().get(0);
+		plot1.setDataset(0, createDataset(HistoricalPoint.FIELD_Close,numberOfDays));
 		if (rate instanceof Indice || rate instanceof Stock) {
-			this.chart.getXYPlot().setDataset(1, createDataset(HistoricalPoint.FIELD_Volume, numberOfDays));
+			plot1.setDataset(1, createDataset(HistoricalPoint.FIELD_Volume, numberOfDays));
 		}
 		
-		
 		//Calculate Keep Old and Max Profit
-		float keepAndOld=rate.getHistoricalData().calculateKeepAndOld(0, numberOfDays, HistoricalPoint.FIELD_Close);
-		float maxProfit=rate.getHistoricalData().calculateMaxProfit(0, numberOfDays, HistoricalPoint.FIELD_Close);
+		keepAndOld=rate.getHistoricalData().calculateKeepAndOld(0, numberOfDays, HistoricalPoint.FIELD_Close);
+		maxProfit=rate.getHistoricalData().calculateMaxProfit(0, numberOfDays, HistoricalPoint.FIELD_Close);
 		
 		//logger.info("KeepAndOld: "+keepAndOld);
 		//logger.info("maxProfit: "+maxProfit);
@@ -343,18 +432,39 @@ public class RateChart extends Composite {
 		labelKeepAndOldPercent.setText(keepAndOldString);
 		
 		
+		
+		
 		//Calculate Moving Average Profit
 		try{
-			float movAvgProfit=rate.getHistoricalData().calculateMovAvgProfit(0, numberOfDays, HistoricalPoint.FIELD_Close
-					, Integer.parseInt(comboMovingAvg1.getText()) //Moving Average days
-					, Float.parseFloat(textMovAvgByLimit.getText().replace(",", "."))
-					, Float.parseFloat(textMovAvgSellLimit.getText().replace(",", "."))
-					, PENALTY);
+			 XYSeries profitSeries = new XYSeries("Profit Series");
+			 XYSeriesCollection collection = new XYSeriesCollection(profitSeries);
+			 
+			 MovingAverageObjFunc func=new MovingAverageObjFunc(
+					 HistoricalPoint.FIELD_Close,
+					 PENALTY,
+					 profitSeries,
+					 rate.getHistoricalData().getNoneEmptyPoints(),
+					 maxProfit,
+					 0,
+					 numberOfDays
+					 );
+			
+			double[] x=new double[3];
+			x[0]=Double.parseDouble(comboMovingAvg1.getText());
+			x[1]=Double.parseDouble(textMovAvgByLimit.getText().replace(",", "."));
+			x[2]=Double.parseDouble(textMovAvgSellLimit.getText().replace(",", "."));
+			
+			double delta=func.compute(x, null);
+			float movAvgProfit=maxProfit- (float)delta;
 			
 			logger.info("movAvgProfit: "+movAvgProfit);
 			
 			String movAvgProfitString = String.format("%,.2f%%", movAvgProfit*100);
 			labelMovAvgProfit.setText(movAvgProfitString);
+			
+			XYPlot plot2=(XYPlot)combinedPlot.getSubplots().get(1);
+			plot2.setDataset(0, collection);
+			
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -384,59 +494,80 @@ public class RateChart extends Composite {
 	     * @return a chart.
 	     */
 	    private JFreeChart createChart() {
-
-	        XYDataset priceData = createDataset(HistoricalPoint.FIELD_Close,numberOfDays);
-	        //String title = "Historical Data: "+rate.getFullName();
+	    	
+	    	//====================
+	    	//===  Main Axis   ===
+	    	//====================
+	    	NumberAxis domainAxis =createDomainAxis();
+	    	
+	    	//====================
+	    	//===  Main Plot   ===
+	    	//====================
+	        XYPlot plot1 = createMainPlot(domainAxis);
+	        
+	        //====================
+	    	//===  Second Plot   ===
+	    	//====================
+	        XYPlot plot2 = createSecondPlot(domainAxis);
 	       
-	       
-	        JFreeChart chart = ChartFactory.createXYLineChart(
-	            "",
-	            "Day",
-	            "Price",
-	            priceData,
-	            PlotOrientation.VERTICAL, // orientation,
-	            false,
-	            true,
-	            false
-	        );
-	        //ChartUtilities.applyCurrentTheme(chart);
+	        //======================
+	    	//=== Combined Plot  ===
+	    	//======================
+	        CombinedDomainXYPlot cplot = createCombinedDomainXYPlot(domainAxis,plot1,plot2);
+	        
+	        //=========================
+	    	//=== Create the Chart  ===
+	    	//=========================
+	        chart = new JFreeChart(rate.getFullName(),
+	                JFreeChart.DEFAULT_TITLE_FONT, cplot, false);
 	        chart.setBackgroundPaint(Color.white);
 	        
-	       
-	        
-	        XYPlot plot = (XYPlot) chart.getPlot();
-	       // plot.setShadowGenerator(new DefaultShadowGenerator());
-	        plot.setBackgroundPaint(Color.lightGray);
-	        plot.setDomainGridlinePaint(Color.white);
-	        plot.setRangeGridlinePaint(Color.white);
-	        
-	        
-	     // change the auto tick unit selection to integer units only...
-	       // NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-	       // rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-	       // rangeAxis.setLowerMargin(0.40);
-	        
-	        NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
+	      
+	        return chart;
+
+	    }
+	    
+	    /**
+	     * create the Combined Plot
+	     * 
+	     * @param domainAxis
+	     * @param plot1
+	     * @param plot2
+	     * @return
+	     */
+	    private CombinedDomainXYPlot createCombinedDomainXYPlot(NumberAxis domainAxis,XYPlot plot1,XYPlot plot2){
+	    	 CombinedDomainXYPlot cplot = new CombinedDomainXYPlot(domainAxis);
+		        cplot.add(plot1, 5);
+		        cplot.add(plot2, 2);
+		        cplot.setGap(8.0);
+		        cplot.setDomainGridlinePaint(Color.white);
+		        cplot.setDomainGridlinesVisible(true);
+		        cplot.setDomainPannable(true);
+		       
+		        return cplot;
+	    }
+	    
+	    
+	    private NumberAxis createDomainAxis(){
+	    	 //Axis
+	        NumberAxis domainAxis = new NumberAxis("Day");
 	        domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 	        domainAxis.setAutoRange(true);
 	        domainAxis.setLowerMargin(0.01);
 	        domainAxis.setUpperMargin(0.01);
-	        
-	        //domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-	        
-	        NumberAxis rangeAxis1 = (NumberAxis) plot.getRangeAxis();
-	        rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
-	        DecimalFormat format = new DecimalFormat("00.00");
-	        rangeAxis1.setNumberFormatOverride(format);
-	        rangeAxis1.setAutoRangeIncludesZero(false);
-	      	
-	        
-	        XYItemRenderer renderer1 = plot.getRenderer();
+	        return domainAxis;
+	    }
+	    
+	    private XYPlot createSecondPlot( NumberAxis domainAxis){
+	    	//Creation of data Set
+	    	//XYDataset priceData = new XYDataset
+	    	
+	    	//Renderer
+	        XYItemRenderer renderer1 = new XYLineAndShapeRenderer(true, false);
 	        renderer1.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
 	                StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
 	                new DecimalFormat("0.0"), new DecimalFormat("0.00")));
-	                
-	    
+	        
 	        if (renderer1 instanceof XYLineAndShapeRenderer) {
 	            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) renderer1;
 	            renderer.setBaseStroke(new BasicStroke(2.0f));
@@ -444,37 +575,100 @@ public class RateChart extends Composite {
 	            renderer.setSeriesPaint(0, Color.BLUE);
 	            renderer.setSeriesPaint(1, Color.DARK_GRAY);
 	            //renderer.setSeriesPaint(2, new Color(0xFDAE61));
-	            //renderer.setSeriesPaint(3, new Color(0xFFFFBF));
-	     
+	        }
+	        
+	        NumberAxis rangeAxis1 = new NumberAxis("Profit");
+	        rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
+	        DecimalFormat format = new DecimalFormat("00.00");
+	        rangeAxis1.setNumberFormatOverride(format);
+	        rangeAxis1.setAutoRangeIncludesZero(false);
+	        
+	        //Plot
+	        XYPlot plot1 = new XYPlot(null, null, rangeAxis1, renderer1);
+	        plot1.setBackgroundPaint(Color.lightGray);
+	        plot1.setDomainGridlinePaint(Color.white);
+	        plot1.setRangeGridlinePaint(Color.white);
+	        
+	        return plot1;
+	    	
+	    }
+	    
+	    
+	    
+	    /**
+	     * Create the Main Plot
+	     * 
+	     * @return
+	     */
+	    private XYPlot createMainPlot( NumberAxis domainAxis){
+	    	
+	    	//====================
+	    	//=== Main Curves  ===
+	    	//====================
+	    	//Creation of data Set
+	        XYDataset priceData = createDataset(HistoricalPoint.FIELD_Close,numberOfDays);
+	        
+	        //Renderer
+	        XYItemRenderer renderer1 = new XYLineAndShapeRenderer(true, false);
+	        renderer1.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
+	                StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
+	                new DecimalFormat("0.0"), new DecimalFormat("0.00")));
+	                
+	        if (renderer1 instanceof XYLineAndShapeRenderer) {
+	            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) renderer1;
+	            renderer.setBaseStroke(new BasicStroke(2.0f));
+	            renderer.setAutoPopulateSeriesStroke(false);
+	            renderer.setSeriesPaint(0, Color.BLUE);
+	            renderer.setSeriesPaint(1, Color.DARK_GRAY);
+	            //renderer.setSeriesPaint(2, new Color(0xFDAE61));
 	        }
 	        
 	        
-	        //Volume
-			if (rate instanceof Indice || rate instanceof Stock) {
-				
-				NumberAxis rangeAxis2 = new NumberAxis("Volume");
-				rangeAxis2.setUpperMargin(1.00); // to leave room for price line
-				plot.setRangeAxis(1, rangeAxis2);
-				plot.setDataset(1,
-						createDataset(HistoricalPoint.FIELD_Volume, numberOfDays));
-				plot.mapDatasetToRangeAxis(1, 1);
-				XYBarRenderer renderer2 = new XYBarRenderer(0.20);
-				renderer2.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
-						StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
-						 new DecimalFormat("0.0"), new DecimalFormat(
-								"0,000.00")));
-				plot.setRenderer(1, renderer2);
-				
-				renderer2.setBarPainter(new StandardXYBarPainter());
-				renderer2.setShadowVisible(false);
-				renderer2.setBarAlignmentFactor(-0.5);
-				
-			
-			}
-			
-			
+	        NumberAxis rangeAxis1 = new NumberAxis("Price");
+	        rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
+	        DecimalFormat format = new DecimalFormat("00.00");
+	        rangeAxis1.setNumberFormatOverride(format);
+	        rangeAxis1.setAutoRangeIncludesZero(false);
 	        
-	        return chart;
-
+	        //Plot
+	        XYPlot plot1 = new XYPlot(priceData, null, rangeAxis1, renderer1);
+	        plot1.setBackgroundPaint(Color.lightGray);
+	        plot1.setDomainGridlinePaint(Color.white);
+	        plot1.setRangeGridlinePaint(Color.white);
+	        
+	        //If Stock or indice add the volume
+			if (rate instanceof Indice || rate instanceof Stock) {
+				addVolumeBars(plot1);
+			}
+	        
+	        return plot1;
+	    	
 	    }
+	    
+	    /**
+	     * create the Volume Bar
+	     * 
+	     * @param plot
+	     */
+	    private void addVolumeBars(XYPlot plot){
+	    	
+	    	NumberAxis rangeAxis2 = new NumberAxis("Volume");
+			rangeAxis2.setUpperMargin(1.00); // to leave room for price line
+			plot.setRangeAxis(1, rangeAxis2);
+			plot.setDataset(1,
+					createDataset(HistoricalPoint.FIELD_Volume, numberOfDays));
+			plot.mapDatasetToRangeAxis(1, 1);
+			XYBarRenderer renderer2 = new XYBarRenderer(0.20);
+			renderer2.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
+					StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
+					 new DecimalFormat("0.0"), new DecimalFormat(
+							"0,000.00")));
+			plot.setRenderer(1, renderer2);
+			
+			renderer2.setBarPainter(new StandardXYBarPainter());
+			renderer2.setShadowVisible(false);
+			renderer2.setBarAlignmentFactor(-0.5);
+	    	
+	    }
+	    
 }

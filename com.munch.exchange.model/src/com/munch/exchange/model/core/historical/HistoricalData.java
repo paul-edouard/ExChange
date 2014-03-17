@@ -1,7 +1,6 @@
 package com.munch.exchange.model.core.historical;
 
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
@@ -55,7 +54,7 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 			 }
 		 }
 		 
-		 if(lastHisPointFromQuote!=null && 
+		 if(lastHisPointFromQuote!=null && !this.isEmpty() &&
 					lastHisPointFromQuote.getDate().get(Calendar.DAY_OF_YEAR)> this.getLast().getDate().get(Calendar.DAY_OF_YEAR) ){
 			 series.add(new Day(lastHisPointFromQuote.getDate().getTime()),lastHisPointFromQuote.get(field));
 		}
@@ -106,101 +105,13 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	}
 	
 	
-	public float calculateMovAvgProfit(int from, int downTo, String field, int MovAvgDays,float buyLimit, float sellLimit, double penalty){
-		
-		int pastDays=2+MovAvgDays;
-		
-		LinkedList<HistoricalPoint> pList=getNoneEmptyPointsFromPeriod(from,downTo+pastDays);
-		if(pList.isEmpty() || pList.size()<=pastDays){return 0;}
-		
-		logger.info("pList.size: "+pList.size());
-		
-		float profit=0;
-		HistoricalPoint point=null;
-		HistoricalPoint last=null;
-		int lastZeroDiff=-1;
-		
-		boolean bought=false;
-		boolean firstBuy=false;
-		
-		//Calculate the moving average
-		HashMap<Integer,Float> avgMap=new HashMap<Integer,Float>();
-		for(int i=0;i<pList.size();i++){
-			
-			if((i-MovAvgDays+1)>=0){
-				point=pList.get(i);
-				float avg=0;
-				for(int j=i-MovAvgDays+1;j<=i;j++){
-					avg+=pList.get(j).get(field);
-				}
-				avg=avg/MovAvgDays;
-				avgMap.put(i, avg);
-			}
-			
-		}
-		
-		
-		for(int i=pastDays;i<pList.size();i++){
-			
-			logger.info("**  Pos:" + String.valueOf((i-pastDays+1))+ ", by: "+bought);
-			
-			point=pList.get(i);
-			last=pList.get(i-1);
-			//baforelast=pList.get(i-2);
-			
-			//Calculate Moving average
-				
-			//Get the last 3 values	
-			float curVal=avgMap.get(i);
-			float lastVal=avgMap.get(i-1);
-			float beforeLastVal=avgMap.get(i-2);
-			
-			logger.info("Average:" + curVal+ ", last: "+lastVal+", beforeLastVal: "+beforeLastVal);
-			
-			//Calculate the diff
-			float diff=curVal-lastVal;
-			float lastDiff=lastVal-beforeLastVal;
-				
-			//Save the last zero diff position
-			if((diff>=0 && lastDiff<0) || (diff<=0 && lastDiff>0) || lastZeroDiff<0){
-				lastZeroDiff=i-1;
-			}
-			
-			float diffFromLastZero=(curVal-avgMap.get(lastZeroDiff))/avgMap.get(lastZeroDiff);
-			logger.info("diffFromLastZero: " + diffFromLastZero);
-			
-			//buy is on the current profit have to be added
-			if(bought)
-				profit+=point.get(field)-last.get(field);
-			
-			logger.info("profit:" + profit);
-			
-			logger.info("diff:" + diff+", buyLimit: "+buyLimit+", sellLimit: "+sellLimit);
-			
-			//Test if the rate have to be bought
-			if(diff> 0 && diffFromLastZero>buyLimit && bought==false){
-				bought=true;
-				logger.info("-------->>>>>> BUY" );
-				profit=profit-((float)penalty)*pList.get(i).get(field);
-			}
-			//Test if the rate have to be sold
-			else if(diff<0 && diffFromLastZero<(-sellLimit) && bought==true){
-				bought=false;
-				logger.info("-------->>>>>> SELL" );
-				profit=profit-((float)penalty)*pList.get(i).get(field);
-			}
-		}
-		
-		profit=profit/pList.get(pastDays).get(field);
-		
-		return profit;
-	}
+	
 	
 	
 	public float calculateMaxProfit(int from, int downTo, String field){
 		float maxProfitPercent=0;
 		
-		LinkedList<HistoricalPoint> pList=getNoneEmptyPointsFromPeriod(from,downTo);
+		LinkedList<HistoricalPoint> pList=getPointsFromPeriod(from,downTo,getNoneEmptyPoints());
 		if(pList.isEmpty() || pList.size()==1){
 			logger.info("Plist is empty");
 			return 0;
@@ -223,7 +134,7 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	public float calculateKeepAndOld(int from, int downTo, String field){
 		
 		float keepAndOld=0;
-		LinkedList<HistoricalPoint> pList=getNoneEmptyPointsFromPeriod(from,downTo);
+		LinkedList<HistoricalPoint> pList=getPointsFromPeriod(from,downTo,getNoneEmptyPoints());
 		if(pList.isEmpty() || pList.size()==1)return 0;
 		
 		keepAndOld=(pList.getLast().get(field)-pList.getFirst().get(field))/pList.getFirst().get(field);
@@ -237,7 +148,7 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	 * return the none empty points
 	 * @return
 	 */
-	private  LinkedList<HistoricalPoint> getNoneEmptyPoints(){
+	public  LinkedList<HistoricalPoint> getNoneEmptyPoints(){
 		LinkedList<HistoricalPoint> pointList =new LinkedList<HistoricalPoint>();
 		for(DatePoint point : this){
 			 HistoricalPoint HistPoint=(HistoricalPoint)point;
@@ -245,18 +156,26 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 				 pointList.add(HistPoint);
 			 }
 		}
-		if(lastHisPointFromQuote!=null && 
+		if(lastHisPointFromQuote!=null && !this.isEmpty() &&
 				lastHisPointFromQuote.getDate().get(Calendar.DAY_OF_YEAR)> this.getLast().getDate().get(Calendar.DAY_OF_YEAR) ){
+			//logger.info("Last Quote Added");
 			 pointList.add(lastHisPointFromQuote);
 		}
+		/*
+		else{
+			logger.info("Last Quote no Added");
+			if(lastHisPointFromQuote==null)
+				logger.info("Last Quote is null");
+		}
+		*/
 		
 		return pointList;
 	}
 	
-	private LinkedList<HistoricalPoint> getNoneEmptyPointsFromPeriod(int from, int downTo){
+	public static LinkedList<HistoricalPoint> getPointsFromPeriod(int from, int downTo,LinkedList<HistoricalPoint> basis){
 		
 		LinkedList<HistoricalPoint> pointList =new LinkedList<HistoricalPoint>();
-		LinkedList<HistoricalPoint> totalList=getNoneEmptyPoints();
+		LinkedList<HistoricalPoint> totalList=basis;
 		
 		int start=totalList.size()-from-downTo;
 		int end=totalList.size()-from;

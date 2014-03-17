@@ -62,7 +62,7 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 		RecordedQuote dayQuotes=lastQuotes(rate);
 		
 		File f=new File(getSavePath(rate)+File.separator+String.valueOf(currentDay)+".xml");
-		logger.info("Writing file: "+f.getAbsolutePath());
+		//logger.info("Writing file: "+f.getAbsolutePath());
 		if(!Xml.save(dayQuotes, f.getAbsolutePath()))
 				return false;
 		
@@ -103,7 +103,7 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 		// load from local
 		RecordedQuote LocalQuotes=loadLocalData(rate);
 		if(LocalQuotes!=null){
-			logger.info("Quotes localy found for \""+rate.getFullName());
+			//logger.info("Quotes localy found for \""+rate.getFullName());
 			rate.setRecordedQuote(LocalQuotes);
 			update(rate);
 			return true;
@@ -126,7 +126,7 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 			// load from local
 			RecordedQuote LocalQuotes=loadLocalData(rate);
 			if(LocalQuotes!=null){
-				logger.info("Quotes localy found for \""+rate.getFullName());
+				//logger.info("Quotes localy found for \""+rate.getFullName());
 				rate.setRecordedQuote(LocalQuotes);
 				rateToUpdate.add(rate);
 				continue;
@@ -150,18 +150,18 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 			
 			rate.getRecordedQuote().addLast(point);
 			rate.getRecordedQuote().sort();
-			logger.info("Quote Point added: "+point);
+			//logger.info("Quote Point added: "+point);
 			isUpdated = true;
 		}
 		rate.getRecordedQuote().setUpdated(isUpdated);
 		if(isUpdated){
-			logger.info("The ExchangeRate was updated: \""+rate.getFullName());
+			//logger.info("The ExchangeRate was updated: \""+rate.getFullName());
 			if(this.saveCurrent(rate)){
-				logger.info("The new quote were automaticaly saved!");
+			//	logger.info("The new quote were automaticaly saved!");
 				return true;
 			}
 			else{
-				logger.error("Error: cannot save the updated quote!");
+			//	logger.error("Error: cannot save the updated quote!");
 				return false;
 			}
 		}
@@ -199,19 +199,19 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 				
 				rate.getRecordedQuote().addLast(point);
 				rate.getRecordedQuote().sort();
-				logger.info("Quote Point added: "+point);
+				//logger.info("Quote Point added: "+point);
 				rate.getRecordedQuote().setUpdated(true);
 				atLeastOneUpdate=true;
 			}
 			
 			if(rate.getRecordedQuote().isUpdated()){
-				logger.info("The ExchangeRate was updated: \""+rate.getFullName());
+			//	logger.info("The ExchangeRate was updated: \""+rate.getFullName());
 				if(this.saveCurrent(rate)){
-					logger.info("The new quote were automaticaly saved!");
+			//		logger.info("The new quote were automaticaly saved!");
 					//return true;
 				}
 				else{
-					logger.error("Error: cannot save the updated quote!");
+			//		logger.error("Error: cannot save the updated quote!");
 					//return false;
 				}
 			}

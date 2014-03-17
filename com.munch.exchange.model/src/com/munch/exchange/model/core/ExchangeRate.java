@@ -120,7 +120,9 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	}
 	
 	public void setHistoricalData(HistoricalData historicalData) {
-		this.historicalData = historicalData;
+		this.historicalData.clear();
+		this.historicalData.addAll(historicalData);
+		//this.historicalData = historicalData;
 	}
 	
 	
@@ -133,14 +135,21 @@ public abstract class ExchangeRate extends XmlParameterElement {
 			
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
-				logger.info("Recorded Quote from "+name+ ", has Changed: "+evt.getPropertyName()+", value: "+evt.getNewValue());
+				//logger.info("Recorded Quote from "+name+ ", has Changed: "+evt.getPropertyName()+", value: "+evt.getNewValue());
 				if(evt.getPropertyName().equals(RecordedQuote.FIELD_LastQuoteChanged)){
 					 HistoricalPoint point=recordedQuote.createLastHistoricalPoint();
-					 historicalData.setLastHisPointFromQuote(point);
+					 if(point!=null){
+						 historicalData.setLastHisPointFromQuote(point);
+					 }
 				}
 				
 			}
 		});
+		
+		 HistoricalPoint point=recordedQuote.createLastHistoricalPoint();
+		 if(point!=null){
+			 historicalData.setLastHisPointFromQuote(point);
+		 }
 		
 		
 	}
