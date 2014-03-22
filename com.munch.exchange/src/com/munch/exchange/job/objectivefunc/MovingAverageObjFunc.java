@@ -34,10 +34,18 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 	private int from;
 	private int downTo;
 	
+	//Moving Average Days
+	private int movAvgDays;
+	
+	//MinMax Diff2
+	private float diff2Max=Float.MIN_VALUE;
+	private float diff2Min=Float.MIN_VALUE;
+	
+	
 	
 	public MovingAverageObjFunc(String field, double penalty,
 			XYSeries profitSeries, LinkedList<HistoricalPoint> pList,
-			float maxProfit, int from, int downTo) {
+			float maxProfit, int from, int downTo,int movAvgDays ) {
 		super();
 		this.field = field;
 		this.penalty = penalty;
@@ -47,21 +55,31 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 		
 		this.from = from;
 		this.downTo = downTo;
+		this.movAvgDays = movAvgDays;
 	}
 
+	
+
+	public float getDiff2Max() {
+		return diff2Max;
+	}
+
+	public float getDiff2Min() {
+		return diff2Min;
+	}
 
 
 	@Override
 	public double compute(double[] x, Random r) {
 		profitSeries.clear();
 		
-		if(x.length<3)return 0;
+		if(x.length<2)return 0;
 		
-		int MovAvgDays=(int)x[0];
-		float buyLimit=(float)x[1];
-		float sellLimit=(float)x[2];
+		//int movAvgDays=(int)x[0];
+		float buyLimit=(float)x[0];
+		float sellLimit=(float)x[1];
 		
-		int pastDays=2+MovAvgDays;
+		int pastDays=2+movAvgDays;
 		
 		LinkedList<HistoricalPoint> pList=HistoricalData.getPointsFromPeriod(from,downTo+pastDays,this.noneZeroHisList );
 		if(pList.isEmpty() || pList.size()<=pastDays){return 0;}
@@ -77,13 +95,13 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 		HashMap<Integer,Float> avgMap=new HashMap<Integer,Float>();
 		for(int i=0;i<pList.size();i++){
 			
-			if((i-MovAvgDays+1)>=0){
+			if((i-movAvgDays+1)>=0){
 				point=pList.get(i);
 				float avg=0;
-				for(int j=i-MovAvgDays+1;j<=i;j++){
+				for(int j=i-movAvgDays+1;j<=i;j++){
 					avg+=pList.get(j).get(field);
 				}
-				avg=avg/MovAvgDays;
+				avg=avg/movAvgDays;
 				avgMap.put(i, avg);
 			}
 			
@@ -105,6 +123,10 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 			float diff=curVal-lastVal;
 			float lastDiff=lastVal-beforeLastVal;
 			float diff2=diff-lastDiff;
+			
+			//Save Min Max
+			if(diff2>this.diff2Max)this.diff2Max=diff2;
+			if(diff2<this.diff2Min)this.diff2Min=diff2;
 				
 			//buy is on the current profit have to be added
 			if(bought)
@@ -130,7 +152,7 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 		
 		profit=profit/pList.get(pastDays).get(field);
 		
-		logger.info("Profit: " +profit);
+		//logger.info("By Limit: "+buyLimit+", SellLimit: "+sellLimit+", Profit: " +profit);
 		
 		return maxProfit-profit;
 		

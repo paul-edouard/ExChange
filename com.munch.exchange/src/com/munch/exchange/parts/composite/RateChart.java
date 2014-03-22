@@ -3,7 +3,7 @@ package com.munch.exchange.parts.composite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.text.DecimalFormat;
-import java.util.List;
+import java.util.Random;
 
 import javax.inject.Inject;
 
@@ -26,18 +26,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
-import org.goataa.impl.algorithms.ea.SimpleGenerationalEA;
-import org.goataa.impl.algorithms.ea.selection.TournamentSelection;
-import org.goataa.impl.searchOperations.strings.real.binary.DoubleArrayWeightedMeanCrossover;
+import org.goataa.impl.algorithms.hc.HillClimbing;
+import org.goataa.impl.gpms.IdentityMapping;
 import org.goataa.impl.searchOperations.strings.real.nullary.DoubleArrayUniformCreation;
 import org.goataa.impl.searchOperations.strings.real.unary.DoubleArrayAllNormalMutation;
 import org.goataa.impl.termination.StepLimit;
 import org.goataa.impl.utils.BufferedStatistics;
-import org.goataa.impl.utils.Individual;
+import org.goataa.spec.IGPM;
 import org.goataa.spec.INullarySearchOperation;
-import org.goataa.spec.ISOOptimizationAlgorithm;
+import org.goataa.spec.ITerminationCriterion;
+import org.goataa.spec.IUnarySearchOperation;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
@@ -74,17 +75,26 @@ public class RateChart extends Composite {
 	private IExchangeRateProvider exchangeRateProvider;
 
 	private Composite compositeChart;
-	private Button btnCheckButtonAvg;
-	private Combo comboMovingAvg1;
+	private Button movAvgBtnCheck;
+	private Combo movAvgCombo;
 	private Label labelMaxProfitPercent;
 	private Label labelKeepAndOldPercent;
-	private Text textMovAvgByLimit;
-	private Text textMovAvgSellLimit;
-	private Label labelMovAvgProfit;
+	private Text movAvgTextByLimit;
+	private Text movAvgTextSellLimit;
+	private Label movAvgLabelProfit;
 	
 	private int numberOfDays=100;
 	private float maxProfit=0;
 	private float keepAndOld=0;
+	private Slider movAvgSliderBuyLimit;
+	private Button movAvgBtnOpt;
+	private Label movAvgLblBuyLimit;
+	private Label movAvgLblSellLimit;
+	private Slider movAvgSliderSellLimit;
+	private Label movAvgLblProfit;
+	
+	private float movAvgSliderBuyFac=0;
+	private float movAvgSliderSellFac=0;
 
 	/**
 	 * Create the composite.
@@ -220,107 +230,101 @@ public class RateChart extends Composite {
 		xpndtmMovingAvg.setExpanded(true);
 		xpndtmMovingAvg.setText("Moving Average");
 		
-		Composite composite = new Composite(expandBar, SWT.NONE);
-		xpndtmMovingAvg.setControl(composite);
-		xpndtmMovingAvg.setHeight(100);
-		composite.setLayout(new GridLayout(4, false));
+		Composite movAvgComposite = new Composite(expandBar, SWT.NONE);
+		xpndtmMovingAvg.setControl(movAvgComposite);
+		xpndtmMovingAvg.setHeight(150);
+		movAvgComposite.setLayout(new GridLayout(3, false));
 		
-		btnCheckButtonAvg = new Button(composite, SWT.CHECK);
-		btnCheckButtonAvg.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		btnCheckButtonAvg.addSelectionListener(new SelectionAdapter() {
+		movAvgBtnCheck = new Button(movAvgComposite, SWT.CHECK);
+		movAvgBtnCheck.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		movAvgBtnCheck.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				comboMovingAvg1.setEnabled(btnCheckButtonAvg.getSelection());
-				resetChartDataSet();
+				movAvgCombo.setEnabled(movAvgBtnCheck.getSelection());
+				movAvgBtnOpt.setEnabled(movAvgBtnCheck.getSelection());
+				movAvgSliderBuyLimit.setEnabled(movAvgBtnCheck.getSelection());
+				movAvgSliderSellLimit.setEnabled(movAvgBtnCheck.getSelection());
+				if(movAvgBtnCheck.getSelection())
+					resetChartDataSet();
 			}
 		});
-		btnCheckButtonAvg.setText("Average 1:");
+		movAvgBtnCheck.setText("Average 1:");
 		
-		comboMovingAvg1 = new Combo(composite, SWT.NONE);
-		comboMovingAvg1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		comboMovingAvg1.setEnabled(false);
-		comboMovingAvg1.setText("5");
-		comboMovingAvg1.add("2");
-		comboMovingAvg1.add("3");
-		comboMovingAvg1.add("5");
-		comboMovingAvg1.add("10");
-		comboMovingAvg1.add("20");
-		comboMovingAvg1.add("30");
-		comboMovingAvg1.add("50");
-		new Label(composite, SWT.NONE);
-		new Label(composite, SWT.NONE);
+		movAvgCombo = new Combo(movAvgComposite, SWT.NONE);
+		movAvgCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		movAvgCombo.setEnabled(false);
+		movAvgCombo.setText("5");
+		movAvgCombo.add("2");
+		movAvgCombo.add("3");
+		movAvgCombo.add("5");
+		movAvgCombo.add("10");
+		movAvgCombo.add("20");
+		movAvgCombo.add("30");
+		movAvgCombo.add("50");
 		
-		Label lblBuyLimit = new Label(composite, SWT.NONE);
-		lblBuyLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		lblBuyLimit.setText("Buy limit [%]:");
-		
-		textMovAvgByLimit = new Text(composite, SWT.BORDER);
-		textMovAvgByLimit.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				//resetChartDataSet();
-			}
-		});
-		textMovAvgByLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		textMovAvgByLimit.setText("0,0");
-		
-		Label lblSellLimit = new Label(composite, SWT.NONE);
-		lblSellLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		lblSellLimit.setText("Sell limit [%]:");
-		
-		textMovAvgSellLimit = new Text(composite, SWT.BORDER);
-		textMovAvgSellLimit.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				//resetChartDataSet();
-			}
-		});
-		textMovAvgSellLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		textMovAvgSellLimit.setText("0,0");
-		
-		Label lblProfit = new Label(composite, SWT.NONE);
-		lblProfit.setText("Profit:");
-		
-		labelMovAvgProfit = new Label(composite, SWT.NONE);
-		labelMovAvgProfit.setText("00,00%");
-		new Label(composite, SWT.NONE);
-		
-		Button btnMovAvgOpt = new Button(composite, SWT.NONE);
-		btnMovAvgOpt.addMouseListener(new MouseAdapter() {
+		movAvgBtnOpt = new Button(movAvgComposite, SWT.NONE);
+		movAvgBtnOpt.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		movAvgBtnOpt.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
 				resetChartDataSet();
 				
 				//TODO
-				int maxSteps = 1000;
+				int maxRuns = 10;
+				int maxSteps = 50000;
+				int i;
+				
+				double[] x;
 				
 				
+				float max=100 / Math.max(movAvgSliderBuyFac, movAvgSliderSellFac);
 				
-				 SimpleGenerationalEA<double[], double[]> GA=new SimpleGenerationalEA<double[], double[]>();
-				 GA.setBinarySearchOperation(DoubleArrayWeightedMeanCrossover.DOUBLE_ARRAY_WEIGHTED_MEAN_CROSSOVER);
-				 
 				 //NullarySearchOperation
-				 INullarySearchOperation<double[]> create=new DoubleArrayUniformCreation(3, 0.0d, 20.0d);
-				 GA.setNullarySearchOperation(create);
+				 INullarySearchOperation<double[]> create=new DoubleArrayUniformCreation(2, 0.0d, max);
 				 
-				 //SelectionAlgorithm
-				 GA.setSelectionAlgorithm(new TournamentSelection(2));
+				 final IUnarySearchOperation<double[]> normal = new DoubleArrayAllNormalMutation(0,max);
 				 
-				 //UnarySearchOperation
-				 GA.setUnarySearchOperation(new DoubleArrayAllNormalMutation(-10.0d, 10.0d));
+				 final IGPM<double[], double[]> gpm = ((IGPM) (IdentityMapping.IDENTITY_MAPPING));
 				 
+				 final ITerminationCriterion term = new StepLimit(maxSteps);
+				 
+				 final BufferedStatistics stat= new BufferedStatistics();
+				 
+				 //Objectiv Function
 				 XYSeries profitSeries = new XYSeries("Profit Series");
 				 
-				 MovingAverageObjFunc func=new MovingAverageObjFunc(
+				 MovingAverageObjFunc f=new MovingAverageObjFunc(
 						 HistoricalPoint.FIELD_Close,
 						 PENALTY,
 						 profitSeries,
 						 rate.getHistoricalData().getNoneEmptyPoints(),
 						 maxProfit,
 						 0,
-						 numberOfDays
+						 numberOfDays,
+						 Integer.parseInt(movAvgCombo.getText())
 						 );
-				 GA.setObjectiveFunction(func);
 				 
-				 testRuns(GA,1,maxSteps);
+				 // Hill Climbing (Algorithm 26.1)
+				 stat.clear();
+				 
+				// Hill Climbing (Algorithm 26.1)
+				    stat.clear();
+				    for (i = 0; i < maxRuns; i++) {
+				      term.reset();
+				      x = HillClimbing.hillClimbing(f, create, normal, gpm, term,
+				          new Random()).x;
+				      System.out.println("Result x: ["+x[0]+", "+x[1]+"]");
+				      stat.add(f.compute(x, null));
+				    }
+				    System.out.println("HC      + uniform: best =" + stat.min() + //$NON-NLS-1$
+				        "\n                   med  =" + stat.median() + //$NON-NLS-1$
+				        "\n                   mean =" + stat.mean() + //$NON-NLS-1$
+				        "\n                   worst=" + stat.max());//$NON-NLS-1$
+				    
+				    
+				    float movAvgProfit=(maxProfit- (float)stat.min())*100;
+					
+				    System.out.println("movAvgProfit: "+movAvgProfit);
 				
 			}
 			
@@ -329,8 +333,59 @@ public class RateChart extends Composite {
 			
 			
 		});
-		btnMovAvgOpt.setText("Opt.");
-		comboMovingAvg1.addModifyListener(new ModifyListener() {
+		movAvgBtnOpt.setText("Opt.");
+		
+		movAvgLblBuyLimit = new Label(movAvgComposite, SWT.NONE);
+		movAvgLblBuyLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		movAvgLblBuyLimit.setText("Buy limit:");
+		
+		movAvgTextByLimit = new Text(movAvgComposite, SWT.BORDER);
+		movAvgTextByLimit.setEditable(false);
+		movAvgTextByLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		movAvgTextByLimit.setText("0.0");
+		
+		movAvgSliderBuyLimit = new Slider(movAvgComposite, SWT.NONE);
+		movAvgSliderBuyLimit.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//logger.info(movAvgSliderBuyLimit.getSelection());
+				String buyLimit = String.format("%,.2f%%", ( (float) movAvgSliderBuyLimit.getSelection())/movAvgSliderBuyFac);
+				movAvgTextByLimit.setText(buyLimit);
+				if(movAvgTextByLimit.isEnabled())
+					resetChartDataSet();
+				
+				
+			}
+		});
+		
+		movAvgLblSellLimit = new Label(movAvgComposite, SWT.NONE);
+		movAvgLblSellLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		movAvgLblSellLimit.setText("Sell limit:");
+		
+		movAvgTextSellLimit = new Text(movAvgComposite, SWT.BORDER);
+		movAvgTextSellLimit.setEditable(false);
+		movAvgTextSellLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		movAvgTextSellLimit.setText("0.0");
+		
+		movAvgSliderSellLimit = new Slider(movAvgComposite, SWT.NONE);
+		movAvgSliderSellLimit.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//logger.info(movAvgSliderSellLimit.getSelection());
+				String buyLimit = String.format("%,.2f%%", ( (float) movAvgSliderSellLimit.getSelection())/movAvgSliderSellFac);
+				movAvgTextSellLimit.setText(buyLimit);
+				if(movAvgSliderSellLimit.isEnabled())
+					resetChartDataSet();
+			}
+		});
+		
+		movAvgLblProfit = new Label(movAvgComposite, SWT.NONE);
+		movAvgLblProfit.setText("Profit:");
+		
+		movAvgLabelProfit = new Label(movAvgComposite, SWT.NONE);
+		movAvgLabelProfit.setText("00,00%");
+		new Label(movAvgComposite, SWT.NONE);
+		movAvgCombo.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				resetChartDataSet();
 			}
@@ -340,44 +395,13 @@ public class RateChart extends Composite {
 		compositeChart = new ChartComposite(sashForm, SWT.NONE,chart);
 		compositeChart.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
 		compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		sashForm.setWeights(new int[] {275, 703});
+		sashForm.setWeights(new int[] {311, 667});
 		
 
 	}
 	
 	
-	/**
-	   * Perform the test runs
-	   *
-	   * @param algorithm
-	   *          the algorithm configuration to test
-	   * @param runs
-	   *          the number of runs to perform
-	   * @param steps
-	   *          the number of steps to execute per run
-	   */
-	@SuppressWarnings("unchecked")
-	 private static final void testRuns(
-		      final ISOOptimizationAlgorithm<?, double[], ?> algorithm,
-		      final int runs, final int steps) {
-		    int i;
-		    BufferedStatistics stat;
-		    List<Individual<?, double[]>> solutions;
-		    Individual<?, double[]> individual;
-
-		    stat = new BufferedStatistics();
-		    algorithm.setTerminationCriterion(new StepLimit(steps));
-
-		    for (i = 0; i < runs; i++) {
-		      algorithm.setRandSeed(i);
-		      solutions = ((List<Individual<?, double[]>>) (algorithm.call()));
-		      individual = solutions.get(0);
-		      stat.add(individual.v);
-		    }
-
-		    System.out.println(stat.getConfiguration(false) + ' '
-		        + algorithm.toString(false));
-		  }
+	
 	
 	
 	@Inject
@@ -432,9 +456,8 @@ public class RateChart extends Composite {
 		labelKeepAndOldPercent.setText(keepAndOldString);
 		
 		
-		
-		
 		//Calculate Moving Average Profit
+		if(movAvgBtnCheck.getSelection()){
 		try{
 			 XYSeries profitSeries = new XYSeries("Profit Series");
 			 XYSeriesCollection collection = new XYSeriesCollection(profitSeries);
@@ -446,13 +469,14 @@ public class RateChart extends Composite {
 					 rate.getHistoricalData().getNoneEmptyPoints(),
 					 maxProfit,
 					 0,
-					 numberOfDays
+					 numberOfDays,
+					 Integer.parseInt(movAvgCombo.getText())
 					 );
 			
-			double[] x=new double[3];
-			x[0]=Double.parseDouble(comboMovingAvg1.getText());
-			x[1]=Double.parseDouble(textMovAvgByLimit.getText().replace(",", "."));
-			x[2]=Double.parseDouble(textMovAvgSellLimit.getText().replace(",", "."));
+			double[] x=new double[2];
+			//x[0]=Double.parseDouble(comboMovingAvg1.getText());
+			x[0]=Double.parseDouble(movAvgTextByLimit.getText().replace(",", ".").replace("%", ""));
+			x[1]=Double.parseDouble(movAvgTextSellLimit.getText().replace(",", ".").replace("%", ""));
 			
 			double delta=func.compute(x, null);
 			float movAvgProfit=maxProfit- (float)delta;
@@ -460,7 +484,13 @@ public class RateChart extends Composite {
 			logger.info("movAvgProfit: "+movAvgProfit);
 			
 			String movAvgProfitString = String.format("%,.2f%%", movAvgProfit*100);
-			labelMovAvgProfit.setText(movAvgProfitString);
+			movAvgLabelProfit.setText(movAvgProfitString);
+			
+			//Set the slider Max Value
+			
+			movAvgSliderBuyFac=100/func.getDiff2Max();
+			movAvgSliderSellFac=-100/func.getDiff2Min();
+			
 			
 			XYPlot plot2=(XYPlot)combinedPlot.getSubplots().get(1);
 			plot2.setDataset(0, collection);
@@ -468,6 +498,7 @@ public class RateChart extends Composite {
 		}
 		catch(Exception e){
 			e.printStackTrace();
+		}
 		}
 		
 		
@@ -480,9 +511,9 @@ public class RateChart extends Composite {
 		
 		if(field.equals(HistoricalPoint.FIELD_Volume))return collection;
 
-		if (btnCheckButtonAvg.getSelection()) {
+		if (movAvgBtnCheck.getSelection()) {
 			collection.addSeries(rate.getHistoricalData().getMovingAvg(field,
-					days, Integer.parseInt(comboMovingAvg1.getText())));
+					days, Integer.parseInt(movAvgCombo.getText())));
 		}
 
 		return collection;
