@@ -104,6 +104,32 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		
 	}
 	
+	public XYSeries getEMA(String field, int numberOfDays,float alpha, String serieName){
+		
+		XYSeries series = new XYSeries(serieName);
+		LinkedList<HistoricalPoint> pointList= getNoneEmptyPoints();
+		
+		float EMA=0;
+		
+		int pos=0;
+		int startLimit=pointList.size()-numberOfDays;
+		
+		for(HistoricalPoint point:pointList){
+			
+			if(pos==0){EMA=point.get(field);pos++;continue;}
+			
+			EMA=EMA+alpha*(point.get(field)-EMA);
+			if(pos>=startLimit){
+				 series.add(pos-startLimit+1,EMA);
+			}
+			
+			pos++;
+		}
+		 
+		return series;
+		
+	}
+	
 	
 	
 	

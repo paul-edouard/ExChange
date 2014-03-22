@@ -23,8 +23,11 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 	private String field;
 	//the penalty for bay or sell
 	private double penalty;
+	
 	//the profit series
-	private XYSeries profitSeries;
+	private XYSeries profitSeries=new XYSeries("Moving Average Profit");
+	private XYSeries bySellSeries=new XYSeries("Moving Average Buy & Sell");
+	
 	//History point List
 	private LinkedList<HistoricalPoint> noneZeroHisList=new LinkedList<HistoricalPoint>();
 	//Max Profit from the given period
@@ -44,12 +47,11 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 	
 	
 	public MovingAverageObjFunc(String field, double penalty,
-			XYSeries profitSeries, LinkedList<HistoricalPoint> pList,
+			LinkedList<HistoricalPoint> pList,
 			float maxProfit, int from, int downTo,int movAvgDays ) {
 		super();
 		this.field = field;
 		this.penalty = penalty;
-		this.profitSeries = profitSeries;
 		this.noneZeroHisList = pList;
 		this.maxProfit = maxProfit;
 		
@@ -67,11 +69,22 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 	public float getDiff2Min() {
 		return diff2Min;
 	}
+	
+	
+	public XYSeries getProfitSeries() {
+		return profitSeries;
+	}
+
+	public XYSeries getBySellSeries() {
+		return bySellSeries;
+	}
+
 
 
 	@Override
 	public double compute(double[] x, Random r) {
 		profitSeries.clear();
+		bySellSeries.clear();
 		
 		if(x.length<2)return 0;
 		
@@ -129,10 +142,16 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 			if(diff2<this.diff2Min)this.diff2Min=diff2;
 				
 			//buy is on the current profit have to be added
-			if(bought)
+			if(bought){
 				profit+=point.get(field)-last.get(field);
+				bySellSeries.add((i-pastDays+1), 1);
+			}
+			else{
+				bySellSeries.add((i-pastDays+1), -1);
+			}
 			
 			profitSeries.add((i-pastDays+1), profit);
+			
 			//logger.info("profit:" + profit+", Diff2: "+diff2);
 			
 			//Test if the rate have to be bought
