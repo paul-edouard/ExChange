@@ -93,8 +93,9 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 		float sellLimit=(float)x[1];
 		
 		int pastDays=2+movAvgDays;
+		int[] period = new int[2];period[0]=from-pastDays;period[1]=downTo;
 		
-		LinkedList<HistoricalPoint> pList=HistoricalData.getPointsFromPeriod(from,downTo+pastDays,this.noneZeroHisList );
+		LinkedList<HistoricalPoint> pList=HistoricalData.getPointsFromPeriod(period,this.noneZeroHisList );
 		if(pList.isEmpty() || pList.size()<=pastDays){return 0;}
 		
 		float profit=0;

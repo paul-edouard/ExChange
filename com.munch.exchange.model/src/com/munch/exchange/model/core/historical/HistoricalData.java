@@ -24,13 +24,16 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	
 	private HistoricalPoint lastHisPointFromQuote=null;
 	
+	private LinkedList<HistoricalPoint> noneEmptyPoints=null;
+	
 	
 	public HistoricalPoint getLastHisPointFromQuote() {
 		return lastHisPointFromQuote;
 	}
 
 	public void setLastHisPointFromQuote(HistoricalPoint lastHisPointFromQuote) {
-	changes.firePropertyChange(FIELD_Last_HisPoint_From_Quote, this.lastHisPointFromQuote, this.lastHisPointFromQuote = lastHisPointFromQuote);
+		noneEmptyPoints=null;
+		changes.firePropertyChange(FIELD_Last_HisPoint_From_Quote, this.lastHisPointFromQuote, this.lastHisPointFromQuote = lastHisPointFromQuote);
 	}
 	
 
@@ -63,66 +66,86 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		 return series;
 	}
 	
-	public XYSeries getXYSeries(String field, int numberOfDays){
+	public XYSeries getXYSeries(String field, int[] period){
+		
+		 XYSeries series = new XYSeries(field);
+		 LinkedList<HistoricalPoint> pointList= getPointsFromPeriod(period,getNoneEmptyPoints());
+		 
+		 int pos=1;
+		 for(HistoricalPoint point:pointList){
+			 series.add(pos,point.get(field));
+			 pos++;
+		 }
+		 
+		 return series;
+	}
+	
+	public XYSeries getXYSeries(String field){
 		
 		 XYSeries series = new XYSeries(field);
 		 LinkedList<HistoricalPoint> pointList= getNoneEmptyPoints();
 		 
-		 int maxDays=pointList.size();
-		 if(numberOfDays>maxDays)numberOfDays=maxDays;
-		 
-		 for(int pos=0;pos<numberOfDays;pos++){
-			 HistoricalPoint point=pointList.get(maxDays-numberOfDays+pos);
-			 series.add(pos+1,point.get(field));
+		 int pos=1;
+		 for(HistoricalPoint point:pointList){
+			 series.add(pos,point.get(field));
+			 pos++;
 		 }
 		 
 		 return series;
 	}
 	
 	
-	public XYSeries getMovingAvg(String field, int numberOfDays,int averageLength){
+	public XYSeries getMovingAvg(String field,int averageLength, String serieName){
 		
-		 XYSeries series = new XYSeries("Moving Avg: "+field+ ", "+averageLength +"Days");
-		 LinkedList<HistoricalPoint> pointList= getNoneEmptyPoints();
+		XYSeries series = new XYSeries(serieName);
+		LinkedList<HistoricalPoint> pointList= getNoneEmptyPoints();
 		 
-		 int maxDays=pointList.size();
-		 if(numberOfDays>maxDays)numberOfDays=maxDays;
+		 
+		int pos=1;
+		float sum=0;
+		LinkedList<HistoricalPoint> last=new LinkedList<HistoricalPoint>();
 		
-		 for(int pos=0;pos<numberOfDays;pos++){
-			 int current=maxDays-numberOfDays+pos;
-			 if(current-averageLength+1<0)continue;
-			 
-			 float sum=0;
-			 for(int i=current-averageLength+1;i<=current;i++){
-				 sum+=pointList.get(i).get(field);
-			 }
-			 series.add(pos+1,sum/averageLength); 
-		 }
-		 
+		for(HistoricalPoint point:pointList){
+			last.add(point);
+			if(last.size()==averageLength){
+				sum=0;
+				for(HistoricalPoint p:last){
+					sum+=p.get(field);
+				}
+				series.add(pos,sum/averageLength);
+				
+				last.removeFirst();
+			}
+			else{
+				series.add(pos,point.get(field));
+			}
+			
+			
+			pos++;
+		}
+		
 		 return series;
 		 
 		
 	}
 	
-	public XYSeries getEMA(String field, int numberOfDays,float alpha, String serieName){
+	public XYSeries getEMA(String field,float alpha, String serieName){
 		
 		XYSeries series = new XYSeries(serieName);
 		LinkedList<HistoricalPoint> pointList= getNoneEmptyPoints();
 		
 		float EMA=0;
-		
 		int pos=0;
-		int startLimit=pointList.size()-numberOfDays;
 		
 		for(HistoricalPoint point:pointList){
 			
-			if(pos==0){EMA=point.get(field);pos++;continue;}
-			
-			EMA=EMA+alpha*(point.get(field)-EMA);
-			if(pos>=startLimit){
-				 series.add(pos-startLimit+1,EMA);
+			if(pos==0){
+				EMA=point.get(field);
 			}
-			
+			else{
+				EMA=EMA+alpha*(point.get(field)-EMA);
+			}
+			series.add(pos+1,EMA);
 			pos++;
 		}
 		 
@@ -134,10 +157,10 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	
 	
 	
-	public float calculateMaxProfit(int from, int downTo, String field){
+	public float calculateMaxProfit(int[] period, String field){
 		float maxProfitPercent=0;
 		
-		LinkedList<HistoricalPoint> pList=getPointsFromPeriod(from,downTo,getNoneEmptyPoints());
+		LinkedList<HistoricalPoint> pList=getPointsFromPeriod(period,getNoneEmptyPoints());
 		if(pList.isEmpty() || pList.size()==1){
 			logger.info("Plist is empty");
 			return 0;
@@ -157,10 +180,10 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		return maxProfitPercent/pList.getFirst().get(field);
 	}
 	
-	public float calculateKeepAndOld(int from, int downTo, String field){
+	public float calculateKeepAndOld(int[] period, String field){
 		
 		float keepAndOld=0;
-		LinkedList<HistoricalPoint> pList=getPointsFromPeriod(from,downTo,getNoneEmptyPoints());
+		LinkedList<HistoricalPoint> pList=getPointsFromPeriod(period,getNoneEmptyPoints());
 		if(pList.isEmpty() || pList.size()==1)return 0;
 		
 		keepAndOld=(pList.getLast().get(field)-pList.getFirst().get(field))/pList.getFirst().get(field);
@@ -175,45 +198,58 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	 * @return
 	 */
 	public  LinkedList<HistoricalPoint> getNoneEmptyPoints(){
-		LinkedList<HistoricalPoint> pointList =new LinkedList<HistoricalPoint>();
+		if(noneEmptyPoints!=null && noneEmptyPoints.size()>1)return noneEmptyPoints;
+		
+		
+		noneEmptyPoints =new LinkedList<HistoricalPoint>();
 		for(DatePoint point : this){
 			 HistoricalPoint HistPoint=(HistoricalPoint)point;
 			 if(HistPoint.getVolume()>0){
-				 pointList.add(HistPoint);
+				 noneEmptyPoints.add(HistPoint);
 			 }
 		}
 		if(lastHisPointFromQuote!=null && !this.isEmpty() &&
 				lastHisPointFromQuote.getDate().get(Calendar.DAY_OF_YEAR)> this.getLast().getDate().get(Calendar.DAY_OF_YEAR) ){
 			//logger.info("Last Quote Added");
-			 pointList.add(lastHisPointFromQuote);
+			noneEmptyPoints.add(lastHisPointFromQuote);
 		}
-		/*
-		else{
-			logger.info("Last Quote no Added");
-			if(lastHisPointFromQuote==null)
-				logger.info("Last Quote is null");
-		}
-		*/
 		
-		return pointList;
+		
+		return noneEmptyPoints;
 	}
 	
-	public static LinkedList<HistoricalPoint> getPointsFromPeriod(int from, int downTo,LinkedList<HistoricalPoint> basis){
+	
+	
+	public static LinkedList<HistoricalPoint> getPointsFromPeriod(int[] period,LinkedList<HistoricalPoint> basis){
 		
 		LinkedList<HistoricalPoint> pointList =new LinkedList<HistoricalPoint>();
 		LinkedList<HistoricalPoint> totalList=basis;
 		
-		int start=totalList.size()-from-downTo;
-		int end=totalList.size()-from;
+		//logger.info("Period: ["+period[0]+", "+period[1]+"]");
+		
+		int start=period[0];
+		int end=period[1]-1;
+		
+		//logger.info("Start: ["+period[0]+", "+period[1]+"]");
 		
 		if(start<0)start=0;
 		if(end<0)return pointList;
 		if(start>end)return pointList;
 		
+		int pos=0;
+		for(HistoricalPoint point:totalList){
+			if(pos>=start && pos<=end){
+				pointList.add(point);
+			}
+			pos++;
+		}
+		
+		/*
 		for(int i=start;i<=end;i++){
 			if(i==totalList.size())break;
 			pointList.add(totalList.get(i));
 		}
+		*/
 		
 		return pointList;
 	}
