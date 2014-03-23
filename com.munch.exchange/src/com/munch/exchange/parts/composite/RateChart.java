@@ -126,8 +126,12 @@ public class RateChart extends Composite {
 	private Label macdLblEmaFastAlpha;
 	
 	private MacdObjFunc macdObjFunc;
+	private double macdSlowAlpha=0;
+	private double macdFastAlpha=0;
+	private double macdSignalAlpha=0;
 	
-	private Slider macSliderSignalAlpha;
+	
+	private Slider macdSliderSignalAlpha;
 	private Label macdLblSignalAlpha;
 	private Button btnOpt;
 	private Label lblProfit;
@@ -342,7 +346,7 @@ public class RateChart extends Composite {
 		movAvgBtnOpt.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				resetChartDataSet();
+				//resetChartDataSet();
 				
 				//TODO
 				//int maxRuns = 1;
@@ -573,7 +577,7 @@ public class RateChart extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				macdSliderEmaFast.setEnabled(macdBtn.getSelection());
 				macdSliderEmaSlow.setEnabled(macdBtn.getSelection());
-				macSliderSignalAlpha.setEnabled(macdBtn.getSelection());
+				macdSliderSignalAlpha.setEnabled(macdBtn.getSelection());
 				
 				resetChartDataSet();
 			}
@@ -582,6 +586,84 @@ public class RateChart extends Composite {
 		new Label(macdComposite, SWT.NONE);
 		
 		btnOpt = new Button(macdComposite, SWT.NONE);
+		btnOpt.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO
+				
+				int maxSteps = 5000;
+				//int i;
+				//double[] x;
+				
+		
+				 //NullarySearchOperation
+				 INullarySearchOperation<double[]> create=new DoubleArrayUniformCreation(3, 0.0d, 1.0d);
+				 final IGPM<double[], double[]> gpm = ((IGPM) (IdentityMapping.IDENTITY_MAPPING));
+				 final ITerminationCriterion term = new StepLimit(maxSteps);
+				 final BufferedStatistics stat= new BufferedStatistics();
+				 
+				 macdObjFunc=new MacdObjFunc(rate.getHistoricalData().getXYSeries(HistoricalPoint.FIELD_Close), period, maxProfit, PENALTY);
+				
+				 stat.clear();
+				 
+				
+				 EvolutionStrategy<double[]> ES= new EvolutionStrategy<double[]>();
+				 ES.setObjectiveFunction(macdObjFunc);
+				 ES.setNullarySearchOperation(create);
+				 ES.setGPM(gpm);
+				 ES.setTerminationCriterion(term);
+				 //ES.setUnarySearchOperation(normal);
+				 
+				 ES.setSelectionAlgorithm(new TournamentSelection(4));
+				 ES.setDimension(3);
+				 ES.setMinimum(0d);
+			     ES.setMaximum(1d);
+			     //Number of parents
+			     ES.setMu(10000);
+			     //Number of offspring
+			     ES.setLambda(1000);
+			     //Number of parents per offspring
+			     ES.setLambda(500);
+			     ES.setPlus(true);
+				 
+				 
+				 term.reset();
+				      
+				 List<Individual<double[], double[]>> solutions;
+				 Individual<double[], double[]> individual;
+				 solutions = ((List<Individual<double[], double[]>>) (ES.call()));
+				 individual = solutions.get(0);
+				      
+				 stat.add(individual.v);
+				 float macdProfit=(maxProfit- (float)stat.min())*100;
+					
+				 System.out.println("MACD Profit: "+macdProfit);
+				    
+				 //Fast Alpha
+				 macdSliderEmaFast.setSelection((int) (individual.g[0]*1000));
+				 macdSliderEmaSlow.setSelection((int) (individual.g[1]*1000));
+				 macdSliderSignalAlpha.setSelection((int) (individual.g[2]*1000));
+				 
+				 String alphaFast = String.format("%.3f", ( (float) individual.g[0]));
+				 String alphaSlow = String.format("%.3f", ( (float) individual.g[1]));
+				 String alphaSignal = String.format("%.3f", ( (float) individual.g[2]));
+				 
+				 
+				macdLblEmaFastAlpha.setText(alphaFast.replace(",", "."));
+				macdLblEmaSlowAlpha.setText(alphaSlow.replace(",", "."));
+				macdLblSignalAlpha.setText(alphaSignal.replace(",", "."));
+				
+				macdFastAlpha=individual.g[0];
+				macdSlowAlpha=individual.g[1];
+				macdSignalAlpha=individual.g[2];
+				 
+				String macdProfitString = String.format("%,.2f%%", macdProfit);
+				macdLblProfit.setText(macdProfitString);
+				    
+				resetChartDataSet();
+				
+			}
+		});
 		btnOpt.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		btnOpt.setText("Opt.");
 		
@@ -589,7 +671,7 @@ public class RateChart extends Composite {
 		lblEmaFast.setText("EMA Fast");
 		
 		macdLblEmaFastAlpha = new Label(macdComposite, SWT.NONE);
-		macdLblEmaFastAlpha.setText("0.500");
+		macdLblEmaFastAlpha.setText("0.846");
 		
 		macdSliderEmaFast = new Slider(macdComposite, SWT.NONE);
 		macdSliderEmaFast.addSelectionListener(new SelectionAdapter() {
@@ -597,20 +679,22 @@ public class RateChart extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				String alphaStr = String.format("%.3f", ( (float) macdSliderEmaFast.getSelection())/1000);
 				macdLblEmaFastAlpha.setText(alphaStr.replace(",", "."));
+				macdFastAlpha=0;
+				
 				if(macdSliderEmaFast.isEnabled())
 					resetChartDataSet();
 			}
 		});
 		macdSliderEmaFast.setMaximum(1000);
 		macdSliderEmaFast.setMinimum(1);
-		macdSliderEmaFast.setSelection(500);
+		macdSliderEmaFast.setSelection(846);
 		macdSliderEmaFast.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Label lblEmaSlow = new Label(macdComposite, SWT.NONE);
 		lblEmaSlow.setText("EMA Slow");
 		
 		macdLblEmaSlowAlpha = new Label(macdComposite, SWT.NONE);
-		macdLblEmaSlowAlpha.setText("0.300");
+		macdLblEmaSlowAlpha.setText("0.926");
 		
 		macdSliderEmaSlow = new Slider(macdComposite, SWT.NONE);
 		macdSliderEmaSlow.setThumb(1);
@@ -620,42 +704,45 @@ public class RateChart extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				String alphaStr = String.format("%.3f", ( (float) macdSliderEmaSlow.getSelection())/1000);
 				macdLblEmaSlowAlpha.setText(alphaStr.replace(",", "."));
+				macdFastAlpha=0;
 				if(macdSliderEmaSlow.isEnabled())
 					resetChartDataSet();
 			}
 		});
 		macdSliderEmaSlow.setMaximum(1000);
 		macdSliderEmaSlow.setMinimum(1);
-		macdSliderEmaSlow.setSelection(300);
+		macdSliderEmaSlow.setSelection(926);
 		macdSliderEmaSlow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Label macdlblSignal = new Label(macdComposite, SWT.NONE);
 		macdlblSignal.setText("Signal");
 		
 		macdLblSignalAlpha = new Label(macdComposite, SWT.NONE);
-		macdLblSignalAlpha.setText("0.150");
+		macdLblSignalAlpha.setText("0.800");
 		
-		macSliderSignalAlpha = new Slider(macdComposite, SWT.NONE);
-		macSliderSignalAlpha.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		macSliderSignalAlpha.addSelectionListener(new SelectionAdapter() {
+		macdSliderSignalAlpha = new Slider(macdComposite, SWT.NONE);
+		macdSliderSignalAlpha.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		macdSliderSignalAlpha.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				String alphaStr = String.format("%.3f", ( (float) macSliderSignalAlpha.getSelection())/1000);
+				String alphaStr = String.format("%.3f", ( (float) macdSliderSignalAlpha.getSelection())/1000);
 				macdLblSignalAlpha.setText(alphaStr.replace(",", "."));
-				if(macSliderSignalAlpha.isEnabled())
+				macdFastAlpha=0;
+				if(macdSliderSignalAlpha.isEnabled())
 					resetChartDataSet();
 			}
 		});
-		macSliderSignalAlpha.setThumb(1);
-		macSliderSignalAlpha.setPageIncrement(1);
-		macSliderSignalAlpha.setMaximum(1000);
-		macSliderSignalAlpha.setSelection(150);
+		macdSliderSignalAlpha.setThumb(1);
+		macdSliderSignalAlpha.setPageIncrement(1);
+		macdSliderSignalAlpha.setMaximum(1000);
+		macdSliderSignalAlpha.setSelection(800);
 		
 		lblProfit = new Label(macdComposite, SWT.NONE);
 		lblProfit.setText("Profit");
 		new Label(macdComposite, SWT.NONE);
 		
 		macdLblProfit = new Label(macdComposite, SWT.NONE);
+		macdLblProfit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		macdLblProfit.setText("0,0%");
 		movAvgCombo.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
@@ -845,9 +932,20 @@ public class RateChart extends Composite {
 		}
 		if(macdBtn.getSelection()){
 			
-			double[] x={Double.parseDouble(macdLblEmaFastAlpha.getText()),
-					Double.parseDouble(macdLblEmaSlowAlpha.getText()),
-					Double.parseDouble(macdLblSignalAlpha.getText())};
+			double[] x=new double[3];
+			
+		
+			if(macdFastAlpha>0){
+				x[0]=macdFastAlpha;
+				x[1]=macdSlowAlpha;
+				x[2]=macdSignalAlpha;
+			}
+			else{
+				x[0]=Double.parseDouble(macdLblEmaFastAlpha.getText());
+				x[1]=Double.parseDouble(macdLblEmaSlowAlpha.getText());
+				x[2]=Double.parseDouble(macdLblSignalAlpha.getText());
+				
+			}
 			
 			macdObjFunc=new MacdObjFunc(rate.getHistoricalData().getXYSeries(field), period, maxProfit, PENALTY);
 			macdObjFunc.compute(x, null);

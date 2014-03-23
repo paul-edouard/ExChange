@@ -224,5 +224,14 @@ public class MacdObjFunc extends OptimizationModule implements
 		return 	r_series;
 	}
 	
+	public static void main(String[] args) {
+		double t=9.0;
+		double alpha=1-2/(t+1);
+		
+		System.out.println(alpha);
+		
+		
+	}
+	
 
 }
