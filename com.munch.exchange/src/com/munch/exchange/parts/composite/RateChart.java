@@ -36,6 +36,7 @@ import org.goataa.impl.algorithms.es.EvolutionStrategy;
 import org.goataa.impl.gpms.IdentityMapping;
 import org.goataa.impl.searchOperations.strings.real.nullary.DoubleArrayUniformCreation;
 import org.goataa.impl.termination.StepLimit;
+import org.goataa.impl.termination.StepLimitPropChange;
 import org.goataa.impl.utils.BufferedStatistics;
 import org.goataa.impl.utils.Individual;
 import org.goataa.spec.IGPM;
@@ -350,7 +351,8 @@ public class RateChart extends Composite {
 				
 				//TODO
 				//int maxRuns = 1;
-				int maxSteps = 50000;
+				//int maxSteps = 50000;
+				int maxSteps = 5000;
 				int i;
 				
 				double[] x;
@@ -364,14 +366,23 @@ public class RateChart extends Composite {
 				 
 				 final IGPM<double[], double[]> gpm = ((IGPM) (IdentityMapping.IDENTITY_MAPPING));
 				 
-				 final ITerminationCriterion term = new StepLimit(maxSteps);
+				 StepLimitPropChange term = new StepLimitPropChange(maxSteps);
+				 /*
+				 term.addPropertyChangeListener(new PropertyChangeListener() {
+					
+					@Override
+					public void propertyChange(PropertyChangeEvent evt) {
+						if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_STEP)){
+							System.out.println("Step: "+evt.getNewValue());
+						}
+						
+					}
+				});
+				*/
 				 
 				 final BufferedStatistics stat= new BufferedStatistics();
 				 
 				
-				 
-				
-				 
 				 MovingAverageObjFunc f=new MovingAverageObjFunc(
 						 HistoricalPoint.FIELD_Close,
 						 PENALTY,
@@ -398,7 +409,7 @@ public class RateChart extends Composite {
 				 ES.setMinimum(0d);
 			     ES.setMaximum(max);
 			     //Number of parents
-			     ES.setMu(1000);
+			     ES.setMu(100000);
 			     //Number of offspring
 			     ES.setLambda(100);
 			     //Number of parents per offspring
@@ -591,7 +602,7 @@ public class RateChart extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				//TODO
 				
-				int maxSteps = 5000;
+				int maxSteps = 500;
 				//int i;
 				//double[] x;
 				
@@ -621,9 +632,9 @@ public class RateChart extends Composite {
 			     //Number of parents
 			     ES.setMu(10000);
 			     //Number of offspring
-			     ES.setLambda(1000);
+			     ES.setLambda(100);
 			     //Number of parents per offspring
-			     ES.setLambda(500);
+			     ES.setLambda(50);
 			     ES.setPlus(true);
 				 
 				 

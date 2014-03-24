@@ -248,12 +248,22 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 			
 		}
 		else{
-			YQLHistoricalData hisData = new YQLHistoricalData(rate.getSymbol(),
-				rate.getHistoricalData().getLast().getDate(), rate.getEnd());
+			//Try to load the last 30 points
+			Calendar start=rate.getHistoricalData().getLast().getDate();
+			for(int i=30;i>1;i--){
+				if(rate.getHistoricalData().size()>i){
+					start=rate.getHistoricalData().get(rate.getHistoricalData().size()-i).getDate();
+					break;
+				}
+			}
+			
+			YQLHistoricalData hisData = new YQLHistoricalData(rate.getSymbol(),start, rate.getEnd());
 			points = hisData.getHisPointList();
+			
 		}
 		
 		for (HistoricalPoint point : points) {
+			//System.out.println("Point: "+point);
 			if (!rate.getHistoricalData().contains(point)) {
 				int point_year = point.getDate().get(Calendar.YEAR);
 				if (point_year < yearLimit)

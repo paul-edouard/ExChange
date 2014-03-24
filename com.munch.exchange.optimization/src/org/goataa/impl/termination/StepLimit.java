@@ -11,7 +11,7 @@ package org.goataa.impl.termination;
  *
  * @author Thomas Weise
  */
-public final class StepLimit extends TerminationCriterion {
+public class StepLimit extends TerminationCriterion {
 
   /** a constant required by Java serialization */
   private static final long serialVersionUID = 1;
@@ -20,7 +20,7 @@ public final class StepLimit extends TerminationCriterion {
   private final int maxSteps;
 
   /** the number of remaining steps */
-  private int remaining;
+  protected int remaining;
 
   /**
    * Create a new step limit termination criterion
@@ -44,7 +44,7 @@ public final class StepLimit extends TerminationCriterion {
    * @return true after the specified steps are exhausted, false otherwise
    */
   @Override
-  public final boolean terminationCriterion() {
+  public boolean terminationCriterion() {
     return (--this.remaining) <= 0;
   }
 
@@ -53,7 +53,7 @@ public final class StepLimit extends TerminationCriterion {
   public void reset() {
     this.remaining = this.maxSteps;
   }
-
+  
   /**
    * Get the full configuration which holds all the data necessary to
    * describe this object.
