@@ -524,15 +524,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		return rates;
 	}
 	
-	/*
-	@Override
-	public EconomicData loadEconomicalData(String symbol) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	*/
-
-
+	
 	public static void main(String[] args) {
 		
 		//ExchangeRateProviderLocalImpl.logger.setLevel(Level.INFO);

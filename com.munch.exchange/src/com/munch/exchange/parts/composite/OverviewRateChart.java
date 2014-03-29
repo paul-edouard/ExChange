@@ -48,6 +48,8 @@ public class OverviewRateChart extends Composite {
 	private Combo LastDays;
 	private Label lblLastDays;
 	
+	private boolean quoteActivated=false;
+	
 	/**
 	 * Create the composite.
 	 * @param parent
@@ -77,6 +79,7 @@ public class OverviewRateChart extends Composite {
         
         LastDays = new Combo(composite, SWT.NONE);
         LastDays.setText("100");
+        LastDays.add("Intraday");
         LastDays.add("all");
         LastDays.add("300");
         LastDays.add("200");
@@ -88,20 +91,22 @@ public class OverviewRateChart extends Composite {
         LastDays.addModifyListener(new ModifyListener() {
         	public void modifyText(ModifyEvent e) {
         		int allpts=rate.getHistoricalData().size();
+        		quoteActivated=false;
         		
         		if(LastDays.getText().equals("all")){
         			numberOfDays=allpts;
-        			resetChartDataSet();
-        			//c_comp.setChart(createChart());
+        		}
+        		else if(LastDays.getText().equals("Intraday")){
+        			quoteActivated=true;
+        			numberOfDays=-1;
         		}
         		else if(!LastDays.getText().isEmpty()){
         			int d=Integer.parseInt(LastDays.getText());
         			if(d>allpts)numberOfDays=allpts;
         			else numberOfDays=d;
-        			
-        			resetChartDataSet();
-        			
         		}
+        		
+        		resetChartDataSet();
         		
         		
         	}
@@ -118,6 +123,31 @@ public class OverviewRateChart extends Composite {
       
         fireHistoricalData();
 	}
+	
+	
+	@Inject
+	private void quoteDataLoaded(
+			@Optional @UIEventTopic(IEventConstant.QUOTE_ALLTOPICS) String rate_uuid) {
+		
+		
+		
+		if (this.isDisposed() || !quoteActivated)
+			return;
+		if (rate_uuid == null || rate_uuid.isEmpty())
+			return;
+
+		ExchangeRate incoming = exchangeRateProvider.load(rate_uuid);
+		if (incoming == null || rate == null || c_comp == null
+				|| LastDays == null || lblLastDays == null)
+			return;
+		if (!incoming.getUUID().equals(rate.getUUID()))
+			return;
+
+		
+		fireHistoricalData();
+		this.layout();
+	}
+	
 	
 	@Inject
 	private void historicalDataLoading(
@@ -266,22 +296,16 @@ public class OverviewRateChart extends Composite {
      */
     private XYDataset createDataset(String field,int days) {
     	
-    	TimeSeries series=rate.getHistoricalData().getTimeSeries(field, days);
-    	
-    	/*
-    	if(!(rate instanceof EconomicData) && !rate.getHistoricalData().isEmpty()){
-    	Calendar LastHisPtDate=rate.getHistoricalData().getLast().getDate();
-    	Calendar LastQuoteDate=rate.getRecordedQuote().getLast().getDate();
-    	if(!DateTool.dateToDayString(LastHisPtDate).equals(DateTool.dateToDayString(LastQuoteDate))){
-    		 HistoricalPoint point=rate.getRecordedQuote().createLastHistoricalPoint();
-    		 if(point!=null)
-    			 series.add(new Day(point.getDate().getTime()),point.get(field));
+    	if(!quoteActivated){
+    		TimeSeries series=rate.getHistoricalData().getTimeSeries(field, days);
+    		TimeSeriesCollection collection=new TimeSeriesCollection(series);
+    		return collection;
     	}
-    	}*/
-    	
-    	TimeSeriesCollection collection=new TimeSeriesCollection(series);
-    	//collection.getSeries(series);
-    	return collection;
+    	else{
+    		TimeSeries series=rate.getRecordedQuote().getTimeSeries(field);
+    		TimeSeriesCollection collection=new TimeSeriesCollection(series);
+    		return collection;
+    	}
     }
 	
 	

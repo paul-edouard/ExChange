@@ -37,7 +37,15 @@ public class QuotePoint extends DatePoint {
 	private Calendar lastTradeDate=Calendar.getInstance();
 	
 
-	
+	public float get(String field){
+		if(field.equals(FIELD_Low))return this.getDaysLow();
+		else if(field.equals(FIELD_Open))return this.getLastTradePrice();
+		else if(field.equals(FIELD_Adj_Close))return this.getLastTradePrice();
+		else if(field.equals(FIELD_Close))return this.getLastTradePrice();
+		else if(field.equals(FIELD_High))return this.getDaysHigh();
+		else if(field.equals(FIELD_Volume))return this.getVolume();
+		else return Float.NaN;
+	}
 
 
 	public long getAverageDailyVolume() {

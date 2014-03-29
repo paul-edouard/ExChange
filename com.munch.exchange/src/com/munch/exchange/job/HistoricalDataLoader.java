@@ -14,6 +14,7 @@ import org.eclipse.e4.core.services.events.IEventBroker;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.historical.HistoricalData;
+import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IHistoricalDataProvider;
 
@@ -67,8 +68,13 @@ public class HistoricalDataLoader extends Job {
 			historicalDataProvider.save(rate, hisDatas);
 		}
 		
-		if(!rate.getHistoricalData().isEmpty())
+		if(!rate.getHistoricalData().isEmpty()){
+			 HistoricalPoint point=rate.getRecordedQuote().createLastHistoricalPoint();
+			 if(point!=null){
+				 rate.getHistoricalData().setLastHisPointFromQuote(point);
+			 }
 			eventBroker.post(IEventConstant.HISTORICAL_DATA_LOADED,rate.getUUID());
+		}
 		
 		
 		return Status.OK_STATUS;

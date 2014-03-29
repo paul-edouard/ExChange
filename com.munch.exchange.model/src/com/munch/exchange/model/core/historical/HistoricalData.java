@@ -37,13 +37,10 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	}
 	
 
-
-
 	@Override
 	protected DatePoint createPoint() {
 		return new HistoricalPoint();
 	}
-	
 	
 	
 	public TimeSeries getTimeSeries(String field, int numberOfDays){

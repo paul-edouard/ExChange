@@ -8,12 +8,6 @@ import com.munch.exchange.model.tool.DateTool;
 public class HistoricalPoint extends DatePoint {
 	
 	
-	public static final String FIELD_Low="low";
-	public static final String FIELD_Open="open";
-	public static final String FIELD_Adj_Close="adj_close";
-	public static final String FIELD_Close="close";
-	public static final String FIELD_High="high";
-	public static final String FIELD_Volume="volume";
 
 	
 	private float low,open,adj_close,high,close=0;

@@ -1,8 +1,12 @@
 package com.munch.exchange.model.core.quote;
 
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.TimeSeries;
+
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.DatePointList;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.tool.DateTool;
 
 public class RecordedQuote extends DatePointList<QuotePoint> {
 
@@ -46,62 +50,36 @@ public class RecordedQuote extends DatePointList<QuotePoint> {
 	}
 	
 	
+	public TimeSeries getTimeSeries(String field){
+		 TimeSeries series = new TimeSeries(field);
+		 RecordedQuote dayQuotes=lastQuotes();
+		 
+		 
+		 for(DatePoint point:dayQuotes){
+			 QuotePoint quote=(QuotePoint) point;
+			 series.add(new Millisecond(quote.getDate().getTime()),quote.get(field));
+		 }
+		 
+		 return series;
+	} 
 	
 	
-	
-	
-	/*
-	private static final long serialVersionUID = -7882821093083414667L;
-	
-	
-	public void sort(){
-		java.util.Collections.sort(this);
-	}
-	
-	
-	@Override
-	public Element toDomElement(Document doc) {
-		Element e=doc.createElement(this.getTagName());
+	 private RecordedQuote lastQuotes(){
+		RecordedQuote dayQuotes=new RecordedQuote();
+		if(this.isEmpty())return dayQuotes;
 		
-		for(QuotePoint point : this){
-			Element h_p=point.toDomElement(doc);
-			e.appendChild(h_p);
-		}
+		String lastDay=DateTool.dateToDayString(this.getLast().getDate());
 		
-		return e;
-	}
-
-	@Override
-	public void init(Element Root) {
-		if(Root.getTagName().equals(this.getTagName())){
-			
-			
-			NodeList Children=Root.getChildNodes();
-
-			for(int i=0;i<Children.getLength();i++){
-				Node child = Children.item(i);
-				if(child instanceof Element){
-					Element childElement=(Element)child;
-					
-					//Quote Point
-					QuotePoint point=new QuotePoint();
-					if(childElement.getTagName().equals(point.getTagName())){
-						point.init(childElement);
-						this.add(point);
-					}
-					
-				}
+		for(DatePoint point:this){
+			String Day=DateTool.dateToDayString(point.getDate());
+			if(lastDay.equals(Day)){
+				dayQuotes.add(point);
 			}
-			
-			
 		}
-
+		dayQuotes.sort();
+		
+		return dayQuotes;
 	}
 
-	@Override
-	public String getTagName() {
-		return this.getClass().getSimpleName();
-	}
-	*/
 
 }

@@ -12,6 +12,14 @@ public abstract class DatePoint extends XmlParameterElement implements Comparabl
 	
 	static final String FIELD_Date="date";
 	
+	public static final String FIELD_Low="low";
+	public static final String FIELD_Open="open";
+	public static final String FIELD_Adj_Close="adj_close";
+	public static final String FIELD_Close="close";
+	public static final String FIELD_High="high";
+	public static final String FIELD_Volume="volume";
+
+	
 	protected Calendar date=Calendar.getInstance();
 	
 	

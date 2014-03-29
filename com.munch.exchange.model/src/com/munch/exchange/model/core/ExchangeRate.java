@@ -49,7 +49,7 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	
 	
 	protected HistoricalData historicalData=new HistoricalData();
-	protected RecordedQuote recordedQuote=new RecordedQuote();
+	protected RecordedQuote recordedQuote=null;
 	
 	protected String uuid=UUID.randomUUID().toString();
 	
@@ -127,10 +127,9 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	
 	
 	public RecordedQuote getRecordedQuote() {
-		return recordedQuote;
-	}
-	public void setRecordedQuote(RecordedQuote nrecordedQuote) {
-		changes.firePropertyChange(FIELD_Recorded_Quote, this.recordedQuote, this.recordedQuote = nrecordedQuote);
+		if(this.recordedQuote!=null)return recordedQuote;
+		
+		this.recordedQuote=new RecordedQuote();
 		this.recordedQuote.addPropertyChangeListener(new PropertyChangeListener() {
 			
 			@Override
@@ -145,12 +144,13 @@ public abstract class ExchangeRate extends XmlParameterElement {
 				
 			}
 		});
+		return recordedQuote;
+	}
+	public void setRecordedQuote(RecordedQuote nrecordedQuote) {
+		this.recordedQuote.clear();
+		this.recordedQuote.addAll(nrecordedQuote);
 		
-		 HistoricalPoint point=recordedQuote.createLastHistoricalPoint();
-		 if(point!=null){
-			 historicalData.setLastHisPointFromQuote(point);
-		 }
-		
+		changes.firePropertyChange(FIELD_Recorded_Quote, null, this.recordedQuote);
 		
 	}
 	
