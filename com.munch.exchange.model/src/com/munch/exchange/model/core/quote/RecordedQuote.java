@@ -34,6 +34,8 @@ public class RecordedQuote extends DatePointList<QuotePoint> {
 	}
 	
 	public HistoricalPoint createLastHistoricalPoint(){
+		if(this.isEmpty())return null;
+		
 		QuotePoint point=(QuotePoint)this.getLast();
 		if(point==null)return null;
 		

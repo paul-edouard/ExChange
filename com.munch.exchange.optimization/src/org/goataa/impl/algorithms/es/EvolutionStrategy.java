@@ -14,6 +14,7 @@ import org.goataa.impl.searchOperations.strings.real.nary.DoubleArrayIntermediat
 import org.goataa.impl.searchOperations.strings.real.nullary.DoubleArrayUniformCreation;
 import org.goataa.impl.searchOperations.strings.real.unary.DoubleArrayStdDevNormalMutation;
 import org.goataa.impl.searchOperations.strings.real.unary.DoubleArrayStrategyLogNormalMutation;
+import org.goataa.impl.termination.StepLimitPropChange;
 import org.goataa.impl.utils.Constants;
 import org.goataa.impl.utils.Individual;
 import org.goataa.impl.utils.TextUtils;
@@ -239,13 +240,19 @@ public class EvolutionStrategy<X> extends
         if (p.v < best.v) {
           best.assign(p);
         }
-
-        // after each objective function evaluation, check if we should
-        // stop
-        if (term.terminationCriterion()) {
-          // if we should stop, return the best individual found
-          return best;
-        }
+        
+      }
+      
+      //Send the best value to the termination criterion
+      if(term instanceof StepLimitPropChange){
+      	StepLimitPropChange<X> t=(StepLimitPropChange<X>) term;
+      	t.setBest(best);
+      }
+      // after each objective function evaluation, check if we should
+      // stop
+      if (term.terminationCriterion()) {
+        // if we should stop, return the best individual found
+        return best;
       }
 
       // perform the selection step, usually truncation selection (see
@@ -262,7 +269,9 @@ public class EvolutionStrategy<X> extends
       if (pop == selected) {
         pop = new ESIndividual[pl ? (la + m) : la];
       }
-
+      
+      
+     // System.out.println("Population: "+pop.length);
       // fill the new population with new offspring
       for (i = pop.length; (--i) >= 0;) {
         // select the parents for the new individual, which usually is done
@@ -298,7 +307,9 @@ public class EvolutionStrategy<X> extends
 
         // usually done via normally distributed mutation as specified in
         // Algorithm 30.5.
+       // System.out.println("Before Mutation: "+p);
         p.g = mutateGenotype.mutate(p.g, r);
+       // System.out.println("After Mutation: "+p);
       }
     }
   }

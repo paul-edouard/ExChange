@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <application:Application xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:advanced="http://www.eclipse.org/ui/2010/UIModel/application/ui/advanced" xmlns:application="http://www.eclipse.org/ui/2010/UIModel/application" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="_hCM1IGTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ide.application" bindingContexts="_hCNcMGTNEeOTfZ5LPzv9Rg">
-  <children xsi:type="basic:TrimmedWindow" xmi:id="_hCM1IWTNEeOTfZ5LPzv9Rg" label="com.munch.exchange" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png" x="50" y="50" width="1500" height="900">
+  <children xsi:type="basic:TrimmedWindow" xmi:id="_hCM1IWTNEeOTfZ5LPzv9Rg" label="Ex-Change" iconURI="platform:/plugin/com.munch.exchange/icons/96/stock-market-icon.png" x="50" y="50" width="1500" height="900">
     <children xsi:type="advanced:PerspectiveStack" xmi:id="_hCNcR2TNEeOTfZ5LPzv9Rg">
       <children xsi:type="advanced:Perspective" xmi:id="_hCNcSGTNEeOTfZ5LPzv9Rg">
         <children xsi:type="basic:PartSashContainer" xmi:id="_hCNcSWTNEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.partsashcontainer.left" horizontal="true">
@@ -77,6 +77,7 @@
     <children xmi:id="_hCNcMmTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.contexts.dialog" name="In Dialogs"/>
   </rootContext>
   <descriptors xmi:id="_AU-8AIjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partdescriptor.rateeditor" label="Rate Editor" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png" tooltip="Rate Editor" allowMultiple="true" closeable="true" dirtyable="true" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.RateEditorPart"/>
+  <descriptors xmi:id="_ZVrfULcUEeOETL2SNlLcXQ" elementId="com.munch.exchange.partdescriptor.optimizationerroreditor" label="Optimization Error Editor" iconURI="platform:/plugin/com.munch.exchange/icons/24/stock-market-icon.png" tooltip="Optimization Error" allowMultiple="true" closeable="true" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.OptimizationErrorPart"/>
   <commands xmi:id="_hCNcM2TNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.file.exit" commandName="quitCommand"/>
   <commands xmi:id="_hCNcN2TNEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.open" commandName="openCommand"/>
   <commands xmi:id="_hCNcOmTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.file.save" commandName="saveCommand"/>

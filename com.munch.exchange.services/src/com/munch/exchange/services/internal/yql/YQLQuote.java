@@ -231,7 +231,16 @@ public class YQLQuote extends YQLTable {
 	
 	private String getLastTradeDate(JSONObject obj) {
 		try {
+			
+			
+			if(!obj.has("LastTradeDate"))return "";
+			Object t=obj.get("LastTradeDate");
+			if(t instanceof String){
 			return obj.getString("LastTradeDate");
+			}
+			else
+				return "";
+			
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return "";
@@ -240,7 +249,13 @@ public class YQLQuote extends YQLTable {
 	
 	private String getLastTradeTime(JSONObject obj) {
 		try {
+			if(!obj.has("LastTradeTime"))return "";
+			Object t=obj.get("LastTradeTime");
+			if(t instanceof String){
 			return obj.getString("LastTradeTime");
+			}
+			else
+				return "";
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return "";
@@ -250,6 +265,8 @@ public class YQLQuote extends YQLTable {
 	private Calendar getLastDateTime(JSONObject obj){
 		SimpleDateFormat format=new SimpleDateFormat("MM/dd/yyyy-h:mma");
 		Calendar date=Calendar.getInstance();
+		if(this.getLastTradeDate(obj).isEmpty() || this.getLastTradeTime(obj).isEmpty())return date;
+		
 		try {
 			Date d=format.parse(this.getLastTradeDate(obj)+"-"+this.getLastTradeTime(obj));
 			date.setTime(d);

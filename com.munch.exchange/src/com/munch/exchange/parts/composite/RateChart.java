@@ -12,6 +12,14 @@ import javax.inject.Inject;
 import org.apache.log4j.Logger;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ModifyEvent;
@@ -28,6 +36,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
@@ -35,12 +44,12 @@ import org.goataa.impl.algorithms.ea.selection.TournamentSelection;
 import org.goataa.impl.algorithms.es.EvolutionStrategy;
 import org.goataa.impl.gpms.IdentityMapping;
 import org.goataa.impl.searchOperations.strings.real.nullary.DoubleArrayUniformCreation;
-import org.goataa.impl.termination.StepLimit;
 import org.goataa.impl.termination.StepLimitPropChange;
 import org.goataa.impl.utils.BufferedStatistics;
 import org.goataa.impl.utils.Individual;
 import org.goataa.spec.IGPM;
 import org.goataa.spec.INullarySearchOperation;
+import org.goataa.spec.ISOOptimizationAlgorithm;
 import org.goataa.spec.ITerminationCriterion;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
@@ -65,7 +74,9 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
+import com.munch.exchange.parts.OptimizationErrorPart;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.wizard.OptimizationWizard;
 
 public class RateChart extends Composite {
 	
@@ -74,6 +85,19 @@ public class RateChart extends Composite {
 	//public static double PENALTY=0.00;
 	
 	private static Logger logger = Logger.getLogger(RateChart.class);
+	
+	
+	@Inject
+	private EModelService modelService;
+	
+	@Inject
+	EPartService partService;
+	
+	@Inject
+	private MApplication application;
+	
+	@Inject
+	private Shell shell;
 	
 	private JFreeChart chart;
 	private ExchangeRate rate;
@@ -138,7 +162,8 @@ public class RateChart extends Composite {
 	private Label lblProfit;
 	private Label macdLblProfit;
 	
-
+	
+	
 	/**
 	 * Create the composite.
 	 * @param parent
@@ -347,43 +372,34 @@ public class RateChart extends Composite {
 		movAvgBtnOpt.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				//resetChartDataSet();
 				
-				//TODO
-				//int maxRuns = 1;
-				//int maxSteps = 50000;
-				int maxSteps = 5000;
-				int i;
 				
-				double[] x;
 				
-				float max=100 / Math.max(movAvgSliderBuyFac, movAvgSliderSellFac);
 				
-				 //NullarySearchOperation
-				 INullarySearchOperation<double[]> create=new DoubleArrayUniformCreation(2, 0.0d, max);
-				 
-				// final IUnarySearchOperation<double[]> normal = new DoubleArrayAllNormalMutation(0,max);
-				 
-				 final IGPM<double[], double[]> gpm = ((IGPM) (IdentityMapping.IDENTITY_MAPPING));
-				 
-				 StepLimitPropChange term = new StepLimitPropChange(maxSteps);
-				 /*
-				 term.addPropertyChangeListener(new PropertyChangeListener() {
-					
-					@Override
-					public void propertyChange(PropertyChangeEvent evt) {
-						if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_STEP)){
-							System.out.println("Step: "+evt.getNewValue());
-						}
-						
-					}
-				});
-				*/
-				 
-				 final BufferedStatistics stat= new BufferedStatistics();
-				 
+				MPart part = partService.createPart(OptimizationErrorPart.OPTIMIZATION_ERROR_EDITOR_ID);
 				
-				 MovingAverageObjFunc f=new MovingAverageObjFunc(
+				//MPart part =MBasicFactory.INSTANCE.createPartDescrip;
+				
+				part.setLabel("Moving Average Opt. "+rate.getName());
+				//part.setIconURI(getIconURI(rate));
+				part.setVisible(true);
+				//part.setDirty(false);
+				part.getTags().add(rate.getUUID());
+				part.getTags().add(EPartService.REMOVE_ON_HIDE_TAG);
+				
+				//setRateEditorPartContext(part,rate);
+				
+				//add the part to the corresponding Stack
+				MPartStack myStack=(MPartStack)modelService.find("com.munch.exchange.partstack.rightdown", application);
+				myStack.getChildren().add(part);
+				//Open the part
+				partService.showPart(part, PartState.ACTIVATE);
+				
+				
+				double max=100 / Math.max(movAvgSliderBuyFac, movAvgSliderSellFac);
+				double min=0;
+				int dimension=2;
+				MovingAverageObjFunc f=new MovingAverageObjFunc(
 						 HistoricalPoint.FIELD_Close,
 						 PENALTY,
 						 rate.getHistoricalData().getNoneEmptyPoints(),
@@ -392,55 +408,27 @@ public class RateChart extends Composite {
 						 period[1],
 						 Integer.parseInt(movAvgCombo.getText())
 						 );
-				 
-				 // Hill Climbing (Algorithm 26.1)
-				 stat.clear();
-				 
+				@SuppressWarnings("unchecked")
+				final IGPM<double[], double[]> gpm = ((IGPM<double[], double[]>) (IdentityMapping.IDENTITY_MAPPING));
 				
-				 EvolutionStrategy<double[]> ES= new EvolutionStrategy<double[]>();
-				 ES.setObjectiveFunction(f);
-				 ES.setNullarySearchOperation(create);
-				 ES.setGPM(gpm);
-				 ES.setTerminationCriterion(term);
-				 //ES.setUnarySearchOperation(normal);
-				 
-				 ES.setSelectionAlgorithm(new TournamentSelection(3));
-				 ES.setDimension(2);
-				 ES.setMinimum(0d);
-			     ES.setMaximum(max);
-			     //Number of parents
-			     ES.setMu(100000);
-			     //Number of offspring
-			     ES.setLambda(100);
-			     //Number of parents per offspring
-			     ES.setLambda(50);
-			     ES.setPlus(true);
-				 
-				 
-				      term.reset();
+				OptimizationWizard<double[]> wizard=new OptimizationWizard<double[]>(f, gpm, dimension, min, max);
+				WizardDialog dialog=new WizardDialog(shell, wizard);
+				if(dialog.open()!=Window.OK)return;
+				
+				
+				ISOOptimizationAlgorithm<double[], double[], Individual<double[], double[]>> ES=wizard.getAlgorithm();
+				
 				      
-				      List<Individual<double[], double[]>> solutions;
-				      Individual<double[], double[]> individual;
+				List<Individual<double[], double[]>> solutions;
+				Individual<double[], double[]> individual;
 				      
 				  
-				      solutions = ((List<Individual<double[], double[]>>) (ES.call()));
-				 //     System.out.println("Number pf solution:"+solutions.size());
-				   
-				      individual = solutions.get(0);
-		//		      System.out.println("Result x: ["+individual.g[0]+", "+individual.g[1]+"]"+", Profit: "+((maxProfit- (float)individual.v)*100));
-				      
-				      stat.add(individual.v);
+				solutions = ((List<Individual<double[], double[]>>) (ES.call()));
+				individual = solutions.get(0);
+				     
 				      
 				      
-				      
-				 /*
-				    System.out.println("HC      + uniform: best =" + stat.min() + //$NON-NLS-1$
-				        "\n                   med  =" + stat.median() + //$NON-NLS-1$
-				        "\n                   mean =" + stat.mean() + //$NON-NLS-1$
-				        "\n                   worst=" + stat.max());//$NON-NLS-1$
-				    
-				    */
-				    float movAvgProfit=(maxProfit- (float)stat.min())*100;
+				    float movAvgProfit=(maxProfit- (float)individual.v)*100;
 					
 				    System.out.println("movAvgProfit: "+movAvgProfit);
 				    
@@ -602,7 +590,7 @@ public class RateChart extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				//TODO
 				
-				int maxSteps = 500;
+				int maxSteps = 10;
 				//int i;
 				//double[] x;
 				
@@ -610,7 +598,7 @@ public class RateChart extends Composite {
 				 //NullarySearchOperation
 				 INullarySearchOperation<double[]> create=new DoubleArrayUniformCreation(3, 0.0d, 1.0d);
 				 final IGPM<double[], double[]> gpm = ((IGPM) (IdentityMapping.IDENTITY_MAPPING));
-				 final ITerminationCriterion term = new StepLimit(maxSteps);
+				 final ITerminationCriterion term = new StepLimitPropChange<double[]>(maxSteps);
 				 final BufferedStatistics stat= new BufferedStatistics();
 				 
 				 macdObjFunc=new MacdObjFunc(rate.getHistoricalData().getXYSeries(HistoricalPoint.FIELD_Close), period, maxProfit, PENALTY);
@@ -630,11 +618,11 @@ public class RateChart extends Composite {
 				 ES.setMinimum(0d);
 			     ES.setMaximum(1d);
 			     //Number of parents
-			     ES.setMu(10000);
+			     ES.setMu(1000);
 			     //Number of offspring
-			     ES.setLambda(100);
+			     ES.setLambda(20);
 			     //Number of parents per offspring
-			     ES.setLambda(50);
+			     ES.setRho(40);
 			     ES.setPlus(true);
 				 
 				 
