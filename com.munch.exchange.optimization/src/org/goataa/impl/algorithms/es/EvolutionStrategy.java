@@ -222,7 +222,8 @@ public class EvolutionStrategy<X> extends
       p.g = createGenotype.create(r);
       p.w = createStrategy.create(r);
     }
-
+    
+    int k=0;
     // the basic loop of the Evolution Strategy Algorithm 30.1
     for (;;) {
       // for eachgeneration do...
@@ -230,30 +231,37 @@ public class EvolutionStrategy<X> extends
       // for each individual in the population
       for (i = pop.length; (--i) >= 0;) {
         p = pop[i];
-
+        
+        //the individual is already known
+       // if(p.v!=Constants.WORST_FITNESS)continue;
+        
         // perform the genotype-phenotype mapping
         p.x = gpm.gpm(p.g, r);
         // compute the objective value
         p.v = f.compute(p.x, r);
+        
 
         // is the current individual the best one so far?
         if (p.v < best.v) {
           best.assign(p);
         }
         
+        //Send the best value to the termination criterion
+        if(term instanceof StepLimitPropChange){
+        	StepLimitPropChange<X> t=(StepLimitPropChange<X>) term;
+        	t.setBest(best);
+        }
+        // after each objective function evaluation, check if we should
+        // stop
+        if (term.terminationCriterion()) {
+          // if we should stop, return the best individual found
+          return best;
+        }
+        
+        
       }
       
-      //Send the best value to the termination criterion
-      if(term instanceof StepLimitPropChange){
-      	StepLimitPropChange<X> t=(StepLimitPropChange<X>) term;
-      	t.setBest(best);
-      }
-      // after each objective function evaluation, check if we should
-      // stop
-      if (term.terminationCriterion()) {
-        // if we should stop, return the best individual found
-        return best;
-      }
+     System.out.println("Number of gen: "+(k++)+ ", Pop length: "+pop.length+", Best:"+best);
 
       // perform the selection step, usually truncation selection (see
       // Algorithm 28.8)

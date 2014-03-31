@@ -115,6 +115,39 @@ public class Individual<G, X> extends OptimizationModule {
     }
     return "ind"; //$NON-NLS-1$
   }
+
+@Override
+public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	long temp;
+	temp = Double.doubleToLongBits(v);
+	result = prime * result + (int) (temp ^ (temp >>> 32));
+	return result;
+}
+
+@Override
+public boolean equals(Object obj) {
+	/*
+	if (this == obj) {
+		return true;
+	}
+	System.out.println("");
+	if (obj == null) {
+		return false;
+	}
+	if (!(obj instanceof Individual)) {
+		return false;
+	}
+	*/
+	Individual other = (Individual) obj;
+	if (Double.doubleToLongBits(v) != Double.doubleToLongBits(other.v)) {
+		return false;
+	}
+	return true;
+}
+
+
   
   
   

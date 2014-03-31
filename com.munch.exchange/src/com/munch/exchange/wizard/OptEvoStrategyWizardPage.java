@@ -48,7 +48,6 @@ public class OptEvoStrategyWizardPage extends WizardPage {
 		container.setLayout(new GridLayout(3, false));
 		
 		Label lblNullarySearchOperation = new Label(container, SWT.NONE);
-		lblNullarySearchOperation.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		lblNullarySearchOperation.setText("Nullary search operation (Creation)");
 		
 		comboNullarySearchOperation = new Combo(container, SWT.NONE);
@@ -92,7 +91,6 @@ public class OptEvoStrategyWizardPage extends WizardPage {
 		new Label(container, SWT.NONE);
 		
 		btnLambdaPlusMuStrategy = new Button(container, SWT.CHECK);
-		btnLambdaPlusMuStrategy.setSelection(true);
 		btnLambdaPlusMuStrategy.setText("(lambda+mu) strategy ");
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);

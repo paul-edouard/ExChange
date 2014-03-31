@@ -32,9 +32,12 @@ public class StepLimitPropChange<X> extends StepLimit {
 
 
 	public void setBest(Individual<double[], X> best) {
-		System.out.println("New Best: "+best);
+		Individual<double[], X> localBest=new Individual<double[], X>();
+		localBest.assign(best);
+		
+	
 		changes.firePropertyChange(FIELD_BEST, this.best,
-				this.best = best);
+				this.best = localBest);
 	}
 
 

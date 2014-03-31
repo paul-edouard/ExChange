@@ -2,6 +2,8 @@ package com.munch.exchange.parts.composite;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -40,17 +42,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
-import org.goataa.impl.algorithms.ea.selection.TournamentSelection;
-import org.goataa.impl.algorithms.es.EvolutionStrategy;
 import org.goataa.impl.gpms.IdentityMapping;
-import org.goataa.impl.searchOperations.strings.real.nullary.DoubleArrayUniformCreation;
 import org.goataa.impl.termination.StepLimitPropChange;
-import org.goataa.impl.utils.BufferedStatistics;
 import org.goataa.impl.utils.Individual;
 import org.goataa.spec.IGPM;
-import org.goataa.spec.INullarySearchOperation;
 import org.goataa.spec.ISOOptimizationAlgorithm;
-import org.goataa.spec.ITerminationCriterion;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
@@ -414,7 +410,16 @@ public class RateChart extends Composite {
 				OptimizationWizard<double[]> wizard=new OptimizationWizard<double[]>(f, gpm, dimension, min, max);
 				WizardDialog dialog=new WizardDialog(shell, wizard);
 				if(dialog.open()!=Window.OK)return;
-				
+				wizard.getTerm().addPropertyChangeListener(new PropertyChangeListener() {
+					
+					@Override
+					public void propertyChange(PropertyChangeEvent evt) {
+						if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_BEST)){
+							System.out.println("New Best: "+evt.getNewValue());
+						}
+						
+					}
+				});
 				
 				ISOOptimizationAlgorithm<double[], double[], Individual<double[], double[]>> ES=wizard.getAlgorithm();
 				
@@ -590,75 +595,67 @@ public class RateChart extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				//TODO
 				
-				int maxSteps = 10;
-				//int i;
-				//double[] x;
+				final IGPM<double[], double[]> gpm = ((IGPM) (IdentityMapping.IDENTITY_MAPPING));
+
+				macdObjFunc = new MacdObjFunc(rate.getHistoricalData()
+						.getXYSeries(HistoricalPoint.FIELD_Close), period,
+						maxProfit, PENALTY);
+
+				OptimizationWizard<double[]> wizard = new OptimizationWizard<double[]>(
+						macdObjFunc, gpm, 3, 0.0d, 1.0d);
+				WizardDialog dialog = new WizardDialog(shell, wizard);
+				if (dialog.open() != Window.OK)
+					return;
 				
-		
-				 //NullarySearchOperation
-				 INullarySearchOperation<double[]> create=new DoubleArrayUniformCreation(3, 0.0d, 1.0d);
-				 final IGPM<double[], double[]> gpm = ((IGPM) (IdentityMapping.IDENTITY_MAPPING));
-				 final ITerminationCriterion term = new StepLimitPropChange<double[]>(maxSteps);
-				 final BufferedStatistics stat= new BufferedStatistics();
+				  wizard.getTerm().addPropertyChangeListener(new
+				  PropertyChangeListener() {
+				  
+				  @Override public void propertyChange(PropertyChangeEvent evt)
+				  {
+				  if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_BEST
+				  )){ System.out.println("New Best: "+evt.getNewValue()); }
+				  
+				  } });
 				 
-				 macdObjFunc=new MacdObjFunc(rate.getHistoricalData().getXYSeries(HistoricalPoint.FIELD_Close), period, maxProfit, PENALTY);
-				
-				 stat.clear();
-				 
-				
-				 EvolutionStrategy<double[]> ES= new EvolutionStrategy<double[]>();
-				 ES.setObjectiveFunction(macdObjFunc);
-				 ES.setNullarySearchOperation(create);
-				 ES.setGPM(gpm);
-				 ES.setTerminationCriterion(term);
-				 //ES.setUnarySearchOperation(normal);
-				 
-				 ES.setSelectionAlgorithm(new TournamentSelection(4));
-				 ES.setDimension(3);
-				 ES.setMinimum(0d);
-			     ES.setMaximum(1d);
-			     //Number of parents
-			     ES.setMu(1000);
-			     //Number of offspring
-			     ES.setLambda(20);
-			     //Number of parents per offspring
-			     ES.setRho(40);
-			     ES.setPlus(true);
-				 
-				 
-				 term.reset();
-				      
-				 List<Individual<double[], double[]>> solutions;
-				 Individual<double[], double[]> individual;
-				 solutions = ((List<Individual<double[], double[]>>) (ES.call()));
-				 individual = solutions.get(0);
-				      
-				 stat.add(individual.v);
-				 float macdProfit=(maxProfit- (float)stat.min())*100;
-					
-				 System.out.println("MACD Profit: "+macdProfit);
-				    
-				 //Fast Alpha
-				 macdSliderEmaFast.setSelection((int) (individual.g[0]*1000));
-				 macdSliderEmaSlow.setSelection((int) (individual.g[1]*1000));
-				 macdSliderSignalAlpha.setSelection((int) (individual.g[2]*1000));
-				 
-				 String alphaFast = String.format("%.3f", ( (float) individual.g[0]));
-				 String alphaSlow = String.format("%.3f", ( (float) individual.g[1]));
-				 String alphaSignal = String.format("%.3f", ( (float) individual.g[2]));
-				 
-				 
+
+				ISOOptimizationAlgorithm<double[], double[], Individual<double[], double[]>> ES = wizard
+						.getAlgorithm();
+
+				List<Individual<double[], double[]>> solutions;
+				Individual<double[], double[]> individual;
+
+				solutions = ((List<Individual<double[], double[]>>) (ES.call()));
+				individual = solutions.get(0);
+
+				// stat.add(individual.v);
+				float macdProfit = (maxProfit - (float) individual.v) * 100;
+
+				System.out.println("MACD Profit: " + macdProfit);
+
+				// Fast Alpha
+				macdSliderEmaFast.setSelection((int) (individual.g[0] * 1000));
+				macdSliderEmaSlow.setSelection((int) (individual.g[1] * 1000));
+				macdSliderSignalAlpha
+						.setSelection((int) (individual.g[2] * 1000));
+
+				String alphaFast = String.format("%.3f",
+						((float) individual.g[0]));
+				String alphaSlow = String.format("%.3f",
+						((float) individual.g[1]));
+				String alphaSignal = String.format("%.3f",
+						((float) individual.g[2]));
+
 				macdLblEmaFastAlpha.setText(alphaFast.replace(",", "."));
 				macdLblEmaSlowAlpha.setText(alphaSlow.replace(",", "."));
 				macdLblSignalAlpha.setText(alphaSignal.replace(",", "."));
-				
-				macdFastAlpha=individual.g[0];
-				macdSlowAlpha=individual.g[1];
-				macdSignalAlpha=individual.g[2];
-				 
+
+				macdFastAlpha = individual.g[0];
+				macdSlowAlpha = individual.g[1];
+				macdSignalAlpha = individual.g[2];
+
 				String macdProfitString = String.format("%,.2f%%", macdProfit);
 				macdLblProfit.setText(macdProfitString);
-				    
+
 				resetChartDataSet();
 				
 			}

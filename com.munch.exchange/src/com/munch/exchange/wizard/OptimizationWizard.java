@@ -19,6 +19,7 @@ public class OptimizationWizard<X> extends Wizard {
 	private ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> algorithm;
 	private IObjectiveFunction<X> f;
 	private IGPM<double[], X> gpm;
+	StepLimitPropChange<X> term;
 	
 	private int dimension;
 	private double min;
@@ -50,6 +51,7 @@ public class OptimizationWizard<X> extends Wizard {
 	public boolean performFinish() {
 		
 		String algorithmName =  optAlgorithmWizardPage.getComboAlgorithmType().getText();
+		int steps=optAlgorithmWizardPage.getSpinnerNumberOfSteps().getSelection();
 		
 		//System.out.println("algorithmName: "+algorithmName);
 		
@@ -95,6 +97,13 @@ public class OptimizationWizard<X> extends Wizard {
 						dimension, min, max));
 			}
 		    
+			if(ES.isPlus()){
+				steps=steps*(ES.getLambda()+ES.getMu())+ES.getMu();
+			}
+			else{
+				steps=steps*ES.getLambda()+ES.getMu();
+			}
+			
 			algorithm=ES;
 			
 		}
@@ -104,8 +113,7 @@ public class OptimizationWizard<X> extends Wizard {
 		//Set the objectiv function
 		algorithm.setObjectiveFunction(f);
 		//Termination
-		int steps=optAlgorithmWizardPage.getSpinnerNumberOfSteps().getSelection();
-		StepLimitPropChange<X> term = new StepLimitPropChange<X>(steps);
+		term = new StepLimitPropChange<X>(steps);
 		algorithm.setTerminationCriterion(term);
 		
 		return finish;
@@ -123,6 +131,10 @@ public class OptimizationWizard<X> extends Wizard {
 
 	public ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> getAlgorithm() {
 		return algorithm;
+	}
+
+	public StepLimitPropChange<X> getTerm() {
+		return term;
 	}
 	
 	
