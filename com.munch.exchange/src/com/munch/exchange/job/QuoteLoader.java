@@ -84,6 +84,7 @@ public class QuoteLoader extends Job {
 			quoteProvider.load(rateToLoad);
 			int numberOfUpdated=0;
 			for(ExchangeRate rate:rateToLoad){
+				if (monitor.isCanceled()) return Status.CANCEL_STATUS;
 				eventBroker.post(IEventConstant.QUOTE_LOADED,rate.getUUID());
 				if(rate.getRecordedQuote().isUpdated()){
 					numberOfUpdated++;
@@ -93,11 +94,14 @@ public class QuoteLoader extends Job {
 			logger.info("Loaded & updated quotes: "+numberOfUpdated+"/"+rateToLoad.size());
 		}
 		
+		if (monitor.isCanceled()) return Status.CANCEL_STATUS;
+		
 		if(rateToUpdate.size()>0){
 			//logger.info("Update quotes: "+rateToUpdate.size());
 			quoteProvider.update(rateToUpdate);
 			int numberOfUpdated=0;
 			for(ExchangeRate rate:rateToUpdate){
+				if (monitor.isCanceled()) return Status.CANCEL_STATUS;
 				if(rate.getRecordedQuote().isUpdated()){
 				eventBroker.post(IEventConstant.QUOTE_UPDATE,rate.getUUID());numberOfUpdated++;
 				}
