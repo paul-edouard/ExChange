@@ -287,9 +287,11 @@ public class OptimizationErrorPart {
 		if(isFromType(info.getType()))return;
 		
 		if(progressBarOptimizationStep !=null && !progressBarOptimizationStep.isDisposed()){
-			progressBarOptimizationStep.setSelection(info.getMaximum()-info.getStep()-1);
-		
-			this.getLastSerie().add(info.getMaximum()-info.getStep(), info.getBest().v);
+			if(progressBarOptimizationStep.isEnabled()){
+			
+				progressBarOptimizationStep.setSelection(info.getMaximum()-info.getStep()-1);
+				this.getLastSerie().add(info.getMaximum()-info.getStep(), info.getBest().v);
+			}
 		}
 	}
 	

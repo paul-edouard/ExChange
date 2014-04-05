@@ -107,11 +107,11 @@ public class Optimizer<X> extends Job {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_BEST)){
 				info.setBest((Individual<double[], X>) evt.getNewValue());
-				eventBroker.send(IEventConstant.OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
+				eventBroker.post(IEventConstant.OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
 			}
 			else if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_STEP)){
 				info.setStep((int)evt.getNewValue());
-				eventBroker.send(IEventConstant.OPTIMIZATION_NEW_STEP,info);
+				eventBroker.post(IEventConstant.OPTIMIZATION_NEW_STEP,info);
 			}
 			// Cancel called
 			if (monitor.isCanceled()){
