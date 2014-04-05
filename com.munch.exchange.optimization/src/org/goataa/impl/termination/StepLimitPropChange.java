@@ -10,19 +10,23 @@ public class StepLimitPropChange<X> extends StepLimit {
 	public static final String FIELD_STEP = "STEP";
 	public static final String FIELD_BEST = "BEST";
 	
+	protected PropertyChangeSupport changes = new PropertyChangeSupport(this);
+	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	Individual<double[], X> best;
+	private Individual<double[], X> best;
 	
-	protected PropertyChangeSupport changes = new PropertyChangeSupport(this);
-	
+	private boolean isCancel=false;
 	
 	public StepLimitPropChange(int steps) {
 		super(steps);
-		// TODO Auto-generated constructor stub
+	}
+	
+	public void cancel(){
+		isCancel=true;
 	}
 	
 
@@ -43,8 +47,11 @@ public class StepLimitPropChange<X> extends StepLimit {
 
 	@Override
 	public boolean terminationCriterion() {
+		
 		boolean isTerminated=super.terminationCriterion();
 		changes.firePropertyChange(FIELD_STEP, this.remaining+1, this.remaining);
+		
+		if(isCancel)return true;
 		return isTerminated;
 	}
 

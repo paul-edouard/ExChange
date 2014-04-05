@@ -12,14 +12,15 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
+import org.eclipse.e4.core.contexts.EclipseContextFactory;
+import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
-import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -62,6 +63,9 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 import com.munch.exchange.IEventConstant;
+import com.munch.exchange.job.Optimizer;
+import com.munch.exchange.job.Optimizer.OptimizationInfo;
+import com.munch.exchange.job.Optimizer.OptimizationType;
 import com.munch.exchange.job.objectivefunc.MacdObjFunc;
 import com.munch.exchange.job.objectivefunc.MovingAverageObjFunc;
 import com.munch.exchange.model.core.ExchangeRate;
@@ -82,6 +86,8 @@ public class RateChart extends Composite {
 	
 	private static Logger logger = Logger.getLogger(RateChart.class);
 	
+	@Inject
+	IEclipseContext context;
 	
 	@Inject
 	private EModelService modelService;
@@ -94,6 +100,9 @@ public class RateChart extends Composite {
 	
 	@Inject
 	private Shell shell;
+	
+	@Inject
+	private IEventBroker eventBroker;
 	
 	private JFreeChart chart;
 	private ExchangeRate rate;
@@ -151,6 +160,7 @@ public class RateChart extends Composite {
 	private double macdFastAlpha=0;
 	private double macdSignalAlpha=0;
 	
+	private Optimizer<double[]> macdOptimizer=new Optimizer<double[]>();
 	
 	private Slider macdSliderSignalAlpha;
 	private Label macdLblSignalAlpha;
@@ -165,6 +175,7 @@ public class RateChart extends Composite {
 	 * @param parent
 	 * @param style
 	 */
+	@SuppressWarnings("unchecked")
 	@Inject
 	public RateChart(Composite parent,ExchangeRate r,
 			IExchangeRateProvider exchangeRateProvider) {
@@ -173,7 +184,8 @@ public class RateChart extends Composite {
 		this.rate=r;
 		this.exchangeRateProvider=exchangeRateProvider;
 		
-		
+		//Create a context instance
+		IEclipseContext localContext=EclipseContextFactory.create();
 		
 		GridLayout gridLayout = new GridLayout(1, false);
 		gridLayout.marginHeight = 1;
@@ -371,27 +383,6 @@ public class RateChart extends Composite {
 				
 				
 				
-				
-				MPart part = partService.createPart(OptimizationErrorPart.OPTIMIZATION_ERROR_EDITOR_ID);
-				
-				//MPart part =MBasicFactory.INSTANCE.createPartDescrip;
-				
-				part.setLabel("Moving Average Opt. "+rate.getName());
-				//part.setIconURI(getIconURI(rate));
-				part.setVisible(true);
-				//part.setDirty(false);
-				part.getTags().add(rate.getUUID());
-				part.getTags().add(EPartService.REMOVE_ON_HIDE_TAG);
-				
-				//setRateEditorPartContext(part,rate);
-				
-				//add the part to the corresponding Stack
-				MPartStack myStack=(MPartStack)modelService.find("com.munch.exchange.partstack.rightdown", application);
-				myStack.getChildren().add(part);
-				//Open the part
-				partService.showPart(part, PartState.ACTIVATE);
-				
-				
 				double max=100 / Math.max(movAvgSliderBuyFac, movAvgSliderSellFac);
 				double min=0;
 				int dimension=2;
@@ -421,6 +412,13 @@ public class RateChart extends Composite {
 					}
 				});
 				
+				//Open the Optimization error part
+				/*
+				MPart part=OptimizationErrorPart.openOptimizationErrorPart(
+						rate,
+						Optimizer.OptimizationTypeToString(OptimizationType.MOVING_AVERAGE),
+						partService, modelService, application, context);
+				*/
 				ISOOptimizationAlgorithm<double[], double[], Individual<double[], double[]>> ES=wizard.getAlgorithm();
 				
 				      
@@ -566,6 +564,7 @@ public class RateChart extends Composite {
 		//== MACD (Moving Average Convergence/Divergence) ==    
 		//==================================================
 		
+		
 		ExpandItem xpndtmMacd = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmMacd.setExpanded(true);
 		xpndtmMacd.setText("MACD (Moving Average Convergence/Divergence)");
@@ -595,6 +594,7 @@ public class RateChart extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				//TODO
 				
+				
 				final IGPM<double[], double[]> gpm = ((IGPM) (IdentityMapping.IDENTITY_MAPPING));
 
 				macdObjFunc = new MacdObjFunc(rate.getHistoricalData()
@@ -607,56 +607,17 @@ public class RateChart extends Composite {
 				if (dialog.open() != Window.OK)
 					return;
 				
-				  wizard.getTerm().addPropertyChangeListener(new
-				  PropertyChangeListener() {
-				  
-				  @Override public void propertyChange(PropertyChangeEvent evt)
-				  {
-				  if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_BEST
-				  )){ System.out.println("New Best: "+evt.getNewValue()); }
-				  
-				  } });
-				 
-
-				ISOOptimizationAlgorithm<double[], double[], Individual<double[], double[]>> ES = wizard
-						.getAlgorithm();
-
-				List<Individual<double[], double[]>> solutions;
-				Individual<double[], double[]> individual;
-
-				solutions = ((List<Individual<double[], double[]>>) (ES.call()));
-				individual = solutions.get(0);
-
-				// stat.add(individual.v);
-				float macdProfit = (maxProfit - (float) individual.v) * 100;
-
-				System.out.println("MACD Profit: " + macdProfit);
-
-				// Fast Alpha
-				macdSliderEmaFast.setSelection((int) (individual.g[0] * 1000));
-				macdSliderEmaSlow.setSelection((int) (individual.g[1] * 1000));
-				macdSliderSignalAlpha
-						.setSelection((int) (individual.g[2] * 1000));
-
-				String alphaFast = String.format("%.3f",
-						((float) individual.g[0]));
-				String alphaSlow = String.format("%.3f",
-						((float) individual.g[1]));
-				String alphaSignal = String.format("%.3f",
-						((float) individual.g[2]));
-
-				macdLblEmaFastAlpha.setText(alphaFast.replace(",", "."));
-				macdLblEmaSlowAlpha.setText(alphaSlow.replace(",", "."));
-				macdLblSignalAlpha.setText(alphaSignal.replace(",", "."));
-
-				macdFastAlpha = individual.g[0];
-				macdSlowAlpha = individual.g[1];
-				macdSignalAlpha = individual.g[2];
-
-				String macdProfitString = String.format("%,.2f%%", macdProfit);
-				macdLblProfit.setText(macdProfitString);
-
-				resetChartDataSet();
+				//Open the Optimization error part
+				MPart part=OptimizationErrorPart.openOptimizationErrorPart(
+						rate,macdOptimizer,
+						Optimizer.OptimizationTypeToString(OptimizationType.MOVING_AVERAGE),
+						partService, modelService, application, context);
+				
+				
+				macdOptimizer.initOptimizationInfo(eventBroker,OptimizationType.MACD,rate, wizard.getAlgorithm(), wizard.getTerm());
+				macdOptimizer.schedule();
+				
+				btnOpt.setEnabled(false);
 				
 			}
 		});
@@ -756,28 +717,110 @@ public class RateChart extends Composite {
 	}
 	
 	
+	/////////////////////////////
+	////  EVENT REACTIONS    ////
+	/////////////////////////////
 	
-	
+	private boolean isCompositeAbleToReact(String rate_uuid){
+		if (this.isDisposed())
+			return false;
+		if (rate_uuid == null || rate_uuid.isEmpty())
+			return false;
+
+		ExchangeRate incoming = exchangeRateProvider.load(rate_uuid);
+		if (incoming == null || rate == null || periodSliderFrom == null)
+			return false;
+		if (!incoming.getUUID().equals(rate.getUUID()))
+			return false;
+		
+		return true;
+	}
 	
 	@Inject
 	private void historicalDataLoaded(
 			@Optional @UIEventTopic(IEventConstant.HISTORICAL_DATA_LOADED) String rate_uuid) {
 
-		if (this.isDisposed())
-			return;
-		if (rate_uuid == null || rate_uuid.isEmpty())
-			return;
-
-		ExchangeRate incoming = exchangeRateProvider.load(rate_uuid);
-		if (incoming == null || rate == null || periodSliderFrom == null)
-			return;
-		if (!incoming.getUUID().equals(rate.getUUID()))
-			return;
-
+		if(!isCompositeAbleToReact(rate_uuid))return;
 		
 		fireHistoricalData();
 		this.layout();
 	}
+
+	@SuppressWarnings("rawtypes")
+	@Inject
+	private void OptimizerFinished(
+			@Optional @UIEventTopic(IEventConstant.OPTIMIZATION_FINISHED) OptimizationInfo info) {
+		if(info==null)return;
+		if(!isCompositeAbleToReact(info.getRate().getUUID()))return;
+		
+		if(info.getType()==OptimizationType.MACD){
+			this.btnOpt.setEnabled(true);
+		}
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Inject
+	private void OptimizerNewBestFound(
+			@Optional @UIEventTopic(IEventConstant.OPTIMIZATION_NEW_BEST_INDIVIDUAL) OptimizationInfo info) {
+		if(info==null)return;
+		if(!isCompositeAbleToReact(info.getRate().getUUID()))return;
+		
+		if(info.getType()==OptimizationType.MACD){
+			
+			Individual<double[], double[]> individual=info.getBest();
+			
+			float macdProfit = (maxProfit - (float) individual.v) * 100;
+
+			System.out.println("MACD Profit: " + macdProfit);
+
+			// Fast Alpha
+			macdSliderEmaFast.setSelection((int) (individual.g[0] * 1000));
+			macdSliderEmaSlow.setSelection((int) (individual.g[1] * 1000));
+			macdSliderSignalAlpha
+					.setSelection((int) (individual.g[2] * 1000));
+
+			String alphaFast = String.format("%.3f",
+					((float) individual.g[0]));
+			String alphaSlow = String.format("%.3f",
+					((float) individual.g[1]));
+			String alphaSignal = String.format("%.3f",
+					((float) individual.g[2]));
+
+			macdLblEmaFastAlpha.setText(alphaFast.replace(",", "."));
+			macdLblEmaSlowAlpha.setText(alphaSlow.replace(",", "."));
+			macdLblSignalAlpha.setText(alphaSignal.replace(",", "."));
+
+			macdFastAlpha = individual.g[0];
+			macdSlowAlpha = individual.g[1];
+			macdSignalAlpha = individual.g[2];
+
+			String macdProfitString = String.format("%,.2f%%", macdProfit);
+			macdLblProfit.setText(macdProfitString);
+
+			resetChartDataSet();
+			
+		}
+	}
+	
+	/*
+	@SuppressWarnings("rawtypes")
+	@Inject
+	private void OptimizerNewStep(
+			@Optional @UIEventTopic(IEventConstant.OPTIMIZATION_NEW_STEP) OptimizationInfo info) {
+		if(info==null)return;
+		if(!isCompositeAbleToReact(info.getRate().getUUID()))return;
+		
+		if(info.getType()==OptimizationType.MACD){
+			logger.info("New MACD Optimizer Step: "+info.getStep());
+		}
+		
+	}
+	*/
+	
+	/////////////////////////////
+	////     REFESHING       ////
+	/////////////////////////////
+	
 	
 	private void fireHistoricalData(){
 		if(!rate.getHistoricalData().isEmpty()){

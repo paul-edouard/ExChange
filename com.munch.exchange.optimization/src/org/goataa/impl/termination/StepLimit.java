@@ -31,8 +31,14 @@ public class StepLimit extends TerminationCriterion {
   public StepLimit(final int steps) {
     this.maxSteps = steps;
   }
+  
 
-  /**
+  public int getMaxSteps() {
+	return maxSteps;
+}
+
+
+/**
    * This method should be invoked after each search step, iteration, or
    * objective function evaluation. This method returns true after it has
    * been called exactly the number of times specified in the parameter
