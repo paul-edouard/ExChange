@@ -261,7 +261,7 @@ public class EvolutionStrategy<X> extends
         
       }
       
-     System.out.println("Number of gen: "+(k++)+ ", Pop length: "+pop.length+", Best:"+best);
+     //System.out.println("Number of gen: "+(k++)+ ", Pop length: "+pop.length+", Best:"+best);
 
       // perform the selection step, usually truncation selection (see
       // Algorithm 28.8)

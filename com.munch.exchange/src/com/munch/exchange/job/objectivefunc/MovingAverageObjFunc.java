@@ -14,6 +14,13 @@ import com.munch.exchange.model.core.historical.HistoricalPoint;
 
 public class MovingAverageObjFunc extends OptimizationModule implements
 		IObjectiveFunction<double[]> {
+	
+	public static final String Moving_Average_Buy_Signal="Moving Average Buy Signal";
+	public static final String Moving_Average_Sell_Signal="Moving Average Sell Signal";
+	
+	public static final String Moving_Average_Profit="Moving Average Profit";
+	public static final String Moving_Average_Buy_And_Sell="Moving Average Buy & Sell";
+	
 			
 	/** a constant required by Java serialization */
 	private static final long serialVersionUID = 1;
@@ -25,8 +32,11 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 	private double penalty;
 	
 	//the profit series
-	private XYSeries profitSeries=new XYSeries("Moving Average Profit");
-	private XYSeries bySellSeries=new XYSeries("Moving Average Buy & Sell");
+	private XYSeries profitSeries=new XYSeries(Moving_Average_Profit);
+	private XYSeries buySellSeries=new XYSeries(Moving_Average_Buy_And_Sell);
+	
+	private XYSeries buySignalSeries=new XYSeries(Moving_Average_Buy_Signal);
+	private XYSeries sellSignalSeries=new XYSeries(Moving_Average_Sell_Signal);
 	
 	//History point List
 	private LinkedList<HistoricalPoint> noneZeroHisList=new LinkedList<HistoricalPoint>();
@@ -76,7 +86,18 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 	}
 
 	public XYSeries getBySellSeries() {
-		return bySellSeries;
+		return buySellSeries;
+	}
+
+
+	public XYSeries getBuySignalSeries() {
+		return buySignalSeries;
+	}
+
+
+
+	public XYSeries getSellSignalSeries() {
+		return sellSignalSeries;
 	}
 
 
@@ -84,7 +105,10 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 	@Override
 	public double compute(double[] x, Random r) {
 		profitSeries.clear();
-		bySellSeries.clear();
+		buySellSeries.clear();
+		
+		buySignalSeries.clear();
+		sellSignalSeries.clear();
 		
 		if(x.length<2)return 0;
 		
@@ -145,10 +169,10 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 			//buy is on the current profit have to be added
 			if(bought){
 				profit+=point.get(field)-last.get(field);
-				bySellSeries.add((i-pastDays+1), 1);
+				buySellSeries.add((i-pastDays+1), 1);
 			}
 			else{
-				bySellSeries.add((i-pastDays+1), -1);
+				buySellSeries.add((i-pastDays+1), -1);
 			}
 			
 			profitSeries.add((i-pastDays+1), profit);
@@ -161,12 +185,15 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 				bought=true;
 			//	logger.info("-------->>>>>> BUY" );
 				profit=profit-((float)penalty)*pList.get(i).get(field);
+				buySignalSeries.add((i-pastDays+1),point.get(field));
+				
 			}
 			//Test if the rate have to be sold
 			else if(diff2<(-sellLimit) && bought==true){	
 				bought=false;
 			//	logger.info("-------->>>>>> SELL" );
 				profit=profit-((float)penalty)*pList.get(i).get(field);
+				sellSignalSeries.add((i-pastDays+1),point.get(field));
 			}
 		}
 		

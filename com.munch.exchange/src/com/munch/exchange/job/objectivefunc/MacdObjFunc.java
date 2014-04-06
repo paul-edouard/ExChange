@@ -14,7 +14,14 @@ public class MacdObjFunc extends OptimizationModule implements
 	/** a constant required by Java serialization */
 	private static final long serialVersionUID = 1;
 	private static Logger logger = Logger.getLogger(MacdObjFunc.class);
-			 
+	
+	public static final String Macd_Profit="MACD Profit";
+	public static final String Macd_Buy_And_Sell="MACD Buy & Sell";
+	
+	public static final String Macd_Buy_Signal="MACD Buy Signal";
+	public static final String Macd_Sell_Signal="MACD Sell Signal";
+	
+	
 	//SERIES
 	private XYSeries timeSeries;
 	
@@ -24,9 +31,11 @@ public class MacdObjFunc extends OptimizationModule implements
 	private XYSeries macdSignalSeries;
 	
 	//the profit series
-	private XYSeries profitSeries=new XYSeries("MACD Profit");
-	private XYSeries bySellSeries=new XYSeries("MACD Buy & Sell");
+	private XYSeries profitSeries=new XYSeries(Macd_Profit);
+	private XYSeries bySellSeries=new XYSeries(Macd_Buy_And_Sell);
 	
+	private XYSeries buySignalSeries=new XYSeries(Macd_Buy_Signal);
+	private XYSeries sellSignalSeries=new XYSeries(Macd_Sell_Signal);
 	
 	//ALPHA
 	private double fastAlpha=0;
@@ -92,6 +101,18 @@ public class MacdObjFunc extends OptimizationModule implements
 		return profit;
 	}
 
+	
+
+	public XYSeries getBuySignalSeries() {
+		return buySignalSeries;
+	}
+
+
+
+	public XYSeries getSellSignalSeries() {
+		return sellSignalSeries;
+	}
+
 
 
 	@Override
@@ -100,6 +121,9 @@ public class MacdObjFunc extends OptimizationModule implements
 		
 		profitSeries.clear();
 		bySellSeries.clear();
+		
+		buySignalSeries.clear();
+		sellSignalSeries.clear();
 		
 		fastAlpha=x[0];
 		slowAlpha=x[1];
@@ -148,12 +172,14 @@ public class MacdObjFunc extends OptimizationModule implements
 				bought=true;
 			//	logger.info("-------->>>>>> BUY" );
 				profit=profit-((float)penalty)*item_time.getYValue();
+				buySignalSeries.add((i-period[0]+1),item_time.getYValue());
 			}
 			//Test if the rate have to be sold
 			else if(item_macd.getYValue()<=item_signal.getYValue() && bought==true){	
 				bought=false;
 			//	logger.info("-------->>>>>> SELL" );
 				profit=profit-((float)penalty)*item_time.getYValue();
+				sellSignalSeries.add((i-period[0]+1),item_time.getYValue());
 			}
 			
 		}

@@ -295,6 +295,24 @@ public class OptimizationErrorPart {
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
+	@Inject
+	private void OptimizerNewBest(
+			@Optional @UIEventTopic(IEventConstant.OPTIMIZATION_NEW_BEST_INDIVIDUAL) OptimizationInfo info) {
+		if(info==null)return;
+		if(!isAbleToReact(info.getRate().getUUID()))return;
+		
+		if(isFromType(info.getType()))return;
+		
+		if(progressBarOptimizationStep !=null && !progressBarOptimizationStep.isDisposed()){
+			if(progressBarOptimizationStep.isEnabled()){
+			
+				progressBarOptimizationStep.setSelection(info.getMaximum()-info.getStep()-1);
+				this.getLastSerie().addOrUpdate(info.getMaximum()-info.getStep(), info.getBest().v);
+			}
+		}
+	}
+	
 	
 	
 	

@@ -55,7 +55,7 @@ public class OptAlgorithmWizardPage extends WizardPage {
 		spinnerNumberOfSteps.setIncrement(50);
 		spinnerNumberOfSteps.setMaximum(100000);
 		spinnerNumberOfSteps.setMinimum(1);
-		spinnerNumberOfSteps.setSelection(500);
+		spinnerNumberOfSteps.setSelection(5);
 	}
 
 	public Combo getComboAlgorithmType() {
