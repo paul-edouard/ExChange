@@ -54,6 +54,7 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
+import org.jfree.util.ShapeUtilities;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.Optimizer;
@@ -851,9 +852,14 @@ public class RateChart extends Composite {
 		
 		//Rest the title to the new period
 		LinkedList<HistoricalPoint> periodPoints=HistoricalData.getPointsFromPeriod(period, rate.getHistoricalData().getNoneEmptyPoints());
+		if(!periodPoints.isEmpty()){
 		Calendar start=periodPoints.getFirst().getDate();
 		Calendar end=periodPoints.getLast().getDate();
 		chart.setTitle(this.rate.getFullName()+" ["+DateTool.dateToDayString(start)+", "+DateTool.dateToDayString(end)+"]");
+		}
+		else{
+			chart.setTitle(this.rate.getFullName());
+		}
 		
 		CombinedDomainXYPlot combinedPlot=(CombinedDomainXYPlot) chart.getPlot();
 		
@@ -921,6 +927,7 @@ public class RateChart extends Composite {
 		
 		
 		if(macdBtnCheck.getSelection()){
+			/*
 			if(collection==null){
 				collection = new XYSeriesCollection(MacdObjFunc.reduceSerieToPeriod(macdObjFunc.getMacdSeries(),period));
 			}
@@ -931,6 +938,14 @@ public class RateChart extends Composite {
 			collection.addSeries(MacdObjFunc.reduceSerieToPeriod(macdObjFunc.getMacdSignalSeries(),period));
 			collection.addSeries(macdObjFunc.getProfitSeries());
 			collection.addSeries(macdObjFunc.getBySellSeries());
+			*/
+			
+			if(collection==null){
+				collection = new XYSeriesCollection(macdObjFunc.getProfitSeries());
+			}
+			else{
+				collection.addSeries(macdObjFunc.getProfitSeries());
+			}
 			
 			String macdProfitString = String.format("%,.2f%%", macdObjFunc.getProfit()*100);
 			macdLblProfit.setText(macdProfitString);
@@ -995,12 +1010,24 @@ public class RateChart extends Composite {
 	            	logger.info("Signal found!!");
 	            	mainPlotRenderer.setSeriesShapesVisible(buy_pos, true);
 	            	mainPlotRenderer.setSeriesLinesVisible(buy_pos, false);
+	            	mainPlotRenderer.setSeriesShape(buy_pos, ShapeUtilities.createUpTriangle(5));
+	            	mainPlotRenderer.setSeriesShapesFilled(buy_pos, true);
+	            	mainPlotRenderer.setSeriesPaint(buy_pos, Color.GREEN);
+	            	mainPlotRenderer.setSeriesOutlinePaint(buy_pos, Color.BLACK);
+	            	mainPlotRenderer.setSeriesOutlineStroke(buy_pos, new BasicStroke(1.0f));
+	            	mainPlotRenderer.setUseOutlinePaint(true);
+	     
 	            }
 	            
 	            int sell_pos=collection.indexOf(MacdObjFunc.Macd_Sell_Signal);
 	            if(sell_pos>0){
 	            	mainPlotRenderer.setSeriesShapesVisible(sell_pos, true);
 	            	mainPlotRenderer.setSeriesLinesVisible(sell_pos, false);
+	            	mainPlotRenderer.setSeriesShape(sell_pos, ShapeUtilities.createDownTriangle(5));
+	            	mainPlotRenderer.setSeriesShapesFilled(sell_pos, true);
+	            	mainPlotRenderer.setSeriesPaint(sell_pos, Color.RED);
+	            	mainPlotRenderer.setSeriesOutlinePaint(sell_pos, Color.BLACK);
+	            	mainPlotRenderer.setSeriesOutlineStroke(sell_pos, new BasicStroke(1.0f));
 	            }
 			
 		}
@@ -1156,7 +1183,7 @@ public class RateChart extends Composite {
 	            	logger.info("Series :"+i+", has id:"+priceData.getSeriesKey(i));
 	            */
 	            
-	            renderer.setDefaultEntityRadius(6);
+	           // renderer.setDefaultEntityRadius(6);
 	            
 	           // renderer.get
 	            

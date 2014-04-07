@@ -164,7 +164,7 @@ public class MacdObjFunc extends OptimizationModule implements
 				bySellSeries.add((i-period[0]+1), -1);
 			}
 			
-			profitSeries.add((i-period[0]+1), profit);
+			
 			
 			//Test if the rate have to be bought
 			if(item_macd.getYValue()>item_signal.getYValue() && bought==false){
@@ -181,6 +181,8 @@ public class MacdObjFunc extends OptimizationModule implements
 				profit=profit-((float)penalty)*item_time.getYValue();
 				sellSignalSeries.add((i-period[0]+1),item_time.getYValue());
 			}
+			
+			profitSeries.add((i-period[0]+1), profit/timeSeries.getDataItem(period[0]).getYValue());
 			
 		}
 		

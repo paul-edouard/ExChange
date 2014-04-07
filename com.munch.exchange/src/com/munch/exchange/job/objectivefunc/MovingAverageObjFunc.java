@@ -175,7 +175,6 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 				buySellSeries.add((i-pastDays+1), -1);
 			}
 			
-			profitSeries.add((i-pastDays+1), profit);
 			
 			//logger.info("profit:" + profit+", Diff2: "+diff2);
 			
@@ -195,6 +194,10 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 				profit=profit-((float)penalty)*pList.get(i).get(field);
 				sellSignalSeries.add((i-pastDays+1),point.get(field));
 			}
+			
+			
+			profitSeries.add((i-pastDays+1), profit/pList.get(pastDays).get(field));
+			
 		}
 		
 		profit=profit/pList.get(pastDays).get(field);
