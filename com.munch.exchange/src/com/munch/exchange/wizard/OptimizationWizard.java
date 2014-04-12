@@ -1,5 +1,7 @@
 package com.munch.exchange.wizard;
 
+import java.util.LinkedList;
+
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.goataa.impl.algorithms.ea.selection.RandomSelection;
@@ -11,6 +13,9 @@ import org.goataa.impl.utils.Individual;
 import org.goataa.spec.IGPM;
 import org.goataa.spec.IObjectiveFunction;
 import org.goataa.spec.ISOOptimizationAlgorithm;
+
+import com.munch.exchange.model.core.optimization.OptimizationResults;
+import com.munch.exchange.model.core.optimization.ResultEntity;
 
 public class OptimizationWizard<X> extends Wizard {
 	
@@ -25,6 +30,7 @@ public class OptimizationWizard<X> extends Wizard {
 	private double min;
 	private double max;
 	
+	private OptimizationResults oldGoodResults=null;
 	
 	//Pages
 	private OptAlgorithmWizardPage optAlgorithmWizardPage=new OptAlgorithmWizardPage(); 
@@ -38,6 +44,17 @@ public class OptimizationWizard<X> extends Wizard {
 		this.dimension=dimension;
 		this.min=min;
 		this.max=max;
+	}
+	
+	public OptimizationWizard(IObjectiveFunction<X> f,IGPM<double[], X> gpm,int dimension,double min,double max,OptimizationResults oldGoodResults) {
+		setWindowTitle("Optimization");
+		
+		this.f=f;
+		this.gpm=gpm;
+		this.dimension=dimension;
+		this.min=min;
+		this.max=max;
+		this.oldGoodResults=oldGoodResults;
 	}
 
 	@Override
@@ -93,8 +110,10 @@ public class OptimizationWizard<X> extends Wizard {
 					.getComboNullarySearchOperation()
 					.getText()
 					.equals(OptEvoStrategyWizardPage.NULLARY_SEARCH_OPERATION_Uniform_Creation)) {
-				ES.setNullarySearchOperation(new DoubleArrayUniformCreation(
-						dimension, min, max));
+				
+				DoubleArrayUniformCreation creation=new DoubleArrayUniformCreation(dimension, min, max);
+				creation.setOldResults(createOldGoodResultList());
+				ES.setNullarySearchOperation(creation);
 			}
 		    
 			if(ES.isPlus()){
@@ -117,6 +136,18 @@ public class OptimizationWizard<X> extends Wizard {
 		algorithm.setTerminationCriterion(term);
 		
 		return finish;
+	}
+	
+	
+	private LinkedList<double[]> createOldGoodResultList(){
+		LinkedList<double[]> oldResults =new LinkedList<double[]>();
+		if(oldGoodResults!=null && oldGoodResults.getResults()!=null){	
+			for(ResultEntity ent : oldGoodResults.getResults()){
+				oldResults.add(ent.getDoubleArray());
+			}
+		}
+		
+		return oldResults;
 	}
 	
 	@Override

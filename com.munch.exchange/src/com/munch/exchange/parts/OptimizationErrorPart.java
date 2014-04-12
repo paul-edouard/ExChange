@@ -147,7 +147,9 @@ public class OptimizationErrorPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				//TODO
-				optimizationResultsProvider.save(rate);
+				if(optimizationResultsProvider.save(rate)){
+					btnSave.setEnabled(false);
+				}
 			}
 		});
 		btnSave.setText("Save");
@@ -306,6 +308,7 @@ public class OptimizationErrorPart {
 		if(isFromType(info.getType()))return;
 		
 		btnCancelOptimization.setEnabled(true);
+		btnSave.setEnabled(false);
 		progressBarOptimizationStep.setEnabled(true);
 		progressBarOptimizationStep.setMaximum(info.getMaximum());
 		progressBarOptimizationStep.setSelection(0);

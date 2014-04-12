@@ -573,7 +573,7 @@ public class RateChart extends Composite {
 						maxProfit, PENALTY);
 
 				OptimizationWizard<double[]> wizard = new OptimizationWizard<double[]>(
-						macdObjFunc, gpm, 3, 0.0d, 1.0d);
+						macdObjFunc, gpm, 3, 0.0d, 1.0d,rate.getOptResultsMap().get(Type.MACD));
 				WizardDialog dialog = new WizardDialog(shell, wizard);
 				if (dialog.open() != Window.OK)
 					return;

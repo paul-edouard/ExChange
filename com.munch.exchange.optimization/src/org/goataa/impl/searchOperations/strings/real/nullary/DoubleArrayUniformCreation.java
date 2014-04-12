@@ -3,6 +3,7 @@
 
 package org.goataa.impl.searchOperations.strings.real.nullary;
 
+import java.util.LinkedList;
 import java.util.Random;
 
 import org.goataa.impl.searchOperations.strings.real.RealVectorCreation;
@@ -19,7 +20,9 @@ public class DoubleArrayUniformCreation extends RealVectorCreation {
 
   /** a constant required by Java serialization */
   private static final long serialVersionUID = 1;
-
+  
+  private LinkedList<double[]> oldResults=null;
+  
   /**
    * Instantiate the real-vector creation operation
    *
@@ -35,8 +38,16 @@ public class DoubleArrayUniformCreation extends RealVectorCreation {
       final double ma) {
     super(dim, mi, ma);
   }
+  
+  
 
-  /**
+  public void setOldResults(LinkedList<double[]> oldResults) {
+	this.oldResults = oldResults;
+}
+
+
+
+/**
    * This operation just produces uniformly distributed random vectors in
    * the interval [this.min, this.max]^this.n
    *
@@ -46,6 +57,11 @@ public class DoubleArrayUniformCreation extends RealVectorCreation {
    */
   @Override
   public final double[] create(final Random r) {
+	if(oldResults!=null && !oldResults.isEmpty()){
+		return oldResults.pollLast();
+	}
+	  
+	  
     double[] g;
     int i;
 
