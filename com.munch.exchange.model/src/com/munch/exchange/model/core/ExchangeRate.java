@@ -11,6 +11,7 @@ import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.optimization.OptimizationResultsMap;
 import com.munch.exchange.model.core.quote.RecordedQuote;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.XmlParameterElement;
@@ -30,6 +31,7 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	public static final String FIELD_Data_Path="data_path";
 	public static final String FIELD_Stock_Exchange="stockExchange";
 	public static final String FIELD_Recorded_Quote="recorded_quote";
+	public static final String FIELD_Opt_Results_Map="Opt_Results_Map";
 	
 	public static final String FIELD_ISIN="ISIN";
 	public static final String FIELD_WKN="WKN";
@@ -50,6 +52,7 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	
 	protected HistoricalData historicalData=new HistoricalData();
 	protected RecordedQuote recordedQuote=null;
+	protected OptimizationResultsMap optResultsMap=new OptimizationResultsMap();
 	
 	protected String uuid=UUID.randomUUID().toString();
 	
@@ -154,6 +157,21 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		
 	}
 	
+	
+	
+	public OptimizationResultsMap getOptResultsMap() {
+		return optResultsMap;
+	}
+
+
+	public void setOptResultsMap(OptimizationResultsMap optResultsMap) {
+		this.optResultsMap.clear();
+		this.optResultsMap.putAll(optResultsMap);
+		changes.firePropertyChange(FIELD_Opt_Results_Map, null,this.optResultsMap );
+	}
+	
+
+
 	public String getDataPath() {
 		return dataPath;
 	}

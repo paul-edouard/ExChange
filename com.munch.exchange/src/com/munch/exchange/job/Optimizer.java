@@ -2,6 +2,7 @@ package com.munch.exchange.job;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -16,6 +17,7 @@ import org.goataa.spec.ISOOptimizationAlgorithm;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.optimization.OptimizationResults;
 
 public class Optimizer<X> extends Job {
 	
@@ -39,7 +41,7 @@ public class Optimizer<X> extends Job {
 		
 	}
 	
-	public void initOptimizationInfo(IEventBroker eventBroker,OptimizationType type,ExchangeRate rate,ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> algorithm, StepLimitPropChange<X> term ){
+	public void initOptimizationInfo(IEventBroker eventBroker,OptimizationResults.Type type,ExchangeRate rate,ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> algorithm, StepLimitPropChange<X> term ){
 		
 		this.algorithm=algorithm;
 		this.term=term;
@@ -89,6 +91,8 @@ public class Optimizer<X> extends Job {
 		//Remove the listener
 		//term.removePropertyChangeListener(listener);
 		eventBroker.send(IEventConstant.OPTIMIZATION_FINISHED,info);
+		
+		
 		logger.info("Optimization finished!!");
 		return Status.OK_STATUS;
 	}
@@ -137,45 +141,24 @@ public class Optimizer<X> extends Job {
 		if (monitor.isCanceled()) return Status.CANCEL_STATUS;
 	 */
 	
-	public enum OptimizationType { MOVING_AVERAGE, MACD, NONE};
 	
-	public static String OptimizationTypeToString(OptimizationType type){
-		switch (type) {
-		case MOVING_AVERAGE:
-			return "MOVING_AVERAGE";
-		case MACD:
-			return "MACD";
-
-		default:
-			return "NONE";
-		}
-	}
-	
-	public static OptimizationType stringToOptimizationType(String type){
-		if(type.equals("MOVING_AVERAGE"))
-			return OptimizationType.MOVING_AVERAGE;
-		else if(type.equals("MACD")){
-			return OptimizationType.MACD;
-		}
-		
-		return OptimizationType.NONE;
-		
-	}
 	
 	public class OptimizationInfo{
 		
 		private ExchangeRate rate;
-		private OptimizationType type;
+		private OptimizationResults.Type type;
 		private int step;
 		private int maximum;
 		private Individual<double[], X> best;
+		private LinkedList<Individual<double[], X>> bestIndividuals;
 		
-		public OptimizationInfo(ExchangeRate rate, OptimizationType type, int maximum) {
+		public OptimizationInfo(ExchangeRate rate, OptimizationResults.Type type, int maximum) {
 			super();
 			this.rate = rate;
 			this.type = type;
 			this.step=maximum;
 			this.maximum=maximum;
+			bestIndividuals=new LinkedList<Individual<double[], X>>();
 		}
 		
 		public int getStep() {
@@ -187,7 +170,16 @@ public class Optimizer<X> extends Job {
 		public Individual<double[], X> getBest() {
 			return best;
 		}
+		
+		
+		public LinkedList<Individual<double[], X>> getBestIndividuals() {
+			return bestIndividuals;
+		}
+
 		public void setBest(Individual<double[], X> best) {
+			
+			bestIndividuals.add(best);
+			
 			this.best = best;
 		}
 		public int getMaximum() {
@@ -201,7 +193,7 @@ public class Optimizer<X> extends Job {
 			return rate;
 		}
 
-		public OptimizationType getType() {
+		public OptimizationResults.Type getType() {
 			return type;
 		}
 		

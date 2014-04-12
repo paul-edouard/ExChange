@@ -3,6 +3,8 @@ package com.munch.exchange.services.internal;
 import java.io.File;
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
+
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
@@ -13,6 +15,9 @@ import com.munch.exchange.services.IDividentProvider;
 import com.munch.exchange.services.internal.yql.YQLHistoricalData;
 
 public class DividentProviderLocalImpl implements IDividentProvider {
+	
+	private static Logger logger = Logger.getLogger(DividentProviderLocalImpl.class);
+	
 	
 	final private static String DividentStr="Divident.xml";
 	
@@ -26,7 +31,7 @@ public class DividentProviderLocalImpl implements IDividentProvider {
 		
 		String divFileStr=getLocalDivFile(stock).getAbsolutePath();
 		
-		System.out.println("Writing file: "+divFileStr);
+		logger.info("Writing file: "+divFileStr);
 		return Xml.save(stock.getHistoricalDividend(), divFileStr);
 	}
 	
@@ -43,7 +48,7 @@ public class DividentProviderLocalImpl implements IDividentProvider {
 			HistoricalDividend hisDiv=new HistoricalDividend();
 			if( Xml.load(hisDiv, localDivFile.getAbsolutePath())){
 				stock.setHistoricalDividend(hisDiv);
-				System.out.println("Dividents localy found for "+stock.getFullName());
+				logger.info("Dividents localy found for "+stock.getFullName());
 				update(stock);
 				return true;
 			}
@@ -53,7 +58,7 @@ public class DividentProviderLocalImpl implements IDividentProvider {
 		YQLHistoricalData hisData=new YQLHistoricalData(stock.getSymbol(), stock.getStart(), stock.getEnd());
 		LinkedList<Dividend> dividents=hisData.getDividendList();
 		if(dividents.isEmpty()){
-			System.out.println("No divident found for the stock: "+stock.getFullName());
+			logger.info("No divident found for the stock: "+stock.getFullName());
 			return false;
 		}
 		else{
@@ -89,12 +94,12 @@ public class DividentProviderLocalImpl implements IDividentProvider {
 		}
 		
 		if(isUpdated){
-			System.out.println("The ExchangeRate was updated:\n \""+stock);
+			logger.info("The ExchangeRate was updated:\n \""+stock);
 			if(this.save(stock)){
-				System.out.println("The divident Data were automaticaly saved!");
+				logger.info("The divident Data were automaticaly saved!");
 			}
 			else{
-				System.out.println("Error: cannot save the divident data!");
+				logger.info("Error: cannot save the divident data!");
 				return false;
 			}
 		}

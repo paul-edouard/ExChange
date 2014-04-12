@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ProgressBar;
+import org.goataa.impl.utils.Individual;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
@@ -43,11 +44,13 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 import com.munch.exchange.IEventConstant;
-import com.munch.exchange.job.Optimizer;
 import com.munch.exchange.job.Optimizer.OptimizationInfo;
-import com.munch.exchange.job.Optimizer.OptimizationType;
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.optimization.OptimizationResults;
+import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
+import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.services.IOptimizationResultsProvider;
 
 public class OptimizationErrorPart {
 	
@@ -63,31 +66,39 @@ public class OptimizationErrorPart {
 	IExchangeRateProvider exchangeRateProvider;
 	
 	@Inject
+	IOptimizationResultsProvider optimizationResultsProvider;
+	
+	@Inject
 	Job optimizer;
 	
 	private ProgressBar progressBarOptimizationStep;
 	private Button btnCancelOptimization;
-	private OptimizationType type=null;
+	private Type type=null;
 	private Composite compositeChart;
 	private JFreeChart chart;
 	private XYDataset errorData;
 	private XYSeries lastSeries;
+	private Button btnSave;
+	//private OptimizationResults results=new OptimizationResults();
 	
 	@Inject
 	public OptimizationErrorPart() {
 		//TODO Your code here
 	}
 	
-	private boolean isFromType(OptimizationType type){
+	private boolean isFromType(Type type){
 		
-		if(this.type!=null)
+		if(this.type!=null){
+			//results.setType(type);
 			return this.type==type;
+		}
 		
 		if(this instanceof MPart){
 			MPart part=(MPart) this;
 			
 			
-			if(part.getTags().contains(Optimizer.OptimizationTypeToString(type))){
+			if(part.getTags().contains(OptimizationResults.OptimizationTypeToString(type))){
+				//results.setType(type);
 				this.type=type;
 				return true;
 			}
@@ -125,10 +136,21 @@ public class OptimizationErrorPart {
 		
 		Composite compositeCommands = new Composite(parent, SWT.NONE);
 		compositeCommands.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		compositeCommands.setLayout(new GridLayout(2, false));
+		compositeCommands.setLayout(new GridLayout(3, false));
 		
 		progressBarOptimizationStep = new ProgressBar(compositeCommands, SWT.NONE);
 		progressBarOptimizationStep.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		
+		btnSave = new Button(compositeCommands, SWT.NONE);
+		btnSave.setEnabled(false);
+		btnSave.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO
+				optimizationResultsProvider.save(rate);
+			}
+		});
+		btnSave.setText("Save");
 		
 		btnCancelOptimization = new Button(compositeCommands, SWT.NONE);
 		btnCancelOptimization.addSelectionListener(new SelectionAdapter() {
@@ -255,8 +277,22 @@ public class OptimizationErrorPart {
 		if(isFromType(info.getType()))return;
 		
 		btnCancelOptimization.setEnabled(false);
+		btnSave.setEnabled(true);
 		progressBarOptimizationStep.setSelection(0);
 		progressBarOptimizationStep.setEnabled(false);
+		
+		//Save the Optimization results
+		logger.info("Number of best results: "+info.getBestIndividuals().size());
+		for(Object ind : info.getBestIndividuals() ){
+			
+			if(ind instanceof Individual<?, ?>){
+				Individual<?, ?> i=(Individual<?, ?>) ind;
+				if(i.g instanceof double[]){
+					ResultEntity ent=new ResultEntity((double[]) i.g);
+					rate.getOptResultsMap().get(info.getType()).addResult(ent);
+				}
+			}
+		}
 		
 	}
 	

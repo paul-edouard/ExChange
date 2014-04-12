@@ -17,6 +17,7 @@ import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IHistoricalDataProvider;
+import com.munch.exchange.services.IOptimizationResultsProvider;
 
 public class HistoricalDataLoader extends Job {
 	
@@ -25,6 +26,9 @@ public class HistoricalDataLoader extends Job {
 	
 	@Inject
 	IHistoricalDataProvider historicalDataProvider;
+	
+	@Inject
+	IOptimizationResultsProvider optimizationResultsProvider;
 	
 	@Inject
 	IExchangeRateProvider exchangeRateProvider;
@@ -76,6 +80,10 @@ public class HistoricalDataLoader extends Job {
 			eventBroker.post(IEventConstant.HISTORICAL_DATA_LOADED,rate.getUUID());
 		}
 		
+		//Laod the optimization result
+		if(optimizationResultsProvider.load(rate)){
+			eventBroker.post(IEventConstant.OPTIMIZATION_RESULTS_LOADED,rate.getUUID());
+		}
 		
 		return Status.OK_STATUS;
 	}
