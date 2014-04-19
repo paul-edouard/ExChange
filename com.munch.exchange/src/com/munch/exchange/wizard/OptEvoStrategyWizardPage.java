@@ -65,7 +65,7 @@ public class OptEvoStrategyWizardPage extends WizardPage {
 		spinnerTotalPopulationSize.setPageIncrement(100);
 		spinnerTotalPopulationSize.setMaximum(1000000);
 		spinnerTotalPopulationSize.setMinimum(10);
-		spinnerTotalPopulationSize.setSelection(1000);
+		spinnerTotalPopulationSize.setSelection(2000);
 		new Label(container, SWT.NONE);
 		
 		Label lblNumberOfOffspring = new Label(container, SWT.NONE);
@@ -75,7 +75,7 @@ public class OptEvoStrategyWizardPage extends WizardPage {
 		spinnerNumberOfOffspring.setIncrement(10);
 		spinnerNumberOfOffspring.setMaximum(1000000);
 		spinnerNumberOfOffspring.setMinimum(10);
-		spinnerNumberOfOffspring.setSelection(100);
+		spinnerNumberOfOffspring.setSelection(200);
 		spinnerNumberOfOffspring.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(container, SWT.NONE);
 		
@@ -85,12 +85,13 @@ public class OptEvoStrategyWizardPage extends WizardPage {
 		spinnerNumberOfParetnPerOffspring = new Spinner(container, SWT.BORDER);
 		spinnerNumberOfParetnPerOffspring.setMaximum(1000);
 		spinnerNumberOfParetnPerOffspring.setMinimum(1);
-		spinnerNumberOfParetnPerOffspring.setSelection(50);
+		spinnerNumberOfParetnPerOffspring.setSelection(150);
 		spinnerNumberOfParetnPerOffspring.setIncrement(5);
 		spinnerNumberOfParetnPerOffspring.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(container, SWT.NONE);
 		
 		btnLambdaPlusMuStrategy = new Button(container, SWT.CHECK);
+		btnLambdaPlusMuStrategy.setSelection(true);
 		btnLambdaPlusMuStrategy.setText("(lambda+mu) strategy ");
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);

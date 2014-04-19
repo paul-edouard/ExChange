@@ -42,13 +42,19 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 	private LinkedList<HistoricalPoint> noneZeroHisList=new LinkedList<HistoricalPoint>();
 	//Max Profit from the given period
 	private float maxProfit;
+	private float profit;
 	
 	//Period
 	private int from;
 	private int downTo;
 	
 	//Moving Average Days
-	private int movAvgDays;
+	private double movAvgMaxDayFac;
+	private int movAvgMaxDays;
+	
+	private float movAvgSliderBuyFac=0;
+	private float movAvgSliderSellFac=0;
+	private double max=0;
 	
 	//MinMax Diff2
 	private float diff2Max=Float.MIN_VALUE;
@@ -58,29 +64,78 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 	
 	public MovingAverageObjFunc(String field, double penalty,
 			LinkedList<HistoricalPoint> pList,
-			float maxProfit, int from, int downTo,int movAvgDays ) {
+			float maxProfit,int movAvgMaxDays) {
 		super();
 		this.field = field;
 		this.penalty = penalty;
 		this.noneZeroHisList = pList;
 		this.maxProfit = maxProfit;
 		
+		//this.from = from;
+		//this.downTo = downTo;
+		//this.movAvgMaxFac = movAvgMaxFac;
+		this.movAvgMaxDays=movAvgMaxDays;
+		
+		calculateFactors();
+		
+	}
+	
+	public void setFromAndDownTo(int from, int downTo){
 		this.from = from;
 		this.downTo = downTo;
-		this.movAvgDays = movAvgDays;
+	}
+	
+	private void  calculateFactors(){
+		for(int i=2;i<noneZeroHisList.size();i++){
+				
+			//Get the last 3 values	
+			float curVal=noneZeroHisList.get(i).get(field);
+			float lastVal=noneZeroHisList.get(i-1).get(field);
+			float beforeLastVal=noneZeroHisList.get(i-2).get(field);
+				
+			//Calculate the diffs
+			float diff=curVal-lastVal;
+			float lastDiff=lastVal-beforeLastVal;
+			float diff2=diff-lastDiff;
+			
+			//Save Min Max
+			if(diff2>this.diff2Max)this.diff2Max=diff2;
+			if(diff2<this.diff2Min)this.diff2Min=diff2;
+		}
+		
+		//Set the slider Max Value	
+		movAvgSliderBuyFac=100/diff2Max;
+		movAvgSliderSellFac=-100/diff2Min;
+		
+		max=100 / Math.min(movAvgSliderBuyFac, movAvgSliderSellFac);
+		
+		movAvgMaxDayFac=((double)movAvgMaxDays)/max;
+		
+	}
+	
+	public double getMax(){
+		return max;
 	}
 
 	
-
-	public float getDiff2Max() {
-		return diff2Max;
-	}
-
-	public float getDiff2Min() {
-		return diff2Min;
-	}
 	
 	
+	public float getProfit() {
+		return profit;
+	}
+
+	public double getMovAvgMaxDayFac() {
+		return movAvgMaxDayFac;
+	}
+
+	public float getMovAvgSliderBuyFac() {
+		return movAvgSliderBuyFac;
+	}
+
+	public float getMovAvgSliderSellFac() {
+		return movAvgSliderSellFac;
+	}
+
 	public XYSeries getProfitSeries() {
 		return profitSeries;
 	}
@@ -104,25 +159,38 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 
 	@Override
 	public double compute(double[] x, Random r) {
+		/*
 		profitSeries.clear();
 		buySellSeries.clear();
 		
 		buySignalSeries.clear();
 		sellSignalSeries.clear();
+		*/
 		
-		if(x.length<2)return 0;
+		profitSeries=new XYSeries(Moving_Average_Profit);
+		buySellSeries=new XYSeries(Moving_Average_Buy_And_Sell);
+		
+		buySignalSeries=new XYSeries(Moving_Average_Buy_Signal);
+		sellSignalSeries=new XYSeries(Moving_Average_Sell_Signal);
+		
+		if(x.length<3)return 0;
 		
 		//int movAvgDays=(int)x[0];
 		float buyLimit=(float)x[0];
 		float sellLimit=(float)x[1];
+		double dayInDoubles=x[2];
+		int movAvgDays=Math.round((float) (dayInDoubles*movAvgMaxDayFac));
+		if(movAvgDays==0)movAvgDays=1;
+		//logger.info("movAvgDays: "+movAvgDays);
 		
 		int pastDays=2+movAvgDays;
 		int[] period = new int[2];period[0]=from-pastDays;period[1]=downTo;
 		
 		LinkedList<HistoricalPoint> pList=HistoricalData.getPointsFromPeriod(period,this.noneZeroHisList );
+		
 		if(pList.isEmpty() || pList.size()<=pastDays){return 0;}
 		
-		float profit=0;
+		profit=0;
 		HistoricalPoint point=null;
 		HistoricalPoint last=null;
 		
@@ -163,8 +231,8 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 			float diff2=diff-lastDiff;
 			
 			//Save Min Max
-			if(diff2>this.diff2Max)this.diff2Max=diff2;
-			if(diff2<this.diff2Min)this.diff2Min=diff2;
+			//if(diff2>this.diff2Max)this.diff2Max=diff2;
+			//if(diff2<this.diff2Min)this.diff2Min=diff2;
 				
 			//buy is on the current profit have to be added
 			if(bought){

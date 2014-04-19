@@ -21,6 +21,9 @@ public class MacdObjFunc extends OptimizationModule implements
 	public static final String Macd_Buy_Signal="MACD Buy Signal";
 	public static final String Macd_Sell_Signal="MACD Sell Signal";
 	
+	public static final String Macd_EMA_Fast="MACD EMA fast";
+	public static final String Macd_EMA_Slow="MACD EMA slow";
+	
 	
 	//SERIES
 	private XYSeries timeSeries;
@@ -130,8 +133,8 @@ public class MacdObjFunc extends OptimizationModule implements
 		signalAlpha=x[2];
 		
 		//Calculate the EMAs
-		macdEmaFastSeries=calculateEMA(this.timeSeries,fastAlpha,"MACD EMA fast");
-		macdEmaSlowSeries=calculateEMA(this.timeSeries,slowAlpha,"MACD EMA slow");
+		macdEmaFastSeries=calculateEMA(this.timeSeries,fastAlpha,Macd_EMA_Fast);
+		macdEmaSlowSeries=calculateEMA(this.timeSeries,slowAlpha,Macd_EMA_Slow);
 		macdSeries=MacdObjFunc.getDiffSeries(macdEmaFastSeries,macdEmaSlowSeries,"MACD");
 		macdSignalSeries=calculateEMA(macdSeries,signalAlpha,"MACD Signal");
 		
