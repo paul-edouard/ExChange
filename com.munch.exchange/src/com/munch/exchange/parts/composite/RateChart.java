@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
+import org.eclipse.e4.core.contexts.ContextInjectionFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
@@ -20,21 +21,17 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.goataa.impl.gpms.IdentityMapping;
 import org.goataa.impl.utils.Individual;
@@ -46,7 +43,6 @@ import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
@@ -58,7 +54,6 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.Optimizer;
 import com.munch.exchange.job.Optimizer.OptimizationInfo;
 import com.munch.exchange.job.objectivefunc.MacdObjFunc;
-import com.munch.exchange.job.objectivefunc.MovingAverageObjFunc;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
@@ -74,12 +69,12 @@ import com.munch.exchange.wizard.OptimizationWizard;
 public class RateChart extends Composite {
 	
 	
-	public static double PENALTY=0.0025;
+	public static final double PENALTY=0.0025;
 	//public static double PENALTY=0.00;
 	
 	private static Logger logger = Logger.getLogger(RateChart.class);
 	
-	@Inject
+	
 	IEclipseContext context;
 	
 	@Inject
@@ -97,8 +92,18 @@ public class RateChart extends Composite {
 	@Inject
 	private IEventBroker eventBroker;
 	
+	
 	private JFreeChart chart;
-	private XYLineAndShapeRenderer mainPlotRenderer;
+	
+	//The renderers
+	private XYLineAndShapeRenderer mainPlotRenderer=new XYLineAndShapeRenderer(true, false);
+	private XYLineAndShapeRenderer secondPlotrenderer=new XYLineAndShapeRenderer(true, false);
+
+	//The Series Collections
+	private XYSeriesCollection mainCollection=new XYSeriesCollection();
+	private XYSeriesCollection secondCollection=new XYSeriesCollection();
+	
+
 	private ExchangeRate rate;
 	private IExchangeRateProvider exchangeRateProvider;
 
@@ -114,49 +119,14 @@ public class RateChart extends Composite {
 	private Label periodlblUpTo;
 	
 	private int[] period=new int[2];
-	//private int numberOfDays=100;
 	private float maxProfit=0;
 	private float keepAndOld=0;
 	
 	
 	
 	//Moving Average
-	private Text movAvgTextByLimit;
-	private Text movAvgTextSellLimit;
-	private Label movAvgLabelProfit;
-	private Button movAvgBtnCheck;
-	private Combo movAvgDaysCombo;
-	private Slider movAvgSliderBuyLimit;
-	private Button movAvgBtnOpt;
-	private Label movAvgLblBuyLimit;
-	private Label movAvgLblSellLimit;
-	private Slider movAvgSliderSellLimit;
-	private Label movAvgLblProfit;
+	RateChartMovingAverageComposite movingAverageComposite;
 	
-	//private float movAvgSliderBuyFac=0;
-	//private float movAvgSliderSellFac=0;
-	
-	private MovingAverageObjFunc movAvgObjFunc=null;
-	private MovingAverageObjFunc getMovAvgObjFunc(){
-		if(movAvgObjFunc!=null)return movAvgObjFunc;
-		
-		movAvgObjFunc=new MovingAverageObjFunc(
-				 HistoricalPoint.FIELD_Close,
-				 PENALTY,
-				 rate.getHistoricalData().getNoneEmptyPoints(),
-				 maxProfit,
-				 movAvgMaxDays
-				 );
-		return movAvgObjFunc;
-	}
-	
-	private double movAvgBuyLimit=0;
-	private double movAvgSellLimit=0;
-	//private double movAvgDaysFac=0;
-	final private int movAvgMaxDays=30;
-	//private double movAvg=0;
-	
-	private Optimizer<double[]> movAvgOptimizer=new Optimizer<double[]>();
 	
 	//EMA
 	private Button emaBtn;
@@ -183,6 +153,8 @@ public class RateChart extends Composite {
 	private Button macdbtnOpt;
 	private Label lblProfit;
 	private Label macdLblProfit;
+
+	
 	
 	
 	
@@ -194,11 +166,12 @@ public class RateChart extends Composite {
 	@SuppressWarnings("unchecked")
 	@Inject
 	public RateChart(Composite parent,ExchangeRate r,
-			IExchangeRateProvider exchangeRateProvider) {
+			IExchangeRateProvider exchangeRateProvider,IEclipseContext p_context) {
 		super(parent, SWT.NONE);
 		
 		this.rate=r;
 		this.exchangeRateProvider=exchangeRateProvider;
+		context=p_context;
 		
 		GridLayout gridLayout = new GridLayout(1, false);
 		gridLayout.marginHeight = 1;
@@ -356,152 +329,20 @@ public class RateChart extends Composite {
 		ExpandItem xpndtmMovingAvg = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmMovingAvg.setExpanded(true);
 		xpndtmMovingAvg.setText("Moving Average");
-		
-		Composite movAvgComposite = new Composite(expandBar, SWT.NONE);
-		xpndtmMovingAvg.setControl(movAvgComposite);
 		xpndtmMovingAvg.setHeight(110);
-		movAvgComposite.setLayout(new GridLayout(3, false));
 		
-		movAvgBtnCheck = new Button(movAvgComposite, SWT.CHECK);
-		movAvgBtnCheck.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		movAvgBtnCheck.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				movAvgDaysCombo.setEnabled(movAvgBtnCheck.getSelection());
-				movAvgBtnOpt.setEnabled(movAvgBtnCheck.getSelection());
-				movAvgSliderBuyLimit.setEnabled(movAvgBtnCheck.getSelection());
-				movAvgSliderSellLimit.setEnabled(movAvgBtnCheck.getSelection());
-				//if(movAvgBtnCheck.getSelection())
-				resetChartDataSet();
-			}
-		});
-		movAvgBtnCheck.setText("Average:");
+		//Create a context instance
+		IEclipseContext localContact=context.createChild();
+		localContact.set(Composite.class, expandBar);
+		//localContact.setParent(context);
 		
 		
-	
-		movAvgDaysCombo = new Combo(movAvgComposite, SWT.NONE);
-		movAvgDaysCombo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				resetChartDataSet();
-			}
-		});
-		movAvgDaysCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		movAvgDaysCombo.setEnabled(false);
-		movAvgDaysCombo.setText("5");
-		movAvgDaysCombo.add("2");
-		movAvgDaysCombo.add("3");
-		movAvgDaysCombo.add("5");
-		movAvgDaysCombo.add("10");
-		movAvgDaysCombo.add("20");
-		//movAvgDaysCombo.add("30");
-		//movAvgDaysCombo.add("50");
-		movAvgDaysCombo.add(String.valueOf(movAvgMaxDays));
+		movingAverageComposite=ContextInjectionFactory.make( RateChartMovingAverageComposite.class,localContact);
+		xpndtmMovingAvg.setControl(movingAverageComposite);
 		
-		movAvgBtnOpt = new Button(movAvgComposite, SWT.NONE);
-		movAvgBtnOpt.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		movAvgBtnOpt.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseDown(MouseEvent e) {
-				
-				//TODO Moving Average
-				double max=getMovAvgObjFunc().getMax();
-				double min=0;
-				int dimension=3;
-				getMovAvgObjFunc().setFromAndDownTo(period[0], period[1]);
-				
-				
-				final IGPM<double[], double[]> gpm = ((IGPM<double[], double[]>) (IdentityMapping.IDENTITY_MAPPING));
-				
-				OptimizationWizard<double[]> wizard = new OptimizationWizard<double[]>(
-						getMovAvgObjFunc(), gpm, dimension, min, max, rate.getOptResultsMap()
-								.get(Type.MOVING_AVERAGE));
-				WizardDialog dialog = new WizardDialog(shell, wizard);
-				if (dialog.open() != Window.OK)
-					return;
-				
-				
-				//Open the Optimization error part
-				OptimizationErrorPart.openOptimizationErrorPart(
-						rate,movAvgOptimizer,
-						OptimizationResults.OptimizationTypeToString(Type.MOVING_AVERAGE),
-						partService, modelService, application, context);
-				
-				
-				movAvgOptimizer.initOptimizationInfo(eventBroker,Type.MOVING_AVERAGE,rate, wizard.getAlgorithm(), wizard.getTerm());
-				movAvgOptimizer.schedule();
-				
-				movAvgBtnOpt.setEnabled(false);
-				movAvgBtnCheck.setEnabled(false);
-					
-			}
-		});
-		movAvgBtnOpt.setText("Opt.");
-		movAvgBtnOpt.setEnabled(false);
-		
-		movAvgLblBuyLimit = new Label(movAvgComposite, SWT.NONE);
-		movAvgLblBuyLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		movAvgLblBuyLimit.setText("Buy limit:");
-		
-		movAvgTextByLimit = new Text(movAvgComposite, SWT.BORDER);
-		movAvgTextByLimit.setEditable(false);
-		movAvgTextByLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		movAvgTextByLimit.setText("0.0");
-		
-		movAvgSliderBuyLimit = new Slider(movAvgComposite, SWT.NONE);
-		movAvgSliderBuyLimit.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-		movAvgSliderBuyLimit.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				//logger.info(movAvgSliderBuyLimit.getSelection());
-				movAvgBuyLimit=((float) movAvgSliderBuyLimit.getSelection())/getMovAvgObjFunc().getMovAvgSliderBuyFac();
-				String buyLimit = String.format("%,.2f%%",  (float)movAvgBuyLimit);
-				movAvgTextByLimit.setText(buyLimit);
-				
-				movAvgBuyLimit=-1;
-				
-				if(movAvgTextByLimit.isEnabled())
-					resetChartDataSet();
-				
-				
-			}
-		});
-		
-		movAvgLblSellLimit = new Label(movAvgComposite, SWT.NONE);
-		movAvgLblSellLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		movAvgLblSellLimit.setText("Sell limit:");
-		
-		movAvgTextSellLimit = new Text(movAvgComposite, SWT.BORDER);
-		movAvgTextSellLimit.setEditable(false);
-		movAvgTextSellLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		movAvgTextSellLimit.setText("0.0");
-		
-		movAvgSliderSellLimit = new Slider(movAvgComposite, SWT.NONE);
-		movAvgSliderSellLimit.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-		movAvgSliderSellLimit.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				//logger.info(movAvgSliderSellLimit.getSelection());
-				movAvgSellLimit=( (float) movAvgSliderSellLimit.getSelection())/getMovAvgObjFunc().getMovAvgSliderSellFac();
-				String buyLimit = String.format("%,.2f%%",  (float) movAvgSellLimit);
-				movAvgTextSellLimit.setText(buyLimit);
-				
-				movAvgSellLimit=-1;
-				
-				if(movAvgSliderSellLimit.isEnabled())
-					resetChartDataSet();
-			}
-		});
-		
-		movAvgLblProfit = new Label(movAvgComposite, SWT.NONE);
-		movAvgLblProfit.setText("Profit:");
-		new Label(movAvgComposite, SWT.NONE);
-		
-		movAvgLabelProfit = new Label(movAvgComposite, SWT.NONE);
-		movAvgLabelProfit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		movAvgLabelProfit.setText("00,00%");
-		
-		
+		movingAverageComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
+		movingAverageComposite.setSeriesCollections(mainCollection, secondCollection);
+		movingAverageComposite.setPeriodandMaxProfit(period, maxProfit);
 		
 		//=============================================
 		//==== EMA (Exponential Moving Average)  ======    
@@ -754,13 +595,7 @@ public class RateChart extends Composite {
 			resetMACDGuiData(g,v);
 		}
 		
-		if(!rate.getOptResultsMap().get(Type.MOVING_AVERAGE).getResults().isEmpty()){
-			double[] g=rate.getOptResultsMap().get(Type.MOVING_AVERAGE).getResults().getFirst().getDoubleArray();
-			
-			getMovAvgObjFunc().setFromAndDownTo(period[0], period[1]);
-			double v=getMovAvgObjFunc().compute(g, null);
-			resetMovingAverageGuiData(g,v);
-		}
+		
 		
 	}
 	
@@ -776,10 +611,7 @@ public class RateChart extends Composite {
 			this.macdbtnOpt.setEnabled(true);
 			this.macdBtnCheck.setEnabled(true);
 		}
-		else if(info.getType()==Type.MOVING_AVERAGE){
-			movAvgBtnOpt.setEnabled(true);
-			movAvgBtnCheck.setEnabled(true);
-		}
+		
 	}
 	
 	private void resetMACDGuiData(double[] g, double v) {
@@ -808,32 +640,7 @@ public class RateChart extends Composite {
 		resetChartDataSet();
 	}
 	
-	private void resetMovingAverageGuiData(double[] g,double v){
-		//TODO
-		//Buy Limit
-	    movAvgSliderBuyLimit.setSelection( (int) (g[0]*getMovAvgObjFunc().getMovAvgSliderBuyFac()) );
-	    String buyLimit = String.format("%,.2f%%", ( (float)g[0]));
-	    movAvgTextByLimit.setText(buyLimit);
-	    movAvgBuyLimit=g[0];
-	    
-	    //Sell Limit
-	    movAvgSliderSellLimit.setSelection( (int) (g[1]*getMovAvgObjFunc().getMovAvgSliderSellFac()) );
-	    String sellLimit = String.format("%,.2f%%", ( (float)g[1]));
-	    movAvgTextSellLimit.setText(sellLimit);
-	    movAvgSellLimit=g[1];
-	    
-	    movAvgDaysCombo.setText(String.valueOf((int) (g[2]*getMovAvgObjFunc().getMovAvgMaxDayFac()) ));
-	    
-	    
-	    float movAvgProfit=maxProfit- (float)v;
-		
-		String movAvgProfitString = String.format("%,.2f%%", movAvgProfit*100);
-		movAvgLabelProfit.setText(movAvgProfitString);
-		
-		//logger.info("Profit: "+movAvgProfitString);
-	    
-	    resetChartDataSet();
-	}
+	
 	
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -847,11 +654,7 @@ public class RateChart extends Composite {
 			Individual<double[], double[]> individual=info.getBest();
 			resetMACDGuiData(individual.g,individual.v);
 		}
-		else if(info.getType()==Type.MOVING_AVERAGE){
-			//TODO
-			Individual<double[], double[]> individual=info.getBest();
-			resetMovingAverageGuiData(individual.g,individual.v);
-		}
+		
 		
 	}
 	
@@ -899,7 +702,25 @@ public class RateChart extends Composite {
 		periodLblFrom.setText(String.valueOf(periodSliderFrom.getSelection()));
 		periodlblUpTo.setText(String.valueOf(periodSliderUpTo.getSelection()));
 		
+		// ===================================
+		// Calculate Keep Old and Max Profit
+		// ===================================
+		keepAndOld = rate.getHistoricalData().calculateKeepAndOld(period,
+				HistoricalPoint.FIELD_Close);
+		maxProfit = rate.getHistoricalData().calculateMaxProfit(period,
+				HistoricalPoint.FIELD_Close);
+
+		String keepAndOldString = String.format("%,.2f%%", keepAndOld * 100);
+		String maxProfitString = String.format("%,.2f%%", maxProfit * 100);
+
+		labelMaxProfitPercent.setText(maxProfitString);
+		labelKeepAndOldPercent.setText(keepAndOldString);
+		
+		movingAverageComposite.setPeriodandMaxProfit(period, maxProfit);
+		
 		resetChartDataSet();
+		
+		
 	}
 	
 	private void resetChartDataSet(){
@@ -917,54 +738,27 @@ public class RateChart extends Composite {
 		
 		CombinedDomainXYPlot combinedPlot=(CombinedDomainXYPlot) chart.getPlot();
 		
+		createDataset(HistoricalPoint.FIELD_Close);
 		XYPlot plot1=(XYPlot)combinedPlot.getSubplots().get(0);
-		plot1.setDataset(0, createDataset(HistoricalPoint.FIELD_Close));
+		//plot1.setDataset(0,mainCollection);
 		if (rate instanceof Indice || rate instanceof Stock) {
 			plot1.setDataset(1, createDataset(HistoricalPoint.FIELD_Volume));
 		}
 		
-		//===================================
-		//Calculate Keep Old and Max Profit
-		//===================================
-		keepAndOld=rate.getHistoricalData().calculateKeepAndOld(period, HistoricalPoint.FIELD_Close);
-		maxProfit=rate.getHistoricalData().calculateMaxProfit(period, HistoricalPoint.FIELD_Close);
+	
 		
-		String keepAndOldString = String.format("%,.2f%%", keepAndOld*100);
-		String maxProfitString = String.format("%,.2f%%", maxProfit*100);
-		
-		labelMaxProfitPercent.setText(maxProfitString);
-		labelKeepAndOldPercent.setText(keepAndOldString);
-		
-		
-		//Calculate Moving Average Profit
-		XYSeriesCollection collection=null;
-		
-		//===================================
-		//Add the Moving Average series
-		//===================================
-		if(movAvgBtnCheck.getSelection()){
-		try{
-			collection = new XYSeriesCollection(getMovAvgObjFunc().getProfitSeries());
-			
-			String movAvgProfitString = String.format("%,.2f%%", getMovAvgObjFunc().getProfit()*100);
-			movAvgLabelProfit.setText(movAvgProfitString);
-			
-		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
-		}
+		//secondCollection.removeAllSeries();
 		
 		//===================================
 		//Add the MACD series
 		//===================================
 		if(macdBtnCheck.getSelection()){
 			
-			if(collection==null){
-				collection = new XYSeriesCollection(macdObjFunc.getProfitSeries());
+			if(secondCollection==null){
+				secondCollection = new XYSeriesCollection(macdObjFunc.getProfitSeries());
 			}
 			else{
-				collection.addSeries(macdObjFunc.getProfitSeries());
+				secondCollection.addSeries(macdObjFunc.getProfitSeries());
 			}
 			
 			String macdProfitString = String.format("%,.2f%%", macdObjFunc.getProfit()*100);
@@ -973,85 +767,34 @@ public class RateChart extends Composite {
 		
 		
 		
-		XYPlot plot2=(XYPlot)combinedPlot.getSubplots().get(1);
-		plot2.setDataset(0, collection);
+		//XYPlot secondPlot=(XYPlot)combinedPlot.getSubplots().get(1);
+		//secondPlot.setDataset(0, secondCollection);
 		
 		
 		
 	}
 	
 	private XYDataset createDataset(String field) {
-
-		XYSeries series = rate.getHistoricalData().getXYSeries(field, period);
-		XYSeriesCollection collection = new XYSeriesCollection(series);
 		
-		if(field.equals(HistoricalPoint.FIELD_Volume))return collection;
-
-		//===================================
-		//Compute the  Moving Average series
-		//===================================
-		if (movAvgBtnCheck.getSelection()) {
-			double[] x=new double[3];
-			if(movAvgBuyLimit>0){
-				x[0]=movAvgBuyLimit;
-				x[1]=movAvgSellLimit;
-			}
-			else{
-				x[0]=( (float) movAvgSliderBuyLimit.getSelection())/getMovAvgObjFunc().getMovAvgSliderBuyFac();
-				x[1]=( (float) movAvgSliderSellLimit.getSelection())/getMovAvgObjFunc().getMovAvgSliderSellFac();
-			}
-			x[2]=Double.valueOf(movAvgDaysCombo.getText())/getMovAvgObjFunc().getMovAvgMaxDayFac();
-			
-			//TODO
-			getMovAvgObjFunc().setFromAndDownTo(period[0], period[1]);
-			getMovAvgObjFunc().compute(x, null);
-			
-			logger.info("Profit: "+getMovAvgObjFunc().getProfit());
-			
-			XYSeries movAvgSeries=rate.getHistoricalData().getMovingAvg(field,Integer.parseInt(movAvgDaysCombo.getText()),"Moving Average");
-			collection.addSeries(MacdObjFunc.reduceSerieToPeriod(movAvgSeries,period));
-			
-			int pos=collection.indexOf("Moving Average");
-			if(pos>0){
-				mainPlotRenderer.setSeriesShapesVisible(pos, false);
-				mainPlotRenderer.setSeriesLinesVisible(pos, true);
-				mainPlotRenderer.setSeriesPaint(pos, Color.GRAY);
-			}
-			
-			collection.addSeries(getMovAvgObjFunc().getBuySignalSeries());
-			collection.addSeries(getMovAvgObjFunc().getSellSignalSeries());
-			
-			int buy_pos=collection.indexOf(MovingAverageObjFunc.Moving_Average_Buy_Signal);
-            if(buy_pos>0){
-            	//logger.info("Signal found!!");
-            	mainPlotRenderer.setSeriesShapesVisible(buy_pos, true);
-            	mainPlotRenderer.setSeriesLinesVisible(buy_pos, false);
-            	mainPlotRenderer.setSeriesShape(buy_pos, ShapeUtilities.createUpTriangle(5));
-            	mainPlotRenderer.setSeriesShapesFilled(buy_pos, true);
-            	mainPlotRenderer.setSeriesPaint(buy_pos, Color.GREEN);
-            	mainPlotRenderer.setSeriesOutlinePaint(buy_pos, Color.BLACK);
-            	mainPlotRenderer.setSeriesOutlineStroke(buy_pos, new BasicStroke(1.0f));
-            	mainPlotRenderer.setUseOutlinePaint(true);
-     
-            }
-            
-            int sell_pos=collection.indexOf(MovingAverageObjFunc.Moving_Average_Sell_Signal);
-            if(sell_pos>0){
-            	mainPlotRenderer.setSeriesShapesVisible(sell_pos, true);
-            	mainPlotRenderer.setSeriesLinesVisible(sell_pos, false);
-            	mainPlotRenderer.setSeriesShape(sell_pos, ShapeUtilities.createDownTriangle(5));
-            	mainPlotRenderer.setSeriesShapesFilled(sell_pos, true);
-            	mainPlotRenderer.setSeriesPaint(sell_pos, Color.RED);
-            	mainPlotRenderer.setSeriesOutlinePaint(sell_pos, Color.BLACK);
-            	mainPlotRenderer.setSeriesOutlineStroke(sell_pos, new BasicStroke(1.0f));
-            }
-			
+		if(field.equals(HistoricalPoint.FIELD_Volume)){
+			XYSeries series = rate.getHistoricalData().getXYSeries(field, period);
+			return new XYSeriesCollection(series);
 		}
+		
+		
+		//Clear
+		int fiel_pos=mainCollection.indexOf(field);
+		if(fiel_pos>=0)mainCollection.removeSeries(fiel_pos);
+		
+		XYSeries series = rate.getHistoricalData().getXYSeries(field, period);
+		mainCollection.addSeries(series);
+		
+		
 		if(emaBtn.getSelection()){
 			emaSeries=rate.getHistoricalData().getEMA(field, Float.parseFloat(emaLblAlpha.getText()),"EMA");
-			collection.addSeries(MacdObjFunc.reduceSerieToPeriod(emaSeries,period));
+			mainCollection.addSeries(MacdObjFunc.reduceSerieToPeriod(emaSeries,period));
 			
-			int pos=collection.indexOf("EMA");
+			int pos=mainCollection.indexOf("EMA");
 			if(pos>0){
 				mainPlotRenderer.setSeriesShapesVisible(pos, false);
 				mainPlotRenderer.setSeriesLinesVisible(pos, true);
@@ -1083,25 +826,25 @@ public class RateChart extends Composite {
 			macdObjFunc=new MacdObjFunc(rate.getHistoricalData().getXYSeries(field), period, maxProfit, PENALTY);
 			macdObjFunc.compute(x, null);
 				
-			collection.addSeries(MacdObjFunc.reduceSerieToPeriod(macdObjFunc.getMacdEmaFastSeries(),period));
-			collection.addSeries(MacdObjFunc.reduceSerieToPeriod(macdObjFunc.getMacdEmaSlowSeries(),period));
-			int ema_fast_pos=collection.indexOf(MacdObjFunc.Macd_EMA_Fast);
+			mainCollection.addSeries(MacdObjFunc.reduceSerieToPeriod(macdObjFunc.getMacdEmaFastSeries(),period));
+			mainCollection.addSeries(MacdObjFunc.reduceSerieToPeriod(macdObjFunc.getMacdEmaSlowSeries(),period));
+			int ema_fast_pos=mainCollection.indexOf(MacdObjFunc.Macd_EMA_Fast);
 			if(ema_fast_pos>0){
 				mainPlotRenderer.setSeriesShapesVisible(ema_fast_pos, false);
 				mainPlotRenderer.setSeriesLinesVisible(ema_fast_pos, true);
 				mainPlotRenderer.setSeriesPaint(ema_fast_pos, Color.CYAN);
 			}
-			int ema_slow_pos=collection.indexOf(MacdObjFunc.Macd_EMA_Slow);
+			int ema_slow_pos=mainCollection.indexOf(MacdObjFunc.Macd_EMA_Slow);
 			if(ema_slow_pos>0){
 				mainPlotRenderer.setSeriesShapesVisible(ema_slow_pos, false);
 				mainPlotRenderer.setSeriesLinesVisible(ema_slow_pos, true);
 				mainPlotRenderer.setSeriesPaint(ema_slow_pos, Color.ORANGE);
 			}
 			
-			collection.addSeries(macdObjFunc.getBuySignalSeries());
-			collection.addSeries(macdObjFunc.getSellSignalSeries());
+			mainCollection.addSeries(macdObjFunc.getBuySignalSeries());
+			mainCollection.addSeries(macdObjFunc.getSellSignalSeries());
 
-			int buy_pos = collection.indexOf(MacdObjFunc.Macd_Buy_Signal);
+			int buy_pos = mainCollection.indexOf(MacdObjFunc.Macd_Buy_Signal);
 			if (buy_pos > 0) {
 				// logger.info("Signal found!!");
 				mainPlotRenderer.setSeriesShapesVisible(buy_pos, true);
@@ -1117,7 +860,7 @@ public class RateChart extends Composite {
 
 			}
 
-			int sell_pos = collection.indexOf(MacdObjFunc.Macd_Sell_Signal);
+			int sell_pos = mainCollection.indexOf(MacdObjFunc.Macd_Sell_Signal);
 			if (sell_pos > 0) {
 				mainPlotRenderer.setSeriesShapesVisible(sell_pos, true);
 				mainPlotRenderer.setSeriesLinesVisible(sell_pos, false);
@@ -1132,7 +875,7 @@ public class RateChart extends Composite {
 			
 		}
 
-		return collection;
+		return mainCollection;
 	}
 	
 	
@@ -1215,14 +958,13 @@ public class RateChart extends Composite {
 	    	//Creation of data Set
 	    	//XYDataset priceData = new XYDataset
 	    	
-	    	//Renderer
-	        XYItemRenderer renderer1 = new XYLineAndShapeRenderer(true, false);
-	        renderer1.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
+	    	//secondPlotrenderer = new XYLineAndShapeRenderer(true, false);
+	        secondPlotrenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
 	                StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
 	                new DecimalFormat("0.0"), new DecimalFormat("0.00")));
 	        
-	        if (renderer1 instanceof XYLineAndShapeRenderer) {
-	            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) renderer1;
+	        if (secondPlotrenderer instanceof XYLineAndShapeRenderer) {
+	            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) secondPlotrenderer;
 	            renderer.setBaseStroke(new BasicStroke(2.0f));
 	            renderer.setAutoPopulateSeriesStroke(false);
 	            renderer.setSeriesPaint(0, Color.BLUE);
@@ -1237,7 +979,7 @@ public class RateChart extends Composite {
 	        rangeAxis1.setAutoRangeIncludesZero(false);
 	        
 	        //Plot
-	        XYPlot plot1 = new XYPlot(null, null, rangeAxis1, renderer1);
+	        XYPlot plot1 = new XYPlot(secondCollection, null, rangeAxis1, secondPlotrenderer);
 	        plot1.setBackgroundPaint(Color.lightGray);
 	        plot1.setDomainGridlinePaint(Color.white);
 	        plot1.setRangeGridlinePaint(Color.white);
@@ -1259,12 +1001,12 @@ public class RateChart extends Composite {
 	    	//=== Main Curves  ===
 	    	//====================
 	    	//Creation of data Set
-	        XYDataset priceData = createDataset(HistoricalPoint.FIELD_Close);
+	       // XYDataset priceData = createDataset(HistoricalPoint.FIELD_Close);
 	        
 	       // priceData.g
 	        
 	        //Renderer
-	        mainPlotRenderer = new XYLineAndShapeRenderer(true, false);
+	       // mainPlotRenderer = new XYLineAndShapeRenderer(true, false);
 	        mainPlotRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
 	                StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
 	                new DecimalFormat("0.0"), new DecimalFormat("0.00")));
@@ -1276,18 +1018,6 @@ public class RateChart extends Composite {
 	            renderer.setSeriesPaint(0, Color.BLUE);
 	            renderer.setSeriesPaint(1, Color.DARK_GRAY);
 	            
-	           
-	            /*
-	            logger.info("Number os series :"+priceData.getSeriesCount());
-	            for(int i=0;i<priceData.getSeriesCount();i++)
-	            	logger.info("Series :"+i+", has id:"+priceData.getSeriesKey(i));
-	            */
-	            
-	           // renderer.setDefaultEntityRadius(6);
-	            
-	           // renderer.get
-	            
-	            //renderer.setSeriesPaint(2, new Color(0xFDAE61));
 	        }
 	        
 	        
@@ -1298,7 +1028,7 @@ public class RateChart extends Composite {
 	        rangeAxis1.setAutoRangeIncludesZero(false);
 	        
 	        //Plot
-	        XYPlot plot1 = new XYPlot(priceData, null, rangeAxis1, mainPlotRenderer);
+	        XYPlot plot1 = new XYPlot(mainCollection, null, rangeAxis1, mainPlotRenderer);
 	        plot1.setBackgroundPaint(Color.lightGray);
 	        plot1.setDomainGridlinePaint(Color.white);
 	        plot1.setRangeGridlinePaint(Color.white);
