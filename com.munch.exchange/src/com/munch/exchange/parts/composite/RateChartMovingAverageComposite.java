@@ -52,6 +52,8 @@ import com.munch.exchange.wizard.OptimizationWizard;
 
 public class RateChartMovingAverageComposite extends Composite {
 	
+	public static final String Moving_Average="Moving Average";
+	
 	private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.class);
 	
 	@Inject
@@ -305,7 +307,7 @@ public class RateChartMovingAverageComposite extends Composite {
 	}
 	
 	private void  clearCollections(){
-		int mov_ave_pos=mainCollection.indexOf("Moving Average");
+		int mov_ave_pos=mainCollection.indexOf(Moving_Average);
 		if(mov_ave_pos>=0)mainCollection.removeSeries(mov_ave_pos);
 		
 		int buy_pos=mainCollection.indexOf(MovingAverageObjFunc.Moving_Average_Buy_Signal);
@@ -322,71 +324,71 @@ public class RateChartMovingAverageComposite extends Composite {
 		
 		clearCollections();
 		
-		if (movAvgBtnCheck.getSelection()) {
-			//Refresh the main plot
-			double[] x=new double[3];
-			if(movAvgBuyLimit>0){
-				x[0]=movAvgBuyLimit;
-				x[1]=movAvgSellLimit;
-			}
-			else{
-				x[0]=( (float) movAvgSliderBuyLimit.getSelection())/getMovAvgObjFunc().getMovAvgSliderBuyFac();
-				x[1]=( (float) movAvgSliderSellLimit.getSelection())/getMovAvgObjFunc().getMovAvgSliderSellFac();
-			}
-			x[2]=Double.valueOf(movAvgDaysCombo.getText())/getMovAvgObjFunc().getMovAvgMaxDayFac();
+		if (!movAvgBtnCheck.getSelection()) return;
+		//Refresh the main plot
+		double[] x=new double[3];
+		if(movAvgBuyLimit>0){
+			x[0]=movAvgBuyLimit;
+			x[1]=movAvgSellLimit;
+		}
+		else{
+			x[0]=( (float) movAvgSliderBuyLimit.getSelection())/getMovAvgObjFunc().getMovAvgSliderBuyFac();
+			x[1]=( (float) movAvgSliderSellLimit.getSelection())/getMovAvgObjFunc().getMovAvgSliderSellFac();
+		}
+		x[2]=Double.valueOf(movAvgDaysCombo.getText())/getMovAvgObjFunc().getMovAvgMaxDayFac();
+		
+		getMovAvgObjFunc().setFromAndDownTo(period[0], period[1]);
+		getMovAvgObjFunc().compute(x, null);
+		
+		//logger.info("Profit: "+getMovAvgObjFunc().getProfit());
 			
-			getMovAvgObjFunc().setFromAndDownTo(period[0], period[1]);
-			getMovAvgObjFunc().compute(x, null);
+		XYSeries movAvgSeries=rate.getHistoricalData().getMovingAvg(HistoricalPoint.FIELD_Close,Integer.parseInt(movAvgDaysCombo.getText()),Moving_Average);
+		mainCollection.addSeries(MacdObjFunc.reduceSerieToPeriod(movAvgSeries,period));
 			
-			logger.info("Profit: "+getMovAvgObjFunc().getProfit());
+		int mov_ave_pos=mainCollection.indexOf(Moving_Average);
+		if(mov_ave_pos>=0){
+			mainPlotRenderer.setSeriesShapesVisible(mov_ave_pos, false);
+			mainPlotRenderer.setSeriesLinesVisible(mov_ave_pos, true);
+			mainPlotRenderer.setSeriesPaint(mov_ave_pos, Color.GRAY);
+		}
 			
-			XYSeries movAvgSeries=rate.getHistoricalData().getMovingAvg(HistoricalPoint.FIELD_Close,Integer.parseInt(movAvgDaysCombo.getText()),"Moving Average");
-			mainCollection.addSeries(MacdObjFunc.reduceSerieToPeriod(movAvgSeries,period));
+		mainCollection.addSeries(getMovAvgObjFunc().getBuySignalSeries());
+		mainCollection.addSeries(getMovAvgObjFunc().getSellSignalSeries());
 			
-			int mov_ave_pos=mainCollection.indexOf("Moving Average");
-			if(mov_ave_pos>=0){
-				mainPlotRenderer.setSeriesShapesVisible(mov_ave_pos, false);
-				mainPlotRenderer.setSeriesLinesVisible(mov_ave_pos, true);
-				mainPlotRenderer.setSeriesPaint(mov_ave_pos, Color.GRAY);
-			}
-			
-			mainCollection.addSeries(getMovAvgObjFunc().getBuySignalSeries());
-			mainCollection.addSeries(getMovAvgObjFunc().getSellSignalSeries());
-			
-			int buy_pos=mainCollection.indexOf(MovingAverageObjFunc.Moving_Average_Buy_Signal);
-            if(buy_pos>=0){
-            	//logger.info("Signal found!!");
-            	mainPlotRenderer.setSeriesShapesVisible(buy_pos, true);
-            	mainPlotRenderer.setSeriesLinesVisible(buy_pos, false);
-            	mainPlotRenderer.setSeriesShape(buy_pos, ShapeUtilities.createUpTriangle(5));
-            	mainPlotRenderer.setSeriesShapesFilled(buy_pos, true);
-            	mainPlotRenderer.setSeriesPaint(buy_pos, Color.GREEN);
-            	mainPlotRenderer.setSeriesOutlinePaint(buy_pos, Color.BLACK);
-            	mainPlotRenderer.setSeriesOutlineStroke(buy_pos, new BasicStroke(1.0f));
-            	mainPlotRenderer.setUseOutlinePaint(true);
+		int buy_pos=mainCollection.indexOf(MovingAverageObjFunc.Moving_Average_Buy_Signal);
+        if(buy_pos>=0){
+           	//logger.info("Signal found!!");
+           	mainPlotRenderer.setSeriesShapesVisible(buy_pos, true);
+           	mainPlotRenderer.setSeriesLinesVisible(buy_pos, false);
+           	mainPlotRenderer.setSeriesShape(buy_pos, ShapeUtilities.createUpTriangle(5));
+           	mainPlotRenderer.setSeriesShapesFilled(buy_pos, true);
+           	mainPlotRenderer.setSeriesPaint(buy_pos, Color.GREEN);
+           	mainPlotRenderer.setSeriesOutlinePaint(buy_pos, Color.BLACK);
+            mainPlotRenderer.setSeriesOutlineStroke(buy_pos, new BasicStroke(1.0f));
+           	mainPlotRenderer.setUseOutlinePaint(true);
      
-            }
+         }
             
-            int sell_pos=mainCollection.indexOf(MovingAverageObjFunc.Moving_Average_Sell_Signal);
-            if(sell_pos>=0){
-            	mainPlotRenderer.setSeriesShapesVisible(sell_pos, true);
+         int sell_pos=mainCollection.indexOf(MovingAverageObjFunc.Moving_Average_Sell_Signal);
+         if(sell_pos>=0){
+            mainPlotRenderer.setSeriesShapesVisible(sell_pos, true);
             	mainPlotRenderer.setSeriesLinesVisible(sell_pos, false);
             	mainPlotRenderer.setSeriesShape(sell_pos, ShapeUtilities.createDownTriangle(5));
             	mainPlotRenderer.setSeriesShapesFilled(sell_pos, true);
             	mainPlotRenderer.setSeriesPaint(sell_pos, Color.RED);
             	mainPlotRenderer.setSeriesOutlinePaint(sell_pos, Color.BLACK);
             	mainPlotRenderer.setSeriesOutlineStroke(sell_pos, new BasicStroke(1.0f));
-            }
+         }
 			
 			
-			//Refresh the second plot
-			secondCollection.addSeries(getMovAvgObjFunc().getProfitSeries());
+	    //Refresh the second plot
+		secondCollection.addSeries(getMovAvgObjFunc().getProfitSeries());
 
-			String movAvgProfitString = String.format("%,.2f%%",
+		String movAvgProfitString = String.format("%,.2f%%",
 					getMovAvgObjFunc().getProfit() * 100);
-			movAvgLabelProfit.setText(movAvgProfitString);
+	    movAvgLabelProfit.setText(movAvgProfitString);
 
-		}
+		
 	}
 	
 	/////////////////////////////
@@ -460,7 +462,7 @@ public class RateChartMovingAverageComposite extends Composite {
 		if(info==null)return;
 		if(!isCompositeAbleToReact(info.getRate().getUUID()))return;
 		
-		else if(info.getType()==Type.MOVING_AVERAGE){
+		if(info.getType()==Type.MOVING_AVERAGE){
 			movAvgBtnOpt.setEnabled(true);
 			movAvgBtnCheck.setEnabled(true);
 		}
@@ -473,7 +475,7 @@ public class RateChartMovingAverageComposite extends Composite {
 		if(info==null)return;
 		if(!isCompositeAbleToReact(info.getRate().getUUID()))return;
 		
-		else if(info.getType()==Type.MOVING_AVERAGE){
+		if(info.getType()==Type.MOVING_AVERAGE){
 			Individual<double[], double[]> individual=info.getBest();
 			resetMovingAverageGuiData(individual.g,individual.v);
 		}

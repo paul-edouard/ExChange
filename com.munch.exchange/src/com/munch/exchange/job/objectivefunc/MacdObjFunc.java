@@ -122,11 +122,12 @@ public class MacdObjFunc extends OptimizationModule implements
 	public double compute(double[] x, Random r) {
 		if(x.length!=3)return Double.MAX_VALUE;
 		
-		profitSeries.clear();
-		bySellSeries.clear();
 		
-		buySignalSeries.clear();
-		sellSignalSeries.clear();
+		profitSeries=new XYSeries(Macd_Profit);
+		bySellSeries=new XYSeries(Macd_Buy_And_Sell);
+		
+		buySignalSeries=new XYSeries(Macd_Buy_Signal);
+		sellSignalSeries=new XYSeries(Macd_Sell_Signal);
 		
 		fastAlpha=x[0];
 		slowAlpha=x[1];

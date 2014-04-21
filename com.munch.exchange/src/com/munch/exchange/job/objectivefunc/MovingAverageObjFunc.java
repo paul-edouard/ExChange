@@ -159,13 +159,7 @@ public class MovingAverageObjFunc extends OptimizationModule implements
 
 	@Override
 	public double compute(double[] x, Random r) {
-		/*
-		profitSeries.clear();
-		buySellSeries.clear();
 		
-		buySignalSeries.clear();
-		sellSignalSeries.clear();
-		*/
 		
 		profitSeries=new XYSeries(Moving_Average_Profit);
 		buySellSeries=new XYSeries(Moving_Average_Buy_And_Sell);
