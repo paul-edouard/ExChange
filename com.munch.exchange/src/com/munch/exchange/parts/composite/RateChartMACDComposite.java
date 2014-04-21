@@ -2,6 +2,8 @@ package com.munch.exchange.parts.composite;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -104,7 +106,8 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 	private Button macdbtnOpt;
 	private Label lblProfit;
 	private Label macdLblProfit;
-
+	
+	
 	@Inject
 	public RateChartMACDComposite(Composite parent) {
 		super(parent, SWT.NONE);
@@ -122,6 +125,10 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 				macdbtnOpt.setEnabled(macdBtnCheck.getSelection());
 				
 				resetChartDataSet();
+				
+				if(!macdBtnCheck.getSelection())
+					fireCollectionRemoved();
+				
 			}
 		});
 		macdBtnCheck.setText("MACD");
@@ -240,6 +247,10 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 		macdLblProfit.setText("0,0%");
 	}
 	
+	public Button getCheckButton(){
+		return macdBtnCheck;
+	}
+	
 	public void setRenderers(XYLineAndShapeRenderer mainPlotRenderer,XYLineAndShapeRenderer secondPlotrenderer){
 		this.mainPlotRenderer=mainPlotRenderer;
 		this.secondPlotrenderer=secondPlotrenderer;
@@ -269,19 +280,29 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 	private void  clearCollections(){
 		
 		int ema_fast_pos=mainCollection.indexOf(MacdObjFunc.Macd_EMA_Fast);
-		if(ema_fast_pos>=0)mainCollection.removeSeries(ema_fast_pos);
+		if(ema_fast_pos>=0){
+			mainCollection.removeSeries(ema_fast_pos);
+		}
 		
 		int ema_slow_pos=mainCollection.indexOf(MacdObjFunc.Macd_EMA_Slow);
-		if(ema_slow_pos>=0)mainCollection.removeSeries(ema_slow_pos);
+		if(ema_slow_pos>=0){
+			mainCollection.removeSeries(ema_slow_pos);
+		}
 		
 		int buy_pos = mainCollection.indexOf(MacdObjFunc.Macd_Buy_Signal);
-		if (buy_pos >= 0) mainCollection.removeSeries(buy_pos);
+		if (buy_pos >= 0){
+			mainCollection.removeSeries(buy_pos);
+		}
 		
 		int sell_pos = mainCollection.indexOf(MacdObjFunc.Macd_Sell_Signal);
-		if (sell_pos >= 0) mainCollection.removeSeries(sell_pos);
+		if (sell_pos >= 0){
+			mainCollection.removeSeries(sell_pos);
+		}
 		
 		int profit_pos=secondCollection.indexOf(MacdObjFunc.Macd_Profit);
-		if(profit_pos>=0)secondCollection.removeSeries(profit_pos);
+		if(profit_pos>=0){
+			secondCollection.removeSeries(profit_pos);
+		}
 	}
 	
 	private void resetChartDataSet() {
@@ -308,16 +329,19 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 			
 		mainCollection.addSeries(MacdObjFunc.reduceSerieToPeriod(getMacdObjFunc().getMacdEmaFastSeries(),period));
 		mainCollection.addSeries(MacdObjFunc.reduceSerieToPeriod(getMacdObjFunc().getMacdEmaSlowSeries(),period));
+		
 		int ema_fast_pos=mainCollection.indexOf(MacdObjFunc.Macd_EMA_Fast);
 		if(ema_fast_pos>=0){
 			mainPlotRenderer.setSeriesShapesVisible(ema_fast_pos, false);
 			mainPlotRenderer.setSeriesLinesVisible(ema_fast_pos, true);
+			mainPlotRenderer.setSeriesStroke(ema_fast_pos,new BasicStroke(2.0f));
 			mainPlotRenderer.setSeriesPaint(ema_fast_pos, Color.CYAN);
 		}
 		int ema_slow_pos=mainCollection.indexOf(MacdObjFunc.Macd_EMA_Slow);
 		if(ema_slow_pos>=0){
 			mainPlotRenderer.setSeriesShapesVisible(ema_slow_pos, false);
 			mainPlotRenderer.setSeriesLinesVisible(ema_slow_pos, true);
+			mainPlotRenderer.setSeriesStroke(ema_slow_pos,new BasicStroke(2.0f));
 			mainPlotRenderer.setSeriesPaint(ema_slow_pos, Color.ORANGE);
 		}
 		
@@ -325,8 +349,9 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 		mainCollection.addSeries(getMacdObjFunc().getSellSignalSeries());
 
 		int buy_pos = mainCollection.indexOf(MacdObjFunc.Macd_Buy_Signal);
+		logger.info(" try Setting buy Signal! "+buy_pos);
 		if (buy_pos >= 0) {
-			// logger.info("Signal found!!");
+			 logger.info("Setting buy Signal! "+buy_pos);
 			mainPlotRenderer.setSeriesShapesVisible(buy_pos, true);
 			mainPlotRenderer.setSeriesLinesVisible(buy_pos, false);
 			mainPlotRenderer.setSeriesShape(buy_pos,
@@ -337,11 +362,12 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 			mainPlotRenderer.setSeriesOutlineStroke(buy_pos,
 					new BasicStroke(1.0f));
 			mainPlotRenderer.setUseOutlinePaint(true);
-
 		}
 
 		int sell_pos = mainCollection.indexOf(MacdObjFunc.Macd_Sell_Signal);
+		logger.info(" try Setting sell Signal! "+sell_pos);
 		if (sell_pos >= 0) {
+			logger.info("Setting sell Signal! "+sell_pos);
 			mainPlotRenderer.setSeriesShapesVisible(sell_pos, true);
 			mainPlotRenderer.setSeriesLinesVisible(sell_pos, false);
 			mainPlotRenderer.setSeriesShape(sell_pos,
@@ -462,5 +488,23 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 		
 	}
 	*/
+	/////////////////////////////
+	////      LISTERNER      ////
+	/////////////////////////////
+	private List<CollectionRemovedListener> listeners=new LinkedList<CollectionRemovedListener>();
 
+	
+	public void addCollectionRemovedListener(CollectionRemovedListener l) {
+		listeners.add(l);
+	}
+
+	public void removeCollectionRemovedListener(CollectionRemovedListener l) {
+		listeners.remove(l);
+	}
+	
+	private void fireCollectionRemoved(){
+		for(CollectionRemovedListener l: listeners)
+			l.CollectionRemoved();
+	}
+	
 }

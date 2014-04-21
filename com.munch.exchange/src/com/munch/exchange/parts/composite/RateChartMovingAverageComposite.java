@@ -2,6 +2,8 @@ package com.munch.exchange.parts.composite;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -140,6 +142,9 @@ public class RateChartMovingAverageComposite extends Composite {
 				movAvgSliderSellLimit.setEnabled(movAvgBtnCheck.getSelection());
 				//if(movAvgBtnCheck.getSelection())
 				resetChartDataSet();
+				
+				if(!movAvgBtnCheck.getSelection())
+					fireCollectionRemoved();
 			}
 		});
 		movAvgBtnCheck.setText("Average:");
@@ -271,7 +276,9 @@ public class RateChartMovingAverageComposite extends Composite {
 	}
 	
 	
-	
+	public Button getCheckButton(){
+		return movAvgBtnCheck;
+	}
 	
 	public void setRenderers(XYLineAndShapeRenderer mainPlotRenderer,XYLineAndShapeRenderer secondPlotrenderer){
 		this.mainPlotRenderer=mainPlotRenderer;
@@ -349,6 +356,7 @@ public class RateChartMovingAverageComposite extends Composite {
 		if(mov_ave_pos>=0){
 			mainPlotRenderer.setSeriesShapesVisible(mov_ave_pos, false);
 			mainPlotRenderer.setSeriesLinesVisible(mov_ave_pos, true);
+			mainPlotRenderer.setSeriesStroke(mov_ave_pos,new BasicStroke(2.0f));
 			mainPlotRenderer.setSeriesPaint(mov_ave_pos, Color.GRAY);
 		}
 			
@@ -480,6 +488,24 @@ public class RateChartMovingAverageComposite extends Composite {
 			resetMovingAverageGuiData(individual.g,individual.v);
 		}
 		
+	}
+	
+	// ///////////////////////////
+	// // LISTERNER ////
+	// ///////////////////////////
+	private List<CollectionRemovedListener> listeners = new LinkedList<CollectionRemovedListener>();
+
+	public void addCollectionRemovedListener(CollectionRemovedListener l) {
+		listeners.add(l);
+	}
+
+	public void removeCollectionRemovedListener(CollectionRemovedListener l) {
+		listeners.remove(l);
+	}
+
+	private void fireCollectionRemoved() {
+		for (CollectionRemovedListener l : listeners)
+			l.CollectionRemoved();
 	}
 
 }

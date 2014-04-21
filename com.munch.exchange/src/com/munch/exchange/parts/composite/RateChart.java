@@ -45,7 +45,6 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 import com.munch.exchange.IEventConstant;
-import com.munch.exchange.job.objectivefunc.MacdObjFunc;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
@@ -110,16 +109,14 @@ public class RateChart extends Composite {
 	private float maxProfit=0;
 	private float keepAndOld=0;
 	
+	//Low & Hight
+	RateChartLawAndHightComposite lawAndHightComposite;
+	
 	//Moving Average
 	RateChartMovingAverageComposite movingAverageComposite;
 	
 	//EMA
-	/*
-	private Button emaBtn;
-	private Label emaLblAlpha;
-	private Slider emaSlider;
-	private XYSeries emaSeries;
-	*/
+	RateChartEMAComposite emaComposite;
 	
 	//MACD
 	RateChartMACDComposite macdComposite;
@@ -268,6 +265,27 @@ public class RateChart extends Composite {
 		new Label(compositeAnalysis, SWT.NONE);
 		
 		//=============================================
+		//======         LOW & HIGHT             ======    
+		//=============================================		
+		ExpandItem xpndtmLowHight = new ExpandItem(expandBar, SWT.NONE);
+		xpndtmLowHight.setExpanded(false);
+		xpndtmLowHight.setText("Low & Hight");
+		xpndtmLowHight.setHeight(30);
+			
+		lawAndHightComposite=ContextInjectionFactory.make( RateChartLawAndHightComposite.class,localContact);
+		xpndtmLowHight.setControl(lawAndHightComposite);
+		
+		lawAndHightComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
+		lawAndHightComposite.setSeriesCollections(mainCollection, secondCollection);
+		lawAndHightComposite.setPeriodandMaxProfit(period, maxProfit);
+		lawAndHightComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
+			@Override
+			public void CollectionRemoved() {
+				refreshPeriod();
+			}
+		});
+		
+		//=============================================
 		//======        MOVING AVERAGE           ======    
 		//=============================================
 		
@@ -282,6 +300,12 @@ public class RateChart extends Composite {
 		movingAverageComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
 		movingAverageComposite.setSeriesCollections(mainCollection, secondCollection);
 		movingAverageComposite.setPeriodandMaxProfit(period, maxProfit);
+		movingAverageComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
+			@Override
+			public void CollectionRemoved() {
+				refreshPeriod();
+			}
+		});
 		
 		//=============================================
 		//==== EMA (Exponential Moving Average)  ======    
@@ -291,46 +315,18 @@ public class RateChart extends Composite {
 		xpndtmEma.setText("EMA (Exponential Moving Average)");
 		xpndtmEma.setHeight(50);
 		
-		Composite emaComposite = new Composite(expandBar, SWT.NONE);
+		emaComposite=ContextInjectionFactory.make( RateChartEMAComposite.class,localContact);
 		xpndtmEma.setControl(emaComposite);
-		emaComposite.setLayout(new GridLayout(4, false));
 		
-		emaBtn = new Button(emaComposite, SWT.CHECK);
-		emaBtn.addSelectionListener(new SelectionAdapter() {
+		emaComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
+		emaComposite.setSeriesCollections(mainCollection, secondCollection);
+		emaComposite.setPeriodandMaxProfit(period, maxProfit);
+		emaComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
 			@Override
-			public void widgetSelected(SelectionEvent e) {
-				emaSlider.setEnabled(emaBtn.getSelection());
-				//if(emaBtn.getSelection())
-				resetChartDataSet();
-				
+			public void CollectionRemoved() {
+				refreshPeriod();
 			}
 		});
-		emaBtn.setText("EMA");
-		
-		Label lblAlpha = new Label(emaComposite, SWT.NONE);
-		lblAlpha.setText("Alpha:");
-		
-		emaLblAlpha = new Label(emaComposite, SWT.NONE);
-		emaLblAlpha.setText("0.600");
-		
-		emaSlider = new Slider(emaComposite, SWT.NONE);
-		emaSlider.setMaximum(1000);
-		emaSlider.setMinimum(1);
-		emaSlider.setSelection(600);
-		emaSlider.setEnabled(false);
-		emaSlider.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				String alphaStr = String.format("%.3f", ( (float) emaSlider.getSelection())/1000);
-				emaLblAlpha.setText(alphaStr.replace(",", "."));
-				if(emaSlider.isEnabled())
-					resetChartDataSet();
-				
-			}
-		});
-		emaSlider.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
-		
 		
 		//==================================================
 		//== MACD (Moving Average Convergence/Divergence) ==    
@@ -346,6 +342,12 @@ public class RateChart extends Composite {
 		macdComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
 		macdComposite.setSeriesCollections(mainCollection, secondCollection);
 		macdComposite.setPeriodandMaxProfit(period, maxProfit);
+		macdComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
+			@Override
+			public void CollectionRemoved() {
+				refreshPeriod();
+			}
+		});
 		
 		//==================================================
 		//==                 CHART                        ==    
@@ -404,6 +406,16 @@ public class RateChart extends Composite {
 	}
 	
 	private void refreshPeriod(){
+		
+		mainCollection.removeAllSeries();
+		secondCollection.removeAllSeries();
+		
+		mainPlotRenderer.clearSeriesPaints(false);
+		//mainPlotRenderer.clearSeriesStrokes(false);
+		
+		secondPlotrenderer.clearSeriesPaints(false);
+		//secondPlotrenderer.clearSeriesStrokes(false);
+		
 		int allpts=rate.getHistoricalData().getNoneEmptyPoints().size();
 		
 		if(periodSliderFrom.getMaximum()!=allpts)
@@ -436,6 +448,8 @@ public class RateChart extends Composite {
 		// ===================================
 		movingAverageComposite.setPeriodandMaxProfit(period, maxProfit);
 		macdComposite.setPeriodandMaxProfit(period, maxProfit);
+		emaComposite.setPeriodandMaxProfit(period, maxProfit);
+		lawAndHightComposite.setPeriodandMaxProfit(period, maxProfit);
 		
 		resetChartDataSet();
 		
@@ -485,25 +499,10 @@ public class RateChart extends Composite {
 		if(fiel_pos>=0){
 			mainPlotRenderer.setSeriesShapesVisible(fiel_pos, false);
 			mainPlotRenderer.setSeriesLinesVisible(fiel_pos, true);
+			mainPlotRenderer.setSeriesStroke(fiel_pos,new BasicStroke(2.0f));
 			mainPlotRenderer.setSeriesPaint(fiel_pos, Color.BLUE);
 		}
 		
-		//Clear EMA
-		int pos=mainCollection.indexOf("EMA");
-		if(pos>=0)mainCollection.removeSeries(pos);
-		
-		if(emaBtn.getSelection()){
-			emaSeries=rate.getHistoricalData().getEMA(field, Float.parseFloat(emaLblAlpha.getText()),"EMA");
-			mainCollection.addSeries(MacdObjFunc.reduceSerieToPeriod(emaSeries,period));
-			
-			pos=mainCollection.indexOf("EMA");
-			if(pos>=0){
-				mainPlotRenderer.setSeriesShapesVisible(pos, false);
-				mainPlotRenderer.setSeriesLinesVisible(pos, true);
-				mainPlotRenderer.setSeriesPaint(pos, Color.DARK_GRAY);
-			}
-			
-		}
 		
 		return mainCollection;
 	}
@@ -629,7 +628,9 @@ public class RateChart extends Composite {
 	        mainPlotRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
 	                StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
 	                new DecimalFormat("0.0"), new DecimalFormat("0.00")));
-	                
+	        mainPlotRenderer.setBaseStroke(new BasicStroke(2.0f));
+	        
+	        /*
 	        if (mainPlotRenderer instanceof XYLineAndShapeRenderer) {
 	            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) mainPlotRenderer;
 	            renderer.setBaseStroke(new BasicStroke(2.0f));
@@ -638,7 +639,7 @@ public class RateChart extends Composite {
 	            renderer.setSeriesPaint(1, Color.DARK_GRAY);
 	            
 	        }
-	        
+	        */
 	        
 	        NumberAxis rangeAxis1 = new NumberAxis("Price");
 	        rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
