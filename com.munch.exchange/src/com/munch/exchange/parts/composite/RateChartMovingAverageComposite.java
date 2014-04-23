@@ -233,7 +233,7 @@ public class RateChartMovingAverageComposite extends Composite {
 				movAvgBuyLimit=-1;
 				
 				if(movAvgTextByLimit.isEnabled())
-					resetChartDataSet();
+					fireCollectionRemoved();
 				
 				
 			}
@@ -261,7 +261,7 @@ public class RateChartMovingAverageComposite extends Composite {
 				movAvgSellLimit=-1;
 				
 				if(movAvgSliderSellLimit.isEnabled())
-					resetChartDataSet();
+					fireCollectionRemoved();
 			}
 		});
 		
@@ -391,6 +391,14 @@ public class RateChartMovingAverageComposite extends Composite {
 			
 	    //Refresh the second plot
 		secondCollection.addSeries(getMovAvgObjFunc().getProfitSeries());
+		int profit_pos=secondCollection.indexOf(MovingAverageObjFunc.Moving_Average_Profit);
+		if(profit_pos>=0){
+			secondPlotrenderer.setSeriesShapesVisible(profit_pos, false);
+			secondPlotrenderer.setSeriesLinesVisible(profit_pos, true);
+			secondPlotrenderer.setSeriesStroke(profit_pos,new BasicStroke(2.0f));
+			secondPlotrenderer.setSeriesPaint(profit_pos, Color.DARK_GRAY);
+		}
+		
 
 		String movAvgProfitString = String.format("%,.2f%%",
 					getMovAvgObjFunc().getProfit() * 100);
@@ -445,7 +453,7 @@ public class RateChartMovingAverageComposite extends Composite {
 		movAvgLabelProfit.setText(movAvgProfitString);
 		
 	    
-	    resetChartDataSet();
+		fireCollectionRemoved();
 	}
 	
 	@Inject 

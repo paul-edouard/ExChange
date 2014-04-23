@@ -48,7 +48,7 @@ import com.munch.exchange.wizard.OptimizationWizard;
 
 public class RateChartMACDComposite extends Composite {
 	
-private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.class);
+	private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.class);
 	
 	@Inject
 	IEclipseContext context;
@@ -183,7 +183,7 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 				macdFastAlpha=0;
 				
 				if(macdSliderEmaFast.isEnabled())
-					resetChartDataSet();
+					fireCollectionRemoved();
 			}
 		});
 		macdSliderEmaFast.setMaximum(1000);
@@ -207,7 +207,7 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 				macdLblEmaSlowAlpha.setText(alphaStr.replace(",", "."));
 				macdFastAlpha=0;
 				if(macdSliderEmaSlow.isEnabled())
-					resetChartDataSet();
+					fireCollectionRemoved();
 			}
 		});
 		macdSliderEmaSlow.setMaximum(1000);
@@ -230,7 +230,7 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 				macdLblSignalAlpha.setText(alphaStr.replace(",", "."));
 				macdFastAlpha=0;
 				if(macdSliderSignalAlpha.isEnabled())
-					resetChartDataSet();
+					fireCollectionRemoved();
 			}
 		});
 		macdSliderSignalAlpha.setThumb(1);
@@ -349,7 +349,7 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 		mainCollection.addSeries(getMacdObjFunc().getSellSignalSeries());
 
 		int buy_pos = mainCollection.indexOf(MacdObjFunc.Macd_Buy_Signal);
-		logger.info(" try Setting buy Signal! "+buy_pos);
+		//logger.info(" try Setting buy Signal! "+buy_pos);
 		if (buy_pos >= 0) {
 			 logger.info("Setting buy Signal! "+buy_pos);
 			mainPlotRenderer.setSeriesShapesVisible(buy_pos, true);
@@ -365,7 +365,7 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 		}
 
 		int sell_pos = mainCollection.indexOf(MacdObjFunc.Macd_Sell_Signal);
-		logger.info(" try Setting sell Signal! "+sell_pos);
+		//logger.info(" try Setting sell Signal! "+sell_pos);
 		if (sell_pos >= 0) {
 			logger.info("Setting sell Signal! "+sell_pos);
 			mainPlotRenderer.setSeriesShapesVisible(sell_pos, true);
@@ -381,6 +381,13 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 		
 			
 		secondCollection.addSeries(getMacdObjFunc().getProfitSeries());
+		int profit_pos=secondCollection.indexOf(MacdObjFunc.Macd_Profit);
+		if(profit_pos>=0){
+			secondPlotrenderer.setSeriesShapesVisible(profit_pos, false);
+			secondPlotrenderer.setSeriesLinesVisible(profit_pos, true);
+			secondPlotrenderer.setSeriesStroke(profit_pos,new BasicStroke(2.0f));
+			secondPlotrenderer.setSeriesPaint(profit_pos, Color.BLUE);
+		}
 		
 		String macdProfitString = String.format("%,.2f%%", getMacdObjFunc().getProfit()*100);
 		macdLblProfit.setText(macdProfitString);
@@ -429,7 +436,7 @@ private static Logger logger = Logger.getLogger(RateChartMovingAverageComposite.
 		String macdProfitString = String.format("%,.2f%%", macdProfit);
 		macdLblProfit.setText(macdProfitString);
 
-		resetChartDataSet();
+		fireCollectionRemoved();
 	}
 	
 	@Inject 

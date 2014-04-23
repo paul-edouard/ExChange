@@ -121,6 +121,9 @@ public class RateChart extends Composite {
 	//MACD
 	RateChartMACDComposite macdComposite;
 	
+	//Bollinger Bands
+	RateChartBollingerBandsComposite bollingerBandsComposite;
+	
 	/**
 	 * Create the composite.
 	 * @param parent
@@ -350,6 +353,28 @@ public class RateChart extends Composite {
 		});
 		
 		//==================================================
+		//==              Bollinger Bands                 ==    
+		//==================================================
+		
+		ExpandItem xpndtmBollingerBands = new ExpandItem(expandBar, SWT.NONE);
+		xpndtmBollingerBands.setExpanded(false);
+		xpndtmBollingerBands.setText("Bollinger Bands");
+		xpndtmBollingerBands.setHeight(100);
+		
+		bollingerBandsComposite=ContextInjectionFactory.make( RateChartBollingerBandsComposite.class,localContact);
+		xpndtmBollingerBands.setControl(bollingerBandsComposite);
+		
+		bollingerBandsComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
+		bollingerBandsComposite.setSeriesCollections(mainCollection, secondCollection);
+		bollingerBandsComposite.setPeriodandMaxProfit(period, maxProfit);
+		bollingerBandsComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
+			@Override
+			public void CollectionRemoved() {
+				refreshPeriod();
+			}
+		});
+		
+		//==================================================
 		//==                 CHART                        ==    
 		//==================================================
 		chart = createChart();
@@ -450,6 +475,7 @@ public class RateChart extends Composite {
 		macdComposite.setPeriodandMaxProfit(period, maxProfit);
 		emaComposite.setPeriodandMaxProfit(period, maxProfit);
 		lawAndHightComposite.setPeriodandMaxProfit(period, maxProfit);
+		bollingerBandsComposite.setPeriodandMaxProfit(period, maxProfit);
 		
 		resetChartDataSet();
 		
