@@ -359,7 +359,7 @@ public class RateChart extends Composite {
 		ExpandItem xpndtmBollingerBands = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmBollingerBands.setExpanded(false);
 		xpndtmBollingerBands.setText("Bollinger Bands");
-		xpndtmBollingerBands.setHeight(100);
+		xpndtmBollingerBands.setHeight(200);
 		
 		bollingerBandsComposite=ContextInjectionFactory.make( RateChartBollingerBandsComposite.class,localContact);
 		xpndtmBollingerBands.setControl(bollingerBandsComposite);
