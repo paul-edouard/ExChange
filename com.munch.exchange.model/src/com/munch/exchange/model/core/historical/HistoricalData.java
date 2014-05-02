@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.YIntervalSeries;
 
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.DatePointList;
@@ -75,6 +76,23 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		 }
 		 
 		 return series;
+	}
+	
+	public YIntervalSeries getYIntervalSeries( String serie_name, int[] period){
+		
+		YIntervalSeries inter_series = new YIntervalSeries(serie_name);
+		LinkedList<HistoricalPoint> pointList= getPointsFromPeriod(period,getNoneEmptyPoints());
+		
+		int pos=1;
+		 for(HistoricalPoint point:pointList){
+			 inter_series.add(pos,	point.get(HistoricalPoint.FIELD_Close),
+					 				point.get(HistoricalPoint.FIELD_Low),
+					 				point.get(HistoricalPoint.FIELD_High));
+			 pos++;
+		 }
+		
+		
+		return inter_series;
 	}
 	
 	public XYSeries getXYSeries(String field){

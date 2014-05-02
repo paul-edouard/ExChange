@@ -38,10 +38,12 @@ import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.xy.YIntervalSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 import com.munch.exchange.IEventConstant;
@@ -85,10 +87,13 @@ public class RateChart extends Composite {
 	//The renderers
 	private XYLineAndShapeRenderer mainPlotRenderer=new XYLineAndShapeRenderer(true, false);
 	private XYLineAndShapeRenderer secondPlotrenderer=new XYLineAndShapeRenderer(true, false);
-
+	private XYErrorRenderer errorPlotRenderer=new XYErrorRenderer();
+	//TODO
+	
 	//The Series Collections
 	private XYSeriesCollection mainCollection=new XYSeriesCollection();
 	private XYSeriesCollection secondCollection=new XYSeriesCollection();
+	private YIntervalSeriesCollection errorCollection=new YIntervalSeriesCollection();
 	
 
 	private ExchangeRate rate;
@@ -278,8 +283,8 @@ public class RateChart extends Composite {
 		lawAndHightComposite=ContextInjectionFactory.make( RateChartLawAndHightComposite.class,localContact);
 		xpndtmLowHight.setControl(lawAndHightComposite);
 		
-		lawAndHightComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
-		lawAndHightComposite.setSeriesCollections(mainCollection, secondCollection);
+		lawAndHightComposite.setRenderers(mainPlotRenderer, secondPlotrenderer,errorPlotRenderer);
+		lawAndHightComposite.setSeriesCollections(mainCollection, secondCollection,errorCollection);
 		lawAndHightComposite.setPeriodandMaxProfit(period, maxProfit);
 		lawAndHightComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
 			@Override
@@ -359,7 +364,7 @@ public class RateChart extends Composite {
 		ExpandItem xpndtmBollingerBands = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmBollingerBands.setExpanded(false);
 		xpndtmBollingerBands.setText("Bollinger Bands");
-		xpndtmBollingerBands.setHeight(200);
+		xpndtmBollingerBands.setHeight(290);
 		
 		bollingerBandsComposite=ContextInjectionFactory.make( RateChartBollingerBandsComposite.class,localContact);
 		xpndtmBollingerBands.setControl(bollingerBandsComposite);
@@ -656,16 +661,6 @@ public class RateChart extends Composite {
 	                new DecimalFormat("0.0"), new DecimalFormat("0.00")));
 	        mainPlotRenderer.setBaseStroke(new BasicStroke(2.0f));
 	        
-	        /*
-	        if (mainPlotRenderer instanceof XYLineAndShapeRenderer) {
-	            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) mainPlotRenderer;
-	            renderer.setBaseStroke(new BasicStroke(2.0f));
-	            renderer.setAutoPopulateSeriesStroke(false);
-	            renderer.setSeriesPaint(0, Color.BLUE);
-	            renderer.setSeriesPaint(1, Color.DARK_GRAY);
-	            
-	        }
-	        */
 	        
 	        NumberAxis rangeAxis1 = new NumberAxis("Price");
 	        rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
@@ -679,34 +674,56 @@ public class RateChart extends Composite {
 	        plot1.setDomainGridlinePaint(Color.white);
 	        plot1.setRangeGridlinePaint(Color.white);
 	        
+	        int i=1;
+	        
 	        //If Stock or indice add the volume
 			if (rate instanceof Indice || rate instanceof Stock) {
-				addVolumeBars(plot1);
+				addVolumeBars(plot1,i);
+				i++;
 			}
+			
+			//Add the error renderer and collection
+			addErrorGraph(plot1, rangeAxis1, i);
+			i++;
+			
 	        
 	        return plot1;
 	    	
 	    }
+	    
+	    private void addErrorGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
+	    	
+	    	//TODO
+	    	
+	    	//plot.setRangeAxis(i, rangeAxis1);
+	    	plot.setDataset(i,errorCollection);
+	    	plot.setRenderer(i, errorPlotRenderer);
+	    	
+	    	errorPlotRenderer.setBaseLinesVisible(true);
+			errorPlotRenderer.setBaseShapesVisible(false);
+	    	
+	    }
+	    
 	    
 	    /**
 	     * create the Volume Bar
 	     * 
 	     * @param plot
 	     */
-	    private void addVolumeBars(XYPlot plot){
+	    private void addVolumeBars(XYPlot plot, int i){
 	    	
 	    	NumberAxis rangeAxis2 = new NumberAxis("Volume");
 			rangeAxis2.setUpperMargin(1.00); // to leave room for price line
-			plot.setRangeAxis(1, rangeAxis2);
-			plot.setDataset(1,
+			plot.setRangeAxis(i, rangeAxis2);
+			plot.setDataset(i,
 					createDataset(HistoricalPoint.FIELD_Volume));
-			plot.mapDatasetToRangeAxis(1, 1);
+			plot.mapDatasetToRangeAxis(i, 1);
 			XYBarRenderer renderer2 = new XYBarRenderer(0.20);
 			renderer2.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
 					StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
 					 new DecimalFormat("0.0"), new DecimalFormat(
 							"0,000.00")));
-			plot.setRenderer(1, renderer2);
+			plot.setRenderer(i, renderer2);
 			
 			renderer2.setBarPainter(new StandardXYBarPainter());
 			renderer2.setShadowVisible(false);

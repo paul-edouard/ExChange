@@ -21,16 +21,18 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.xy.YIntervalSeries;
+import org.jfree.data.xy.YIntervalSeriesCollection;
 
 import com.munch.exchange.model.core.ExchangeRate;
-import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.services.IExchangeRateProvider;
 
 public class RateChartLawAndHightComposite extends Composite {
 	
+	public static final String Law_And_High="Law and High";
 	
 	private static Logger logger = Logger.getLogger(RateChartLawAndHightComposite.class);
 	
@@ -62,10 +64,12 @@ public class RateChartLawAndHightComposite extends Composite {
 	//Renderers
 	private XYLineAndShapeRenderer mainPlotRenderer;
 	private XYLineAndShapeRenderer secondPlotrenderer;
+	private XYErrorRenderer errorPlotRenderer;
 	
 	//Series Collections
 	private XYSeriesCollection mainCollection;
 	private XYSeriesCollection secondCollection;
+	private YIntervalSeriesCollection errorCollection;
 	
 	// set the period and max profit
 	private int[] period=new int[2];
@@ -90,14 +94,16 @@ public class RateChartLawAndHightComposite extends Composite {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public void setRenderers(XYLineAndShapeRenderer mainPlotRenderer,XYLineAndShapeRenderer secondPlotrenderer){
+	public void setRenderers(XYLineAndShapeRenderer mainPlotRenderer,XYLineAndShapeRenderer secondPlotrenderer, XYErrorRenderer errorPlotRenderer){
 		this.mainPlotRenderer=mainPlotRenderer;
 		this.secondPlotrenderer=secondPlotrenderer;
+		this.errorPlotRenderer=errorPlotRenderer;
 	}
 	
-	public void setSeriesCollections(XYSeriesCollection mainCollection,XYSeriesCollection secondCollection){
+	public void setSeriesCollections(XYSeriesCollection mainCollection,XYSeriesCollection secondCollection,YIntervalSeriesCollection errorCollection){
 		this.mainCollection=mainCollection;
 		this.secondCollection=secondCollection;
+		this.errorCollection=errorCollection;
 	}
 
 	public void setPeriodandMaxProfit(int[] period,float maxProfit){
@@ -108,11 +114,16 @@ public class RateChartLawAndHightComposite extends Composite {
 	}
 	
 	private void  clearCollections(){
+		/*
 		int low_pos=mainCollection.indexOf(HistoricalPoint.FIELD_Low);
 		if(low_pos>=0)mainCollection.removeSeries(low_pos);
 		
 		int hight_pos=mainCollection.indexOf(HistoricalPoint.FIELD_High);
 		if(hight_pos>=0)mainCollection.removeSeries(hight_pos);
+		*/
+		
+		int pos=errorCollection.indexOf(Law_And_High);
+		if (pos>=0)errorCollection.removeSeries(pos);
 		
 		//mainPlotRenderer.addChangeListener(listener);
 	}
@@ -122,7 +133,7 @@ public class RateChartLawAndHightComposite extends Composite {
 		clearCollections();
 		
 		if(btnLowHight.getSelection()){
-			
+			/*
 			//LOW
 			XYSeries lowSeries = rate.getHistoricalData().getXYSeries(HistoricalPoint.FIELD_Low, period);
 			mainCollection.addSeries(lowSeries);
@@ -145,6 +156,18 @@ public class RateChartLawAndHightComposite extends Composite {
 				mainPlotRenderer.setSeriesLinesVisible(hight_pos, true);
 				mainPlotRenderer.setSeriesStroke(hight_pos,new BasicStroke(2.0f));
 				mainPlotRenderer.setSeriesPaint(hight_pos, new Color(50, 50, 255));
+			}
+			*/
+			
+			//Error Low and Higth
+			YIntervalSeries inter_series= rate.getHistoricalData().getYIntervalSeries(Law_And_High, period);
+			errorCollection.addSeries(inter_series);
+			int pos=mainCollection.indexOf(Law_And_High);
+			if(pos>=0){
+				errorPlotRenderer.setSeriesShapesVisible(pos, false);
+				errorPlotRenderer.setSeriesLinesVisible(pos, true);
+				errorPlotRenderer.setSeriesStroke(pos,new BasicStroke(2.0f));
+				errorPlotRenderer.setSeriesPaint(pos, Color.BLUE);
 			}
 			
 		}
