@@ -16,6 +16,7 @@ public class OptimizationResults extends XmlParameterElement{
 	static private final String MOVING_AVERAGE_STR="Moving Average";
 	static private final String MACD_STR="MACD";
 	static private final String BILLINGER_BAND_STR="Bollinger Band";
+	static private final String PARABOLIC_SAR_STR="Parabolic SAR";
 	static private final String NONE_STR="None";
 	
 	private LinkedList<ResultEntity> results=new LinkedList<ResultEntity>();
@@ -52,7 +53,7 @@ public class OptimizationResults extends XmlParameterElement{
 
 
 
-	public enum Type { MOVING_AVERAGE, MACD, BILLINGER_BAND,NONE};
+	public enum Type { MOVING_AVERAGE, MACD, BILLINGER_BAND,PARABOLIC_SAR ,NONE};
 	
 	public static String OptimizationTypeToString(Type type){
 		switch (type) {
@@ -62,6 +63,8 @@ public class OptimizationResults extends XmlParameterElement{
 			return MACD_STR;
 		case BILLINGER_BAND:
 			return BILLINGER_BAND_STR;
+		case PARABOLIC_SAR:
+			return PARABOLIC_SAR_STR;
 
 		default:
 			return NONE_STR;
@@ -76,6 +79,9 @@ public class OptimizationResults extends XmlParameterElement{
 		}
 		else if(type.equals(BILLINGER_BAND_STR)){
 			return Type.BILLINGER_BAND;
+		}
+		else if(type.equals(PARABOLIC_SAR_STR)){
+			return Type.PARABOLIC_SAR;
 		}
 		
 		return Type.NONE;

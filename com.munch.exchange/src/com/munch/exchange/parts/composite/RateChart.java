@@ -129,6 +129,9 @@ public class RateChart extends Composite {
 	//Bollinger Bands
 	RateChartBollingerBandsComposite bollingerBandsComposite;
 	
+	//Parabolic SAR
+	RateChartParabolicSAR parabolicSARComposite;
+	
 	/**
 	 * Create the composite.
 	 * @param parent
@@ -379,6 +382,29 @@ public class RateChart extends Composite {
 			}
 		});
 		
+		
+		//==================================================
+		//==              Bollinger Bands                 ==    
+		//==================================================
+				
+		ExpandItem xpndtmParabolicSAR = new ExpandItem(expandBar, SWT.NONE);
+		xpndtmParabolicSAR.setExpanded(false);
+		xpndtmParabolicSAR.setText("Parabolic SAR");
+		xpndtmParabolicSAR.setHeight(100);
+				
+		parabolicSARComposite=ContextInjectionFactory.make( RateChartParabolicSAR.class,localContact);
+		xpndtmParabolicSAR.setControl(parabolicSARComposite);
+				
+		parabolicSARComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
+		parabolicSARComposite.setSeriesCollections(mainCollection, secondCollection);
+		parabolicSARComposite.setPeriodandMaxProfit(period, maxProfit);
+		parabolicSARComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
+			@Override
+			public void CollectionRemoved() {
+				refreshPeriod();
+			}
+		});
+		
 		//==================================================
 		//==                 CHART                        ==    
 		//==================================================
@@ -481,6 +507,7 @@ public class RateChart extends Composite {
 		emaComposite.setPeriodandMaxProfit(period, maxProfit);
 		lawAndHightComposite.setPeriodandMaxProfit(period, maxProfit);
 		bollingerBandsComposite.setPeriodandMaxProfit(period, maxProfit);
+		parabolicSARComposite.setPeriodandMaxProfit(period, maxProfit);
 		
 		resetChartDataSet();
 		
