@@ -384,13 +384,13 @@ public class RateChart extends Composite {
 		
 		
 		//==================================================
-		//==              Bollinger Bands                 ==    
+		//==              Parabolic SAR                   ==    
 		//==================================================
 				
 		ExpandItem xpndtmParabolicSAR = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmParabolicSAR.setExpanded(false);
 		xpndtmParabolicSAR.setText("Parabolic SAR");
-		xpndtmParabolicSAR.setHeight(100);
+		xpndtmParabolicSAR.setHeight(130);
 				
 		parabolicSARComposite=ContextInjectionFactory.make( RateChartParabolicSAR.class,localContact);
 		xpndtmParabolicSAR.setControl(parabolicSARComposite);

@@ -40,7 +40,6 @@ import org.jfree.util.ShapeUtilities;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.Optimizer;
 import com.munch.exchange.job.Optimizer.OptimizationInfo;
-import com.munch.exchange.job.objectivefunc.BollingerBandObjFunc;
 import com.munch.exchange.job.objectivefunc.ParabolicSARObjFunc;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
@@ -88,34 +87,40 @@ public class RateChartParabolicSAR extends Composite {
 	private XYSeriesCollection mainCollection;
 	private XYSeriesCollection secondCollection;
 	
-	//TODO set the period and max profit
+	//set the period and max profit
 	private int[] period=new int[2];
 	private float maxProfit=0;
 	
 	
-	private double accFacLimit = 10;
-	private double maxAccFacLimit = 40;
+	private double accMaxIncrement = 10;
+	private double maxAccMaxIncrement = 40;
 	
-	private double accelerator=0.02;
-	private double maxAccelerator=0.5;
+	private double acceleratorStart=0.02;
+	private double maxAcceleratorStart=0.5;
+	
+	private double acceleratorIncrement=0.02;
+	private double maxAcceleratorIncrement=0.5;
 	
 	private ParabolicSARObjFunc parabolicSARObjFunc;
 	
 	private Optimizer<double[]> optimizer = new Optimizer<double[]>();
-	private Text acceleratorTextext;
+	private Text acceleratorStartText;
 	private Button btnParabilicSAR;
-	private Label lblBandFactor;
-	private Slider acceleratorSlider;
+	private Label lblacceleratorStart;
+	private Label lblacceleratorInc;
+	private Text acceleratorIncText;
+	private Slider acceleratorStartSlider;
+	private Slider acceleratorIncSlider;
 	private Composite OptButtons;
 	private Button btnLoad;
 	private Button btnOpt;
 	private Label lblNewLabel;
 	private Button btnReset;
 	private Label lblProfit;
-	private Label bollingerBandProfitlbl;
-	private Label lblDamperd;
-	private Text accFacLimitText;
-	private Slider accFacLimitSlider;
+	private Label parabilicSARProfitlbl;
+	private Label lblaccMaxInc;
+	private Text accMaxIncText;
+	private Slider accMaxIncSlider;
 	
 	@Inject
 	public RateChartParabolicSAR(Composite parent) {
@@ -129,8 +134,9 @@ public class RateChartParabolicSAR extends Composite {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
-				acceleratorSlider.setEnabled(btnParabilicSAR.getSelection());
-				accFacLimitSlider.setEnabled(btnParabilicSAR.getSelection());
+				acceleratorStartSlider.setEnabled(btnParabilicSAR.getSelection());
+				accMaxIncSlider.setEnabled(btnParabilicSAR.getSelection());
+				acceleratorIncSlider.setEnabled(btnParabilicSAR.getSelection());
 				
 				btnReset.setEnabled(btnParabilicSAR.getSelection());
 				//btnLoad.setEnabled(btnBollingerBands.getSelection());
@@ -166,8 +172,9 @@ public class RateChartParabolicSAR extends Composite {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
-				accFacLimit = 10;
-				accelerator=0.02;
+				accMaxIncrement = 10;
+				acceleratorStart=0.02;
+				acceleratorIncrement=0.02;
 				
 				reset();
 				
@@ -235,72 +242,112 @@ public class RateChartParabolicSAR extends Composite {
 		btnOpt.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
 		btnOpt.setText("Opt.");
 		btnOpt.setEnabled(false);
-		new Label(OptButtons, SWT.NONE);
-		new Label(OptButtons, SWT.NONE);
-		new Label(OptButtons, SWT.NONE);
+
+		////////////////////////////////
+		//       Acc  Start           //
+		////////////////////////////////
 		
-		lblBandFactor = new Label(this, SWT.NONE);
-		lblBandFactor.setText("Accelerator [alpha]:");
+		lblacceleratorStart = new Label(this, SWT.NONE);
+		lblacceleratorStart.setText("Start:");
 		
-		acceleratorTextext = new Text(this, SWT.BORDER);
-		acceleratorTextext.setEditable(false);
-		acceleratorTextext.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		acceleratorTextext.setText(String.format("%,.1f%%",  accelerator));
+		acceleratorStartText = new Text(this, SWT.BORDER);
+		acceleratorStartText.setEditable(false);
+		acceleratorStartText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		acceleratorStartText.setText(String.format("%,.3f%%",  acceleratorStart));
 		
-		acceleratorSlider = new Slider(this, SWT.NONE);
-		acceleratorSlider.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		acceleratorSlider.setThumb(1);
-		acceleratorSlider.setPageIncrement(1);
-		acceleratorSlider.setEnabled(false);
-		acceleratorSlider.setMaximum((int)( 1000 *maxAccelerator) );
-		acceleratorSlider.setMinimum(1);
-		acceleratorSlider.setSelection((int)(accelerator*1000));
-		acceleratorSlider.addSelectionListener(new SelectionAdapter() {
+		acceleratorStartSlider = new Slider(this, SWT.NONE);
+		acceleratorStartSlider.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		acceleratorStartSlider.setThumb(1);
+		acceleratorStartSlider.setPageIncrement(1);
+		acceleratorStartSlider.setEnabled(false);
+		acceleratorStartSlider.setMaximum((int)( 1000 *maxAcceleratorStart) );
+		acceleratorStartSlider.setMinimum(1);
+		acceleratorStartSlider.setSelection((int)(acceleratorStart*1000));
+		acceleratorStartSlider.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
-				accelerator=(((double) acceleratorSlider.getSelection())/1000.0);
-				acceleratorTextext.setText(String.format("%,.1f%%",  accelerator));
+				acceleratorStart=(((double) acceleratorStartSlider.getSelection())/1000.0);
+				acceleratorStartText.setText(String.format("%,.3f%%",  acceleratorStart));
 				
 				if(btnParabilicSAR.isEnabled())
 					fireCollectionRemoved();
 			}
 		});
 		
-		lblDamperd = new Label(this, SWT.NONE);
-		lblDamperd.setText("Acc. Fac. Limit [k]:");
+		////////////////////////////////
+		//       Acc  Inc.           //
+		////////////////////////////////
 		
-		accFacLimitText = new Text(this, SWT.BORDER);
-		accFacLimitText.setEditable(false);
-		accFacLimitText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		accFacLimitText.setText(String.valueOf((int)accFacLimit));
+		lblacceleratorInc = new Label(this, SWT.NONE);
+		lblacceleratorInc.setText("Increment:");
 		
-		accFacLimitSlider = new Slider(this, SWT.NONE);
-		accFacLimitSlider.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		accFacLimitSlider.setThumb(1);
-		accFacLimitSlider.setPageIncrement(1);
-		accFacLimitSlider.setEnabled(false);
-		accFacLimitSlider.setMaximum((int)( maxAccFacLimit) );
-		accFacLimitSlider.setMinimum(1);
-		accFacLimitSlider.setSelection((int)(accFacLimit));
-		accFacLimitSlider.addSelectionListener(new SelectionAdapter() {
+		acceleratorIncText = new Text(this, SWT.BORDER);
+		acceleratorIncText.setEditable(false);
+		acceleratorIncText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		acceleratorIncText.setText(String.format("%,.3f%%",  acceleratorIncrement));
+		
+		acceleratorIncSlider = new Slider(this, SWT.NONE);
+		acceleratorIncSlider.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		acceleratorIncSlider.setThumb(1);
+		acceleratorIncSlider.setPageIncrement(1);
+		acceleratorIncSlider.setEnabled(false);
+		acceleratorIncSlider.setMaximum((int)( 1000 *maxAcceleratorIncrement) );
+		acceleratorIncSlider.setMinimum(1);
+		acceleratorIncSlider.setSelection((int)(acceleratorIncrement*1000));
+		acceleratorIncSlider.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				accFacLimit=(((double) accFacLimitSlider.getSelection()));
-				accFacLimitText.setText(String.valueOf((int)accFacLimit));
+				
+				acceleratorIncrement=(((double) acceleratorIncSlider.getSelection())/1000.0);
+				acceleratorIncText.setText(String.format("%,.3f%%",  acceleratorIncrement));
 				
 				if(btnParabilicSAR.isEnabled())
 					fireCollectionRemoved();
 			}
 		});
 		
+		////////////////////////////////
+		//       Acc Max Inc          //
+		////////////////////////////////		
+		lblaccMaxInc = new Label(this, SWT.NONE);
+		lblaccMaxInc.setText("Max Increment [N]:");
+		
+		accMaxIncText = new Text(this, SWT.BORDER);
+		accMaxIncText.setEditable(false);
+		accMaxIncText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		accMaxIncText.setText(String.valueOf((int)accMaxIncrement));
+		
+		accMaxIncSlider = new Slider(this, SWT.NONE);
+		accMaxIncSlider.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		accMaxIncSlider.setThumb(1);
+		accMaxIncSlider.setPageIncrement(1);
+		accMaxIncSlider.setEnabled(false);
+		accMaxIncSlider.setMaximum((int)( maxAccMaxIncrement) );
+		accMaxIncSlider.setMinimum(1);
+		accMaxIncSlider.setSelection((int)(accMaxIncrement));
+		accMaxIncSlider.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				accMaxIncrement=(((double) accMaxIncSlider.getSelection()));
+				accMaxIncText.setText(String.valueOf((int)accMaxIncrement));
+				
+				if(btnParabilicSAR.isEnabled())
+					fireCollectionRemoved();
+			}
+		});
+		
+		////////////////////////////////
+		//       Acc Max Inc          //
+		////////////////////////////////		
+
 		lblProfit = new Label(this, SWT.NONE);
 		lblProfit.setText("Profit:");
 		new Label(this, SWT.NONE);
 		
-		bollingerBandProfitlbl = new Label(this, SWT.NONE);
-		bollingerBandProfitlbl.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-		bollingerBandProfitlbl.setText("000.00%");
+		parabilicSARProfitlbl = new Label(this, SWT.NONE);
+		parabilicSARProfitlbl.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		parabilicSARProfitlbl.setText("000.00%");
 		
 		
 	}
@@ -333,7 +380,7 @@ public class RateChartParabolicSAR extends Composite {
 			return false;
 
 		ExchangeRate incoming = exchangeRateProvider.load(rate_uuid);
-		if (incoming == null || rate == null || bollingerBandProfitlbl == null)
+		if (incoming == null || rate == null || parabilicSARProfitlbl == null)
 			return false;
 		if (!incoming.getUUID().equals(rate.getUUID()))
 			return false;
@@ -344,17 +391,18 @@ public class RateChartParabolicSAR extends Composite {
 	private void resetGuiData(double[] g,double v){
 		
 		
-		//Upper
-		accelerator=g[1]*maxAccelerator;
-		accFacLimit=Math.round(g[1]*maxAccFacLimit);
-		if(accFacLimit<1)
-			accFacLimit=1;
+		//Acc
+		acceleratorStart=g[0]*maxAcceleratorStart;
+		acceleratorIncrement=g[1]*maxAcceleratorIncrement;
+		accMaxIncrement=Math.round(g[2]*maxAccMaxIncrement);
+		if(accMaxIncrement<1)
+			accMaxIncrement=1;
 		
 		//Profit
 		float profit=maxProfit- (float)v;
 		String movAvgProfitString = String.format("%,.2f%%",
 				profit * 100);
-		bollingerBandProfitlbl.setText(movAvgProfitString);
+		parabilicSARProfitlbl.setText(movAvgProfitString);
 		
 		reset();
 		
@@ -362,10 +410,14 @@ public class RateChartParabolicSAR extends Composite {
 	
 	private void reset(){
 		
-		acceleratorTextext.setText(String.format("%,.1f%%",  accelerator));
-		acceleratorSlider.setSelection((int)(accelerator*1000));
-		accFacLimitText.setText(String.valueOf((int)accFacLimit));
-		accFacLimitSlider.setSelection((int)(accFacLimit));
+		acceleratorStartText.setText(String.format("%,.3f",  acceleratorStart));
+		acceleratorStartSlider.setSelection((int)(acceleratorStart*1000));
+		
+		acceleratorIncText.setText(String.format("%,.3f",  acceleratorIncrement));
+		acceleratorIncSlider.setSelection((int)(acceleratorIncrement*1000));
+		
+		accMaxIncText.setText(String.valueOf((int)accMaxIncrement));
+		accMaxIncSlider.setSelection((int)(accMaxIncrement));
 		
 		fireCollectionRemoved();
 	}
@@ -376,8 +428,8 @@ public class RateChartParabolicSAR extends Composite {
 		if(!isCompositeAbleToReact(rate_uuid))return;
 		
 		
-		if(!rate.getOptResultsMap().get(Type.BILLINGER_BAND).getResults().isEmpty()){
-			double[] g=rate.getOptResultsMap().get(Type.BILLINGER_BAND).getResults().getFirst().getDoubleArray();
+		if(!rate.getOptResultsMap().get(Type.PARABOLIC_SAR).getResults().isEmpty()){
+			double[] g=rate.getOptResultsMap().get(Type.PARABOLIC_SAR).getResults().getFirst().getDoubleArray();
 			
 			getObjFunc().setPeriod(period);
 			double v=getObjFunc().compute(g, null);
@@ -394,7 +446,7 @@ public class RateChartParabolicSAR extends Composite {
 		if(info==null)return;
 		if(!isCompositeAbleToReact(info.getRate().getUUID()))return;
 		
-		if(info.getType()==Type.BILLINGER_BAND){
+		if(info.getType()==Type.PARABOLIC_SAR){
 			btnParabilicSAR.setEnabled(true);
 			btnOpt.setEnabled(true);
 		}
@@ -407,7 +459,7 @@ public class RateChartParabolicSAR extends Composite {
 		if(info==null)return;
 		if(!isCompositeAbleToReact(info.getRate().getUUID()))return;
 		
-		if(info.getType()==Type.BILLINGER_BAND){
+		if(info.getType()==Type.PARABOLIC_SAR){
 			Individual<double[], double[]> individual=info.getBest();
 			resetGuiData(individual.g,individual.v);
 		}
@@ -425,8 +477,9 @@ public class RateChartParabolicSAR extends Composite {
 				 HistoricalPoint.FIELD_Close,
 				 RateChart.PENALTY,
 				 rate.getHistoricalData().getNoneEmptyPoints(),
-				 maxAccFacLimit,
-				 0,
+				 maxAcceleratorStart,
+				 maxAcceleratorIncrement,
+				 maxAccMaxIncrement,
 				 maxProfit
 				 );
 		return parabolicSARObjFunc;
@@ -434,21 +487,15 @@ public class RateChartParabolicSAR extends Composite {
 	
 	private void  clearCollections(){
 		
-		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_MovingAverage_Upper);
-		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_MovingAverage_Lower);
-		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_MovingAverage);
+		removeSerie(mainCollection,ParabolicSARObjFunc.Parabolic_SAR_Bullish_Trend);
+		removeSerie(mainCollection,ParabolicSARObjFunc.Parabolic_SAR_Bearish_Trend);
 		
 		
-		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_UpperBand_Max);
-		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_UpperBand_Min);
-		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_LowerBand_Max);
-		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_LowerBand_Min);
-		
-		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_Buy_Signal);
-		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_Buy_Signal);
+		removeSerie(mainCollection,ParabolicSARObjFunc.Parabolic_SAR_Buy_Signal);
+		removeSerie(mainCollection,ParabolicSARObjFunc.Parabolic_SAR_Sell_Signal);
 		
 		
-		removeSerie(secondCollection,BollingerBandObjFunc.BollingerBand_Profit);
+		removeSerie(secondCollection,ParabolicSARObjFunc.Parabolic_SAR_Profit);
 			
 	}
 	
@@ -464,33 +511,32 @@ public class RateChartParabolicSAR extends Composite {
 		if(!btnParabilicSAR.getSelection())return;
 		
 		//Refresh the main plot
-		double[] x=new double[6];
-		x[0]=accelerator/maxAccelerator;
-		x[1]=accFacLimit/maxAccFacLimit;
+		double[] x=new double[3];
+		x[0]=acceleratorStart/maxAcceleratorStart;
+		x[1]=acceleratorIncrement/maxAcceleratorIncrement;
+		x[2]=accMaxIncrement/maxAccMaxIncrement;
 		
 		
 		getObjFunc().setPeriod(period);
 		getObjFunc().compute(x, null);
 		
-		//Moving Average Series
-		//addSeriesAsLine(mainPlotRenderer,mainCollection,getBollingerBandObjFunc().getMovingAverageUpperSeries(),Color.GRAY);
-		//addSeriesAsLine(mainPlotRenderer,mainCollection,getBollingerBandObjFunc().getMovingAverageLowerSeries(),Color.GRAY);
-		addSeriesAsLine(mainPlotRenderer,mainCollection,getObjFunc().getMovingAverageSeries(),Color.GRAY);
 		
-		//Bands
-		addSeriesAsLine(mainPlotRenderer,mainCollection,getObjFunc().getUpperBandMaxSeries(),Color.ORANGE);
-		addSeriesAsLine(mainPlotRenderer,mainCollection,getObjFunc().getUpperBandMinSeries(),Color.ORANGE);
-		
-		addSeriesAsLine(mainPlotRenderer,mainCollection,getObjFunc().getLowerBandMaxSeries(),Color.WHITE);
-		addSeriesAsLine(mainPlotRenderer,mainCollection,getObjFunc().getLowerBandMinSeries(),Color.WHITE);
+		//Parabolic
+		addSeriesAsShape(mainPlotRenderer,mainCollection,
+				getObjFunc().getBullishTrendSeries(),
+				ShapeUtilities.createRegularCross(3f, 0.5f),Color.BLUE,false);
+		addSeriesAsShape(mainPlotRenderer,mainCollection,
+				getObjFunc().getBearishTrendSeries(),
+				ShapeUtilities.createRegularCross(3f, 0.5f),Color.RED,false);
 		
 		//Profit
+		
 		addSeriesAsShape(mainPlotRenderer,mainCollection,
 				getObjFunc().getBuySignalSeries(),
-				ShapeUtilities.createUpTriangle(5),Color.GREEN);
+				ShapeUtilities.createUpTriangle(5),Color.GREEN,true);
 		addSeriesAsShape(mainPlotRenderer,mainCollection,
 				getObjFunc().getSellSignalSeries(),
-				ShapeUtilities.createDownTriangle(5),Color.RED);
+				ShapeUtilities.createDownTriangle(5),Color.RED,true);
 		
 		
 		addSeriesAsLine(secondPlotrenderer,secondCollection,getObjFunc().getProfitSeries(),Color.WHITE);
@@ -498,7 +544,7 @@ public class RateChartParabolicSAR extends Composite {
 		
 		String movAvgProfitString = String.format("%,.2f%%",
 				getObjFunc().getProfit() * 100);
-		bollingerBandProfitlbl.setText(movAvgProfitString);
+		parabilicSARProfitlbl.setText(movAvgProfitString);
 		
 		
 		
@@ -517,7 +563,7 @@ public class RateChartParabolicSAR extends Composite {
 		}
 	}
 	
-	private void addSeriesAsShape(XYLineAndShapeRenderer rend,  XYSeriesCollection col, XYSeries series,Shape shape,Color color){
+	private void addSeriesAsShape(XYLineAndShapeRenderer rend,  XYSeriesCollection col, XYSeries series,Shape shape,Color color,boolean useOutlinePaint){
 		
 		col.addSeries(series);
 		int pos=col.indexOf(series.getKey());
@@ -528,9 +574,15 @@ public class RateChartParabolicSAR extends Composite {
 			rend.setSeriesShape(pos,shape);
 			rend.setSeriesShapesFilled(pos, true);
 			rend.setSeriesPaint(pos, color);
-			rend.setSeriesOutlinePaint(pos, Color.BLACK);
-			rend.setSeriesOutlineStroke(pos, new BasicStroke(1.0f));
-			rend.setUseOutlinePaint(true);
+			if(useOutlinePaint){
+				rend.setSeriesOutlinePaint(pos, Color.BLACK);
+				rend.setSeriesOutlineStroke(pos, new BasicStroke(0.5f));
+				rend.setUseOutlinePaint(useOutlinePaint);
+			}
+			else{
+				rend.setSeriesOutlinePaint(pos, color);
+			}
+			
 		}
 	}
 	
