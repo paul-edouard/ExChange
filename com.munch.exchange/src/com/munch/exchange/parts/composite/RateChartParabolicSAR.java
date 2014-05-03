@@ -352,7 +352,7 @@ public class RateChartParabolicSAR extends Composite {
 		parabilicSARProfitlbl.setText("000.000%");
 		
 		lblLimitType = new Label(this, SWT.NONE);
-		lblLimitType.setText("No_Limit__");
+		lblLimitType.setText("No Limit");
 		new Label(this, SWT.NONE);
 		
 		lblLimitDouble = new Label(this, SWT.NONE);
