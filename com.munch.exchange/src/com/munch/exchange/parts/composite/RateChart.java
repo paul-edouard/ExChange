@@ -390,7 +390,7 @@ public class RateChart extends Composite {
 		ExpandItem xpndtmParabolicSAR = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmParabolicSAR.setExpanded(false);
 		xpndtmParabolicSAR.setText("Parabolic SAR");
-		xpndtmParabolicSAR.setHeight(130);
+		xpndtmParabolicSAR.setHeight(150);
 				
 		parabolicSARComposite=ContextInjectionFactory.make( RateChartParabolicSAR.class,localContact);
 		xpndtmParabolicSAR.setControl(parabolicSARComposite);

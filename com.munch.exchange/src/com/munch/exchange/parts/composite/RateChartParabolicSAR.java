@@ -121,6 +121,8 @@ public class RateChartParabolicSAR extends Composite {
 	private Label lblaccMaxInc;
 	private Text accMaxIncText;
 	private Slider accMaxIncSlider;
+	private Label lblLimitType;
+	private Label lblLimitDouble;
 	
 	@Inject
 	public RateChartParabolicSAR(Composite parent) {
@@ -347,7 +349,15 @@ public class RateChartParabolicSAR extends Composite {
 		
 		parabilicSARProfitlbl = new Label(this, SWT.NONE);
 		parabilicSARProfitlbl.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-		parabilicSARProfitlbl.setText("000.00%");
+		parabilicSARProfitlbl.setText("000.000%");
+		
+		lblLimitType = new Label(this, SWT.NONE);
+		lblLimitType.setText("No_Limit__");
+		new Label(this, SWT.NONE);
+		
+		lblLimitDouble = new Label(this, SWT.NONE);
+		lblLimitDouble.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		lblLimitDouble.setText("000.000");
 		
 		
 	}
@@ -546,7 +556,14 @@ public class RateChartParabolicSAR extends Composite {
 				getObjFunc().getProfit() * 100);
 		parabilicSARProfitlbl.setText(movAvgProfitString);
 		
-		
+		if(getObjFunc().getStartBuyLimit()>0){
+			lblLimitType.setText("Start Buy:");
+			lblLimitDouble.setText(String.format("%,.3f",getObjFunc().getStartBuyLimit()));
+		}
+		else{
+			lblLimitType.setText("Stop Loss:");
+			lblLimitDouble.setText(String.format("%,.3f",getObjFunc().getStopLossLimit()));
+		}
 		
 		
 	}

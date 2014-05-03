@@ -50,7 +50,10 @@ IObjectiveFunction<double[]> {
 	// Max Profit from the given period
 	private double maxProfit;
 	private double profit;
-
+	
+	//Limits
+	private double stopLossLimit=0;
+	private double startBuyLimit=0;
 
 	// Series
 	private XYSeries bullishTrendSeries;
@@ -99,6 +102,14 @@ IObjectiveFunction<double[]> {
 	
 
 
+	public double getStopLossLimit() {
+		return stopLossLimit;
+	}
+
+	public double getStartBuyLimit() {
+		return startBuyLimit;
+	}
+
 	public XYSeries getBullishTrendSeries() {
 		return bullishTrendSeries;
 	}
@@ -124,6 +135,9 @@ IObjectiveFunction<double[]> {
 		// Init Profit
 		profit = 0;
 		boolean bought = false;
+		
+		stopLossLimit=0;
+		startBuyLimit=0;
 	
 		//Rising
 		//int periodLength=period[1]-period[0];
@@ -154,6 +168,7 @@ IObjectiveFunction<double[]> {
 		for(HistoricalPoint point : noneZeroHisList){
 			
 			pos++;
+			if(pos<period[0]-250)continue;
 			
 			HistoricalPoint last=null;
 			HistoricalPoint next=null;
@@ -161,12 +176,12 @@ IObjectiveFunction<double[]> {
 			if(pos>0)last=noneZeroHisList.get(pos-1);
 			if(pos<noneZeroHisList.size()-1)next=noneZeroHisList.get(pos+1);
 			
-			if( last==null)continue;
+			if( last==null || next==null)continue;
 			
 			
 			if(isRising){
-				if(pos>=period[0] && pos<period[1])
-					profit+=point.get(field)-last.get(field);
+				if(pos>=period[0]-1 && pos<period[1]-1)
+					profit+=next.get(field)-point.get(field);
 				
 				//Previous SAR + Previous AF(Previous EP + Previous SAR) = Current SAR
 				SAR=SAR+AF*(EP-SAR);
@@ -181,6 +196,10 @@ IObjectiveFunction<double[]> {
 					(/*SAR<point.getHigh() && */SAR>point.getLow())	){
 					SAR=Math.min(point.getLow(),last.getLow());
 				}
+				
+				stopLossLimit=SAR;
+				startBuyLimit=0;
+				
 				
 			}
 			else{
@@ -198,31 +217,40 @@ IObjectiveFunction<double[]> {
 						SAR=Math.max(point.getHigh(),last.getHigh());
 				}
 				
+				stopLossLimit=0;
+				startBuyLimit=SAR;
+				
 			}
 			
 			//New Trend
 			if(isRising && next!=null){
+				//Sell
 				if(SAR>next.getLow()){
+					if(pos>=period[0]-1 && pos<period[1]-1){
+						profit=profit-((float)penalty)*SAR;
+						sellSignalSeries.add(pos-period[0]+2,SAR);
+					}
 					AF=acceleratorStart;
 					SAR=EP;
 					EP=point.getLow();
 					isRising=!isRising;
-					if(pos>=period[0] && pos<period[1]){
-					profit=profit-((float)penalty)*point.get(field);
-					sellSignalSeries.add(pos-period[0]+1,point.get(field));
-					}
+					
 					
 				}
 			}
+			//Buy
 			else if( next!=null && SAR<next.getHigh()){
-					AF=acceleratorStart;
-					SAR=EP;
-					EP=point.getHigh();
-					isRising=!isRising;
-					if(pos>=period[0] && pos<period[1]){
-					profit=profit-((float)penalty)*point.get(field);
-					buySignalSeries.add((pos-period[0]+1),point.get(field));
-					}
+				if(pos>=period[0]-1 && pos<period[1]-1){
+					profit=profit-((float)penalty)*SAR;
+					buySignalSeries.add((pos-period[0]+2),SAR);
+				}
+				
+				
+				AF=acceleratorStart;
+				SAR=EP;
+				EP=point.getHigh();
+				isRising=!isRising;
+					
 			}
 			
 			
@@ -230,15 +258,15 @@ IObjectiveFunction<double[]> {
 			if(pos>=period[0] && pos<period[1]){
 				//logger.info("Add point");
 				if(isRising){
-					bullishTrendSeries.add(pos-period[0]+1, SAR);
+					bullishTrendSeries.add(pos-period[0]+2, SAR);
 					
 				}
 				else{
-					bearishTrendSeries.add(pos-period[0]+1, SAR);
+					bearishTrendSeries.add(pos-period[0]+2, SAR);
 				}
 			}
-			if(pos>=period[0] && pos<period[1])
-				profitSeries.add(pos-period[0]+1, profit/noneZeroHisList.get(period[0]).get(field));
+			if(pos>=period[0]-1 && pos<period[1]-1)
+				profitSeries.add(pos-period[0]+2, profit/noneZeroHisList.get(period[0]).get(field));
 			
 			
 		}
