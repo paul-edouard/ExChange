@@ -91,6 +91,8 @@ public abstract class ExchangeRate extends XmlParameterElement {
 
 
 	public Calendar getEnd() {
+		if(end==null)
+			end=Calendar.getInstance();
 		return end;
 	}
 

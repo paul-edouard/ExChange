@@ -130,6 +130,7 @@ public class RateChartParabolicSAR extends Composite {
 		GridLayout gridLayout = new GridLayout(3, false);
 		gridLayout.marginHeight = 0;
 		setLayout(gridLayout);
+
 		
 		btnParabilicSAR = new Button(this, SWT.CHECK);
 		btnParabilicSAR.addSelectionListener(new SelectionAdapter() {

@@ -174,7 +174,6 @@ public class RateChart extends Composite {
 		
 		Composite compositePeriode = new Composite(expandBar, SWT.NONE);
 		xpndtmPeriod.setControl(compositePeriode);
-		xpndtmPeriod.setHeight(122);
 		compositePeriode.setLayout(new GridLayout(1, false));
 		
 		Composite compositePeriodDefinition = new Composite(compositePeriode, SWT.NONE);
@@ -275,16 +274,21 @@ public class RateChart extends Composite {
 		labelKeepAndOldPercent.setText("0,00%");
 		new Label(compositeAnalysis, SWT.NONE);
 		
+		xpndtmPeriod.setHeight(compositePeriode.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		
+		
 		//=============================================
 		//======         LOW & HIGHT             ======    
 		//=============================================		
 		ExpandItem xpndtmLowHight = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmLowHight.setExpanded(false);
 		xpndtmLowHight.setText("Low & Hight");
-		xpndtmLowHight.setHeight(30);
+		//xpndtmLowHight.setHeight(30);
 			
 		lawAndHightComposite=ContextInjectionFactory.make( RateChartLawAndHightComposite.class,localContact);
 		xpndtmLowHight.setControl(lawAndHightComposite);
+		xpndtmLowHight.setHeight(lawAndHightComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		
 		
 		lawAndHightComposite.setRenderers(mainPlotRenderer, secondPlotrenderer,errorPlotRenderer);
 		lawAndHightComposite.setSeriesCollections(mainCollection, secondCollection,errorCollection);
@@ -303,10 +307,12 @@ public class RateChart extends Composite {
 		ExpandItem xpndtmMovingAvg = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmMovingAvg.setExpanded(false);
 		xpndtmMovingAvg.setText("Moving Average");
-		xpndtmMovingAvg.setHeight(110);
+		//xpndtmMovingAvg.setHeight(110);
 			
 		movingAverageComposite=ContextInjectionFactory.make( RateChartMovingAverageComposite.class,localContact);
 		xpndtmMovingAvg.setControl(movingAverageComposite);
+		xpndtmMovingAvg.setHeight(movingAverageComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		
 		
 		movingAverageComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
 		movingAverageComposite.setSeriesCollections(mainCollection, secondCollection);
@@ -324,10 +330,11 @@ public class RateChart extends Composite {
 		
 		ExpandItem xpndtmEma = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmEma.setText("EMA (Exponential Moving Average)");
-		xpndtmEma.setHeight(50);
 		
 		emaComposite=ContextInjectionFactory.make( RateChartEMAComposite.class,localContact);
 		xpndtmEma.setControl(emaComposite);
+		xpndtmEma.setHeight(emaComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		
 		
 		emaComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
 		emaComposite.setSeriesCollections(mainCollection, secondCollection);
@@ -345,10 +352,11 @@ public class RateChart extends Composite {
 		ExpandItem xpndtmMacd = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmMacd.setExpanded(false);
 		xpndtmMacd.setText("MACD (Moving Average Convergence/Divergence)");
-		xpndtmMacd.setHeight(150);
 		
 		macdComposite=ContextInjectionFactory.make( RateChartMACDComposite.class,localContact);
 		xpndtmMacd.setControl(macdComposite);
+		xpndtmMacd.setHeight(macdComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		
 		
 		macdComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
 		macdComposite.setSeriesCollections(mainCollection, secondCollection);
@@ -367,10 +375,12 @@ public class RateChart extends Composite {
 		ExpandItem xpndtmBollingerBands = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmBollingerBands.setExpanded(false);
 		xpndtmBollingerBands.setText("Bollinger Bands");
-		xpndtmBollingerBands.setHeight(290);
+		
 		
 		bollingerBandsComposite=ContextInjectionFactory.make( RateChartBollingerBandsComposite.class,localContact);
 		xpndtmBollingerBands.setControl(bollingerBandsComposite);
+		xpndtmBollingerBands.setHeight(bollingerBandsComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		
 		
 		bollingerBandsComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
 		bollingerBandsComposite.setSeriesCollections(mainCollection, secondCollection);
@@ -390,11 +400,12 @@ public class RateChart extends Composite {
 		ExpandItem xpndtmParabolicSAR = new ExpandItem(expandBar, SWT.NONE);
 		xpndtmParabolicSAR.setExpanded(false);
 		xpndtmParabolicSAR.setText("Parabolic SAR");
-		xpndtmParabolicSAR.setHeight(150);
+		//xpndtmParabolicSAR.setHeight(150);
 				
 		parabolicSARComposite=ContextInjectionFactory.make( RateChartParabolicSAR.class,localContact);
 		xpndtmParabolicSAR.setControl(parabolicSARComposite);
-				
+		xpndtmParabolicSAR.setHeight(parabolicSARComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		
 		parabolicSARComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
 		parabolicSARComposite.setSeriesCollections(mainCollection, secondCollection);
 		parabolicSARComposite.setPeriodandMaxProfit(period, maxProfit);
