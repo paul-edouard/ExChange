@@ -36,6 +36,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
@@ -88,12 +89,15 @@ public class RateChart extends Composite {
 	private XYLineAndShapeRenderer mainPlotRenderer=new XYLineAndShapeRenderer(true, false);
 	private XYLineAndShapeRenderer secondPlotrenderer=new XYLineAndShapeRenderer(true, false);
 	private XYErrorRenderer errorPlotRenderer=new XYErrorRenderer();
+	private DeviationRenderer deviationRenderer = new DeviationRenderer(true, false);
 	//TODO
 	
 	//The Series Collections
 	private XYSeriesCollection mainCollection=new XYSeriesCollection();
 	private XYSeriesCollection secondCollection=new XYSeriesCollection();
 	private YIntervalSeriesCollection errorCollection=new YIntervalSeriesCollection();
+	private YIntervalSeriesCollection deviationCollection=new YIntervalSeriesCollection();
+	
 	
 
 	private ExchangeRate rate;
@@ -382,8 +386,8 @@ public class RateChart extends Composite {
 		xpndtmBollingerBands.setHeight(bollingerBandsComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		
 		
-		bollingerBandsComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
-		bollingerBandsComposite.setSeriesCollections(mainCollection, secondCollection);
+		bollingerBandsComposite.setRenderers(mainPlotRenderer, secondPlotrenderer,deviationRenderer);
+		bollingerBandsComposite.setSeriesCollections(mainCollection, secondCollection,deviationCollection );
 		bollingerBandsComposite.setPeriodandMaxProfit(period, maxProfit);
 		bollingerBandsComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
 			@Override
@@ -723,10 +727,17 @@ public class RateChart extends Composite {
 			//Add the error renderer and collection
 			addErrorGraph(plot1, rangeAxis1, i);
 			i++;
-			
-	        
+			//Add the deviation Graph
+			addDevGraph(plot1, rangeAxis1, i);
+			i++;
+			//TODO
 	        return plot1;
 	    	
+	    }
+	    
+	    private void addDevGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
+	    	plot.setDataset(i,deviationCollection);
+	    	plot.setRenderer(i, deviationRenderer);
 	    }
 	    
 	    private void addErrorGraph(XYPlot plot, NumberAxis rangeAxis1, int i){

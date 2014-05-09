@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.goataa.impl.OptimizationModule;
 import org.goataa.spec.IObjectiveFunction;
 import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.YIntervalSeries;
 
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.historical.HistoricalData;
@@ -25,6 +26,9 @@ public class BollingerBandObjFunc extends OptimizationModule implements
 	
 	public static final String BollingerBand_LowerBand_Max="Bollinger Band lower Band Max";
 	public static final String BollingerBand_LowerBand_Min="Bollinger Band lower Band Min";
+	
+	public static final String BollingerBand_UpperBand_Dev="Bollinger Band upper Band Deviation";
+	public static final String BollingerBand_LowerBand_Dev="Bollinger Band lower Band Deviation";
 			
 	public static final String BollingerBand_Buy_Signal="Bollinger Band Buy Signal";
 	public static final String BollingerBand_Sell_Signal="Bollinger Band Sell Signal";
@@ -88,6 +92,9 @@ public class BollingerBandObjFunc extends OptimizationModule implements
 	private XYSeries upperBandMinSeries;
 	private XYSeries lowerBandMaxSeries;
 	private XYSeries lowerBandMinSeries;
+	
+	private YIntervalSeries upperBandDevSeries;
+	private YIntervalSeries lowerBandDevSeries;
 	
 	private XYSeries profitSeries;
 	private XYSeries buySignalSeries;
@@ -232,6 +239,20 @@ public class BollingerBandObjFunc extends OptimizationModule implements
 	public boolean isDayBuyDownLimitIsActivated() {
 		return dayBuyDownLimitIsActivated;
 	}
+	
+	
+
+
+
+	public YIntervalSeries getUpperBandDevSeries() {
+		return upperBandDevSeries;
+	}
+
+
+
+	public YIntervalSeries getLowerBandDevSeries() {
+		return lowerBandDevSeries;
+	}
 
 
 
@@ -273,6 +294,8 @@ public class BollingerBandObjFunc extends OptimizationModule implements
 		upperBandMinSeries=new XYSeries(BollingerBand_UpperBand_Min);
 		lowerBandMaxSeries=new XYSeries(BollingerBand_LowerBand_Max);
 		lowerBandMinSeries=new XYSeries(BollingerBand_LowerBand_Min);
+		upperBandDevSeries=new YIntervalSeries(BollingerBand_UpperBand_Dev);
+		lowerBandDevSeries=new YIntervalSeries(BollingerBand_LowerBand_Dev);
 		
 		profitSeries=new XYSeries(BollingerBand_Profit);
 		buySignalSeries=new XYSeries(BollingerBand_Buy_Signal);
@@ -338,6 +361,8 @@ public class BollingerBandObjFunc extends OptimizationModule implements
 				movingAverageUpperSeries.add((i-numberOfDays+1), avgUpperMax);
 				upperBandMaxSeries.add(      (i-numberOfDays+1), bandUpperMax);
 				upperBandMinSeries.add(      (i-numberOfDays+1), bandUpperMin);
+				upperBandDevSeries.add(      (i-numberOfDays+1), (bandUpperMax+bandUpperMin)/2,
+						                     bandUpperMin, bandUpperMax);
 				
 				/////////////////////////
 				//        Lower        //
@@ -369,6 +394,8 @@ public class BollingerBandObjFunc extends OptimizationModule implements
 				movingAverageLowerSeries.add((i-numberOfDays+1), avgLowerMax);
 				lowerBandMaxSeries.add(      (i-numberOfDays+1), bandLowerMax);
 				lowerBandMinSeries.add(      (i-numberOfDays+1), bandLowerMin);
+				lowerBandDevSeries.add(      (i-numberOfDays+1), (bandLowerMin+bandLowerMax)/2,
+						                      bandLowerMin, bandLowerMax);
 				
 				/////////////////////////
 				//        Profit       //

@@ -32,9 +32,12 @@ import org.eclipse.swt.widgets.Text;
 import org.goataa.impl.gpms.IdentityMapping;
 import org.goataa.impl.utils.Individual;
 import org.goataa.spec.IGPM;
+import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.xy.YIntervalSeries;
+import org.jfree.data.xy.YIntervalSeriesCollection;
 import org.jfree.util.ShapeUtilities;
 
 import com.munch.exchange.IEventConstant;
@@ -82,10 +85,12 @@ public class RateChartBollingerBandsComposite extends Composite {
 	//Renderers
 	private XYLineAndShapeRenderer mainPlotRenderer;
 	private XYLineAndShapeRenderer secondPlotrenderer;
+	private DeviationRenderer deviationRenderer;
 	
 	//Series Collections
 	private XYSeriesCollection mainCollection;
 	private XYSeriesCollection secondCollection;
+	private YIntervalSeriesCollection deviationCollection;
 	
 	//TODO set the period and max profit
 	private int[] period=new int[2];
@@ -479,14 +484,20 @@ public class RateChartBollingerBandsComposite extends Composite {
 		
 	}
 	
-	public void setRenderers(XYLineAndShapeRenderer mainPlotRenderer,XYLineAndShapeRenderer secondPlotrenderer){
+	public void setRenderers(XYLineAndShapeRenderer mainPlotRenderer,
+			XYLineAndShapeRenderer secondPlotrenderer,
+			DeviationRenderer deviationRenderer){
 		this.mainPlotRenderer=mainPlotRenderer;
 		this.secondPlotrenderer=secondPlotrenderer;
+		this.deviationRenderer=deviationRenderer;
 	}
 	
-	public void setSeriesCollections(XYSeriesCollection mainCollection,XYSeriesCollection secondCollection){
+	public void setSeriesCollections(XYSeriesCollection mainCollection,
+			XYSeriesCollection secondCollection,
+			YIntervalSeriesCollection deviationCollection){
 		this.mainCollection=mainCollection;
 		this.secondCollection=secondCollection;
+		this.deviationCollection=deviationCollection;
 	}
 
 	public void setPeriodandMaxProfit(int[] period,float maxProfit){
@@ -639,6 +650,9 @@ public class RateChartBollingerBandsComposite extends Composite {
 		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_LowerBand_Max);
 		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_LowerBand_Min);
 		
+		removeDevSerie(deviationCollection,BollingerBandObjFunc.BollingerBand_UpperBand_Dev);
+		removeDevSerie(deviationCollection,BollingerBandObjFunc.BollingerBand_LowerBand_Dev);
+		
 		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_Buy_Signal);
 		removeSerie(mainCollection,BollingerBandObjFunc.BollingerBand_Buy_Signal);
 		
@@ -646,6 +660,12 @@ public class RateChartBollingerBandsComposite extends Composite {
 		removeSerie(secondCollection,BollingerBandObjFunc.BollingerBand_Profit);
 			
 	}
+	
+	private void removeDevSerie(YIntervalSeriesCollection col,String name){
+		int pos=col.indexOf(name);
+		if(pos>=0)col.removeSeries(pos);
+	}
+
 	
 	private void removeSerie(XYSeriesCollection col,String name){
 		int pos=col.indexOf(name);
@@ -676,12 +696,20 @@ public class RateChartBollingerBandsComposite extends Composite {
 		//addSeriesAsLine(mainPlotRenderer,mainCollection,getBollingerBandObjFunc().getMovingAverageLowerSeries(),Color.GRAY);
 		addSeriesAsLine(mainPlotRenderer,mainCollection,getBollingerBandObjFunc().getMovingAverageSeries(),Color.GRAY);
 		
+		
 		//Bands
+		/*
 		addSeriesAsLine(mainPlotRenderer,mainCollection,getBollingerBandObjFunc().getUpperBandMaxSeries(),Color.ORANGE);
 		addSeriesAsLine(mainPlotRenderer,mainCollection,getBollingerBandObjFunc().getUpperBandMinSeries(),Color.ORANGE);
 		
 		addSeriesAsLine(mainPlotRenderer,mainCollection,getBollingerBandObjFunc().getLowerBandMaxSeries(),Color.WHITE);
 		addSeriesAsLine(mainPlotRenderer,mainCollection,getBollingerBandObjFunc().getLowerBandMinSeries(),Color.WHITE);
+		*/
+		addDeviationSerie(deviationRenderer,deviationCollection,
+				getBollingerBandObjFunc().getUpperBandDevSeries(),new Color(150,150,150));
+		addDeviationSerie(deviationRenderer,deviationCollection,
+				getBollingerBandObjFunc().getLowerBandDevSeries(),Color.WHITE);
+		
 		
 		//Profit
 		addSeriesAsShape(mainPlotRenderer,mainCollection,
@@ -719,6 +747,20 @@ public class RateChartBollingerBandsComposite extends Composite {
 		
 		dayBuyLimitsLbl.setText(dayBuyLimits_str);
 		
+		
+		
+	}
+	
+	private void addDeviationSerie(DeviationRenderer rend,YIntervalSeriesCollection col,YIntervalSeries series,Color color ){
+		
+		col.addSeries(series);
+		int pos=col.indexOf(series.getKey());
+		if(pos>=0){
+			rend.setSeriesPaint(pos, color);
+			rend.setSeriesStroke(pos, new BasicStroke(0.3f, BasicStroke.CAP_ROUND,
+	                BasicStroke.JOIN_ROUND));
+			rend.setSeriesFillPaint(pos, color);
+		}
 		
 		
 	}
