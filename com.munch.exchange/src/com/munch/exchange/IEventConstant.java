@@ -30,5 +30,8 @@ public interface IEventConstant {
 	
 	String OPTIMIZATION_RESULTS_LOADED = "OPTIMIZATION/RESULTS/LOADED";
 	
+	//CHART
+	String PERIOD_CHANGED = "PERIOD/CHANGED";
+	
 	
 }

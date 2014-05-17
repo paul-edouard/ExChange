@@ -30,6 +30,8 @@ import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
@@ -105,6 +107,7 @@ public class RateChart extends Composite {
 
 	private Composite compositeChart;
 	
+	/*
 	private Label labelMaxProfitPercent;
 	private Label labelKeepAndOldPercent;
 	
@@ -113,10 +116,15 @@ public class RateChart extends Composite {
 	private Label periodLblFrom;
 	private Slider periodSliderUpTo;
 	private Label periodlblUpTo;
+	*/
 	
 	private int[] period=new int[2];
 	private float maxProfit=0;
 	private float keepAndOld=0;
+	
+	
+	//Period Composite
+	RateChartPeriodComposite periodComposite;
 	
 	//Low & Hight
 	RateChartLawAndHightComposite lawAndHightComposite;
@@ -135,6 +143,14 @@ public class RateChart extends Composite {
 	
 	//Parabolic SAR
 	RateChartParabolicSAR parabolicSARComposite;
+	
+	private ExpandBar createExpandBar(String name,TabFolder tabFolder){
+		TabItem tbtm = new TabItem(tabFolder, SWT.NONE);
+		tbtm.setText(name);
+		ExpandBar expandBar = new ExpandBar(tabFolder, SWT.NONE);
+		tbtm.setControl(expandBar);
+		return expandBar;
+	}
 	
 	/**
 	 * Create the composite.
@@ -162,134 +178,58 @@ public class RateChart extends Composite {
 		SashForm sashForm = new SashForm(this, SWT.NONE);
 		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
-		ExpandBar expandBar = new ExpandBar(sashForm, SWT.NONE);
+		
+		TabFolder tabFolder = new TabFolder(sashForm, SWT.NONE);
+		
+		//Control Expand Bar 
+		ExpandBar expandBarControl=createExpandBar("Control",tabFolder);
+		ExpandBar expandBarTrend =createExpandBar("Trend",tabFolder);
+		ExpandBar expandBarMomentum =createExpandBar("Momentum",tabFolder);
+		ExpandBar expandBarVolume =createExpandBar("Volume",tabFolder);
+		ExpandBar expandBarVolatility =createExpandBar("Volatility",tabFolder);
+		
 		
 		//Create a context instance
-		IEclipseContext localContact=context.createChild();
-		localContact.set(Composite.class, expandBar);
+		IEclipseContext localContextControl=context.createChild();
+		localContextControl.set(Composite.class, expandBarControl);
+		IEclipseContext localContextTrend=context.createChild();
+		localContextTrend.set(Composite.class, expandBarTrend);
+		IEclipseContext localContextMomentum=context.createChild();
+		localContextMomentum.set(Composite.class, expandBarMomentum);
+		IEclipseContext localContextVolume=context.createChild();
+		localContextVolume.set(Composite.class, expandBarVolume);
+		IEclipseContext localContextVolatility=context.createChild();
+		localContextVolatility.set(Composite.class, expandBarVolatility);
 		
 		//==================================================
 		//========             PERIOD                =======    
 		//==================================================
 		
-		ExpandItem xpndtmPeriod = new ExpandItem(expandBar, SWT.NONE);
+		ExpandItem xpndtmPeriod = new ExpandItem(expandBarControl, SWT.NONE);
 		xpndtmPeriod.setExpanded(true);
 		xpndtmPeriod.setText("Period");
 		
-		Composite compositePeriode = new Composite(expandBar, SWT.NONE);
-		xpndtmPeriod.setControl(compositePeriode);
-		compositePeriode.setLayout(new GridLayout(1, false));
 		
-		Composite compositePeriodDefinition = new Composite(compositePeriode, SWT.NONE);
-		compositePeriodDefinition.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		compositePeriodDefinition.setLayout(new GridLayout(3, false));
-		
-		Label lblFrom = new Label(compositePeriodDefinition, SWT.NONE);
-		lblFrom.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblFrom.setText("From :");
-		
-		periodSliderFrom = new Slider(compositePeriodDefinition, SWT.NONE);
-		periodSliderFrom.setPageIncrement(1);
-		periodSliderFrom.setThumb(1);
-		if(!rate.getHistoricalData().isEmpty())
-			periodSliderFrom.setMaximum(rate.getHistoricalData().size());
-		else{
-			periodSliderFrom.setMaximum(200);
-		}
-		periodSliderFrom.setMinimum(2);
-		periodSliderFrom.setSelection(100);
-		periodSliderFrom.addSelectionListener(new SelectionAdapter() {
+		periodComposite=ContextInjectionFactory.make( RateChartPeriodComposite.class,localContextControl);
+		xpndtmPeriod.setControl(periodComposite);
+		xpndtmPeriod.setHeight(periodComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		periodComposite.addPeriodChangedListener(new RateChartPeriodComposite.PeriodChangedListener() {
+			
 			@Override
-			public void widgetSelected(SelectionEvent e) {
-				
-				int upTo=periodSliderUpTo.getSelection();
-				if(periodSliderUpTo.getSelection()>periodSliderFrom.getSelection()){
-					upTo=0;
-				}
-				periodSliderUpTo.setMaximum(periodSliderFrom.getSelection()-1);
-				periodSliderUpTo.setEnabled(false);
-				periodSliderUpTo.setSelection(upTo);
-				periodSliderUpTo.setEnabled(periodBtnUpTo.getSelection());
-				
+			public void PeriodChanged() {
 				refreshPeriod();
-				
 			}
 		});
-		
-		periodLblFrom = new Label(compositePeriodDefinition, SWT.NONE);
-		periodLblFrom.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		periodLblFrom.setText("100");
-		
-		periodBtnUpTo = new Button(compositePeriodDefinition, SWT.CHECK);
-		periodBtnUpTo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				periodSliderUpTo.setEnabled(periodBtnUpTo.getSelection());
-				periodSliderUpTo.setSelection(0);
-				
-				
-				refreshPeriod();
-				
-			}
-		});
-		periodBtnUpTo.setSize(49, 16);
-		periodBtnUpTo.setText("Up to:");
-		
-		periodSliderUpTo = new Slider(compositePeriodDefinition, SWT.NONE);
-		periodSliderUpTo.setThumb(1);
-		periodSliderUpTo.setPageIncrement(1);
-		periodSliderUpTo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if(periodSliderUpTo.isEnabled()){
-					refreshPeriod();
-				}
-				
-			}
-		});
-		periodSliderUpTo.setEnabled(false);
-		
-		periodlblUpTo = new Label(compositePeriodDefinition, SWT.NONE);
-		periodlblUpTo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		periodlblUpTo.setText("0");
-		
-		Composite compositeAnalysis = new Composite(compositePeriode, SWT.NONE);
-		compositeAnalysis.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		compositeAnalysis.setBounds(0, 0, 64, 64);
-		compositeAnalysis.setLayout(new GridLayout(3, false));
-		
-		Label lblMaxProfit = new Label(compositeAnalysis, SWT.NONE);
-		lblMaxProfit.setSize(60, 15);
-		lblMaxProfit.setText("Max. Profit:");
-		
-		labelMaxProfitPercent = new Label(compositeAnalysis, SWT.NONE);
-		labelMaxProfitPercent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		labelMaxProfitPercent.setText("0,00%");
-		
-		Label lblNewLabelSep = new Label(compositeAnalysis, SWT.NONE);
-		lblNewLabelSep.setText(" ");
-		
-		Label lblKeepOld = new Label(compositeAnalysis, SWT.NONE);
-		lblKeepOld.setSize(74, 15);
-		lblKeepOld.setText("Keep and Old:");
-		
-		labelKeepAndOldPercent = new Label(compositeAnalysis, SWT.NONE);
-		labelKeepAndOldPercent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		labelKeepAndOldPercent.setText("0,00%");
-		new Label(compositeAnalysis, SWT.NONE);
-		
-		xpndtmPeriod.setHeight(compositePeriode.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-		
-		
+	
 		//=============================================
 		//======         LOW & HIGHT             ======    
 		//=============================================		
-		ExpandItem xpndtmLowHight = new ExpandItem(expandBar, SWT.NONE);
-		xpndtmLowHight.setExpanded(false);
+		ExpandItem xpndtmLowHight = new ExpandItem(expandBarControl, SWT.NONE);
+		xpndtmLowHight.setExpanded(true);
 		xpndtmLowHight.setText("Low & Hight");
 		//xpndtmLowHight.setHeight(30);
 			
-		lawAndHightComposite=ContextInjectionFactory.make( RateChartLawAndHightComposite.class,localContact);
+		lawAndHightComposite=ContextInjectionFactory.make( RateChartLawAndHightComposite.class,localContextControl);
 		xpndtmLowHight.setControl(lawAndHightComposite);
 		xpndtmLowHight.setHeight(lawAndHightComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		
@@ -308,12 +248,12 @@ public class RateChart extends Composite {
 		//======        MOVING AVERAGE           ======    
 		//=============================================
 		
-		ExpandItem xpndtmMovingAvg = new ExpandItem(expandBar, SWT.NONE);
-		xpndtmMovingAvg.setExpanded(false);
+		ExpandItem xpndtmMovingAvg = new ExpandItem(expandBarTrend, SWT.NONE);
+		xpndtmMovingAvg.setExpanded(true);
 		xpndtmMovingAvg.setText("Moving Average");
 		//xpndtmMovingAvg.setHeight(110);
 			
-		movingAverageComposite=ContextInjectionFactory.make( RateChartMovingAverageComposite.class,localContact);
+		movingAverageComposite=ContextInjectionFactory.make( RateChartMovingAverageComposite.class,localContextTrend);
 		xpndtmMovingAvg.setControl(movingAverageComposite);
 		xpndtmMovingAvg.setHeight(movingAverageComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		
@@ -332,10 +272,11 @@ public class RateChart extends Composite {
 		//==== EMA (Exponential Moving Average)  ======    
 		//=============================================
 		
-		ExpandItem xpndtmEma = new ExpandItem(expandBar, SWT.NONE);
+		ExpandItem xpndtmEma = new ExpandItem(expandBarTrend, SWT.NONE);
 		xpndtmEma.setText("EMA (Exponential Moving Average)");
+		xpndtmEma.setExpanded(true);
 		
-		emaComposite=ContextInjectionFactory.make( RateChartEMAComposite.class,localContact);
+		emaComposite=ContextInjectionFactory.make( RateChartEMAComposite.class,localContextTrend);
 		xpndtmEma.setControl(emaComposite);
 		xpndtmEma.setHeight(emaComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		
@@ -353,11 +294,11 @@ public class RateChart extends Composite {
 		//==================================================
 		//== MACD (Moving Average Convergence/Divergence) ==    
 		//==================================================
-		ExpandItem xpndtmMacd = new ExpandItem(expandBar, SWT.NONE);
-		xpndtmMacd.setExpanded(false);
+		ExpandItem xpndtmMacd = new ExpandItem(expandBarTrend, SWT.NONE);
+		xpndtmMacd.setExpanded(true);
 		xpndtmMacd.setText("MACD (Moving Average Convergence/Divergence)");
 		
-		macdComposite=ContextInjectionFactory.make( RateChartMACDComposite.class,localContact);
+		macdComposite=ContextInjectionFactory.make( RateChartMACDComposite.class,localContextTrend);
 		xpndtmMacd.setControl(macdComposite);
 		xpndtmMacd.setHeight(macdComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		
@@ -376,12 +317,12 @@ public class RateChart extends Composite {
 		//==              Bollinger Bands                 ==    
 		//==================================================
 		
-		ExpandItem xpndtmBollingerBands = new ExpandItem(expandBar, SWT.NONE);
-		xpndtmBollingerBands.setExpanded(false);
+		ExpandItem xpndtmBollingerBands = new ExpandItem(expandBarVolatility, SWT.NONE);
+		xpndtmBollingerBands.setExpanded(true);
 		xpndtmBollingerBands.setText("Bollinger Bands");
 		
 		
-		bollingerBandsComposite=ContextInjectionFactory.make( RateChartBollingerBandsComposite.class,localContact);
+		bollingerBandsComposite=ContextInjectionFactory.make( RateChartBollingerBandsComposite.class,localContextVolatility);
 		xpndtmBollingerBands.setControl(bollingerBandsComposite);
 		xpndtmBollingerBands.setHeight(bollingerBandsComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		
@@ -401,12 +342,12 @@ public class RateChart extends Composite {
 		//==              Parabolic SAR                   ==    
 		//==================================================
 				
-		ExpandItem xpndtmParabolicSAR = new ExpandItem(expandBar, SWT.NONE);
-		xpndtmParabolicSAR.setExpanded(false);
+		ExpandItem xpndtmParabolicSAR = new ExpandItem(expandBarTrend, SWT.NONE);
+		xpndtmParabolicSAR.setExpanded(true);
 		xpndtmParabolicSAR.setText("Parabolic SAR");
 		//xpndtmParabolicSAR.setHeight(150);
 				
-		parabolicSARComposite=ContextInjectionFactory.make( RateChartParabolicSAR.class,localContact);
+		parabolicSARComposite=ContextInjectionFactory.make( RateChartParabolicSAR.class,localContextTrend);
 		xpndtmParabolicSAR.setControl(parabolicSARComposite);
 		xpndtmParabolicSAR.setHeight(parabolicSARComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		
@@ -444,7 +385,7 @@ public class RateChart extends Composite {
 			return false;
 
 		ExchangeRate incoming = exchangeRateProvider.load(rate_uuid);
-		if (incoming == null || rate == null || periodSliderFrom == null)
+		if (incoming == null || rate == null || periodComposite == null)
 			return false;
 		if (!incoming.getUUID().equals(rate.getUUID()))
 			return false;
@@ -471,7 +412,7 @@ public class RateChart extends Composite {
 	private void fireHistoricalData(){
 		if(!rate.getHistoricalData().isEmpty()){
 			//historicalDataProvider.load(rate);
-			periodSliderFrom.setMaximum(rate.getHistoricalData().size());
+			periodComposite.getPeriodSliderFrom().setMaximum(rate.getHistoricalData().size());
 			refreshPeriod();
 		}
 	}
@@ -489,16 +430,20 @@ public class RateChart extends Composite {
 		
 		int allpts=rate.getHistoricalData().getNoneEmptyPoints().size();
 		
-		if(periodSliderFrom.getMaximum()!=allpts)
-			periodSliderFrom.setMaximum(allpts);
-		if(periodSliderUpTo.getMaximum()!=periodSliderFrom.getSelection())
-			periodSliderUpTo.setMaximum(periodSliderFrom.getSelection());
+		//periodComposite.getPeriodSliderFrom()
+		//periodComposite.getPeriodSliderUpTo()
+		
+		if(periodComposite.getPeriodSliderFrom().getMaximum()!=allpts)
+			periodComposite.getPeriodSliderFrom().setMaximum(allpts);
+		if(periodComposite.getPeriodSliderUpTo().getMaximum()!=periodComposite.getPeriodSliderFrom().getSelection())
+			periodComposite.getPeriodSliderUpTo().setMaximum(periodComposite.getPeriodSliderFrom().getSelection());
 		
 		
-		period[0]=allpts-periodSliderFrom.getSelection();period[1]=allpts-periodSliderUpTo.getSelection();
+		period[0]=allpts-periodComposite.getPeriodSliderFrom().getSelection();
+		period[1]=allpts-periodComposite.getPeriodSliderUpTo().getSelection();
 		
-		periodLblFrom.setText(String.valueOf(periodSliderFrom.getSelection()));
-		periodlblUpTo.setText(String.valueOf(periodSliderUpTo.getSelection()));
+		periodComposite.getPeriodLblFrom().setText(String.valueOf(periodComposite.getPeriodSliderFrom().getSelection()));
+		periodComposite.getPeriodlblUpTo().setText(String.valueOf(periodComposite.getPeriodSliderUpTo().getSelection()));
 		
 		// ===================================
 		// Calculate Keep Old and Max Profit
@@ -510,9 +455,10 @@ public class RateChart extends Composite {
 
 		String keepAndOldString = String.format("%,.2f%%", keepAndOld * 100);
 		String maxProfitString = String.format("%,.2f%%", maxProfit * 100);
-
-		labelMaxProfitPercent.setText(maxProfitString);
-		labelKeepAndOldPercent.setText(keepAndOldString);
+		
+		
+		periodComposite.getLabelMaxProfitPercent().setText(maxProfitString);
+		periodComposite.getLabelKeepAndOldPercent().setText(keepAndOldString);
 		
 		// ===================================
 		// Distribute new Period and max profit

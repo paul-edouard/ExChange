@@ -167,7 +167,7 @@ public class WorkspaceDialog extends TitleAreaDialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(473, 269);
+		return new Point(706, 307);
 	}
 
 }
