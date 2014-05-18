@@ -167,6 +167,58 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		return series;
 		
 	}
+	/**
+	 * Info: http://en.wikipedia.org/wiki/Relative_strength_index
+	 * 
+	 * @param alpha
+	 * @param serieName
+	 * @return
+	 */
+	public XYSeries getRSI(float alpha, String serieName){
+		
+		XYSeries series = new XYSeries(serieName);
+		LinkedList<HistoricalPoint> pointList= getNoneEmptyPoints();
+		
+		float[] U= new float[pointList.size()];
+		float[] D= new float[pointList.size()];
+		float[] RS= new float[pointList.size()];
+		float[] RSI= new float[pointList.size()];
+		
+		HistoricalPoint previous=null;
+		int i=0;
+		for(HistoricalPoint point:pointList){
+			U[i]=D[i]=0;
+			
+			if(previous!=null && point.getClose()>previous.getClose()){
+				U[i]=point.getClose()-previous.getClose();
+			}
+			else if (previous!=null && point.getClose()<previous.getClose()){
+				D[i]=previous.getClose()-point.getClose();
+			}
+			
+			i++;
+			previous=point;
+		}
+		
+		RS[0]=0;
+		RSI[0]=0;
+		float EMA_U=0;
+		float EMA_D=0;
+		
+		for(i=1;i<pointList.size();i++){
+			EMA_U=EMA_U+alpha*(U[i]-EMA_U);
+			EMA_D=EMA_D+alpha*(D[i]-EMA_D);
+			RS[i]=EMA_U/EMA_D;
+			RSI[i]=100-100/(1+RS[i]);
+		}
+		
+		for(i=0;i<pointList.size();i++){
+			series.add(i+1,RSI[i]);
+		}
+		
+		return series;
+		
+	}
 	
 	
 	

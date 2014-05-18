@@ -90,6 +90,7 @@ public class RateChart extends Composite {
 	//The renderers
 	private XYLineAndShapeRenderer mainPlotRenderer=new XYLineAndShapeRenderer(true, false);
 	private XYLineAndShapeRenderer secondPlotrenderer=new XYLineAndShapeRenderer(true, false);
+	private XYLineAndShapeRenderer percentPlotrenderer=new XYLineAndShapeRenderer(true, false);
 	private XYErrorRenderer errorPlotRenderer=new XYErrorRenderer();
 	private DeviationRenderer deviationRenderer = new DeviationRenderer(true, false);
 	//TODO
@@ -97,6 +98,7 @@ public class RateChart extends Composite {
 	//The Series Collections
 	private XYSeriesCollection mainCollection=new XYSeriesCollection();
 	private XYSeriesCollection secondCollection=new XYSeriesCollection();
+	private XYSeriesCollection percentCollection=new XYSeriesCollection();
 	private YIntervalSeriesCollection errorCollection=new YIntervalSeriesCollection();
 	private YIntervalSeriesCollection deviationCollection=new YIntervalSeriesCollection();
 	
@@ -143,6 +145,9 @@ public class RateChart extends Composite {
 	
 	//Parabolic SAR
 	RateChartParabolicSAR parabolicSARComposite;
+	
+	//Relative strength index
+	RateChartRelativeStrengthIndexComposite relativeStrengthIndexComposite;
 	
 	private ExpandBar createExpandBar(String name,TabFolder tabFolder){
 		TabItem tbtm = new TabItem(tabFolder, SWT.NONE);
@@ -361,6 +366,32 @@ public class RateChart extends Composite {
 			}
 		});
 		
+		
+		//==================================================
+		//==        Relative strength index               ==    
+		//==================================================
+		ExpandItem xpndtmRSI = new ExpandItem(expandBarMomentum, SWT.NONE);
+		xpndtmRSI.setExpanded(true);
+		xpndtmRSI.setText("Relative strength index");
+		//xpndtmParabolicSAR.setHeight(150);
+				
+		relativeStrengthIndexComposite=ContextInjectionFactory.make( RateChartRelativeStrengthIndexComposite.class,localContextMomentum);
+		xpndtmRSI.setControl(relativeStrengthIndexComposite);
+		xpndtmRSI.setHeight(relativeStrengthIndexComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		
+		relativeStrengthIndexComposite.setRenderers(mainPlotRenderer, secondPlotrenderer,percentPlotrenderer);
+		relativeStrengthIndexComposite.setSeriesCollections(mainCollection, secondCollection,percentCollection);
+		relativeStrengthIndexComposite.setPeriodandMaxProfit(period, maxProfit);
+		relativeStrengthIndexComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
+			@Override
+			public void CollectionRemoved() {
+				refreshPeriod();
+			}
+		});	
+		
+		
+		
+		
 		//==================================================
 		//==                 CHART                        ==    
 		//==================================================
@@ -469,6 +500,7 @@ public class RateChart extends Composite {
 		lawAndHightComposite.setPeriodandMaxProfit(period, maxProfit);
 		bollingerBandsComposite.setPeriodandMaxProfit(period, maxProfit);
 		parabolicSARComposite.setPeriodandMaxProfit(period, maxProfit);
+		relativeStrengthIndexComposite.setPeriodandMaxProfit(period, maxProfit);
 		
 		resetChartDataSet();
 		
@@ -615,17 +647,30 @@ public class RateChart extends Composite {
 	            //renderer.setSeriesPaint(2, new Color(0xFDAE61));
 	        }
 	        
+	        //Axis Profit
 	        NumberAxis rangeAxis1 = new NumberAxis("Profit");
-	        rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
+	        //rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
 	        DecimalFormat format = new DecimalFormat("00.00");
 	        rangeAxis1.setNumberFormatOverride(format);
 	        rangeAxis1.setAutoRangeIncludesZero(false);
 	        
-	        //Plot
+	        //Plot Profit
 	        XYPlot plot1 = new XYPlot(secondCollection, null, rangeAxis1, secondPlotrenderer);
 	        plot1.setBackgroundPaint(Color.lightGray);
 	        plot1.setDomainGridlinePaint(Color.white);
 	        plot1.setRangeGridlinePaint(Color.white);
+	        
+	        //Axis Percent
+	        NumberAxis rangeAxis2 = new NumberAxis("Percent");
+	        //rangeAxis2.setUpperMargin(1.00);  // to leave room for volume bars
+	        //DecimalFormat format = new DecimalFormat("00.00");
+	        rangeAxis2.setNumberFormatOverride(format);
+	        rangeAxis2.setAutoRangeIncludesZero(false);
+	        
+	        plot1.setDataset(1,percentCollection);
+	        plot1.setRenderer(1, percentPlotrenderer);
+	        plot1.setRangeAxis(1, rangeAxis2);
+	        plot1.mapDatasetToRangeAxis(1, 1);
 	        
 	        return plot1;
 	    	

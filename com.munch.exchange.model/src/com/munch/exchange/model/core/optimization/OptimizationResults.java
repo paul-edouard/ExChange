@@ -17,6 +17,7 @@ public class OptimizationResults extends XmlParameterElement{
 	static private final String MACD_STR="MACD";
 	static private final String BILLINGER_BAND_STR="Bollinger Band";
 	static private final String PARABOLIC_SAR_STR="Parabolic SAR";
+	static private final String RELATIVE_STRENGTH_INDEX_STR="Relative Strength Index";
 	static private final String NONE_STR="None";
 	
 	private LinkedList<ResultEntity> results=new LinkedList<ResultEntity>();
@@ -53,7 +54,9 @@ public class OptimizationResults extends XmlParameterElement{
 
 
 
-	public enum Type { MOVING_AVERAGE, MACD, BILLINGER_BAND,PARABOLIC_SAR ,NONE};
+	public enum Type { MOVING_AVERAGE, MACD,
+						BILLINGER_BAND,PARABOLIC_SAR ,
+						RELATIVE_STRENGTH_INDEX,NONE};
 	
 	public static String OptimizationTypeToString(Type type){
 		switch (type) {
@@ -65,6 +68,8 @@ public class OptimizationResults extends XmlParameterElement{
 			return BILLINGER_BAND_STR;
 		case PARABOLIC_SAR:
 			return PARABOLIC_SAR_STR;
+		case RELATIVE_STRENGTH_INDEX:
+			return RELATIVE_STRENGTH_INDEX_STR;
 
 		default:
 			return NONE_STR;
@@ -82,6 +87,9 @@ public class OptimizationResults extends XmlParameterElement{
 		}
 		else if(type.equals(PARABOLIC_SAR_STR)){
 			return Type.PARABOLIC_SAR;
+		}
+		else if(type.equals(RELATIVE_STRENGTH_INDEX_STR)){
+			return Type.RELATIVE_STRENGTH_INDEX;
 		}
 		
 		return Type.NONE;
