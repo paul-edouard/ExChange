@@ -161,6 +161,7 @@ public class RateChartRelativeStrengthIndexComposite extends Composite {
 	}
 	
 	
+	
 	@Inject
 	public RateChartRelativeStrengthIndexComposite(Composite parent) {
 		super(parent, SWT.NONE);
