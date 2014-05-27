@@ -92,6 +92,7 @@ public class RateChart extends Composite {
 	private XYLineAndShapeRenderer secondPlotrenderer=new XYLineAndShapeRenderer(true, false);
 	private XYLineAndShapeRenderer percentPlotrenderer=new XYLineAndShapeRenderer(true, false);
 	private XYErrorRenderer errorPlotRenderer=new XYErrorRenderer();
+	private DeviationRenderer deviationPercentPlotRenderer=new DeviationRenderer();
 	private DeviationRenderer deviationRenderer = new DeviationRenderer(true, false);
 	//TODO
 	
@@ -100,6 +101,7 @@ public class RateChart extends Composite {
 	private XYSeriesCollection secondCollection=new XYSeriesCollection();
 	private XYSeriesCollection percentCollection=new XYSeriesCollection();
 	private YIntervalSeriesCollection errorCollection=new YIntervalSeriesCollection();
+	private YIntervalSeriesCollection deviationPercentCollection=new YIntervalSeriesCollection();
 	private YIntervalSeriesCollection deviationCollection=new YIntervalSeriesCollection();
 	
 	
@@ -379,8 +381,9 @@ public class RateChart extends Composite {
 		xpndtmRSI.setControl(relativeStrengthIndexComposite);
 		xpndtmRSI.setHeight(relativeStrengthIndexComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		
-		relativeStrengthIndexComposite.setRenderers(mainPlotRenderer, secondPlotrenderer,percentPlotrenderer);
-		relativeStrengthIndexComposite.setSeriesCollections(mainCollection, secondCollection,percentCollection);
+		//TODO
+		relativeStrengthIndexComposite.setRenderers(mainPlotRenderer, deviationPercentPlotRenderer,percentPlotrenderer,secondPlotrenderer);
+		relativeStrengthIndexComposite.setSeriesCollections(mainCollection, deviationPercentCollection,percentCollection,secondCollection);
 		relativeStrengthIndexComposite.setPeriodandMaxProfit(period, maxProfit);
 		relativeStrengthIndexComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
 			@Override
@@ -667,12 +670,39 @@ public class RateChart extends Composite {
 	        rangeAxis2.setNumberFormatOverride(format);
 	        rangeAxis2.setAutoRangeIncludesZero(false);
 	        
-	        plot1.setDataset(1,percentCollection);
-	        plot1.setRenderer(1, percentPlotrenderer);
-	        plot1.setRangeAxis(1, rangeAxis2);
-	        plot1.mapDatasetToRangeAxis(1, 1);
+	        int i=1;
+	        addPercentGraph(plot1,rangeAxis2,i);
+	        i++;
 	        
+	        //Add the deviation Graph
+	        addDeviationPercentGraph(plot1, rangeAxis2, i);
+			i++;
+	        
+			//TODO
+			
 	        return plot1;
+	    	
+	    }
+	    
+	    private void addPercentGraph(XYPlot plot, NumberAxis rangeAxis, int i){
+	    	
+	    	plot.setDataset(i,percentCollection);
+	        plot.setRenderer(i, percentPlotrenderer);
+	        plot.setRangeAxis(i, rangeAxis);
+	        plot.mapDatasetToRangeAxis(i, i);
+	    	
+	    }
+	    
+	    private void addDeviationPercentGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
+	    	
+	    	
+	    	//plot.setRangeAxis(i, rangeAxis1);
+	    	plot.setDataset(i,deviationPercentCollection);
+	    	plot.setRenderer(i, deviationPercentPlotRenderer);
+	    	plot.mapDatasetToRangeAxis(i, 1);
+	    	
+	    	deviationPercentPlotRenderer.setBaseLinesVisible(true);
+	    	deviationPercentPlotRenderer.setBaseShapesVisible(false);
 	    	
 	    }
 	    
@@ -721,7 +751,7 @@ public class RateChart extends Composite {
 			//Add the deviation Graph
 			addDevGraph(plot1, rangeAxis1, i);
 			i++;
-			//TODO
+			
 	        return plot1;
 	    	
 	    }
