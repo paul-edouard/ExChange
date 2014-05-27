@@ -16,6 +16,8 @@ import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -28,6 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
 import org.goataa.impl.gpms.IdentityMapping;
 import org.goataa.impl.utils.Individual;
+import org.goataa.spec.IGPM;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -113,6 +116,8 @@ public class RateChartRelativeStrengthIndexComposite extends Composite {
 	
 	private RelativeStrengthIndexObjFunc relativeStrengthIndexObjFunc;
 	
+	private Optimizer<double[]> optimizer = new Optimizer<double[]>();
+	
 	private Button rsiBtn;
 	private XYSeries rsiSeries;
 	private Composite OptButtons;
@@ -172,6 +177,11 @@ public class RateChartRelativeStrengthIndexComposite extends Composite {
 				rsiSliderUpperMax.setEnabled(rsiBtn.getSelection());
 				rsiSliderUpperMinFac.setEnabled(rsiBtn.getSelection());
 				//if(emaBtn.getSelection())
+				
+				
+				btnReset.setEnabled(rsiBtn.getSelection());
+				btnOpt.setEnabled(rsiBtn.getSelection());
+				
 				resetChartDataSet();
 				
 				if(!rsiBtn.getSelection())
@@ -202,8 +212,7 @@ public class RateChartRelativeStrengthIndexComposite extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				resetParamValues();
 				
-				//TODO Reset Gui
-				//reset();
+				reset();
 
 			}
 		});
@@ -219,14 +228,14 @@ public class RateChartRelativeStrengthIndexComposite extends Composite {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
-				/*
-				double[] g = rate.getOptResultsMap().get(Type.BILLINGER_BAND)
+				
+				double[] g = rate.getOptResultsMap().get(Type.RELATIVE_STRENGTH_INDEX)
 						.getResults().getFirst().getDoubleArray();
 
 				getObjFunc().setPeriod(period);
 				double v = getObjFunc().compute(g, null);
 				resetGuiData(g, v);
-				*/
+				
 			}
 		});
 		btnLoad.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false,
@@ -239,7 +248,7 @@ public class RateChartRelativeStrengthIndexComposite extends Composite {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
-				/*
+				
 				int dimension = 6;
 				getObjFunc().setPeriod(period);
 
@@ -247,7 +256,7 @@ public class RateChartRelativeStrengthIndexComposite extends Composite {
 
 				OptimizationWizard<double[]> wizard = new OptimizationWizard<double[]>(
 						getObjFunc(), gpm, dimension, 0, 1, rate
-								.getOptResultsMap().get(Type.PARABOLIC_SAR));
+								.getOptResultsMap().get(Type.RELATIVE_STRENGTH_INDEX));
 				WizardDialog dialog = new WizardDialog(shell, wizard);
 				if (dialog.open() != Window.OK)
 					return;
@@ -255,16 +264,16 @@ public class RateChartRelativeStrengthIndexComposite extends Composite {
 				// Open the Optimization error part
 				OptimizationErrorPart.openOptimizationErrorPart(rate,
 						optimizer, OptimizationResults
-								.OptimizationTypeToString(Type.PARABOLIC_SAR),
+								.OptimizationTypeToString(Type.RELATIVE_STRENGTH_INDEX),
 						partService, modelService, application, context);
 
-				optimizer.initOptimizationInfo(eventBroker, Type.PARABOLIC_SAR,
+				optimizer.initOptimizationInfo(eventBroker, Type.RELATIVE_STRENGTH_INDEX,
 						rate, wizard.getAlgorithm(), wizard.getTerm());
 				optimizer.schedule();
 
 				btnOpt.setEnabled(false);
-				btnParabilicSAR.setEnabled(false);
-				*/
+				rsiBtn.setEnabled(false);
+				
 
 			}
 		});
@@ -673,6 +682,37 @@ public class RateChartRelativeStrengthIndexComposite extends Composite {
 					getObjFunc().getProfit() * 100);
 			rsiProfitlbl.setText(movAvgProfitString);
 			
+			/*
+			lblLimitType.setText("No Limit");
+			lblLimitDouble.setText("[000.000-000.000]");
+			*/
+			if(getObjFunc().isBought()){
+				lblLimitType.setText("Sell:");
+				
+				String daySellLimits_str="["+
+						String.format("%,.3f",getObjFunc().getDaySellUpLimit())+
+						((getObjFunc().isDaySellUpLimitIsActivated())?"*":"")+
+						"-"+
+						String.format("%,.3f",getObjFunc().getDaySellDownLimit())+
+						((getObjFunc().isDaySellDownLimitIsActivated())?"*":"")+
+						"]";
+				
+				lblLimitDouble.setText(daySellLimits_str);
+				
+			}
+			else{
+				lblLimitType.setText("Buy:");
+				
+				String dayBuyLimits_str="["+
+						String.format("%,.3f",getObjFunc().getDayBuyUpLimit())+
+						((getObjFunc().isDayBuyUpLimitIsActivated())?"*":"")+
+						"-"+
+						String.format("%,.3f",getObjFunc().getDayBuyDownLimit())+
+						((getObjFunc().isDayBuyDownLimitIsActivated())?"*":"")+
+						"]";
+				
+				lblLimitDouble.setText(dayBuyLimits_str);
+			}
 			
 			
 		}

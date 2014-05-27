@@ -54,6 +54,18 @@ IObjectiveFunction<double[]> {
 	private double maxProfit;
 	private double profit;
 	
+	private double daySellUpLimit=0;
+	private double daySellDownLimit=0;
+	
+	private double dayBuyUpLimit=0;
+	private double dayBuyDownLimit=0;
+	
+	private boolean daySellUpLimitIsActivated=false;
+	private boolean daySellDownLimitIsActivated=false;
+	
+	private boolean dayBuyUpLimitIsActivated=false;
+	private boolean dayBuyDownLimitIsActivated=false;
+	
 	//Limits
 	private double upperLimit=0;
 	private double lowerLimit=0;
@@ -110,6 +122,44 @@ IObjectiveFunction<double[]> {
 
 	public YIntervalSeries getLowerBandSeries() {
 		return lowerBandSeries;
+	}
+	
+	
+
+	public double getDaySellUpLimit() {
+		return daySellUpLimit;
+	}
+
+	public double getDaySellDownLimit() {
+		return daySellDownLimit;
+	}
+
+	public double getDayBuyUpLimit() {
+		return dayBuyUpLimit;
+	}
+
+	public double getDayBuyDownLimit() {
+		return dayBuyDownLimit;
+	}
+
+	public boolean isDaySellUpLimitIsActivated() {
+		return daySellUpLimitIsActivated;
+	}
+
+	public boolean isDaySellDownLimitIsActivated() {
+		return daySellDownLimitIsActivated;
+	}
+
+	public boolean isDayBuyUpLimitIsActivated() {
+		return dayBuyUpLimitIsActivated;
+	}
+
+	public boolean isDayBuyDownLimitIsActivated() {
+		return dayBuyDownLimitIsActivated;
+	}
+
+	public boolean isBought() {
+		return bought;
 	}
 
 	@Override
@@ -223,16 +273,25 @@ IObjectiveFunction<double[]> {
 				//The curve goes under
 				if(point.getLow()<l_min_limit[i-1]){
 					
-					lastBuyPrice=l_min_limit[i-1];
+					if(point.getOpen()<l_min_limit[i-1]){
+						lastBuyPrice=point.getHigh();
+					}
+					else{
+						lastBuyPrice=l_min_limit[i-1];
+					}
 					
 					bought=true;
 					profit=profit-((float)penalty)*lastBuyPrice;
 					buySignalSeries.add(pos,lastBuyPrice);
 				}
 				//The curve goes upper
-				else if(point.getLow()<l_max_limit[i-1]  &&  point.getHigh()>l_max_limit[i-1]){
-					
-					lastBuyPrice=l_max_limit[i-1];
+				else if(isLower  &&  point.getHigh()>l_max_limit[i-1]){
+					if(point.getOpen()>l_max_limit[i-1]){
+						lastBuyPrice=point.getOpen();
+					}
+					else{
+						lastBuyPrice=l_max_limit[i-1];
+					}
 					
 					bought=true;
 					profit=profit-((float)penalty)*lastBuyPrice;
@@ -243,21 +302,35 @@ IObjectiveFunction<double[]> {
 			else if(bought){
 				//upper the sell limit
 				if( point.getHigh()>u_max_limit[i-1] ){
-					profit+=u_max_limit[i-1]-lastBuyPrice;
-					
+					double sellPrice=0;
+					if(point.getOpen()>u_max_limit[i-1] ){
+						sellPrice=point.getOpen();
+					}
+					else{
+						sellPrice=u_max_limit[i-1];
+					}
+					profit+=sellPrice-lastBuyPrice;
 					bought=false;
-					profit=profit-((float)penalty)*u_max_limit[i-1];
-					sellSignalSeries.add(pos,u_max_limit[i-1]);
-					
+					profit=profit-((float)penalty)*sellPrice;
+					sellSignalSeries.add(pos,sellPrice);
 				}
 				//under the sell limit
-				else if(point.getHigh()>u_min_limit[i-1] && point.getLow()<u_min_limit[i-1]){
-					profit+=u_min_limit[i-1]-lastBuyPrice;
+				else if(isUpper && point.getLow()<u_min_limit[i-1]){
+					
+					double sellPrice=0;
+					if(point.getOpen()<u_min_limit[i-1] ){
+						sellPrice=point.getOpen();
+					}
+					else{
+						sellPrice=u_min_limit[i-1];
+					}
+					
+					
+					profit+=sellPrice-lastBuyPrice;
 					
 					bought=false;
-					profit=profit-((float)penalty)*u_min_limit[i-1];
-					sellSignalSeries.add(pos,u_min_limit[i-1]);
-					
+					profit=profit-((float)penalty)*sellPrice;
+					sellSignalSeries.add(pos,sellPrice);
 				}
 				else{
 					profit+=point.get(field)-lastBuyPrice;
@@ -265,18 +338,40 @@ IObjectiveFunction<double[]> {
 				}
 			}
 			
+			//Set Lower and Upper
+			isUpper=point.getLow()>u_min_limit[i-1];
+			isLower=point.getHigh()<l_max_limit[i-1];
 			
 			profitSeries.add(pos, profit/noneZeroHisList.get(period[0]).get(field));
+			
+			
 			
 			
 			pos++;
 		}
 		
+		if(period[1]-1>=0){
+		HistoricalPoint point=noneZeroHisList.get(period[1]-1);
 		
-		
-		
-		
-		
+		if(bought){
+			dayBuyUpLimitIsActivated=false;
+			dayBuyDownLimitIsActivated=false;
+			daySellUpLimitIsActivated=point.getHigh()<u_max_limit[period[1]-1];
+			daySellUpLimit=u_max_limit[period[1]-1];
+			daySellDownLimitIsActivated=point.getLow()>u_min_limit[period[1]-1];
+			daySellDownLimit=u_min_limit[period[1]-1];
+			
+		}
+		else{
+			daySellUpLimitIsActivated=false;
+			daySellDownLimitIsActivated=false;
+			
+			dayBuyUpLimitIsActivated=point.getHigh()<l_max_limit[period[1]-1];
+			dayBuyUpLimit=l_max_limit[period[1]-1];
+			dayBuyDownLimitIsActivated=point.getLow()>l_min_limit[period[1]-1];
+			dayBuyDownLimit=l_min_limit[period[1]-1];
+		}
+		}
 		
 		profit = profit / noneZeroHisList.get((int) period[0]).get(field);
 
