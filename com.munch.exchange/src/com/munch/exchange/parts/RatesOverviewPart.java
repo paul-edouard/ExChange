@@ -32,6 +32,9 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Composite;
 
 import com.munch.exchange.IEventConstant;
@@ -127,6 +130,13 @@ public class RatesOverviewPart {
 		//treeViewer.setLabelProvider(new TestLabelProvider());
 		
 		treeViewer.setInput(contentProvider.getRoot());
+		
+		//Add Drag Support
+		int operations = DND.DROP_COPY| DND.DROP_MOVE;
+		Transfer[] transferTypes = new Transfer[]{TextTransfer.getInstance()};
+		treeViewer.addDragSupport(operations, transferTypes , new RatesTreeDragSourceListener(treeViewer));
+
+		
 		
 		menuService.registerContextMenu(treeViewer.getTree(), "com.munch.exchange.popupmenu.rates_overview");
 		
