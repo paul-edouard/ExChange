@@ -13,6 +13,7 @@ Export-Package: com.munch.exchange.model.core,
  com.munch.exchange.model.core.keystat,
  com.munch.exchange.model.core.optimization,
  com.munch.exchange.model.core.quote,
+ com.munch.exchange.model.core.watchlist,
  com.munch.exchange.model.tool,
  com.munch.exchange.model.xml
 Require-Bundle: com.munch.exchange.libs;bundle-version="1.0.0"

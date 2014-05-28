@@ -17,6 +17,7 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import com.munch.exchange.dialog.WorkspaceDialog;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.services.IWatchlistProvider;
 
 @SuppressWarnings("restriction")
 public class Manager {
@@ -52,7 +53,9 @@ public class Manager {
 	//@ProcessAdditions
 	@PostContextCreate
 	public void postContextCreate(@Preference IEclipsePreferences prefs,
-			IApplicationContext appContext, Display display, IExchangeRateProvider exchangeRateProvider) {
+			IApplicationContext appContext, Display display,
+			IExchangeRateProvider exchangeRateProvider,
+			IWatchlistProvider watchlistProvider) {
 		
 		
 		BasicConfigurator.configure();
@@ -99,6 +102,7 @@ public class Manager {
 		//Initialize the service
 		this.exchangeRateProvider=exchangeRateProvider;
 		this.exchangeRateProvider.init(dialog.getLastWorkspace());
+		watchlistProvider.init(dialog.getLastWorkspace());
 		
 		
 	}
