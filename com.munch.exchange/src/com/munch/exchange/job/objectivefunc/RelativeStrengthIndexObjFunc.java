@@ -38,6 +38,7 @@ IObjectiveFunction<double[]> {
 
 	// Period
 	private int[] period = new int[2];
+	private int maxPastDays=100;
 
 	//Parameters
 	private double alpha=0.0714;
@@ -211,6 +212,8 @@ IObjectiveFunction<double[]> {
 		for(HistoricalPoint point:noneZeroHisList){
 			U[i]=D[i]=0;
 			
+			if(i<period[0]-maxPastDays || i>period[1]){i++;continue;}
+			
 			if(previous!=null && point.getClose()>previous.getClose()){
 				U[i]=point.getClose()-previous.getClose();
 			}
@@ -241,6 +244,9 @@ IObjectiveFunction<double[]> {
 		double EMA_D=0;
 		
 		for(i=1;i<noneZeroHisList.size();i++){
+			
+			if(i<period[0]-maxPastDays || i>period[1])continue;
+			
 			EMA_U=EMA_U+alpha*(U[i]-EMA_U);
 			EMA_D=EMA_D+alpha*(D[i]-EMA_D);
 			RS=EMA_U/EMA_D;

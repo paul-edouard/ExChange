@@ -19,6 +19,7 @@
           <children xsi:type="basic:PartSashContainer" xmi:id="_jXbLEIjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partsashcontainer.rigth" containerData="75">
             <children xsi:type="basic:PartStack" xmi:id="_l_ZS4IjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partstack.rightup" containerData="80">
               <children xsi:type="basic:Part" xmi:id="_Zb_CYIkDEeOSs_sLuwXLrA" elementId="com.munch.exchange.part.dummy" toBeRendered="false" visible="false"/>
+              <children xsi:type="basic:Part" xmi:id="_JREhQOY9EeOR1coZunVn8w" elementId="com.munch.exchange.part.watchlist" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.WatchListPart" label="Wachtlist" iconURI="platform:/plugin/com.munch.exchange/icons/console_view.gif"/>
             </children>
             <children xsi:type="basic:PartStack" xmi:id="_qoPGQIjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partstack.rightdown" containerData="20">
               <children xsi:type="basic:Part" xmi:id="_h70vUGTOEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.part.info" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.InfoPart" label="Info" iconURI="platform:/plugin/com.munch.exchange/icons/console_view.gif">
