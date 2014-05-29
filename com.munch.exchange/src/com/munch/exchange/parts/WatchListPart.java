@@ -37,8 +37,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.model.core.watchlist.Watchlist;
 import com.munch.exchange.model.core.watchlist.WatchlistEntity;
+import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IQuoteProvider;
 import com.munch.exchange.services.IWatchlistProvider;
 
@@ -46,6 +48,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.TreeItem;
 
 public class WatchListPart {
 	
@@ -60,6 +63,9 @@ public class WatchListPart {
 	
 	@Inject
 	IQuoteProvider quoteProvider;
+	
+	@Inject
+	IExchangeRateProvider rateProvider;
 	
 	
 	private WatchlistTreeContentProvider contentProvider;
@@ -205,12 +211,52 @@ public class WatchListPart {
 		//Add Drop Support
 		int operations = DND.DROP_COPY| DND.DROP_MOVE;
 	    Transfer[] transferTypes = new Transfer[]{TextTransfer.getInstance()};
-	    treeViewer.addDropSupport(operations, transferTypes, new WatchlistTreeViewerDropAdapter(treeViewer,contentProvider,watchlistProvider));
+	    treeViewer.addDropSupport(operations, transferTypes, 
+	    		new WatchlistTreeViewerDropAdapter(treeViewer,contentProvider,watchlistProvider,rateProvider));
 	    
 	    TreeViewerColumn treeViewerColumnPrice = new TreeViewerColumn(treeViewer, SWT.NONE);
+	    treeViewerColumnPrice.setLabelProvider(new ColumnLabelProvider() {
+	    	public Image getImage(Object element) {
+	    		// TODO Auto-generated method stub
+	    		return null;
+	    	}
+	    	public String getText(Object element) {
+	    		if(element instanceof WatchlistEntity){
+					WatchlistEntity entity=(WatchlistEntity) element;
+					QuotePoint point=searchLastQuote(entity);
+					if(point!=null){
+						return String.valueOf(point.getLastTradePrice());
+					}
+				}
+	    		return "loading..";
+	    	}
+	    });
 	    TreeColumn trclmnPrice = treeViewerColumnPrice.getColumn();
 	    trclmnPrice.setWidth(100);
 	    trclmnPrice.setText("Price");
+	    
+	    TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
+	    treeViewerColumn.setLabelProvider(new ColumnLabelProvider() {
+	    	public Image getImage(Object element) {
+	    		// TODO Auto-generated method stub
+	    		return null;
+	    	}
+	    	public String getText(Object element) {
+	    		if(element instanceof WatchlistEntity){
+					WatchlistEntity entity=(WatchlistEntity) element;
+					QuotePoint point=searchLastQuote(entity);
+					if(point!=null){
+						float per = point.getChange() * 100 / point.getLastTradePrice();
+						return String.format("%.2f", per) + "%";
+						
+					}
+				}
+	    		return "";
+	    	}
+	    });
+	    TreeColumn trclmnChange = treeViewerColumn.getColumn();
+	    trclmnChange.setWidth(100);
+	    trclmnChange.setText("Change");
 	    treeViewer.setInput(contentProvider.getCurrentList());
 
 	    refreshViewer();
@@ -220,10 +266,18 @@ public class WatchListPart {
 	/**
 	 * if not loaded the quote will be loaded
 	 */
-	private void searchLastQuote(ExchangeRate rate){
-		if(rate.getRecordedQuote().isEmpty() && !(rate instanceof EconomicData)){
-			quoteProvider.load(rate);
+	private QuotePoint searchLastQuote(WatchlistEntity entity){
+		if(entity.getRate()==null)return null;
+		
+		if(entity.getRate().getRecordedQuote().isEmpty() && !(entity.getRate() instanceof EconomicData)){
+			quoteProvider.load(entity.getRate());
 		}
+		
+		if(!entity.getRate().getRecordedQuote().isEmpty()){
+			QuotePoint point = (QuotePoint) entity.getRate().getRecordedQuote().getLast();
+			return point;
+		}
+		return null;
 	}
 	
 	
@@ -262,6 +316,14 @@ public class WatchListPart {
 	private List<WatchlistEntity> findAllWatchlistEntities(String uuid){
 		List<WatchlistEntity> list=new LinkedList<WatchlistEntity>();
 		
+		for(Watchlist watchlist:this.watchlistProvider.load().getLists()){
+			for(WatchlistEntity ent:watchlist.getList()){
+				if(ent.getRateUuid().equals(uuid)){
+					list.add(ent);
+				}
+			}
+		}
+		
 		return list;
 	}
 	
@@ -270,14 +332,10 @@ public class WatchListPart {
 	private void loadedRate(@Optional  @UIEventTopic(IEventConstant.RATE_LOADED) ExchangeRate rate ){
 		if(treeViewer!=null && rate!=null){
 			
-			for(Watchlist watchlist:this.watchlistProvider.load().getLists()){
-				for(WatchlistEntity ent:watchlist.getList()){
-					if(ent.getRateUuid().equals(rate.getUUID())){
-						ent.setRate(rate);
-						treeViewer.refresh();
-					}
-				}
-			}
+			List<WatchlistEntity> list=findAllWatchlistEntities(rate.getUUID());
+			for(WatchlistEntity ent:list)ent.setRate(rate);
+			if(list.size()>0)
+				treeViewer.refresh();
 		}
 	}
 	
@@ -288,19 +346,26 @@ public class WatchListPart {
 		if(rate_uuid==null || rate_uuid.isEmpty()){
 			return;
 		}
+		if(treeViewer==null)return;
 		
-		/*
-		ExchangeRate incoming=exchangeRateProvider.load(rate_uuid);
-		if(incoming==null || rate==null || lblFulleName==null || lblQuote==null){
+		List<WatchlistEntity> list=findAllWatchlistEntities(rate_uuid);
+		if(list.size()>0){
+			treeViewer.refresh();
+		}
+	}
+	
+	@Inject
+	private void quoteUpdated(@Optional  @UIEventTopic(IEventConstant.QUOTE_UPDATE) String rate_uuid ){
+		
+		if(rate_uuid==null || rate_uuid.isEmpty()){
 			return;
 		}
+		if(treeViewer==null)return;
 		
-		if(!incoming.getUUID().equals(rate.getUUID())){
-			return;
+		List<WatchlistEntity> list=findAllWatchlistEntities(rate_uuid);
+		if(list.size()>0){
+			treeViewer.refresh();
 		}
-		
-		setLabelValues();
-		*/
 	}
 	
 

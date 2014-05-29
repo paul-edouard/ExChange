@@ -7,6 +7,7 @@ import org.eclipse.swt.dnd.TransferData;
 
 import com.munch.exchange.model.core.watchlist.Watchlist;
 import com.munch.exchange.model.core.watchlist.WatchlistEntity;
+import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IWatchlistProvider;
 
 public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
@@ -15,16 +16,20 @@ public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 	
 	private WatchlistTreeContentProvider contentProvider;
 	
+	
 	private IWatchlistProvider watchlistProvider;
+	private IExchangeRateProvider rateProvider;
 	
 	private int location;
 	
 	public WatchlistTreeViewerDropAdapter(Viewer viewer,WatchlistTreeContentProvider contentProvider,
-			IWatchlistProvider watchlistProvider){
+			IWatchlistProvider watchlistProvider,IExchangeRateProvider rateProvider){
 		super(viewer);
 		this.viewer = viewer;
 		this.contentProvider = contentProvider;
 		this.watchlistProvider = watchlistProvider;
+		this.rateProvider = rateProvider;
+		
 	}
 	
 	@Override
@@ -87,6 +92,7 @@ public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 			
 			WatchlistEntity ent=new WatchlistEntity();
 			ent.setRateUuid(uuidArray[i]);
+			ent.setRate(rateProvider.load(uuidArray[i]));
 			contentProvider.getCurrentList().getList().add(ent);
 			
 			rateAdded=true;
