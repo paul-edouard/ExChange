@@ -14,6 +14,7 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.watchlist.Watchlists;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Xml;
 import com.munch.exchange.services.IHistoricalDataProvider;
@@ -58,7 +59,21 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 		return map;
 	}
 	
-	
+	public void clear(ExchangeRate rate){
+		rate.getHistoricalData().clear();
+		
+		String savePathName=getSavePath(rate);
+		File path=new File(savePathName);
+		if(!path.isDirectory())return;
+		
+		File[] files=path.listFiles();
+		for(int i=0;i<files.length;i++){
+			files[i].delete();
+		}
+		
+		
+		
+	}
 	
 	/**
 	 * save all the historical data found

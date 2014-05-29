@@ -313,6 +313,9 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			LoadingStateChanger changer=new LoadingStateChanger(container);
 			
 			LinkedList<ExchangeRate> stock_l=exchangeRateProvider.loadAll(clazz);
+			for(ExchangeRate rate:stock_l){
+				eventBroker.post(IEventConstant.RATE_LOADED,rate);
+			}
 			container.setChilds(stock_l);
 			changer.Stop();
 			changer.wakeUp();

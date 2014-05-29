@@ -13,6 +13,6 @@ public interface IWatchlistProvider {
 	
 	Watchlists load();
 	
-	boolean save(Watchlists watchlists);
+	boolean save();
 
 }

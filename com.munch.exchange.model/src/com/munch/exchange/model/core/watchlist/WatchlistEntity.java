@@ -3,19 +3,23 @@ package com.munch.exchange.model.core.watchlist;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class WatchlistEntity extends XmlParameterElement {
 	
 	
-	static final String FIELD_RateUuid="rate uuid";
-	static final String FIELD_BuyPrice="buy price";
+	static final String FIELD_RateUuid="rateUuid";
+	static final String FIELD_BuyPrice="buyPrice";
 	static final String FIELD_Number="number";
+	static final String FIELD_Rate="rate";
 	
 	
 	private String rateUuid="";
 	private double buyPrice=0;
 	private int number=0;
+	
+	private ExchangeRate rate=null;
 	
 	
 	public WatchlistEntity(){
@@ -45,6 +49,16 @@ public class WatchlistEntity extends XmlParameterElement {
 	public void setNumber(int number) {
 	changes.firePropertyChange(FIELD_Number, this.number, this.number = number);
 	}
+	
+	
+	
+
+	public ExchangeRate getRate() {
+		return rate;
+	}
+
+	public void setRate(ExchangeRate rate) {
+	changes.firePropertyChange(FIELD_Rate, this.rate, this.rate = rate);}
 	
 
 	@Override

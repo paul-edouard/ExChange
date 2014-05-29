@@ -21,7 +21,7 @@ public class RatesTreeDragSourceListener implements DragSourceListener {
 	
 	@Override
 	public void dragStart(DragSourceEvent event) {
-		System.out.println("Start Drag");
+		//System.out.println("Start Drag");
 	}
 
 	@Override
@@ -29,19 +29,25 @@ public class RatesTreeDragSourceListener implements DragSourceListener {
 		// Here you do the convertion to the type which is expected.
 	    IStructuredSelection selection = (IStructuredSelection) treeViewer
 	    .getSelection();
-	    if(selection.getFirstElement() instanceof ExchangeRate){
-	    	ExchangeRate firstElement = (ExchangeRate) selection.getFirstElement();
-	    
-	    	if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-	    		event.data = firstElement.getUUID(); 
+	    Object[] array=selection.toArray();
+	   
+	    String dataString="";
+	    for(int j=0;j<array.length;j++){
+	    	if(array[j] instanceof ExchangeRate){
+	    		ExchangeRate rate = (ExchangeRate) array[j];
+	    		if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+	    			dataString += rate.getUUID()+";"; 
+	    		}
 	    	}
 	    }
-
+	    
+	    event.data=dataString;
+	    
 	}
 
 	@Override
 	public void dragFinished(DragSourceEvent event) {
-		System.out.println("Finshed Drag");
+		//System.out.println("Finshed Drag");
 	}
 
 }

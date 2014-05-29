@@ -11,13 +11,13 @@ public class Watchlist extends XmlParameterElement {
 	
 	static final String FIELD_Name="Name";
 	static final String FIELD_List="List";
-	static final String FIELD_IsSelected="is selected";
+	static final String FIELD_IsSelected="isSelected";
 	
 	private LinkedList<WatchlistEntity> list=new LinkedList<WatchlistEntity>();
 	private String Name="";
 	private boolean isSelected=false;
 	
-
+	
 	public LinkedList<WatchlistEntity> getList() {
 		return list;
 	}

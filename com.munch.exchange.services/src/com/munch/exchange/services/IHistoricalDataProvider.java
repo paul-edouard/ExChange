@@ -10,7 +10,13 @@ public interface IHistoricalDataProvider {
 	// ==================================
 	// ==      HISTORICAL DATA         ==
 	// ==================================
-
+	/**
+	 * delete all saved history points
+	 * 
+	 * @param rate
+	 */
+	void clear(ExchangeRate rate);
+	
 	/**
 	 * try to load the old historical of the given stock
 	 * 

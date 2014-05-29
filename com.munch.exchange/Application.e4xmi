@@ -8,8 +8,10 @@
             <children xsi:type="basic:Part" xmi:id="_fcohEIUwEeO8JejmZH0Bqw" elementId="com.munch.exchange.part.rates" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.RatesOverviewPart" label="Rates Overview" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png">
               <handlers xmi:id="_2X_CQIXPEeOHHYCHtnBtIA" elementId="com.munch.exchange.handler.rates.add" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.AddRateHandler" command="_EztE8IXQEeOHHYCHtnBtIA"/>
               <handlers xmi:id="_iD3JEIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.handler.delete_rate" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.DeleteRateHandler" command="_q70BMIaQEeOL4pkNq6bgJQ"/>
+              <handlers xmi:id="_kS-iIOceEeOcocoRitCrsA" elementId="com.munch.exchange.handler.clrearhistorypoints" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.ClearHistoryPointsHandler" command="_Watx0OceEeOcocoRitCrsA"/>
               <menus xsi:type="menu:PopupMenu" xmi:id="_blA2UIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.popupmenu.rates_overview" label="Rate Overview">
                 <children xsi:type="menu:HandledMenuItem" xmi:id="_yR7TIIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.handledmenuitem.delete_rate" label="Delete" iconURI="platform:/plugin/com.munch.exchange/icons/delete.png" command="_q70BMIaQEeOL4pkNq6bgJQ"/>
+                <children xsi:type="menu:HandledMenuItem" xmi:id="_1dEPkOceEeOcocoRitCrsA" elementId="com.munch.exchange.handledmenuitem.clearhistorypoints" label="Clear History Points" command="_Watx0OceEeOcocoRitCrsA"/>
               </menus>
               <toolbar xmi:id="_lUDAYIUwEeO8JejmZH0Bqw" elementId="com.munch.exchange.toolbar.rates">
                 <children xsi:type="menu:HandledToolItem" xmi:id="_tSYvsIXPEeOHHYCHtnBtIA" elementId="com.munch.exchange.handledtoolitem.rates.add" label="add" iconURI="platform:/plugin/com.munch.exchange/icons/add.png" tooltip="Add a new rate" command="_EztE8IXQEeOHHYCHtnBtIA"/>
@@ -85,6 +87,7 @@
   <commands xmi:id="_hCNcPWTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.help.aboutAction" commandName="aboutCommand"/>
   <commands xmi:id="_EztE8IXQEeOHHYCHtnBtIA" elementId="com.munch.exchange.command.rate.add" commandName="AddRate" description="add a new exchqnge rate to the rate tree"/>
   <commands xmi:id="_q70BMIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.command.delete_rate" commandName="DeleteRate"/>
+  <commands xmi:id="_Watx0OceEeOcocoRitCrsA" elementId="com.munch.exchange.command.clearhistorypoints" commandName="Clear History Points"/>
   <addons xmi:id="_hCM1ImTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.core.commands.service" contributionURI="bundleclass://org.eclipse.e4.core.commands/org.eclipse.e4.core.commands.CommandServiceAddon"/>
   <addons xmi:id="_hCM1I2TNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ui.contexts.service" contributionURI="bundleclass://org.eclipse.e4.ui.services/org.eclipse.e4.ui.services.ContextServiceAddon"/>
   <addons xmi:id="_hCM1JGTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ui.bindings.service" contributionURI="bundleclass://org.eclipse.e4.ui.bindings/org.eclipse.e4.ui.bindings.BindingServiceAddon"/>

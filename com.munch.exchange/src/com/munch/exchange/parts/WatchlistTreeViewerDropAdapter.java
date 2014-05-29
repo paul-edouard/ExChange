@@ -5,15 +5,26 @@ import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TransferData;
 
+import com.munch.exchange.model.core.watchlist.Watchlist;
+import com.munch.exchange.model.core.watchlist.WatchlistEntity;
+import com.munch.exchange.services.IWatchlistProvider;
+
 public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 	
 	private final Viewer viewer;
 	
+	private WatchlistTreeContentProvider contentProvider;
+	
+	private IWatchlistProvider watchlistProvider;
+	
 	private int location;
 	
-	public WatchlistTreeViewerDropAdapter(Viewer viewer){
+	public WatchlistTreeViewerDropAdapter(Viewer viewer,WatchlistTreeContentProvider contentProvider,
+			IWatchlistProvider watchlistProvider){
 		super(viewer);
 		this.viewer = viewer;
+		this.contentProvider = contentProvider;
+		this.watchlistProvider = watchlistProvider;
 	}
 	
 	@Override
@@ -57,9 +68,38 @@ public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 			
 		}
 		*/
-		System.out.println("Drop performed: "+data.toString());
 		
-		return false;
+		
+		boolean rateAdded=false;
+		
+		String[] uuidArray=data.toString().split(";");
+		for(int i=0;i<uuidArray.length;i++){
+			if(uuidArray[i].isEmpty())continue;
+			
+			boolean inList=false;
+			for(WatchlistEntity ent : contentProvider.getCurrentList().getList()){
+				if(ent.getRateUuid().equals(uuidArray[i])){
+					inList=true;break;
+				}
+			}
+			
+			if(inList)continue;
+			
+			WatchlistEntity ent=new WatchlistEntity();
+			ent.setRateUuid(uuidArray[i]);
+			contentProvider.getCurrentList().getList().add(ent);
+			
+			rateAdded=true;
+			
+		}
+		
+		
+		if(rateAdded && viewer!=null){
+			watchlistProvider.save();
+			viewer.refresh();
+		}
+		
+		return rateAdded;
 	}
 
 	@Override

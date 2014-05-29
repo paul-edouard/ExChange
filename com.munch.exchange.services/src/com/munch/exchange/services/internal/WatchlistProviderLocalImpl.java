@@ -15,6 +15,8 @@ public class WatchlistProviderLocalImpl implements IWatchlistProvider {
 	
 	private static Logger logger = Logger.getLogger(WatchlistProviderLocalImpl.class);
 	
+	private Watchlists watchlists=null;
+	
 	
 	@Override
 	public void init(String workspace) {
@@ -24,17 +26,21 @@ public class WatchlistProviderLocalImpl implements IWatchlistProvider {
 
 	@Override
 	public Watchlists load() {
-		String wachtlistsFileName=workspace+File.separator+WatchlistsStr;
-		Watchlists lists=new Watchlists();
-		if(Xml.load(lists, wachtlistsFileName)){
-			return lists;
+		if(watchlists==null){
+			String wachtlistsFileName=workspace+File.separator+WatchlistsStr;
+			watchlists=new Watchlists();
+			if(Xml.load(watchlists, wachtlistsFileName)){
+				return watchlists;
+			}
 		}
-		return null;
+		
+		return watchlists;
 	}
 
 	@Override
-	public boolean save(Watchlists watchlists) {
-		if(watchlists==null || watchlists.getLists().isEmpty())return false;
+	public boolean save() {
+		if(watchlists==null)return false;
+		if(watchlists==null || watchlists.getLists()==null)return false;
 		String wachtlistsFileName=workspace+File.separator+WatchlistsStr;
 		return Xml.save(watchlists, wachtlistsFileName);
 	}

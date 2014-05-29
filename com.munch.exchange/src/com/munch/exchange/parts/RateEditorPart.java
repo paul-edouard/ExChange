@@ -73,6 +73,9 @@ public class RateEditorPart {
 	public void postConstruct(Composite parent,Shell shell) {
 		this.shell=shell;
 		
+		//Start Loading Data
+		historicalDataLoader=ContextInjectionFactory.make( HistoricalDataLoader.class,context);
+		
 		TabFolder tabFolder = new TabFolder(parent, SWT.BOTTOM);
 		tabFolder.setBounds(0, 0, 122, 43);
 		
@@ -80,9 +83,6 @@ public class RateEditorPart {
 		createWebTabFolder(tabFolder,"Web");
 		createChartTabFolder(tabFolder, "Chart");
 		
-		
-		//Start Loading Data
-		historicalDataLoader=ContextInjectionFactory.make( HistoricalDataLoader.class,context);
 		historicalDataLoader.schedule();
 		
 	}
@@ -105,6 +105,7 @@ public class RateEditorPart {
 		//Create a context instance
 		IEclipseContext localContact=EclipseContextFactory.create();
 		localContact.set(Composite.class, compositeOverview);
+		localContact.set(HistoricalDataLoader.class, historicalDataLoader);
 		localContact.setParent(context);
 		
 		//////////////////////////////////

@@ -32,6 +32,7 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 import com.munch.exchange.IEventConstant;
+import com.munch.exchange.job.HistoricalDataLoader;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
@@ -49,6 +50,9 @@ public class OverviewRateChart extends Composite {
 	private Label lblLastDays;
 	
 	private boolean quoteActivated=false;
+	
+	@Inject
+	HistoricalDataLoader historicalDataLoader;
 	
 	/**
 	 * Create the composite.
@@ -148,6 +152,29 @@ public class OverviewRateChart extends Composite {
 		this.layout();
 	}
 	
+	@Inject
+	private void historicalDataCleared(
+			@Optional @UIEventTopic(IEventConstant.HISTORICAL_DATA_CLEARED) String rate_uuid) {
+		
+		if (this.isDisposed())
+			return;
+		if (rate_uuid == null || rate_uuid.isEmpty())
+			return;
+
+		ExchangeRate incoming = exchangeRateProvider.load(rate_uuid);
+		if (incoming == null || rate == null || c_comp == null
+				|| LastDays == null || lblLastDays == null)
+			return;
+		if (!incoming.getUUID().equals(rate.getUUID()))
+			return;
+		
+		 c_comp.setVisible(false);
+	     LastDays.setVisible(false);
+	     lblLastDays.setText("Loading ");
+	     
+	     historicalDataLoader.schedule();
+		
+	}
 	
 	@Inject
 	private void historicalDataLoading(
