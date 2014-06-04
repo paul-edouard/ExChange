@@ -1,4 +1,4 @@
-package com.munch.exchange.parts;
+package com.munch.exchange.parts.watchlist;
 
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;

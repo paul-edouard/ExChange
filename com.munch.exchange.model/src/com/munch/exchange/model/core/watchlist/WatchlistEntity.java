@@ -4,6 +4,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class WatchlistEntity extends XmlParameterElement {
@@ -50,15 +51,13 @@ public class WatchlistEntity extends XmlParameterElement {
 	changes.firePropertyChange(FIELD_Number, this.number, this.number = number);
 	}
 	
-	
-	
-
 	public ExchangeRate getRate() {
 		return rate;
 	}
 
 	public void setRate(ExchangeRate rate) {
 	changes.firePropertyChange(FIELD_Rate, this.rate, this.rate = rate);}
+	
 	
 
 	@Override

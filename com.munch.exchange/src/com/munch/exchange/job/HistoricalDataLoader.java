@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 
 import com.munch.exchange.IEventConstant;
@@ -40,10 +41,19 @@ public class HistoricalDataLoader extends Job {
 	private ExchangeRate rate;
 	
 	@Inject
-	public HistoricalDataLoader(ExchangeRate rate) {
-		super("Historical Data Provider: "+rate.getFullName());
-		this.rate=rate;
+	public HistoricalDataLoader(@Optional ExchangeRate rate) {
+		super("Historical Data Provider "/*+rate.getFullName()*/);
+		if(rate!=null)this.rate=rate;
+		
+		this.setPriority(LONG);
 	}
+	
+	
+	public void setRate(ExchangeRate rate) {
+		this.rate = rate;
+	}
+
+
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {

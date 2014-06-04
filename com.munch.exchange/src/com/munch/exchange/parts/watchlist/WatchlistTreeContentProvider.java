@@ -1,4 +1,4 @@
-package com.munch.exchange.parts;
+package com.munch.exchange.parts.watchlist;
 
 import javax.inject.Inject;
 
@@ -8,6 +8,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import com.munch.exchange.model.core.watchlist.Watchlist;
+import com.munch.exchange.model.core.watchlist.WatchlistEntity;
 import com.munch.exchange.parts.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IExchangeRateProvider;
 
@@ -30,6 +31,32 @@ public class WatchlistTreeContentProvider implements
 	
 
 	public void setCurrentList(Watchlist currentList) {
+		
+		if(this.currentList!=null){
+			for(WatchlistEntity ent:currentList.getList()){
+				if(ent.getRate()==null)continue;
+				if(ent.getRate().getHistoricalData()==null)continue;
+				ent.getRate().getHistoricalData().removeUsedClass(this.getClass());
+			}
+		}
+		
+		if(this.currentList!=null){
+			for(WatchlistEntity ent:currentList.getList()){
+				if(ent.getRate()==null)continue;
+				if(ent.getRate().getHistoricalData()==null)continue;
+				ent.getRate().getHistoricalData().addUsedClass(this.getClass());
+			}
+		}
+		
+		if(this.currentList!=null){
+			for(WatchlistEntity ent:currentList.getList()){
+				if(ent.getRate()==null)continue;
+				if(ent.getRate().getHistoricalData()==null)continue;
+				if(!ent.getRate().getHistoricalData().isUsed())
+					ent.getRate().getHistoricalData().clear();
+			}
+		}
+		
 		this.currentList = currentList;
 	}
 	

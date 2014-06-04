@@ -1,7 +1,9 @@
 package com.munch.exchange.model.core.historical;
 
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jfree.data.time.Day;
@@ -27,6 +29,8 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	
 	private LinkedList<HistoricalPoint> noneEmptyPoints=null;
 	
+	private Set<String> usedInSet =new HashSet<String>();
+	
 	
 	public HistoricalPoint getLastHisPointFromQuote() {
 		return lastHisPointFromQuote;
@@ -35,6 +39,19 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	public void setLastHisPointFromQuote(HistoricalPoint lastHisPointFromQuote) {
 		noneEmptyPoints=null;
 		changes.firePropertyChange(FIELD_Last_HisPoint_From_Quote, this.lastHisPointFromQuote, this.lastHisPointFromQuote = lastHisPointFromQuote);
+	}
+	
+
+	public synchronized boolean isUsed() {
+		return !usedInSet.isEmpty();
+	}
+
+	public void addUsedClass(Class<?> clazz) {
+		usedInSet.add(clazz.getName());
+	}
+	
+	public void removeUsedClass(Class<?> clazz){
+		usedInSet.remove(clazz.getName());
 	}
 	
 
@@ -247,6 +264,12 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		return maxProfitPercent/pList.getFirst().get(field);
 	}
 	
+	public float calculateMaxProfit(Calendar startdate, String field){
+		int[] period=calculatePeriod(startdate);
+		return calculateMaxProfit(period,field);
+	}
+	
+	
 	public float calculateKeepAndOld(int[] period, String field){
 		
 		float keepAndOld=0;
@@ -257,6 +280,11 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		
 		return keepAndOld;
 		
+	}
+	
+	public float calculateKeepAndOld(Calendar startdate, String field){
+		int[] period=calculatePeriod(startdate);
+		return calculateKeepAndOld(period,field);
 	}
 	
 	
@@ -285,6 +313,21 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		return noneEmptyPoints;
 	}
 	
+	
+	public int[] calculatePeriod(Calendar startdate){
+		int[] period=new int[2];
+		
+		period[1]=this.getNoneEmptyPoints().size();
+		
+		int pos=0;
+		for(HistoricalPoint point:this.getNoneEmptyPoints()){
+			if(point.getDate().after(startdate))break;
+			pos++;
+		}
+		period[0]=pos;
+		
+		return period;
+	}
 	
 	
 	public static LinkedList<HistoricalPoint> getPointsFromPeriod(int[] period,LinkedList<HistoricalPoint> basis){

@@ -83,6 +83,8 @@ public class RateEditorPart {
 		createWebTabFolder(tabFolder,"Web");
 		createChartTabFolder(tabFolder, "Chart");
 		
+		rate.getHistoricalData().addUsedClass(this.getClass());
+		
 		historicalDataLoader.schedule();
 		
 	}
@@ -193,8 +195,10 @@ public class RateEditorPart {
 	@PreDestroy
 	public void preDestroy() {
 		
+		rate.getHistoricalData().removeUsedClass(this.getClass());
+		
 		//Clear the historical Data
-		if(!rate.getHistoricalData().isEmpty()){
+		if(!rate.getHistoricalData().isEmpty() && !rate.getHistoricalData().isUsed()){
 			rate.getHistoricalData().clear();
 		}
 		

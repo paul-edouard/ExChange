@@ -165,6 +165,7 @@ public class YQLHistoricalData extends YQLTable {
 	private HistoricalPoint createHisPoint(JSONObject obj){
 		
 		HistoricalPoint point=new HistoricalPoint();
+		if(!obj.has("Low"))return null;
 		point.setLow(obj.getFloat("Low"));
 		point.setOpen(obj.getFloat("Open"));
 		point.setAdjClose(obj.getFloat("Adj_Close"));
@@ -193,7 +194,9 @@ public class YQLHistoricalData extends YQLTable {
 		JSONArray array=  this.getResult().getJSONArray("quote");
 		
 		for(int i=0;i<array.length();i++){
-			plist.add(this.createHisPoint(array.getJSONObject(i)));
+			HistoricalPoint p=this.createHisPoint(array.getJSONObject(i));
+			if(p!=null)
+				plist.add(p);
 			//System.out.println(hisData.createHisPoint(array.getJSONObject(i)));
 		}
 		}
