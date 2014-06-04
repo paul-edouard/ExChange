@@ -95,6 +95,7 @@ public class WatchlistPart {
 	private TreeViewerColumn treeViewerColumnChange;
 	private DateTime dateTimeWatchPeriod;
 	private TreeViewerColumn treeViewerColumnBuyAndOld;
+	private TreeViewerColumn treeViewerColumnMaxProfit;
 	
 	public WatchlistPart() {
 	}
@@ -286,6 +287,14 @@ public class WatchlistPart {
 	    trclmnBuyandold.setWidth(110);
 	    trclmnBuyandold.setText("Buy and old");
 	    trclmnBuyandold.addSelectionListener(getSelectionAdapter(trclmnBuyandold, 3));
+	    
+	    treeViewerColumnMaxProfit = new TreeViewerColumn(treeViewer, SWT.NONE);
+	    treeViewerColumnMaxProfit.setLabelProvider(new MaxProfitColumnLabelProvider());
+	    TreeColumn trclmnNewColumn = treeViewerColumnMaxProfit.getColumn();
+	    trclmnNewColumn.setAlignment(SWT.RIGHT);
+	    trclmnNewColumn.setWidth(100);
+	    trclmnNewColumn.setText("Max profit");
+	    trclmnNewColumn.addSelectionListener(getSelectionAdapter(trclmnNewColumn, 4));
 
 	    refreshViewer();
 	}
@@ -479,6 +488,22 @@ public class WatchlistPart {
 				WatchlistEntity entity=(WatchlistEntity) element;
 				if(entity.getRate()!=null && !entity.getRate().getHistoricalData().isEmpty()){
 					return String.format("%.2f",100*entity.getRate().getHistoricalData().calculateKeepAndOld(startWatchDate, DatePoint.FIELD_Close))+ "%";
+				}
+			}
+    		return "loading...";
+    	}
+	}
+	
+	class MaxProfitColumnLabelProvider extends ColumnLabelProvider{
+		public Image getImage(Object element) {
+    		return null;
+    	}
+    	public String getText(Object element) {
+    		if(element instanceof WatchlistEntity){
+				WatchlistEntity entity=(WatchlistEntity) element;
+				if(entity.getRate()!=null && !entity.getRate().getHistoricalData().isEmpty()){
+					float profit=100*entity.getRate().getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close);
+					return String.format("%.2f",profit)+ "%";
 				}
 			}
     		return "loading...";

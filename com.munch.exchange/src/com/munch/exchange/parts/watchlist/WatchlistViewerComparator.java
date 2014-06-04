@@ -85,7 +85,16 @@ public class WatchlistViewerComparator extends ViewerComparator {
 			float ko2 = p2.getRate().getHistoricalData().calculateKeepAndOld(startWatchDate, DatePoint.FIELD_Close);
 	    	
 			rc = (ko2>=ko1 ? 1 : -1);
-			break;	   
+			break;
+		//MaxPro
+	    case 4:
+	    	if(p1.getRate()==null || p2.getRate()==null)break;
+	    	if(p1.getRate().getHistoricalData().isEmpty() || p2.getRate().getHistoricalData().isEmpty())break;
+	    	float po1 = p1.getRate().getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close);
+			float po2 = p2.getRate().getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close);
+	    	
+			rc = (po2>=po1 ? 1 : -1);
+			break;
 	    default:
 	      rc = 0;
 	    }
