@@ -5,6 +5,7 @@ import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TransferData;
 
+import com.munch.exchange.job.HistoricalDataLoader;
 import com.munch.exchange.model.core.watchlist.Watchlist;
 import com.munch.exchange.model.core.watchlist.WatchlistEntity;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -15,7 +16,8 @@ public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 	private final Viewer viewer;
 	
 	private WatchlistTreeContentProvider contentProvider;
-	
+	//Loader
+	HistoricalDataLoader historicalDataLoader;
 	
 	private IWatchlistProvider watchlistProvider;
 	private IExchangeRateProvider rateProvider;
@@ -23,12 +25,13 @@ public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 	private int location;
 	
 	public WatchlistTreeViewerDropAdapter(Viewer viewer,WatchlistTreeContentProvider contentProvider,
-			IWatchlistProvider watchlistProvider,IExchangeRateProvider rateProvider){
+			IWatchlistProvider watchlistProvider,IExchangeRateProvider rateProvider, HistoricalDataLoader historicalDataLoader){
 		super(viewer);
 		this.viewer = viewer;
 		this.contentProvider = contentProvider;
 		this.watchlistProvider = watchlistProvider;
 		this.rateProvider = rateProvider;
+		this.historicalDataLoader=historicalDataLoader;
 		
 	}
 	
@@ -94,6 +97,12 @@ public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 			ent.setRateUuid(uuidArray[i]);
 			ent.setRate(rateProvider.load(uuidArray[i]));
 			contentProvider.getCurrentList().getList().add(ent);
+			
+			if(ent.getRate().getHistoricalData().isEmpty()){
+				historicalDataLoader.setRate(ent.getRate());
+				historicalDataLoader.schedule();
+			}
+				
 			
 			rateAdded=true;
 			

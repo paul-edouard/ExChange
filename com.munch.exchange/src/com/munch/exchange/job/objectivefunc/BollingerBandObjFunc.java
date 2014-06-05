@@ -10,8 +10,10 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.YIntervalSeries;
 
 import com.munch.exchange.model.core.DatePoint;
+import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
 
 public class BollingerBandObjFunc extends OptimizationModule implements
 		IObjectiveFunction<double[]> {
@@ -255,6 +257,16 @@ public class BollingerBandObjFunc extends OptimizationModule implements
 	}
 
 
+
+	public double getMaxProfit() {
+		return maxProfit;
+	}
+
+	public double compute(ExchangeRate rate){
+		double[] g=rate.getOptResultsMap().get(Type.BILLINGER_BAND).getResults().getFirst().getDoubleArray();
+		return compute(g,null);
+		
+	}
 
 	@Override
 	public double compute(double[] x, Random r) {

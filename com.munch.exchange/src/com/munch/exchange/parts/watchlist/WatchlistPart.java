@@ -37,12 +37,17 @@ import org.eclipse.swt.events.SelectionEvent;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.HistoricalDataLoader;
+import com.munch.exchange.job.objectivefunc.BollingerBandObjFunc;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
 import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.model.core.watchlist.Watchlist;
 import com.munch.exchange.model.core.watchlist.WatchlistEntity;
+import com.munch.exchange.parts.composite.RateChart;
+import com.munch.exchange.parts.composite.RateChartBollingerBandsComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IQuoteProvider;
 import com.munch.exchange.services.IWatchlistProvider;
@@ -96,6 +101,7 @@ public class WatchlistPart {
 	private DateTime dateTimeWatchPeriod;
 	private TreeViewerColumn treeViewerColumnBuyAndOld;
 	private TreeViewerColumn treeViewerColumnMaxProfit;
+	private TreeViewerColumn treeViewerColumnBollingerBand;
 	
 	public WatchlistPart() {
 	}
@@ -246,7 +252,8 @@ public class WatchlistPart {
 		int operations = DND.DROP_COPY| DND.DROP_MOVE;
 	    Transfer[] transferTypes = new Transfer[]{TextTransfer.getInstance()};
 	    treeViewer.addDropSupport(operations, transferTypes, 
-	    new WatchlistTreeViewerDropAdapter(treeViewer,contentProvider,watchlistProvider,rateProvider));
+	    new WatchlistTreeViewerDropAdapter(treeViewer,contentProvider,watchlistProvider,rateProvider,historicalDataLoader));
+	   
 		
 	    treeViewer.setInput(contentProvider.getCurrentList());
 	    treeViewer.setComparator(comparator);
@@ -295,6 +302,14 @@ public class WatchlistPart {
 	    trclmnNewColumn.setWidth(100);
 	    trclmnNewColumn.setText("Max profit");
 	    trclmnNewColumn.addSelectionListener(getSelectionAdapter(trclmnNewColumn, 4));
+	    
+	    treeViewerColumnBollingerBand = new TreeViewerColumn(treeViewer, SWT.NONE);
+	    treeViewerColumnBollingerBand.setLabelProvider(new BollingerBandColumnLabelProvider());
+	    TreeColumn trclmnBollingerBand = treeViewerColumnBollingerBand.getColumn();
+	    trclmnNewColumn.setAlignment(SWT.RIGHT);
+	    trclmnBollingerBand.setWidth(130);
+	    trclmnBollingerBand.setText("Bollinger Band");
+	    trclmnBollingerBand.addSelectionListener(getSelectionAdapter(trclmnBollingerBand, 5));
 
 	    refreshViewer();
 	}
@@ -507,6 +522,28 @@ public class WatchlistPart {
 				}
 			}
     		return "loading...";
+    	}
+	}
+	
+	class BollingerBandColumnLabelProvider extends ColumnLabelProvider{
+		public Image getImage(Object element) {
+    		return null;
+    	}
+    	public String getText(Object element) {
+    		if(element instanceof WatchlistEntity){
+				WatchlistEntity entity=(WatchlistEntity) element;
+				BollingerBandObjFunc func=watchlistService.getBollingerBandObjFunc(entity.getRate(),startWatchDate);
+				
+				if(func!=null ){
+					
+					double v=func.compute(entity.getRate());
+					float profit=(float)func.getMaxProfit()- (float)v;
+					return String.format("%,.2f%%",
+							profit * 100);
+					
+				}
+			}
+    		return "no opt. data";
     	}
 	}
 	

@@ -228,7 +228,7 @@ public class AddRateDialog extends TitleAreaDialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 254);
+		return new Point(672, 384);
 	}
 	
 	

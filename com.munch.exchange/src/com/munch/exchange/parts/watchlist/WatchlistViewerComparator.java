@@ -6,6 +6,7 @@ import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 
+import com.munch.exchange.job.objectivefunc.BollingerBandObjFunc;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.model.core.watchlist.WatchlistEntity;
@@ -94,6 +95,22 @@ public class WatchlistViewerComparator extends ViewerComparator {
 			float po2 = p2.getRate().getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close);
 	    	
 			rc = (po2>=po1 ? 1 : -1);
+			break;
+		//Bollinger Band
+	    case 5:
+	    	if(p1.getRate()==null || p2.getRate()==null)break;
+	    	if(p1.getRate().getHistoricalData().isEmpty() || p2.getRate().getHistoricalData().isEmpty())break;
+	    	BollingerBandObjFunc bo1 = watchlistService.getBollingerBandObjFunc(p1.getRate(),startWatchDate);
+	    	BollingerBandObjFunc bo2 = watchlistService.getBollingerBandObjFunc(p2.getRate(),startWatchDate);
+	    	
+	    	if(bo1!=null && bo2==null)rc=-1;
+	    	if(bo1==null && bo2!=null)rc=1;
+	    	
+	    	if(bo1==null || bo2==null)break;
+	    	double pro1=bo1.getMaxProfit()- bo1.compute(p1.getRate());
+	    	double pro2=bo2.getMaxProfit()- bo2.compute(p2.getRate());
+	    	
+			rc = (pro2>=pro1 ? 1 : -1);
 			break;
 	    default:
 	      rc = 0;

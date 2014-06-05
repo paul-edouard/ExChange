@@ -99,13 +99,13 @@ public class RateChartBollingerBandsComposite extends Composite {
 	
 	private double numberOfDaysUpper = 20;
 	private double numberOfDaysLower = 20;
-	private double maxNumberOfDays = 40;
+	public static final double maxNumberOfDays = 40;
 	
 	private double bandFactorUpper=2;
 	private double bandDamperUpper=0;
 	private double bandFactorLower=2;
 	private double bandDamperLower=0;
-	private double maxBandFactor=4;
+	public static final double maxBandFactor=4;
 	
 	private BollingerBandObjFunc bollingerBandObjFunc;
 	

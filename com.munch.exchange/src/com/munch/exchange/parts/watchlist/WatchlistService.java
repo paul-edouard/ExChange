@@ -1,14 +1,22 @@
 package com.munch.exchange.parts.watchlist;
 
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import com.munch.exchange.job.objectivefunc.BollingerBandObjFunc;
+import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.EconomicData;
+import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
 import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.model.core.watchlist.Watchlist;
 import com.munch.exchange.model.core.watchlist.WatchlistEntity;
+import com.munch.exchange.parts.composite.RateChart;
+import com.munch.exchange.parts.composite.RateChartBollingerBandsComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IQuoteProvider;
 import com.munch.exchange.services.IWatchlistProvider;
@@ -76,6 +84,38 @@ public class WatchlistService {
 		
 		return null;
 	}
+	
+	
+	public BollingerBandObjFunc getBollingerBandObjFunc(ExchangeRate rate, Calendar startWatchDate ){
+		if(rate!=null 
+				&& !rate.getHistoricalData().isEmpty()
+				&& rate.getOptResultsMap().get(Type.BILLINGER_BAND)!=null
+				&& !rate.getOptResultsMap().get(Type.BILLINGER_BAND).getResults().isEmpty()){
+			
+			float maxProfit=rate.getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close);
+			
+			//Create the Bollinger Band function
+			BollingerBandObjFunc bollingerBandObjFunc=new BollingerBandObjFunc(
+					 HistoricalPoint.FIELD_Close,
+					 RateChart.PENALTY,
+					 rate.getHistoricalData().getNoneEmptyPoints(),
+					 RateChartBollingerBandsComposite.maxNumberOfDays,
+					 RateChartBollingerBandsComposite.maxBandFactor,
+					 maxProfit
+					 );
+			bollingerBandObjFunc.setPeriod(rate.getHistoricalData().calculatePeriod(startWatchDate));
+			
+			//double[] g=entity.getRate().getOptResultsMap().get(Type.BILLINGER_BAND).getResults().getFirst().getDoubleArray();
+			//double v=bollingerBandObjFunc.compute(g, null);
+			//float profit=maxProfit- (float)v;
+			
+			return bollingerBandObjFunc;
+			
+		}
+		return null;
+	}
+	
+	
 	
 	
 	
