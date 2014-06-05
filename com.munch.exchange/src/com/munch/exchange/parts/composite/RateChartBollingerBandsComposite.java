@@ -726,26 +726,9 @@ public class RateChartBollingerBandsComposite extends Composite {
 		String movAvgProfitString = String.format("%,.2f%%",
 				getBollingerBandObjFunc().getProfit() * 100);
 		bollingerBandProfitlbl.setText(movAvgProfitString);
-		//TODO
-		String daySellLimits_str="["+
-				String.format("%,.3f",getBollingerBandObjFunc().getDaySellUpLimit())+
-				((getBollingerBandObjFunc().isDaySellUpLimitIsActivated())?"*":"")+
-				"-"+
-				String.format("%,.3f",getBollingerBandObjFunc().getDaySellDownLimit())+
-				((getBollingerBandObjFunc().isDaySellDownLimitIsActivated())?"*":"")+
-				"]";
 		
-		daySellLimitsLbl.setText(daySellLimits_str);
-		
-		String dayBuyLimits_str="["+
-				String.format("%,.3f",getBollingerBandObjFunc().getDayBuyUpLimit())+
-				((getBollingerBandObjFunc().isDayBuyUpLimitIsActivated())?"*":"")+
-				"-"+
-				String.format("%,.3f",getBollingerBandObjFunc().getDayBuyDownLimit())+
-				((getBollingerBandObjFunc().isDayBuyDownLimitIsActivated())?"*":"")+
-				"]";
-		
-		dayBuyLimitsLbl.setText(dayBuyLimits_str);
+		daySellLimitsLbl.setText(getBollingerBandObjFunc().getSellLimitStr());
+		dayBuyLimitsLbl.setText(getBollingerBandObjFunc().getBuyLimitStr());
 		
 		
 		

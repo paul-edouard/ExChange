@@ -22,6 +22,8 @@ public class WatchlistEntity extends XmlParameterElement {
 	
 	private ExchangeRate rate=null;
 	
+	//private 
+	
 	
 	public WatchlistEntity(){
 		

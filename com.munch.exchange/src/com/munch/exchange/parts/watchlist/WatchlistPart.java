@@ -37,6 +37,7 @@ import org.eclipse.swt.events.SelectionEvent;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.HistoricalDataLoader;
+import com.munch.exchange.job.Optimizer.OptimizationInfo;
 import com.munch.exchange.job.objectivefunc.BollingerBandObjFunc;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.EconomicData;
@@ -63,6 +64,7 @@ import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.DisposeEvent;
+import org.goataa.impl.utils.Individual;
 
 public class WatchlistPart {
 	
@@ -248,6 +250,7 @@ public class WatchlistPart {
 		tree.setHeaderVisible(true);
 		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
+		
 		//Add Drop Support
 		int operations = DND.DROP_COPY| DND.DROP_MOVE;
 	    Transfer[] transferTypes = new Transfer[]{TextTransfer.getInstance()};
@@ -310,7 +313,11 @@ public class WatchlistPart {
 	    trclmnBollingerBand.setWidth(130);
 	    trclmnBollingerBand.setText("Bollinger Band");
 	    trclmnBollingerBand.addSelectionListener(getSelectionAdapter(trclmnBollingerBand, 5));
-
+	    
+	    
+	    tree.setSortColumn(trclmnChange);
+	    tree.setSortDirection(1);
+	    
 	    refreshViewer();
 	}
 	
@@ -418,6 +425,19 @@ public class WatchlistPart {
 			loadNextHistoricalData();
 			treeViewer.refresh();
 		}
+	}
+	
+	@Inject
+	private void OptimizerNewBestFound(
+			@Optional @UIEventTopic(IEventConstant.OPTIMIZATION_NEW_BEST_INDIVIDUAL) OptimizationInfo info) {
+		if(info==null)return;
+		if(!isReadyToReact(info.getRate().getUUID())){return;}
+		
+		WatchlistEntity ent=watchlistService.findEntityFromList(contentProvider.getCurrentList(),  info.getRate().getUUID());
+		if(ent!=null){
+			treeViewer.refresh();
+		}
+		
 	}
 	
 	
@@ -539,7 +559,7 @@ public class WatchlistPart {
 					double v=func.compute(entity.getRate());
 					float profit=(float)func.getMaxProfit()- (float)v;
 					return String.format("%,.2f%%",
-							profit * 100);
+							profit * 100)+" "+func.getLimitRange();
 					
 				}
 			}

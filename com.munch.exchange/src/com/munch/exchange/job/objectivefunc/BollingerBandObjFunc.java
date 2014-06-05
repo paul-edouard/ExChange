@@ -13,6 +13,9 @@ import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.limit.Limit;
+import com.munch.exchange.model.core.limit.LimitRange;
+import com.munch.exchange.model.core.limit.LimitRange.LimitRangeType;
 import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
 
 public class BollingerBandObjFunc extends OptimizationModule implements
@@ -68,6 +71,7 @@ public class BollingerBandObjFunc extends OptimizationModule implements
 	private boolean isUpper;
 	private boolean isLower;
 	
+	private boolean bought=false;
 	
 	//Max Profit from the given period
 	private double maxProfit;
@@ -261,6 +265,57 @@ public class BollingerBandObjFunc extends OptimizationModule implements
 	public double getMaxProfit() {
 		return maxProfit;
 	}
+	
+	public String getLimitStr(){
+		if(bought){
+			return "Sell: " +this.getSellLimitStr();
+		}
+		else{
+			return "Buy: " + this.getBuyLimitStr();
+		}
+	}
+	
+	public LimitRange getLimitRange(){
+		if(bought){
+			Limit upper=new Limit(this.isDaySellUpLimitIsActivated(), this.getDaySellUpLimit());
+			Limit lower=new Limit(this.isDaySellDownLimitIsActivated(), this.getDaySellDownLimit());
+			
+			return new LimitRange(upper, lower, LimitRangeType.SELL);
+		}
+		else{
+			Limit upper=new Limit(this.isDayBuyUpLimitIsActivated(), this.getDayBuyUpLimit());
+			Limit lower=new Limit(this.isDayBuyDownLimitIsActivated(), this.getDayBuyDownLimit());
+			
+			return new LimitRange(upper, lower, LimitRangeType.BUY);
+		}
+		
+		
+	}
+	
+	
+	public String getSellLimitStr(){
+		String daySellLimits_str="["+
+				String.format("%,.3f",this.getDaySellUpLimit())+
+				((this.isDaySellUpLimitIsActivated())?"*":"")+
+				"-"+
+				String.format("%,.3f",this.getDaySellDownLimit())+
+				((this.isDaySellDownLimitIsActivated())?"*":"")+
+				"]";
+		
+		return daySellLimits_str;
+	}
+	
+	public String getBuyLimitStr(){
+		String dayBuyLimits_str="["+
+				String.format("%,.3f",this.getDayBuyUpLimit())+
+				((this.isDayBuyUpLimitIsActivated())?"*":"")+
+				"-"+
+				String.format("%,.3f",this.getDayBuyDownLimit())+
+				((this.isDayBuyDownLimitIsActivated())?"*":"")+
+				"]";
+		return dayBuyLimits_str;
+	}
+	
 
 	public double compute(ExchangeRate rate){
 		double[] g=rate.getOptResultsMap().get(Type.BILLINGER_BAND).getResults().getFirst().getDoubleArray();
@@ -288,7 +343,7 @@ public class BollingerBandObjFunc extends OptimizationModule implements
 		
 		//Init Profit
 		profit=0;
-		boolean bought=false;
+		bought=false;
 		isUpper=false;
 		isLower=false;
 		
