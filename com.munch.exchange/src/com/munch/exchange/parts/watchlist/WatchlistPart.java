@@ -267,7 +267,7 @@ public class WatchlistPart {
 		int operations = DND.DROP_COPY| DND.DROP_MOVE;
 	    Transfer[] transferTypes = new Transfer[]{TextTransfer.getInstance()};
 	    treeViewer.addDropSupport(operations, transferTypes, 
-	    new WatchlistTreeViewerDropAdapter(treeViewer,contentProvider,watchlistProvider,rateProvider,historicalDataLoader));
+	    new WatchlistTreeViewerDropAdapter(treeViewer,contentProvider,watchlistProvider,rateProvider,historicalDataLoader,watchlistService));
 	   
 		
 	    treeViewer.setInput(contentProvider.getCurrentList());
@@ -437,8 +437,10 @@ public class WatchlistPart {
 		
 		List<WatchlistEntity> list=watchlistService.findAllWatchlistEntities(rate_uuid);
 		if(list.size()>0){
-			for(WatchlistEntity entity:list)
+			for(WatchlistEntity entity:list){
 				watchlistService.refreshQuote(entity);
+				watchlistService.refreshHistoricalData(entity, startWatchDate);
+			}
 			treeViewer.refresh();
 		}
 	}
@@ -450,8 +452,10 @@ public class WatchlistPart {
 		
 		List<WatchlistEntity> list=watchlistService.findAllWatchlistEntities(rate_uuid);
 		if(list.size()>0){
-			for(WatchlistEntity entity:list)
+			for(WatchlistEntity entity:list){
 				watchlistService.refreshQuote(entity);
+				watchlistService.refreshHistoricalData(entity, startWatchDate);
+			}
 			treeViewer.refresh();
 		}
 	}
@@ -619,17 +623,17 @@ public class WatchlistPart {
 			if(element instanceof WatchlistEntity){
 				WatchlistEntity entity=(WatchlistEntity) element;
 				if(entity.getBollingerBandTrigger()!=null ){
-					switch (entity.getBollingerBandTrigger().calculateTriggerType(3)) {
+					switch (entity.getBollingerBandTrigger().calculateTriggerType(2)) {
 					case CLOSE_TO_BUY:
-						return new Color(null, 0, 150, 255);
+						return new Color(null,	255,165,0);
 					case CLOSE_TO_SELL:
-						return new Color(null, 150, 0, 255);
+						return new Color(null, 165, 255, 0);
 					case NONE:
 						return new Color(null, 255, 255, 255);
 					case TO_BUY:
-						return new Color(null, 0, 250, 0);
+						return new Color(null, 255, 0, 0);
 					case TO_SELL:
-						return new Color(null, 250, 0, 0);
+						return new Color(null, 0, 255, 0);
 					
 					}
 				}

@@ -21,17 +21,19 @@ public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 	
 	private IWatchlistProvider watchlistProvider;
 	private IExchangeRateProvider rateProvider;
+	private WatchlistService watchlistService;
 	
 	private int location;
 	
 	public WatchlistTreeViewerDropAdapter(Viewer viewer,WatchlistTreeContentProvider contentProvider,
-			IWatchlistProvider watchlistProvider,IExchangeRateProvider rateProvider, HistoricalDataLoader historicalDataLoader){
+			IWatchlistProvider watchlistProvider,IExchangeRateProvider rateProvider, HistoricalDataLoader historicalDataLoader,WatchlistService watchlistService){
 		super(viewer);
 		this.viewer = viewer;
 		this.contentProvider = contentProvider;
 		this.watchlistProvider = watchlistProvider;
 		this.rateProvider = rateProvider;
 		this.historicalDataLoader=historicalDataLoader;
+		this.watchlistService=watchlistService;
 		
 	}
 	
@@ -97,6 +99,8 @@ public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 			ent.setRateUuid(uuidArray[i]);
 			ent.setRate(rateProvider.load(uuidArray[i]));
 			contentProvider.getCurrentList().getList().add(ent);
+			watchlistService.refreshQuote(ent);
+			//watchlistService.refreshHistoricalData(entity, startWatchDate);
 			
 			if(ent.getRate().getHistoricalData().isEmpty()){
 				historicalDataLoader.setRate(ent.getRate());

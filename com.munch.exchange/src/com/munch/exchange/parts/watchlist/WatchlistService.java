@@ -72,8 +72,6 @@ public class WatchlistService {
 			//Max Profit
 			entity.setMaxProfit(entity.getRate().getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close));
 			//Bollinger Band
-			System.out.println("Refrsh Hist data: "+entity.getRate().getFullName());
-			
 			BollingerBandObjFunc func=this.getBollingerBandObjFunc(entity.getRate(),startWatchDate);
 			if(func!=null ){
 				
