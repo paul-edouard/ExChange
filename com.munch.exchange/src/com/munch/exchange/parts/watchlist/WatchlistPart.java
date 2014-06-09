@@ -11,10 +11,15 @@ import javax.inject.Inject;
 import org.eclipse.e4.core.contexts.ContextInjectionFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.window.Window;
@@ -56,6 +61,7 @@ import com.munch.exchange.services.IWatchlistProvider;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.events.MouseTrackAdapter;
@@ -82,6 +88,9 @@ public class WatchlistPart {
 	
 	@Inject
 	IExchangeRateProvider rateProvider;
+	
+	@Inject
+	private IEventBroker eventBroker;
 	
 	
 	//Loader
@@ -161,6 +170,9 @@ public class WatchlistPart {
 									dateTimeWatchPeriod.getMinutes(),
 									dateTimeWatchPeriod.getSeconds());
 				comparator.setStartWatchDate(startWatchDate);
+				for(WatchlistEntity ent:contentProvider.getCurrentList().getList()){
+					watchlistService.refreshHistoricalData(ent, startWatchDate);
+				}
 				refreshViewer();
 			}
 		});
@@ -260,7 +272,23 @@ public class WatchlistPart {
 		
 	    treeViewer.setInput(contentProvider.getCurrentList());
 	    treeViewer.setComparator(comparator);
-	    
+	    //Double Click listener
+	  	treeViewer.addDoubleClickListener(new IDoubleClickListener() {
+	  			public void doubleClick(DoubleClickEvent event) {
+	  				ISelection selection =treeViewer.getSelection();
+					if (selection != null & selection instanceof IStructuredSelection) {
+						IStructuredSelection strucSelection = (IStructuredSelection) selection;
+						Object item =strucSelection.getFirstElement();
+					
+						if(item instanceof WatchlistEntity){
+							WatchlistEntity entity=(WatchlistEntity)item;
+							if(entity.getRate()!=null)
+								eventBroker.send(IEventConstant.RATE_OPEN,entity.getRate());
+							
+						}
+					}
+	  			}
+	  		});
 	    
 		//##############################
 		//##          Columns         ##
@@ -366,6 +394,12 @@ public class WatchlistPart {
 			historicalDataLoader.setRate(toLoad.getRate());
 			historicalDataLoader.schedule();
 		}
+		else{
+			for(WatchlistEntity ent:this.contentProvider.getCurrentList().getList()){
+				watchlistService.refreshHistoricalData(ent, startWatchDate);
+			}
+			treeViewer.refresh();
+		}
 	}
 	
 	 
@@ -379,7 +413,10 @@ public class WatchlistPart {
 		if(treeViewer!=null && rate!=null){
 			
 			List<WatchlistEntity> list=watchlistService.findAllWatchlistEntities(rate.getUUID());
-			for(WatchlistEntity ent:list)ent.setRate(rate);
+			for(WatchlistEntity ent:list){
+				ent.setRate(rate);
+				watchlistService.refreshQuote(ent);
+			}
 			if(list.size()>0)
 				treeViewer.refresh();
 			
@@ -400,6 +437,8 @@ public class WatchlistPart {
 		
 		List<WatchlistEntity> list=watchlistService.findAllWatchlistEntities(rate_uuid);
 		if(list.size()>0){
+			for(WatchlistEntity entity:list)
+				watchlistService.refreshQuote(entity);
 			treeViewer.refresh();
 		}
 	}
@@ -411,6 +450,8 @@ public class WatchlistPart {
 		
 		List<WatchlistEntity> list=watchlistService.findAllWatchlistEntities(rate_uuid);
 		if(list.size()>0){
+			for(WatchlistEntity entity:list)
+				watchlistService.refreshQuote(entity);
 			treeViewer.refresh();
 		}
 	}
@@ -420,12 +461,27 @@ public class WatchlistPart {
 		
 		if(!isReadyToReact(rate_uuid)){return;}
 		
-		WatchlistEntity ent=watchlistService.findEntityFromList(contentProvider.getCurrentList(),  rate_uuid);
-		if(ent!=null){
+		WatchlistEntity entity=watchlistService.findEntityFromList(contentProvider.getCurrentList(),  rate_uuid);
+		if(entity!=null){
+			watchlistService.refreshHistoricalData(entity, startWatchDate);
 			loadNextHistoricalData();
 			treeViewer.refresh();
 		}
 	}
+	
+	@Inject
+	private void OptimizerDataLoaded(@Optional  @UIEventTopic(IEventConstant.OPTIMIZATION_RESULTS_LOADED) String rate_uuid ){
+		
+		if(!isReadyToReact(rate_uuid)){return;}
+		
+		WatchlistEntity entity=watchlistService.findEntityFromList(contentProvider.getCurrentList(),  rate_uuid);
+		if(entity!=null){
+			watchlistService.refreshHistoricalData(entity, startWatchDate);
+			treeViewer.refresh();
+		}
+	}
+	
+	
 	
 	@Inject
 	private void OptimizerNewBestFound(
@@ -433,8 +489,9 @@ public class WatchlistPart {
 		if(info==null)return;
 		if(!isReadyToReact(info.getRate().getUUID())){return;}
 		
-		WatchlistEntity ent=watchlistService.findEntityFromList(contentProvider.getCurrentList(),  info.getRate().getUUID());
-		if(ent!=null){
+		WatchlistEntity entity=watchlistService.findEntityFromList(contentProvider.getCurrentList(),  info.getRate().getUUID());
+		if(entity!=null){
+			watchlistService.refreshHistoricalData(entity, startWatchDate);
 			treeViewer.refresh();
 		}
 		
@@ -485,9 +542,8 @@ public class WatchlistPart {
     	public String getText(Object element) {
     		if(element instanceof WatchlistEntity){
 				WatchlistEntity entity=(WatchlistEntity) element;
-				QuotePoint point=watchlistService.searchLastQuote(entity);
-				if(point!=null){
-					return String.valueOf(point.getLastTradePrice());
+				if(entity.getLastQuote()!=null){
+					return String.valueOf(entity.getLastQuote().getLastTradePrice());
 				}
 			}
     		return "loading..";
@@ -502,9 +558,9 @@ public class WatchlistPart {
     	public String getText(Object element) {
     		if(element instanceof WatchlistEntity){
 				WatchlistEntity entity=(WatchlistEntity) element;
-				QuotePoint point=watchlistService.searchLastQuote(entity);
-				if(point!=null){
-					float per = point.getChange() * 100 / point.getLastTradePrice();
+				if(entity.getLastQuote()!=null){
+					float per = entity.getLastQuote().getChange() * 100
+							/ entity.getLastQuote().getLastTradePrice();
 					return String.format("%.2f", per) + "%";
 					
 				}
@@ -522,7 +578,7 @@ public class WatchlistPart {
     		if(element instanceof WatchlistEntity){
 				WatchlistEntity entity=(WatchlistEntity) element;
 				if(entity.getRate()!=null && !entity.getRate().getHistoricalData().isEmpty()){
-					return String.format("%.2f",100*entity.getRate().getHistoricalData().calculateKeepAndOld(startWatchDate, DatePoint.FIELD_Close))+ "%";
+					return String.format("%.2f",100*entity.getBuyAndOld())+ "%";
 				}
 			}
     		return "loading...";
@@ -537,7 +593,7 @@ public class WatchlistPart {
     		if(element instanceof WatchlistEntity){
 				WatchlistEntity entity=(WatchlistEntity) element;
 				if(entity.getRate()!=null && !entity.getRate().getHistoricalData().isEmpty()){
-					float profit=100*entity.getRate().getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close);
+					double profit=100*entity.getMaxProfit();
 					return String.format("%.2f",profit)+ "%";
 				}
 			}
@@ -552,19 +608,36 @@ public class WatchlistPart {
     	public String getText(Object element) {
     		if(element instanceof WatchlistEntity){
 				WatchlistEntity entity=(WatchlistEntity) element;
-				BollingerBandObjFunc func=watchlistService.getBollingerBandObjFunc(entity.getRate(),startWatchDate);
-				
-				if(func!=null ){
-					
-					double v=func.compute(entity.getRate());
-					float profit=(float)func.getMaxProfit()- (float)v;
-					return String.format("%,.2f%%",
-							profit * 100)+" "+func.getLimitRange();
-					
+				if(entity.getBollingerBandTrigger()!=null ){
+					return String.valueOf(entity.getBollingerBandTrigger());
 				}
 			}
     		return "no opt. data";
     	}
+		@Override
+		public Color getBackground(Object element) {
+			if(element instanceof WatchlistEntity){
+				WatchlistEntity entity=(WatchlistEntity) element;
+				if(entity.getBollingerBandTrigger()!=null ){
+					switch (entity.getBollingerBandTrigger().calculateTriggerType(3)) {
+					case CLOSE_TO_BUY:
+						return new Color(null, 0, 150, 255);
+					case CLOSE_TO_SELL:
+						return new Color(null, 150, 0, 255);
+					case NONE:
+						return new Color(null, 255, 255, 255);
+					case TO_BUY:
+						return new Color(null, 0, 250, 0);
+					case TO_SELL:
+						return new Color(null, 250, 0, 0);
+					
+					}
+				}
+			}
+			return super.getBackground(element);
+		}
+    	
+    	
 	}
 	
 	

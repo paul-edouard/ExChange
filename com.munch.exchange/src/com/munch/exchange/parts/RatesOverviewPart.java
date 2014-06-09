@@ -235,6 +235,16 @@ public class RatesOverviewPart {
 		return parts;
 	}
 	
+	
+	@Inject
+	private void openRate(@Optional  @UIEventTopic(IEventConstant.RATE_OPEN) ExchangeRate rate ){
+		
+		if(treeViewer!=null && rate!=null){
+			openRateEditor( rate);
+		}
+	}
+	
+	
 	@Inject
 	private void addRate(@Optional  @UIEventTopic(IEventConstant.RATE_NEW) ExchangeRate rate ){
 		

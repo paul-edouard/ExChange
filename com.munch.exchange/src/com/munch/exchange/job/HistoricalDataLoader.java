@@ -92,7 +92,7 @@ public class HistoricalDataLoader extends Job {
 		
 		//Laod the optimization result
 		if(optimizationResultsProvider.load(rate)){
-			eventBroker.post(IEventConstant.OPTIMIZATION_RESULTS_LOADED,rate.getUUID());
+			eventBroker.send(IEventConstant.OPTIMIZATION_RESULTS_LOADED,rate.getUUID());
 		}
 		
 		return Status.OK_STATUS;

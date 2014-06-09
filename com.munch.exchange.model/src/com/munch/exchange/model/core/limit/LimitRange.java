@@ -22,6 +22,10 @@ public class LimitRange {
 	}
 	
 
+	public LimitRangeType getType() {
+		return type;
+	}
+
 	public Limit getUpperLimit() {
 		return upperLimit;
 	}

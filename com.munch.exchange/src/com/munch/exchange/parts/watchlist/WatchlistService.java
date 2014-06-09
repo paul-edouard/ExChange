@@ -11,6 +11,8 @@ import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.limit.OrderTrigger;
+import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
 import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.model.core.watchlist.Watchlist;
@@ -41,7 +43,7 @@ public class WatchlistService {
 	/**
 	 * if not loaded the quote will be loaded
 	 */
-	public QuotePoint searchLastQuote(WatchlistEntity entity){
+	private QuotePoint searchLastQuote(WatchlistEntity entity){
 		if(entity.getRate()==null)return null;
 		
 		if(entity.getRate().getRecordedQuote().isEmpty() && !(entity.getRate() instanceof EconomicData)){
@@ -54,6 +56,39 @@ public class WatchlistService {
 		}
 		return null;
 	}
+	
+	
+	public void refreshQuote(WatchlistEntity entity){
+		entity.setLastQuote(searchLastQuote(entity));
+		if(entity.getBollingerBandTrigger()!=null){
+			entity.getBollingerBandTrigger().setValue(entity.getLastQuote().getLastTradePrice());
+		}
+	}
+	
+	public void refreshHistoricalData(WatchlistEntity entity,Calendar startWatchDate){
+		if(entity.getRate()!=null && !entity.getRate().getHistoricalData().isEmpty()){
+			//Buy and Old
+			entity.setBuyAndOld(entity.getRate().getHistoricalData().calculateKeepAndOld(startWatchDate, DatePoint.FIELD_Close));
+			//Max Profit
+			entity.setMaxProfit(entity.getRate().getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close));
+			//Bollinger Band
+			System.out.println("Refrsh Hist data: "+entity.getRate().getFullName());
+			
+			BollingerBandObjFunc func=this.getBollingerBandObjFunc(entity.getRate(),startWatchDate);
+			if(func!=null ){
+				
+				double v=func.compute(entity.getRate());
+				double profit=func.getMaxProfit()- v;
+				OrderTrigger trigger=new OrderTrigger(entity.getLastQuote().getLastTradePrice(), profit, func.getLimitRange());
+				entity.setBollingerBandTrigger(trigger);
+			}
+			else{
+				
+			}
+			
+		}
+	}
+	
 	
 	
 	public List<WatchlistEntity> findAllWatchlistEntities(String uuid){
@@ -89,7 +124,7 @@ public class WatchlistService {
 	public BollingerBandObjFunc getBollingerBandObjFunc(ExchangeRate rate, Calendar startWatchDate ){
 		if(rate!=null 
 				&& !rate.getHistoricalData().isEmpty()
-				&& rate.getOptResultsMap().get(Type.BILLINGER_BAND)!=null
+				//&& rate.getOptResultsMap().get(Type.BILLINGER_BAND)!=null
 				&& !rate.getOptResultsMap().get(Type.BILLINGER_BAND).getResults().isEmpty()){
 			
 			float maxProfit=rate.getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close);
@@ -108,10 +143,22 @@ public class WatchlistService {
 			//double[] g=entity.getRate().getOptResultsMap().get(Type.BILLINGER_BAND).getResults().getFirst().getDoubleArray();
 			//double v=bollingerBandObjFunc.compute(g, null);
 			//float profit=maxProfit- (float)v;
-			
+			//System.out.println("opt results found!: "+rate.getFullName());
 			return bollingerBandObjFunc;
 			
 		}
+		/*
+		System.out.println("No opt results!: "+rate.getFullName());
+		if( rate.getOptResultsMap()!=null){
+			for(OptimizationResults.Type type:rate.getOptResultsMap().keySet()){
+				System.out.println("Types!: "+OptimizationResults.OptimizationTypeToString(type));
+				System.out.println("Results!: "+rate.getOptResultsMap().get(type).getResults().size());
+				
+				
+			}
+		}
+		*/
+		
 		return null;
 	}
 	

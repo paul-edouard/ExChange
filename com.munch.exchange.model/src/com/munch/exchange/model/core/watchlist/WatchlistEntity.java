@@ -4,6 +4,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.limit.OrderTrigger;
 import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
@@ -22,7 +23,11 @@ public class WatchlistEntity extends XmlParameterElement {
 	
 	private ExchangeRate rate=null;
 	
-	//private 
+	private double maxProfit=0;
+	private double buyAndOld=0;
+	private QuotePoint lastQuote=null;
+	
+	private OrderTrigger bollingerBandTrigger=null;
 	
 	
 	public WatchlistEntity(){
@@ -60,6 +65,38 @@ public class WatchlistEntity extends XmlParameterElement {
 	public void setRate(ExchangeRate rate) {
 	changes.firePropertyChange(FIELD_Rate, this.rate, this.rate = rate);}
 	
+	
+
+	public double getMaxProfit() {
+		return maxProfit;
+	}
+
+	public void setMaxProfit(double maxProfit) {
+	this.maxProfit = maxProfit;}
+	
+
+	public double getBuyAndOld() {
+		return buyAndOld;
+	}
+
+	public void setBuyAndOld(double buyAndOld) {
+	this.buyAndOld = buyAndOld;}
+	
+
+	public QuotePoint getLastQuote() {
+		return lastQuote;
+	}
+
+	public void setLastQuote(QuotePoint lastQuote) {
+	this.lastQuote = lastQuote;}
+	
+
+	public OrderTrigger getBollingerBandTrigger() {
+		return bollingerBandTrigger;
+	}
+
+	public void setBollingerBandTrigger(OrderTrigger bollingerBandTrigger) {
+	this.bollingerBandTrigger = bollingerBandTrigger;}
 	
 
 	@Override

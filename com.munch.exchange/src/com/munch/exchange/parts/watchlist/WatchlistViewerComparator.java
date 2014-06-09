@@ -54,8 +54,8 @@ public class WatchlistViewerComparator extends ViewerComparator {
 	  public int compare(Viewer viewer, Object e1, Object e2) {
 		WatchlistEntity p1 = (WatchlistEntity) e1;
 		WatchlistEntity p2 = (WatchlistEntity) e2;
-		QuotePoint point1=watchlistService.searchLastQuote(p1);
-    	QuotePoint point2=watchlistService.searchLastQuote(p2);
+		QuotePoint point1=p1.getLastQuote();
+    	QuotePoint point2=p2.getLastQuote();
 		
 	    int rc = 0;
 	   
@@ -82,33 +82,25 @@ public class WatchlistViewerComparator extends ViewerComparator {
 	    case 3:
 	    	if(p1.getRate()==null || p2.getRate()==null)break;
 	    	if(p1.getRate().getHistoricalData().isEmpty() || p2.getRate().getHistoricalData().isEmpty())break;
-	    	float ko1 = p1.getRate().getHistoricalData().calculateKeepAndOld(startWatchDate, DatePoint.FIELD_Close);
-			float ko2 = p2.getRate().getHistoricalData().calculateKeepAndOld(startWatchDate, DatePoint.FIELD_Close);
-	    	
-			rc = (ko2>=ko1 ? 1 : -1);
+			rc = (p2.getBuyAndOld()>=p1.getBuyAndOld() ? 1 : -1);
 			break;
 		//MaxPro
 	    case 4:
 	    	if(p1.getRate()==null || p2.getRate()==null)break;
 	    	if(p1.getRate().getHistoricalData().isEmpty() || p2.getRate().getHistoricalData().isEmpty())break;
-	    	float po1 = p1.getRate().getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close);
-			float po2 = p2.getRate().getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close);
-	    	
-			rc = (po2>=po1 ? 1 : -1);
+			rc = (p2.getMaxProfit()>=p1.getMaxProfit() ? 1 : -1);
 			break;
 		//Bollinger Band
 	    case 5:
 	    	if(p1.getRate()==null || p2.getRate()==null)break;
 	    	if(p1.getRate().getHistoricalData().isEmpty() || p2.getRate().getHistoricalData().isEmpty())break;
-	    	BollingerBandObjFunc bo1 = watchlistService.getBollingerBandObjFunc(p1.getRate(),startWatchDate);
-	    	BollingerBandObjFunc bo2 = watchlistService.getBollingerBandObjFunc(p2.getRate(),startWatchDate);
 	    	
-	    	if(bo1!=null && bo2==null)rc=-1;
-	    	if(bo1==null && bo2!=null)rc=1;
+	    	if(p1.getBollingerBandTrigger()!=null && p2.getBollingerBandTrigger()==null)rc=-1;
+	    	if(p1.getBollingerBandTrigger()==null && p2.getBollingerBandTrigger()!=null)rc=1;
 	    	
-	    	if(bo1==null || bo2==null)break;
-	    	double pro1=bo1.getMaxProfit()- bo1.compute(p1.getRate());
-	    	double pro2=bo2.getMaxProfit()- bo2.compute(p2.getRate());
+	    	if(p1.getBollingerBandTrigger()==null || p2.getBollingerBandTrigger()==null)break;
+	    	double pro1=p1.getBollingerBandTrigger().getProfit();
+	    	double pro2=p2.getBollingerBandTrigger().getProfit();
 	    	
 			rc = (pro2>=pro1 ? 1 : -1);
 			break;
