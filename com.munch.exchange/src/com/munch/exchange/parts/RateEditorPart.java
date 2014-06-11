@@ -10,6 +10,7 @@ import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.e4.core.contexts.ContextInjectionFactory;
 import org.eclipse.e4.core.contexts.EclipseContextFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.swt.SWT;
@@ -21,6 +22,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 
+import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.HistoricalDataLoader;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
@@ -54,6 +56,9 @@ public class RateEditorPart {
 	@Inject
 	IExchangeRateProvider exchangeRateProvider;
 	
+	@Inject
+	private IEventBroker eventBroker;
+	
 	RateTitle titleComposite;
 	OverviewRateChart chartComposite;
 	RateChart rateChart;
@@ -73,7 +78,7 @@ public class RateEditorPart {
 	public void postConstruct(Composite parent,Shell shell) {
 		this.shell=shell;
 		
-		//Start Loading Data
+		
 		historicalDataLoader=ContextInjectionFactory.make( HistoricalDataLoader.class,context);
 		
 		TabFolder tabFolder = new TabFolder(parent, SWT.BOTTOM);
@@ -85,7 +90,14 @@ public class RateEditorPart {
 		
 		rate.getHistoricalData().addUsedClass(this.getClass());
 		
-		historicalDataLoader.schedule();
+		//Start Loading Data
+		if(rate.getHistoricalData().isEmpty()){
+			historicalDataLoader.schedule();
+		}
+		else{
+			eventBroker.send(IEventConstant.HISTORICAL_DATA_LOADED,rate.getUUID());
+			eventBroker.send(IEventConstant.OPTIMIZATION_RESULTS_LOADED,rate.getUUID());
+		}
 		
 	}
 	

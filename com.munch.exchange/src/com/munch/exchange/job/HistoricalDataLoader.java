@@ -1,6 +1,8 @@
 package com.munch.exchange.job;
 
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -40,6 +42,9 @@ public class HistoricalDataLoader extends Job {
 	
 	private ExchangeRate rate;
 	
+	private Set<ExchangeRate> toLoad=new HashSet<ExchangeRate>();
+	
+	
 	@Inject
 	public HistoricalDataLoader(@Optional ExchangeRate rate) {
 		super("Historical Data Provider "/*+rate.getFullName()*/);
@@ -52,8 +57,7 @@ public class HistoricalDataLoader extends Job {
 	public void setRate(ExchangeRate rate) {
 		this.rate = rate;
 	}
-
-
+	
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
@@ -72,7 +76,7 @@ public class HistoricalDataLoader extends Job {
 			for(int i=0;i<intervals.length;i=i+2){
 				if (monitor.isCanceled()) return Status.CANCEL_STATUS;
 				float per=((float)i*100)/((float)intervals.length);
-				eventBroker.post(IEventConstant.HISTORICAL_DATA_LOADING,rate.getUUID()+";"+String.format("%.2f", per));
+				eventBroker.send(IEventConstant.HISTORICAL_DATA_LOADING,rate.getUUID()+";"+String.format("%.2f", per));
 				historicalDataProvider.loadInterval(rate,hisDatas,intervals[i],intervals[i+1]);
 				monitor.worked(i);
 				
@@ -87,7 +91,7 @@ public class HistoricalDataLoader extends Job {
 			 if(point!=null){
 				 rate.getHistoricalData().setLastHisPointFromQuote(point);
 			 }
-			eventBroker.post(IEventConstant.HISTORICAL_DATA_LOADED,rate.getUUID());
+			eventBroker.send(IEventConstant.HISTORICAL_DATA_LOADED,rate.getUUID());
 		}
 		
 		//Laod the optimization result

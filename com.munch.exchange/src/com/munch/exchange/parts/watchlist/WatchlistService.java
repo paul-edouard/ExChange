@@ -1,11 +1,18 @@
 package com.munch.exchange.parts.watchlist;
 
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.e4.core.contexts.ContextInjectionFactory;
+import org.eclipse.e4.core.contexts.IEclipseContext;
+
+import com.munch.exchange.job.HistoricalDataLoader;
 import com.munch.exchange.job.objectivefunc.BollingerBandObjFunc;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.EconomicData;
@@ -25,6 +32,8 @@ import com.munch.exchange.services.IWatchlistProvider;
 
 public class WatchlistService {
 	
+	private static Logger logger = Logger.getLogger(WatchlistService.class);
+	
 	@Inject
 	IWatchlistProvider watchlistProvider;
 	
@@ -35,8 +44,57 @@ public class WatchlistService {
 	IExchangeRateProvider rateProvider;
 	
 	@Inject
+	IEclipseContext context;
+	
+	private HashMap<String, HistoricalDataLoader> histLoaderMap=new HashMap<String, HistoricalDataLoader>();
+	
+	
+	@Inject
 	WatchlistService(){
 		
+	}
+	
+	public void loadAllHistoricalData(WatchlistTreeContentProvider contentProvider){
+		
+		//Clear the Map
+		
+		List<String> keyl=new LinkedList<String>();
+		for(String key:histLoaderMap.keySet()){
+			keyl.add(key);
+		}
+		for(String key:keyl){
+			HistoricalDataLoader loader=histLoaderMap.get(key);
+			if(loader.getState()!=Job.RUNNING && loader.getState()!=Job.WAITING)
+				histLoaderMap.remove(key);
+		}
+		
+		
+		
+		//Add new loader to the map and start them
+		for(WatchlistEntity ent:contentProvider.getCurrentList().getList()){
+			if(ent.getRate()==null)continue;
+			if(!ent.getRate().getHistoricalData().isEmpty())continue;
+			
+			/*
+			if(histLoaderMap.containsKey(ent.getRateUuid())){
+				HistoricalDataLoader loader=histLoaderMap.get(ent.getRateUuid());
+				if(loader.getState()!=Job.RUNNING){
+					loader.cancel();
+					histLoaderMap.remove(ent.getRateUuid());
+				}
+				//loader.cancel();
+				//loader.join();
+			}
+			*/
+			if(!histLoaderMap.containsKey(ent.getRateUuid())){
+				HistoricalDataLoader Loader=ContextInjectionFactory.make( HistoricalDataLoader.class,context);
+				Loader.setRate(ent.getRate());
+				histLoaderMap.put(ent.getRateUuid(), Loader);
+				Loader.schedule();
+			}
+			
+			
+		}
 	}
 	
 	
@@ -67,6 +125,8 @@ public class WatchlistService {
 	
 	public void refreshHistoricalData(WatchlistEntity entity,Calendar startWatchDate){
 		if(entity.getRate()!=null && !entity.getRate().getHistoricalData().isEmpty()){
+			//System.out.println("startWatchDate"+startWatchDate.getTime().toLocaleString());
+			
 			//Buy and Old
 			entity.setBuyAndOld(entity.getRate().getHistoricalData().calculateKeepAndOld(startWatchDate, DatePoint.FIELD_Close));
 			//Max Profit
@@ -74,16 +134,19 @@ public class WatchlistService {
 			//Bollinger Band
 			BollingerBandObjFunc func=this.getBollingerBandObjFunc(entity.getRate(),startWatchDate);
 			if(func!=null ){
-				
+				//System.out.println("--- Bollinger func created");
 				double v=func.compute(entity.getRate());
 				double profit=func.getMaxProfit()- v;
 				OrderTrigger trigger=new OrderTrigger(entity.getLastQuote().getLastTradePrice(), profit, func.getLimitRange());
 				entity.setBollingerBandTrigger(trigger);
 			}
 			else{
-				
+				//System.out.println("### No Bollinger func created");
 			}
 			
+		}
+		else{
+			//System.out.println("### No historical data for: "+entity.getRate().getFullName());
 		}
 	}
 	

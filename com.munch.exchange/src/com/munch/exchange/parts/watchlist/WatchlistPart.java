@@ -1,6 +1,7 @@
 package com.munch.exchange.parts.watchlist;
 
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -8,18 +9,23 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
+import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.contexts.ContextInjectionFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.window.Window;
@@ -52,6 +58,7 @@ import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
 import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.model.core.watchlist.Watchlist;
 import com.munch.exchange.model.core.watchlist.WatchlistEntity;
+import com.munch.exchange.parts.RateEditorPart;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.composite.RateChartBollingerBandsComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -74,6 +81,8 @@ import org.goataa.impl.utils.Individual;
 
 public class WatchlistPart {
 	
+	private static Logger logger = Logger.getLogger(WatchlistPart.class);
+	
 	@Inject
 	IEclipseContext context;
 	
@@ -90,11 +99,14 @@ public class WatchlistPart {
 	IExchangeRateProvider rateProvider;
 	
 	@Inject
+	ESelectionService selectionService;
+	
+	@Inject
 	private IEventBroker eventBroker;
 	
 	
 	//Loader
-	HistoricalDataLoader historicalDataLoader;
+	//HistoricalDataLoader historicalDataLoader;
 	
 	private WatchlistTreeContentProvider contentProvider;
 	private WatchlistService watchlistService;
@@ -125,7 +137,7 @@ public class WatchlistPart {
 		
 		contentProvider=ContextInjectionFactory.make( WatchlistTreeContentProvider.class,context);
 		watchlistService=ContextInjectionFactory.make( WatchlistService.class,context);
-		historicalDataLoader=ContextInjectionFactory.make( HistoricalDataLoader.class,context);
+		//historicalDataLoader=ContextInjectionFactory.make( HistoricalDataLoader.class,context);
 		
 		comparator=new WatchlistViewerComparator(watchlistService);
 		
@@ -147,7 +159,7 @@ public class WatchlistPart {
 					list.setSelected(comboWachtlist.getText().equals(list.getName()));
 					if(list.isSelected()){
 						contentProvider.setCurrentList(list);
-						loadNextHistoricalData();
+						watchlistService.loadAllHistoricalData(contentProvider);
 						refreshViewer();
 					}
 				}
@@ -267,7 +279,7 @@ public class WatchlistPart {
 		int operations = DND.DROP_COPY| DND.DROP_MOVE;
 	    Transfer[] transferTypes = new Transfer[]{TextTransfer.getInstance()};
 	    treeViewer.addDropSupport(operations, transferTypes, 
-	    new WatchlistTreeViewerDropAdapter(treeViewer,contentProvider,watchlistProvider,rateProvider,historicalDataLoader,watchlistService));
+	    new WatchlistTreeViewerDropAdapter(treeViewer,contentProvider,watchlistProvider,rateProvider,watchlistService));
 	   
 		
 	    treeViewer.setInput(contentProvider.getCurrentList());
@@ -290,6 +302,16 @@ public class WatchlistPart {
 	  			}
 	  		});
 	    
+	  	//Selection listener
+	  	treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+	  			public void selectionChanged(SelectionChangedEvent event) {
+	  				
+	  				ISelection selection=event.getSelection();
+	  				selectionService.setSelection(selection);
+	  					
+	  			}
+	  		});
+	  	
 		//##############################
 		//##          Columns         ##
 		//##############################	    
@@ -382,6 +404,9 @@ public class WatchlistPart {
 	}
 	
 	
+	
+	
+	/*
 	private void loadNextHistoricalData(){
 		WatchlistEntity toLoad=null;
 		for(WatchlistEntity ent:this.contentProvider.getCurrentList().getList()){
@@ -391,6 +416,8 @@ public class WatchlistPart {
 		}
 		
 		if(toLoad!=null){
+			//historicalDataLoader==ContextInjectionFactory.make( HistoricalDataLoader.class,context);
+			//historicalDataLoader.
 			historicalDataLoader.setRate(toLoad.getRate());
 			historicalDataLoader.schedule();
 		}
@@ -401,6 +428,7 @@ public class WatchlistPart {
 			treeViewer.refresh();
 		}
 	}
+	*/
 	
 	 
 	//################################
@@ -417,15 +445,19 @@ public class WatchlistPart {
 				ent.setRate(rate);
 				watchlistService.refreshQuote(ent);
 			}
-			if(list.size()>0)
+			if(list.size()>0){
+				watchlistService.loadAllHistoricalData(contentProvider);
 				treeViewer.refresh();
+			}
 			
+			/*
 			boolean areAllLoaded=true;
 			for(WatchlistEntity ent:contentProvider.getCurrentList().getList()){
 				if(ent.getRate()==null)areAllLoaded=false;
 			}
 			if(areAllLoaded)
 				loadNextHistoricalData();
+				*/
 		}
 	}
 	
@@ -466,27 +498,53 @@ public class WatchlistPart {
 		if(!isReadyToReact(rate_uuid)){return;}
 		
 		WatchlistEntity entity=watchlistService.findEntityFromList(contentProvider.getCurrentList(),  rate_uuid);
-		if(entity!=null){
-			watchlistService.refreshHistoricalData(entity, startWatchDate);
-			loadNextHistoricalData();
-			treeViewer.refresh();
+		if(entity==null)return;
+		
+		watchlistService.refreshHistoricalData(entity, startWatchDate);
+		treeViewer.refresh();
+		
+		boolean areAllLoaded=true;
+		for(WatchlistEntity ent:contentProvider.getCurrentList().getList()){
+			if(ent.getRate()==null){areAllLoaded=false;break;}
+			if(ent.getRate().getHistoricalData()==null){areAllLoaded=false;break;}
+			if(ent.getRate().getHistoricalData().isEmpty()){areAllLoaded=false;break;}
 		}
+		if(areAllLoaded){
+			for(WatchlistEntity ent:contentProvider.getCurrentList().getList()){
+				watchlistService.refreshHistoricalData(ent, startWatchDate);
+			}
+		}
+			
 	}
 	
 	@Inject
-	private void OptimizerDataLoaded(@Optional  @UIEventTopic(IEventConstant.OPTIMIZATION_RESULTS_LOADED) String rate_uuid ){
+	private void OptimizerDataLoaded(@Optional  @UIEventTopic(IEventConstant.OPTIMIZATION_ALLTOPICS) String rate_uuid ){
+		
+		if(rate_uuid==null)return;
 		
 		if(!isReadyToReact(rate_uuid)){return;}
 		
 		WatchlistEntity entity=watchlistService.findEntityFromList(contentProvider.getCurrentList(),  rate_uuid);
-		if(entity!=null){
-			watchlistService.refreshHistoricalData(entity, startWatchDate);
-			treeViewer.refresh();
+		if(entity==null)return;
+		
+		watchlistService.refreshHistoricalData(entity, startWatchDate);
+		treeViewer.refresh();
+		
+		boolean areAllLoaded=true;
+		for(WatchlistEntity ent:contentProvider.getCurrentList().getList()){
+			if(ent.getRate()==null){areAllLoaded=false;break;}
+			if(ent.getRate().getHistoricalData()==null){areAllLoaded=false;break;}
+			if(ent.getRate().getHistoricalData().isEmpty()){areAllLoaded=false;break;}
+		}
+		if(areAllLoaded){
+			for(WatchlistEntity ent:contentProvider.getCurrentList().getList()){
+				watchlistService.refreshHistoricalData(ent, startWatchDate);
+			}
 		}
 	}
 	
 	
-	
+	/*
 	@Inject
 	private void OptimizerNewBestFound(
 			@Optional @UIEventTopic(IEventConstant.OPTIMIZATION_NEW_BEST_INDIVIDUAL) OptimizationInfo info) {
@@ -495,11 +553,13 @@ public class WatchlistPart {
 		
 		WatchlistEntity entity=watchlistService.findEntityFromList(contentProvider.getCurrentList(),  info.getRate().getUUID());
 		if(entity!=null){
+			logger.info("**** new best individual found for:"+info.getRate().getFullName());
 			watchlistService.refreshHistoricalData(entity, startWatchDate);
 			treeViewer.refresh();
 		}
 		
 	}
+	*/
 	
 	
 	private boolean isReadyToReact(String rate_uuid){

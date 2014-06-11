@@ -1,5 +1,7 @@
 package com.munch.exchange.parts.watchlist;
 
+import java.util.HashMap;
+
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
@@ -17,22 +19,22 @@ public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 	
 	private WatchlistTreeContentProvider contentProvider;
 	//Loader
-	HistoricalDataLoader historicalDataLoader;
+	//HistoricalDataLoader historicalDataLoader;
 	
 	private IWatchlistProvider watchlistProvider;
 	private IExchangeRateProvider rateProvider;
 	private WatchlistService watchlistService;
 	
+	
 	private int location;
 	
 	public WatchlistTreeViewerDropAdapter(Viewer viewer,WatchlistTreeContentProvider contentProvider,
-			IWatchlistProvider watchlistProvider,IExchangeRateProvider rateProvider, HistoricalDataLoader historicalDataLoader,WatchlistService watchlistService){
+			IWatchlistProvider watchlistProvider,IExchangeRateProvider rateProvider, WatchlistService watchlistService){
 		super(viewer);
 		this.viewer = viewer;
 		this.contentProvider = contentProvider;
 		this.watchlistProvider = watchlistProvider;
 		this.rateProvider = rateProvider;
-		this.historicalDataLoader=historicalDataLoader;
 		this.watchlistService=watchlistService;
 		
 	}
@@ -66,19 +68,6 @@ public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 	
 	@Override
 	public boolean performDrop(Object data) {
-		// TODO Auto-generated method stub
-		/*
-		if(location==3 && group!=null){
-			
-			group.addRole(data.toString());
-			
-			if(provider.updateData(group)!=null){
-				broker.send(IBrokerEvents.USER_GROUP_UPDATE, group);
-			}
-			
-		}
-		*/
-		
 		
 		boolean rateAdded=false;
 		
@@ -102,10 +91,7 @@ public class WatchlistTreeViewerDropAdapter extends ViewerDropAdapter {
 			watchlistService.refreshQuote(ent);
 			//watchlistService.refreshHistoricalData(entity, startWatchDate);
 			
-			if(ent.getRate().getHistoricalData().isEmpty()){
-				historicalDataLoader.setRate(ent.getRate());
-				historicalDataLoader.schedule();
-			}
+			watchlistService.loadAllHistoricalData(contentProvider);
 				
 			
 			rateAdded=true;

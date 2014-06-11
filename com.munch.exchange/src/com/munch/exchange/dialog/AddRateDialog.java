@@ -90,10 +90,10 @@ public class AddRateDialog extends TitleAreaDialog {
 				btnCommodityName.setVisible(modus);
 				CommodityName.setVisible(modus);
 				
-				if(modus && !comboRateType.getText().startsWith("ISIN")){
+				if(modus && comboRateType.getText().startsWith("ISIN")){
 					lblYahooFinanceSymbol.setText("ISIN:");
 				}
-				else if(modus && comboRateType.getText().startsWith("ISIN")){
+				else if(modus && comboRateType.getText().startsWith("Yahoo Finance")){
 					lblYahooFinanceSymbol.setText("Yahoo Finance Symbol:");
 				}
 				else{

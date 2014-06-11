@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.MDirtyable;
@@ -70,6 +71,9 @@ public class OptimizationErrorPart {
 	
 	@Inject
 	Job optimizer;
+	
+	@Inject
+	IEventBroker eventBroker;
 	
 	private ProgressBar progressBarOptimizationStep;
 	private Button btnCancelOptimization;
@@ -295,6 +299,9 @@ public class OptimizationErrorPart {
 				}
 			}
 		}
+		
+		if(info.getBestIndividuals().size()>0)
+			eventBroker.post(IEventConstant.OPTIMIZATION_SAVED,info.getRate().getUUID());
 		
 	}
 	

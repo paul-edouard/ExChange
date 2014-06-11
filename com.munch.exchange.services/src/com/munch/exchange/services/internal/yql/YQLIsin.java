@@ -61,6 +61,7 @@ public class YQLIsin extends YQLTable {
 	}
 	
 	private JSONObject getStock(){
+		//System.out.println(this.getResult());
 		Object obj=this.getResult().get("stock");
 		if(obj instanceof JSONObject){
 			return (JSONObject) obj;
@@ -75,8 +76,26 @@ public class YQLIsin extends YQLTable {
 		if(!stock.has("Isin"))return "";
 		
 		Object symb_obj=stock.get("Isin");
-		if(symb_obj instanceof String )
+		if(symb_obj instanceof String ){
+			String isin_str=(String) symb_obj;
+			String[] l=isin_str.replace(".", "_").split("_");
+			if(l.length>1){
+				String[] all_suffix=isin_str.split(l[0]);
+				for(int i=1;i<all_suffix.length;i++){
+					String sym=l[0]+all_suffix[i];
+					if(sym.endsWith(".DE")){
+						return sym;
+					}
+				}
+				
+				if(all_suffix.length>1){
+					return l[0]+all_suffix[1];
+				}
+				
+			}
+			
 			return (String) symb_obj;
+		}
 		else
 			return "";
 		
@@ -85,7 +104,7 @@ public class YQLIsin extends YQLTable {
 	
 	public static void main(String[] args) {
 		
-		YQLIsin isin=new YQLIsin("US9843321061");
+		YQLIsin isin=new YQLIsin("DE0005550636");
 		//quote.addSymbol("YHOO");
 		System.out.println(isin.getYahooSymbol());
 		

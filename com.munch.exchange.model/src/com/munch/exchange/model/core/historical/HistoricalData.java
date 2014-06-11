@@ -61,7 +61,7 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	}
 	
 	
-	public TimeSeries getTimeSeries(String field, int numberOfDays){
+	public TimeSeries getTimeSeries (String field, int numberOfDays){
 		 TimeSeries series = new TimeSeries(field);
 		 
 		 int maxDays=this.size();
