@@ -9,7 +9,12 @@ import org.goataa.spec.IObjectiveFunction;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.YIntervalSeries;
 
+import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.limit.Limit;
+import com.munch.exchange.model.core.limit.LimitRange;
+import com.munch.exchange.model.core.limit.LimitRange.LimitRangeType;
+import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
 
 
 public class RelativeStrengthIndexObjFunc extends OptimizationModule implements
@@ -162,6 +167,48 @@ IObjectiveFunction<double[]> {
 	public boolean isBought() {
 		return bought;
 	}
+	
+	
+	public double getMaxProfit() {
+		return maxProfit;
+	}
+
+	public LimitRange getLimitRange(){
+		if(bought){
+			Limit upper=new Limit(this.isDaySellUpLimitIsActivated(), this.getDaySellUpLimit());
+			Limit lower=new Limit(this.isDaySellDownLimitIsActivated(), this.getDaySellDownLimit());
+			
+			return new LimitRange(upper, lower, LimitRangeType.SELL);
+		}
+		else{
+			Limit upper=new Limit(this.isDayBuyUpLimitIsActivated(), this.getDayBuyUpLimit());
+			Limit lower=new Limit(this.isDayBuyDownLimitIsActivated(), this.getDayBuyDownLimit());
+			
+			return new LimitRange(upper, lower, LimitRangeType.BUY);
+		}
+	}
+	
+	public LimitRange getUpperLimitRange(){
+		Limit upper=new Limit(this.isDaySellUpLimitIsActivated(), this.getDaySellUpLimit());
+		Limit lower=new Limit(this.isDaySellDownLimitIsActivated(), this.getDaySellDownLimit());
+		
+		return new LimitRange(upper, lower, LimitRangeType.SELL);
+	}
+	
+	public LimitRange getLowerLimitRange(){
+		Limit upper=new Limit(this.isDayBuyUpLimitIsActivated(), this.getDayBuyUpLimit());
+		Limit lower=new Limit(this.isDayBuyDownLimitIsActivated(), this.getDayBuyDownLimit());
+		
+		return new LimitRange(upper, lower, LimitRangeType.BUY);
+	}
+	
+	
+	public double compute(ExchangeRate rate){
+		double[] g=rate.getOptResultsMap().get(Type.RELATIVE_STRENGTH_INDEX).getResults().getFirst().getDoubleArray();
+		return compute(g,null);
+		
+	}
+	
 
 	@Override
 	public double compute(double[] x, Random r) {

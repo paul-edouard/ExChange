@@ -104,6 +104,20 @@ public class WatchlistViewerComparator extends ViewerComparator {
 	    	
 			rc = (pro2>=pro1 ? 1 : -1);
 			break;
+		//RSI
+	    case 6:
+	    	if(p1.getRate()==null || p2.getRate()==null)break;
+	    	if(p1.getRate().getHistoricalData().isEmpty() || p2.getRate().getHistoricalData().isEmpty())break;
+	    	
+	    	if(p1.getRSITrigger()!=null && p2.getRSITrigger()==null)rc=-1;
+	    	if(p1.getRSITrigger()==null && p2.getRSITrigger()!=null)rc=1;
+	    	
+	    	if(p1.getRSITrigger()==null || p2.getRSITrigger()==null)break;
+	    	double rsi1=p1.getRSITrigger().getProfit();
+	    	double rsi2=p2.getRSITrigger().getProfit();
+	    	
+			rc = (rsi2>=rsi1 ? 1 : -1);
+			break;
 	    default:
 	      rc = 0;
 	    }

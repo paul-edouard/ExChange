@@ -288,8 +288,20 @@ public class BollingerBandObjFunc extends OptimizationModule implements
 			
 			return new LimitRange(upper, lower, LimitRangeType.BUY);
 		}
+	}
+	
+	public LimitRange getUpperLimitRange(){
+		Limit upper=new Limit(this.isDaySellUpLimitIsActivated(), this.getDaySellUpLimit());
+		Limit lower=new Limit(this.isDaySellDownLimitIsActivated(), this.getDaySellDownLimit());
 		
+		return new LimitRange(upper, lower, LimitRangeType.SELL);
+	}
+	
+	public LimitRange getLowerLimitRange(){
+		Limit upper=new Limit(this.isDayBuyUpLimitIsActivated(), this.getDayBuyUpLimit());
+		Limit lower=new Limit(this.isDayBuyDownLimitIsActivated(), this.getDayBuyDownLimit());
 		
+		return new LimitRange(upper, lower, LimitRangeType.BUY);
 	}
 	
 	

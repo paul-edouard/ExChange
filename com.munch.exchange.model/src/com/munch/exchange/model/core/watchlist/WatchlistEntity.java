@@ -28,6 +28,7 @@ public class WatchlistEntity extends XmlParameterElement {
 	private QuotePoint lastQuote=null;
 	
 	private OrderTrigger bollingerBandTrigger=null;
+	private OrderTrigger RSITrigger=null;
 	
 	
 	public WatchlistEntity(){
@@ -98,6 +99,16 @@ public class WatchlistEntity extends XmlParameterElement {
 	public void setBollingerBandTrigger(OrderTrigger bollingerBandTrigger) {
 	this.bollingerBandTrigger = bollingerBandTrigger;}
 	
+	
+	
+
+	public OrderTrigger getRSITrigger() {
+		return RSITrigger;
+	}
+
+	public void setRSITrigger(OrderTrigger rSITrigger) {
+				this.RSITrigger = rSITrigger;
+	}
 
 	@Override
 	protected void initAttribute(Element rootElement) {

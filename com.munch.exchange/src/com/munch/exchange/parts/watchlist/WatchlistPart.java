@@ -125,6 +125,7 @@ public class WatchlistPart {
 	private TreeViewerColumn treeViewerColumnBuyAndOld;
 	private TreeViewerColumn treeViewerColumnMaxProfit;
 	private TreeViewerColumn treeViewerColumnBollingerBand;
+	private TreeViewerColumn treeViewerColumnRSI;
 	
 	public WatchlistPart() {
 	}
@@ -359,10 +360,18 @@ public class WatchlistPart {
 	    treeViewerColumnBollingerBand = new TreeViewerColumn(treeViewer, SWT.NONE);
 	    treeViewerColumnBollingerBand.setLabelProvider(new BollingerBandColumnLabelProvider());
 	    TreeColumn trclmnBollingerBand = treeViewerColumnBollingerBand.getColumn();
-	    trclmnNewColumn.setAlignment(SWT.RIGHT);
+	    trclmnBollingerBand.setAlignment(SWT.RIGHT);
 	    trclmnBollingerBand.setWidth(130);
 	    trclmnBollingerBand.setText("Bollinger Band");
 	    trclmnBollingerBand.addSelectionListener(getSelectionAdapter(trclmnBollingerBand, 5));
+	    
+	    treeViewerColumnRSI = new TreeViewerColumn(treeViewer, SWT.NONE);
+	    treeViewerColumnRSI.setLabelProvider(new RSIColumnLabelProvider());
+	    TreeColumn trclmnRSI = treeViewerColumnRSI.getColumn();
+	    trclmnRSI.setAlignment(SWT.RIGHT);
+	    trclmnRSI.setWidth(130);
+	    trclmnRSI.setText("RSI");
+	    trclmnRSI.addSelectionListener(getSelectionAdapter(trclmnRSI, 6));
 	    
 	    
 	    tree.setSortColumn(trclmnChange);
@@ -684,15 +693,55 @@ public class WatchlistPart {
 				WatchlistEntity entity=(WatchlistEntity) element;
 				if(entity.getBollingerBandTrigger()!=null ){
 					switch (entity.getBollingerBandTrigger().calculateTriggerType(2)) {
-					case CLOSE_TO_BUY:
-						return new Color(null,	255,165,0);
+					
 					case CLOSE_TO_SELL:
+						return new Color(null,	255,165,0);
+					case CLOSE_TO_BUY:
 						return new Color(null, 165, 255, 0);
 					case NONE:
 						return new Color(null, 255, 255, 255);
-					case TO_BUY:
-						return new Color(null, 255, 0, 0);
 					case TO_SELL:
+						return new Color(null, 255, 0, 0);
+					case TO_BUY:
+						return new Color(null, 0, 255, 0);
+					
+					}
+				}
+			}
+			return super.getBackground(element);
+		}
+    	
+    	
+	}
+	
+	class RSIColumnLabelProvider extends ColumnLabelProvider{
+		public Image getImage(Object element) {
+    		return null;
+    	}
+    	public String getText(Object element) {
+    		if(element instanceof WatchlistEntity){
+				WatchlistEntity entity=(WatchlistEntity) element;
+				if(entity.getRSITrigger()!=null ){
+					return String.valueOf(entity.getRSITrigger());
+				}
+			}
+    		return "no opt. data";
+    	}
+		@Override
+		public Color getBackground(Object element) {
+			if(element instanceof WatchlistEntity){
+				WatchlistEntity entity=(WatchlistEntity) element;
+				if(entity.getRSITrigger()!=null ){
+					switch (entity.getRSITrigger().calculateTriggerType(2)) {
+					case CLOSE_TO_SELL:
+						return new Color(null,	255,165,0);
+					case CLOSE_TO_BUY:
+						return new Color(null, 165, 255, 0);
+					case NONE:
+						return new Color(null, 255, 255, 255);
+					case TO_SELL:
+						return new Color(null, 255, 0, 0);
+					case TO_BUY:
 						return new Color(null, 0, 255, 0);
 					
 					}

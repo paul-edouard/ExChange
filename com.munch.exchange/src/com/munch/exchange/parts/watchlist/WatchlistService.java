@@ -14,6 +14,7 @@ import org.eclipse.e4.core.contexts.IEclipseContext;
 
 import com.munch.exchange.job.HistoricalDataLoader;
 import com.munch.exchange.job.objectivefunc.BollingerBandObjFunc;
+import com.munch.exchange.job.objectivefunc.RelativeStrengthIndexObjFunc;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
@@ -137,17 +138,25 @@ public class WatchlistService {
 				//System.out.println("--- Bollinger func created");
 				double v=func.compute(entity.getRate());
 				double profit=func.getMaxProfit()- v;
-				OrderTrigger trigger=new OrderTrigger(entity.getLastQuote().getLastTradePrice(), profit, func.getLimitRange());
+				OrderTrigger trigger=new OrderTrigger(entity.getLastQuote().getLastTradePrice(), profit,
+						func.getLimitRange(),func.getUpperLimitRange(),func.getLowerLimitRange());
+				trigger.setBuySellActivated(true);
 				entity.setBollingerBandTrigger(trigger);
 			}
-			else{
-				//System.out.println("### No Bollinger func created");
+			
+			//RSI func
+			RelativeStrengthIndexObjFunc rsiFunc=this.getRSIObjFunc(entity.getRate(),startWatchDate);
+			if(rsiFunc!=null ){
+				//System.out.println("--- Bollinger func created");
+				double v=rsiFunc.compute(entity.getRate());
+				double profit=rsiFunc.getMaxProfit()- v;
+				OrderTrigger trigger=new OrderTrigger(entity.getLastQuote().getLastTradePrice(), profit,
+						rsiFunc.getLimitRange(),rsiFunc.getUpperLimitRange(),rsiFunc.getLowerLimitRange());
+				entity.setRSITrigger(trigger);
 			}
 			
 		}
-		else{
-			//System.out.println("### No historical data for: "+entity.getRate().getFullName());
-		}
+		
 	}
 	
 	
@@ -200,25 +209,33 @@ public class WatchlistService {
 					 maxProfit
 					 );
 			bollingerBandObjFunc.setPeriod(rate.getHistoricalData().calculatePeriod(startWatchDate));
-			
-			//double[] g=entity.getRate().getOptResultsMap().get(Type.BILLINGER_BAND).getResults().getFirst().getDoubleArray();
-			//double v=bollingerBandObjFunc.compute(g, null);
-			//float profit=maxProfit- (float)v;
-			//System.out.println("opt results found!: "+rate.getFullName());
 			return bollingerBandObjFunc;
 			
 		}
-		/*
-		System.out.println("No opt results!: "+rate.getFullName());
-		if( rate.getOptResultsMap()!=null){
-			for(OptimizationResults.Type type:rate.getOptResultsMap().keySet()){
-				System.out.println("Types!: "+OptimizationResults.OptimizationTypeToString(type));
-				System.out.println("Results!: "+rate.getOptResultsMap().get(type).getResults().size());
-				
-				
-			}
+		
+		return null;
+	}
+	
+	
+	public RelativeStrengthIndexObjFunc getRSIObjFunc(ExchangeRate rate, Calendar startWatchDate ){
+		if(rate!=null 
+				&& !rate.getHistoricalData().isEmpty()
+				//&& rate.getOptResultsMap().get(Type.BILLINGER_BAND)!=null
+				&& !rate.getOptResultsMap().get(Type.RELATIVE_STRENGTH_INDEX).getResults().isEmpty()){
+			
+			float maxProfit=rate.getHistoricalData().calculateMaxProfit(startWatchDate, DatePoint.FIELD_Close);
+			
+			//Create the Bollinger Band function
+			RelativeStrengthIndexObjFunc func=new RelativeStrengthIndexObjFunc(
+					 HistoricalPoint.FIELD_Close,
+					 RateChart.PENALTY,
+					 rate.getHistoricalData().getNoneEmptyPoints(),
+					 maxProfit
+					 );
+			func.setPeriod(rate.getHistoricalData().calculatePeriod(startWatchDate));
+			return func;
+			
 		}
-		*/
 		
 		return null;
 	}
