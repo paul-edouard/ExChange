@@ -136,6 +136,9 @@ public class RateChart extends Composite {
 	//Moving Average
 	RateChartMovingAverageComposite movingAverageComposite;
 	
+	//NMAW
+	NMAWComposite NMAWComposite;
+	
 	//EMA
 	RateChartEMAComposite emaComposite;
 	
@@ -275,6 +278,31 @@ public class RateChart extends Composite {
 			}
 		});
 		
+		
+		//=============================================
+		//======              NMAW               ======    
+		//=============================================
+		
+		ExpandItem xpndtmNMAW = new ExpandItem(expandBarTrend, SWT.NONE);
+		xpndtmNMAW.setExpanded(true);
+		xpndtmNMAW.setText("NMAW");
+		//xpndtmMovingAvg.setHeight(110);
+			
+		NMAWComposite=ContextInjectionFactory.make( NMAWComposite.class,localContextTrend);
+		xpndtmNMAW.setControl(NMAWComposite);
+		xpndtmNMAW.setHeight(NMAWComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		
+		
+		NMAWComposite.setRenderers(mainPlotRenderer, deviationPercentPlotRenderer,percentPlotrenderer,secondPlotrenderer);
+		NMAWComposite.setSeriesCollections(mainCollection, deviationPercentCollection,percentCollection,secondCollection);
+		NMAWComposite.setPeriodandMaxProfit(period, maxProfit);
+		NMAWComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
+			@Override
+			public void CollectionRemoved() {
+				refreshPeriod();
+			}
+		});
+		
 		//=============================================
 		//==== EMA (Exponential Moving Average)  ======    
 		//=============================================
@@ -381,7 +409,6 @@ public class RateChart extends Composite {
 		xpndtmRSI.setControl(relativeStrengthIndexComposite);
 		xpndtmRSI.setHeight(relativeStrengthIndexComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		
-		//TODO
 		relativeStrengthIndexComposite.setRenderers(mainPlotRenderer, deviationPercentPlotRenderer,percentPlotrenderer,secondPlotrenderer);
 		relativeStrengthIndexComposite.setSeriesCollections(mainCollection, deviationPercentCollection,percentCollection,secondCollection);
 		relativeStrengthIndexComposite.setPeriodandMaxProfit(period, maxProfit);
@@ -504,6 +531,7 @@ public class RateChart extends Composite {
 		bollingerBandsComposite.setPeriodandMaxProfit(period, maxProfit);
 		parabolicSARComposite.setPeriodandMaxProfit(period, maxProfit);
 		relativeStrengthIndexComposite.setPeriodandMaxProfit(period, maxProfit);
+		NMAWComposite.setPeriodandMaxProfit(period, maxProfit);
 		
 		resetChartDataSet();
 		
