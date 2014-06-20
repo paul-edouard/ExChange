@@ -13,7 +13,37 @@ public class HistoricalPoint extends DatePoint {
 	private float low,open,adj_close,high,close=0;
 	private long volume=0;
 
+	public enum Type { CLOSE, OPEN,
+						HIGH, LOW ,
+						MEDIAN_PRICE, TYPICAL_PRICE,
+						WEIGHtED_CLOSE,NONE};
 	
+	public float get(Type type){
+		switch (type) {
+		case CLOSE:
+			return this.getClose();
+		case OPEN:
+			return this.getOpen();
+		case HIGH:
+			return this.getHigh();			
+		case LOW:
+			return this.getLow();	
+		case MEDIAN_PRICE:
+			return (this.getLow()+this.getHigh())/2;	
+		case TYPICAL_PRICE:
+			return (this.getLow()+this.getClose()+this.getHigh())/3;
+		case WEIGHtED_CLOSE:
+			return (this.getLow()+2+this.getClose()+this.getHigh())/4;
+		default:
+			return 0;
+		}
+	}
+	
+	public double getDouble(Type type){
+		return (double)get(type);
+	}
+	
+						
 	public float get(String field){
 		if(field.equals(FIELD_Low))return this.getLow();
 		else if(field.equals(FIELD_Open))return this.getOpen();

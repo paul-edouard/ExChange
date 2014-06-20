@@ -9,6 +9,7 @@ import org.goataa.spec.IObjectiveFunction;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.YIntervalSeries;
 
+import com.munch.exchange.job.objectivefunc.Emd.EmdData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.limit.Limit;
@@ -230,7 +231,7 @@ IObjectiveFunction<double[]> {
 		
 		for(int i=0;i<kurs.length;i++){
 			gd[i]=0;
-			if(kurs[i]==0)continue;
+			//if(kurs[i]==0)continue;
 
 			for(int j=0;j<period;j++){
 				if(i-j<0)continue;
@@ -265,7 +266,7 @@ IObjectiveFunction<double[]> {
 		double[] aroonUp=new  double[kurs.length];
 		
 		for(int i=0;i<kurs.length;i++){
-			if(kurs[i]==0)continue;
+			//if(kurs[i]==0)continue;
 			double up=Double.NEGATIVE_INFINITY;
 			double posUp=0;
 			for(int j=0;j<=period;j++){
@@ -286,7 +287,7 @@ IObjectiveFunction<double[]> {
 		double[] aroonDown=new  double[kurs.length];
 		
 		for(int i=0;i<kurs.length;i++){
-			if(kurs[i]==0)continue;
+			//if(kurs[i]==0)continue;
 			double down=Double.POSITIVE_INFINITY;
 			double posDown=0;
 			for(int j=0;j<=period;j++){
@@ -378,10 +379,10 @@ IObjectiveFunction<double[]> {
 		int i=0;
 		for(HistoricalPoint point:noneZeroHisList){
 			
-			if(i<period[0]-maxPeriod || i>period[1]){
-				Kurs[i]=0;i++;
-				continue;
-			}
+			//if(i<period[0]-maxPeriod || i>period[1]){
+			//	Kurs[i]=0;i++;
+			//	continue;
+			//}
 			
 			Kurs[i]=(point.getHigh()+point.getLow()+point.getClose())/3;
 			close[i]=point.getClose();
@@ -393,6 +394,35 @@ IObjectiveFunction<double[]> {
 		double[] nmaw=calculateNMAW(Kurs,period1,period2);
 		double[] gd=calculateGDW(Kurs, period1);
 		
+		//int pos=1;
+		double[] cut_Kurs=new double[period[1]-period[0]];
+		//double[] cut_Kurs=Kurs;
+		for( i=period[0];i<period[1];i++){
+			cut_Kurs[i-period[0]]=Kurs[i];
+		}
+			
+		
+		Emd emd = new Emd();
+		EmdData emdData = new EmdData();
+	    int order = 8;
+	    emd.emdCreate(emdData, cut_Kurs.length, order, 20, 0);
+	    emd.emdDecompose(emdData, cut_Kurs);
+		
+	    double[] filter=new double[cut_Kurs.length];
+	    
+	    int pos=1;
+	    
+	    for (i=0;i<cut_Kurs.length;i++) {
+	    	//logger.info("Kurs: "+cut_Kurs[i]);
+	    	for (int j=2;j<order; j++){
+	    		filter[i]+=emdData.imfs[j][i];
+	    	}
+	    	
+	    	nmawGDSeries.add(pos, filter[i]);
+	    	pos++;
+	     }
+	    
+		
 		//Calculate Aroon Osz
 		double[] aroonOsz=calculateAroonOsz(nmaw,aroonPeriod);
 		
@@ -400,11 +430,11 @@ IObjectiveFunction<double[]> {
 		double[] ditf=calculateDITF(aroonOsz);
 		
 		//Create the Band Series
-		int pos=1;
+		 pos=1;
 		
 		for( i=period[0];i<period[1];i++){
 			nmawSeries.add(pos, nmaw[i]);
-			nmawGDSeries.add(pos, gd[i]);
+			//nmawGDSeries.add(pos, filter[i]);
 			ditfSeries.add(pos, ditf[i]);
 			
 			//Buy
