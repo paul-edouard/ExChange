@@ -288,6 +288,9 @@ public class NMAWComposite extends Composite {
 				1, 1));
 		btnOpt.setText("Opt.");
 		btnOpt.setEnabled(false);
+		new Label(OptButtons, SWT.NONE);
+		new Label(OptButtons, SWT.NONE);
+		new Label(OptButtons, SWT.NONE);
 		
 		////////////////////////////////
 		//        Period 1            //
@@ -297,6 +300,7 @@ public class NMAWComposite extends Composite {
 		lblPeriod1.setText("Period 1:");
 		
 		nmawLblPeriod1 = new Label(this, SWT.NONE);
+		nmawLblPeriod1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		nmawLblPeriod1.setText(String.valueOf(period1));
 		
 		nmawSliderPeriod1 = new Slider(this, SWT.NONE);

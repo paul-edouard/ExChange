@@ -13,6 +13,7 @@ import org.jfree.data.xy.YIntervalSeries;
 
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.DatePointList;
+import com.munch.exchange.model.core.historical.HistoricalPoint.Type;
 
 public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	
@@ -111,6 +112,20 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		
 		return inter_series;
 	}
+	
+	public double[] getPrices(Type type){
+		LinkedList<HistoricalPoint> pointList= getNoneEmptyPoints();
+		double[] prices=new double[pointList.size()];
+		int pos=0;
+		 for(HistoricalPoint point:pointList){
+			 prices[pos]=point.getDouble(type);
+			 pos++;
+		 }
+		 
+		 return prices;
+		
+	}
+	
 	
 	public XYSeries getXYSeries(String field){
 		

@@ -118,8 +118,8 @@ public class AdaptiveMovingAverage {
 	 */
 	private static double[] calculateSSC(double[] ER, int SlowMEA, int FastMEA){
 		double[] SSC=new double[ER.length];
-		double fastSC=2/(FastMEA+1);
-		double slowSC=2/(SlowMEA+1);
+		double fastSC=2.0/((double)FastMEA+1.0);
+		double slowSC=2.0/((double)SlowMEA+1.0);
 		
 		
 		for(int i=0;i<ER.length;i++){
@@ -141,13 +141,18 @@ public class AdaptiveMovingAverage {
 		for(int i=1;i<Price.length;i++){
 			AMA[i] = AMA[i-1] + Math.pow(SSC[i], 2) * (Price[i] - AMA[i-1]);
 		}
-		
+		/*
+		for(int i=1;i<Price.length;i++){
+			System.out.println("Price: "+Price[i]+", ER: "+ER[i]+", SSC: "+SSC[i]+", AMA: "+AMA[i]);
+		}
+		System.out.println("Period: "+Period+", SlowMEA: "+SlowMEA+", FastMEA: "+FastMEA);
+		*/
 		return AMA;
 		
 	}
 	
 	public static double[] compute(double[] Price, int Period){
-		return compute(Price,Period,2,30);
+		return compute(Price,Period,30,2);
 	}
 	
 	

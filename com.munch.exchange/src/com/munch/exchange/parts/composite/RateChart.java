@@ -56,6 +56,8 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
+import com.munch.exchange.parts.chart.IndicatorComposite;
+import com.munch.exchange.parts.chart.trend.AdaptiveMovingAverageComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
 
 public class RateChart extends Composite {
@@ -126,6 +128,9 @@ public class RateChart extends Composite {
 	private float maxProfit=0;
 	private float keepAndOld=0;
 	
+	
+	//Period Composite
+	IndicatorComposite adaptiveMovingAverageComposite;
 	
 	//Period Composite
 	RateChartPeriodComposite periodComposite;
@@ -255,8 +260,16 @@ public class RateChart extends Composite {
 		});
 		
 		//=============================================
+		//======   Adaptive Moving Average      ======    
+		//=============================================
+		adaptiveMovingAverageComposite=addIndicator(expandBarTrend, "Adaptive Moving Average", AdaptiveMovingAverageComposite.class, localContextTrend);
+		
+		
+		//=============================================
 		//======        MOVING AVERAGE           ======    
 		//=============================================
+		
+		
 		
 		ExpandItem xpndtmMovingAvg = new ExpandItem(expandBarTrend, SWT.NONE);
 		xpndtmMovingAvg.setExpanded(true);
@@ -434,6 +447,29 @@ public class RateChart extends Composite {
 
 	}
 	
+	private IndicatorComposite addIndicator(ExpandBar expandBar,String name , Class< ? extends IndicatorComposite> clazz,IEclipseContext context){
+		ExpandItem xpndtm = new ExpandItem(expandBar, SWT.NONE);
+		xpndtm.setExpanded(true);
+		xpndtm.setText(name);
+		//xpndtmParabolicSAR.setHeight(150);
+		
+		IndicatorComposite indicatorComposite=ContextInjectionFactory.make( clazz,context);
+		xpndtm.setControl(indicatorComposite);
+		xpndtm.setHeight(indicatorComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		
+		indicatorComposite.setRenderers(mainPlotRenderer, secondPlotrenderer, percentPlotrenderer, errorPlotRenderer, deviationPercentPlotRenderer, deviationRenderer);
+		indicatorComposite.setSeriesCollections(mainCollection, secondCollection, percentCollection, errorCollection, deviationPercentCollection, deviationCollection);
+		indicatorComposite.setPeriod(period);
+		indicatorComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
+			@Override
+			public void CollectionRemoved() {
+				refreshPeriod();
+			}
+		});	
+		
+		return indicatorComposite;
+	}
+	
 	
 	/////////////////////////////
 	////  EVENT REACTIONS    ////
@@ -532,6 +568,7 @@ public class RateChart extends Composite {
 		parabolicSARComposite.setPeriodandMaxProfit(period, maxProfit);
 		relativeStrengthIndexComposite.setPeriodandMaxProfit(period, maxProfit);
 		NMAWComposite.setPeriodandMaxProfit(period, maxProfit);
+		adaptiveMovingAverageComposite.setPeriod(period);
 		
 		resetChartDataSet();
 		
