@@ -96,8 +96,14 @@ public class AdaptiveMovingAverage {
 			for(int j=0;j<N;j++){
 				Noise[i]+=Math.abs(Price[i-j]-Price[i-1-j]);
 			}
-			
-			ER[i]=Signal[i]/Noise[i];
+			if(Signal[i]==0 && Noise[i]==0)
+				ER[i]=1;
+			else if(Noise[i]==0)
+				ER[i]=1;
+			else if(Signal[i]==0)
+				ER[i]=0;
+			else
+				ER[i]=Signal[i]/Noise[i];
 		}
 		
 		return ER;
@@ -142,7 +148,7 @@ public class AdaptiveMovingAverage {
 			AMA[i] = AMA[i-1] + Math.pow(SSC[i], 2) * (Price[i] - AMA[i-1]);
 		}
 		/*
-		for(int i=1;i<Price.length;i++){
+		for(int i=Price.length-1;i>=1;i--){
 			System.out.println("Price: "+Price[i]+", ER: "+ER[i]+", SSC: "+SSC[i]+", AMA: "+AMA[i]);
 		}
 		System.out.println("Period: "+Period+", SlowMEA: "+SlowMEA+", FastMEA: "+FastMEA);
