@@ -58,6 +58,10 @@ import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.chart.IndicatorComposite;
 import com.munch.exchange.parts.chart.trend.AdaptiveMovingAverageComposite;
+import com.munch.exchange.parts.chart.trend.ExponentialMovingAverageComposite;
+import com.munch.exchange.parts.chart.trend.LinearWeightedMovingAverageComposite;
+import com.munch.exchange.parts.chart.trend.SimpleMovingAverageComposite;
+import com.munch.exchange.parts.chart.trend.SmoothedMovingAverageComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
 
 public class RateChart extends Composite {
@@ -131,6 +135,10 @@ public class RateChart extends Composite {
 	
 	//Period Composite
 	IndicatorComposite adaptiveMovingAverageComposite;
+	IndicatorComposite simpleMovingAverageComposite;
+	IndicatorComposite exponentialMovingAverageComposite;
+	IndicatorComposite smoothedMovingAverageComposite;
+	IndicatorComposite linearWeightedMovingAverageComposite;
 	
 	//Period Composite
 	RateChartPeriodComposite periodComposite;
@@ -158,6 +166,7 @@ public class RateChart extends Composite {
 	
 	//Relative strength index
 	RateChartRelativeStrengthIndexComposite relativeStrengthIndexComposite;
+	
 	
 	private ExpandBar createExpandBar(String name,TabFolder tabFolder){
 		TabItem tbtm = new TabItem(tabFolder, SWT.NONE);
@@ -263,7 +272,10 @@ public class RateChart extends Composite {
 		//======   Adaptive Moving Average      ======    
 		//=============================================
 		adaptiveMovingAverageComposite=addIndicator(expandBarTrend, "Adaptive Moving Average", AdaptiveMovingAverageComposite.class, localContextTrend);
-		
+		simpleMovingAverageComposite=addIndicator(expandBarTrend, "Simple Moving Average", SimpleMovingAverageComposite.class, localContextTrend);
+		exponentialMovingAverageComposite=addIndicator(expandBarTrend, "Exponential Moving Average", ExponentialMovingAverageComposite.class, localContextTrend);
+		smoothedMovingAverageComposite=addIndicator(expandBarTrend, "Smoothed Moving Average", SmoothedMovingAverageComposite.class, localContextTrend);
+		linearWeightedMovingAverageComposite=addIndicator(expandBarTrend, "Linear Weighted Moving Average", LinearWeightedMovingAverageComposite.class, localContextTrend);
 		
 		//=============================================
 		//======        MOVING AVERAGE           ======    
@@ -568,7 +580,12 @@ public class RateChart extends Composite {
 		parabolicSARComposite.setPeriodandMaxProfit(period, maxProfit);
 		relativeStrengthIndexComposite.setPeriodandMaxProfit(period, maxProfit);
 		NMAWComposite.setPeriodandMaxProfit(period, maxProfit);
+		
 		adaptiveMovingAverageComposite.setPeriod(period);
+		simpleMovingAverageComposite.setPeriod(period);
+		exponentialMovingAverageComposite.setPeriod(period);
+		smoothedMovingAverageComposite.setPeriod(period);
+		linearWeightedMovingAverageComposite.setPeriod(period);
 		
 		resetChartDataSet();
 		
