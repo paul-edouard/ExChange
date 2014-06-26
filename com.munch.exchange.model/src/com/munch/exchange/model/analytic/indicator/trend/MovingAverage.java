@@ -194,6 +194,11 @@ public class MovingAverage {
 		
 	}
 	
+	public static double[] EMA(double[] Price, int Period){
+		double P=2.0/((double)Period+1);
+		return EMA(Price,P);
+	}
+	
 	/**
 	 * Smoothed Moving Average (SMMA)
 	 * 
@@ -284,7 +289,7 @@ public class MovingAverage {
 		for(int i=0;i<Price.length;i++){
 			for(int j=0;j<N;j++){
 				if(i-j<0)continue;
-				lwma[i]+=Price[i-j]*(j+1);
+				lwma[i]+=Price[i-j]*(N-j);
 			}
 			lwma[i]=lwma[i]/sum;
 			

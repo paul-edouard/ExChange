@@ -58,10 +58,14 @@ import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.chart.IndicatorComposite;
 import com.munch.exchange.parts.chart.trend.AdaptiveMovingAverageComposite;
+import com.munch.exchange.parts.chart.trend.DoubleExponentialMovingAverageComposite;
+import com.munch.exchange.parts.chart.trend.DoubleLinearWeigthedMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.ExponentialMovingAverageComposite;
+import com.munch.exchange.parts.chart.trend.FractalAdaptiveMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.LinearWeightedMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.SimpleMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.SmoothedMovingAverageComposite;
+import com.munch.exchange.parts.chart.trend.TripleLinearWeigthMovingAverageComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
 
 public class RateChart extends Composite {
@@ -139,6 +143,12 @@ public class RateChart extends Composite {
 	IndicatorComposite exponentialMovingAverageComposite;
 	IndicatorComposite smoothedMovingAverageComposite;
 	IndicatorComposite linearWeightedMovingAverageComposite;
+	IndicatorComposite doubleExponentialMovingAverageComposite;
+	IndicatorComposite doubleLinearWeigthedMovingAverageComposite;
+	IndicatorComposite tripleLinearWeigthedMovingAverageComposite;
+	IndicatorComposite fractalAdaptiveMovingAverageComposite;
+	
+	//TODO
 	
 	//Period Composite
 	RateChartPeriodComposite periodComposite;
@@ -276,6 +286,12 @@ public class RateChart extends Composite {
 		exponentialMovingAverageComposite=addIndicator(expandBarTrend, "Exponential Moving Average", ExponentialMovingAverageComposite.class, localContextTrend);
 		smoothedMovingAverageComposite=addIndicator(expandBarTrend, "Smoothed Moving Average", SmoothedMovingAverageComposite.class, localContextTrend);
 		linearWeightedMovingAverageComposite=addIndicator(expandBarTrend, "Linear Weighted Moving Average", LinearWeightedMovingAverageComposite.class, localContextTrend);
+		doubleExponentialMovingAverageComposite=addIndicator(expandBarTrend, "Double Exponential Moving Average", DoubleExponentialMovingAverageComposite.class, localContextTrend);
+		doubleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Double Linear Weigth Moving Average", DoubleLinearWeigthedMovingAverageComposite.class, localContextTrend);
+		tripleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Triple Linear Weigth Moving Average", TripleLinearWeigthMovingAverageComposite.class, localContextTrend);
+		fractalAdaptiveMovingAverageComposite=addIndicator(expandBarTrend, "Fractal Adaptive Moving Average", FractalAdaptiveMovingAverageComposite.class, localContextTrend);
+		
+		//TODO
 		
 		//=============================================
 		//======        MOVING AVERAGE           ======    
@@ -461,7 +477,7 @@ public class RateChart extends Composite {
 	
 	private IndicatorComposite addIndicator(ExpandBar expandBar,String name , Class< ? extends IndicatorComposite> clazz,IEclipseContext context){
 		ExpandItem xpndtm = new ExpandItem(expandBar, SWT.NONE);
-		xpndtm.setExpanded(true);
+		xpndtm.setExpanded(false);
 		xpndtm.setText(name);
 		//xpndtmParabolicSAR.setHeight(150);
 		
@@ -586,6 +602,12 @@ public class RateChart extends Composite {
 		exponentialMovingAverageComposite.setPeriod(period);
 		smoothedMovingAverageComposite.setPeriod(period);
 		linearWeightedMovingAverageComposite.setPeriod(period);
+		doubleExponentialMovingAverageComposite.setPeriod(period);
+		doubleLinearWeigthedMovingAverageComposite.setPeriod(period);
+		tripleLinearWeigthedMovingAverageComposite.setPeriod(period);
+		fractalAdaptiveMovingAverageComposite.setPeriod(period);
+		
+		//TODO Set period
 		
 		resetChartDataSet();
 		
