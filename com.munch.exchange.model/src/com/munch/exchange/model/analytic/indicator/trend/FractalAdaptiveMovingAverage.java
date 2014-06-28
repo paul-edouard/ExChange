@@ -97,18 +97,19 @@ public class FractalAdaptiveMovingAverage {
 		return l;
 	}
 	
-	private static double[] fractalDimension(double[] Price,int Period){
-		double[] D=new double[Price.length];
+	private static double[] fractalDimension(double[] Low,double[] High,int Period){
+		double[] D=new double[High.length];
 		double N1;
 		double N2;
 		double N3;
 		
-		for(int i=0;i<Price.length;i++){
-			N1=(getHighestPrice(Price,i,0,Period)-getLowestPrice(Price,i,0,Period))/((double)Period);
-			N2=(getHighestPrice(Price,i,Period,2*Period)-getLowestPrice(Price,i,Period,2*Period))/((double)Period);
-			N3=(getHighestPrice(Price,i,0,2*Period)-getLowestPrice(Price,i,0,2*Period))/((double) (2*Period));
+		for(int i=0;i<High.length;i++){
+			N1=(getHighestPrice(High,i,0,Period)-getLowestPrice(Low,i,0,Period))/((double)Period);
+			N2=(getHighestPrice(High,i,Period,2*Period)-getLowestPrice(Low,i,Period,2*Period))/((double)Period);
+			N3=(getHighestPrice(High,i,0,2*Period)-getLowestPrice(Low,i,0,2*Period))/((double) (2*Period));
 			
-			D[i]=(Math.log10(N1+N2)-Math.log10(N3))/Math.log10(2);
+			if( N1>0 && N2>0 && N3>0)
+				D[i]=(Math.log(N1+N2)-Math.log(N3))/Math.log(2);
 			/*
 			System.out.print("Periode 1[");
 			for(int j=0;j<Period;j++){
@@ -132,7 +133,7 @@ public class FractalAdaptiveMovingAverage {
 					", Lowest [Period,2Period]: "+getLowestPrice(Price,i,Period,2*Period)+
 					", Lowest [0,2Period]: "+getLowestPrice(Price,i,0,2*Period));
 					*/
-			System.out.println("D: "+D[i]+", N1:"+N1+", N2:"+N2+", N3:"+N3);
+			//System.out.println("D: "+D[i]+", N1:"+N1+", N2:"+N2+", N3:"+N3);
 			
 		}
 		
@@ -140,10 +141,10 @@ public class FractalAdaptiveMovingAverage {
 		return D;
 	}
 	
-	private static double[] exponentialSmoothingFactor(double[] Price,int Period){
-		double[] D=fractalDimension(Price,Period);
-		double[] A=new double[Price.length];
-		for(int i=0;i<Price.length;i++){
+	private static double[] exponentialSmoothingFactor(double[] Low, double[] High,int Period){
+		double[] D=fractalDimension(Low,High,Period);
+		double[] A=new double[Low.length];
+		for(int i=0;i<Low.length;i++){
 			A[i]=Math.exp(-4.6 * (D[i] - 1));
 			if(A[i]<0.01)A[i]=0.01;
 			if(A[i]>1)A[i]=1;
@@ -152,10 +153,10 @@ public class FractalAdaptiveMovingAverage {
 	}
 	
 	
-	public static double[] compute(double[] Price, int Period){
+	public static double[] compute(double[] Price, double[] High, double[] Low ,int Period){
 		
 		double[] FRAMA=new double[Price.length];
-		double[] A=exponentialSmoothingFactor(Price, Period);
+		double[] A=exponentialSmoothingFactor(Low,High, Period);
 		
 		FRAMA[0]=Price[0];
 		

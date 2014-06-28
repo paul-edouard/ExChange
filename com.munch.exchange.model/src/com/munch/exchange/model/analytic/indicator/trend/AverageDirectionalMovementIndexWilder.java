@@ -56,5 +56,83 @@ package com.munch.exchange.model.analytic.indicator.trend;
  * 
  */
 public class AverageDirectionalMovementIndexWilder {
+	
+	private static double[] dmPlus( double[] High){
+		double[] dm_plus=new double[High.length];
+		
+		for(int i=1;i<High.length;i++){
+			double abs=High[i] - High[i-1];
+			if(abs > 0){
+				dm_plus[i]=abs;
+			}
+		}
+		
+		return dm_plus;
+	}
+	
+	private static double[] dmMinus( double[] Low){
+		double[] dm_minus=new double[Low.length];
+		
+		for(int i=1;i<Low.length;i++){
+			double abs=Low[i-1] - Low[i];
+			if(abs > 0){
+				dm_minus[i]=abs;
+			}
+		}
+		
+		return dm_minus;
+	}
+	
+	private static double[] trueRange( double[] Close, double[] High, double[] Low){
+		double[] tr=new double[Low.length];
+		
+		for(int i=1;i<Low.length;i++){
+			double absHigh=Math.abs(High[i] - Low[i]);
+			double absHighLastClose=Math.abs(High[i] - Close[i-1]);
+			double absLowLastClose=Math.abs(Low[i] - Close[i-1]);
+			
+			
+			tr[i]=Math.max(absHigh, Math.max(absHighLastClose,absLowLastClose));
+			
+		}
+		
+		return tr;
+	}
+	
+	
+	
+	public static double[] compute(double[] Close, double[] High, double[] Low ,int Period){
+		
+		double[] DX=new double[Close.length];
+		
+		double[] dm_plus=dmPlus(High);
+		double[] dm_minus=dmMinus(Low);
+		double[] tr=trueRange(Close,High,Low);
+		
+		double[] ATR=MovingAverage.SMMA(tr,Period);
+		
+		double[] Plus_D=MovingAverage.SMMA(dm_plus,Period);
+		for(int i=1;i<Low.length;i++){
+			Plus_D[i]=Plus_D[i]/ATR[i]*100;
+		}
+		
+		double[] Minus_D=MovingAverage.SMMA(dm_minus,Period);
+		for(int i=1;i<Low.length;i++){
+			Minus_D[i]=Minus_D[i]/ATR[i]*100;
+		}
+		
+		
+		//DX(i) = ABS(Plus_D(i) - Minus_D(i))/(Plus_D(i) + Minus_D(i)) * 100
+		for(int i=1;i<Low.length;i++){
+			DX[i]=Math.abs(Plus_D[i]-Minus_D[i])/(Plus_D[i]+Minus_D[i])*100;
+			//System.out.println("DX: "+DX[i]+", Plus_D: "+Plus_D[i]+", Minus_D: "+Minus_D[i]);
+			//System.out.println("tr: "+tr[i]+", dm_plus: "+dm_plus[i]+", dm_minus: "+dm_minus[i]);
+		}
+		
+		double[] ADX=MovingAverage.SMMA(DX,Period);
+		
+		return ADX;
+	}
+	
 
 }

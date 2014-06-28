@@ -58,6 +58,7 @@ import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.chart.IndicatorComposite;
 import com.munch.exchange.parts.chart.trend.AdaptiveMovingAverageComposite;
+import com.munch.exchange.parts.chart.trend.AverageDirectionalMovementIndexWilderComposite;
 import com.munch.exchange.parts.chart.trend.DoubleExponentialMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.DoubleLinearWeigthedMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.ExponentialMovingAverageComposite;
@@ -147,6 +148,7 @@ public class RateChart extends Composite {
 	IndicatorComposite doubleLinearWeigthedMovingAverageComposite;
 	IndicatorComposite tripleLinearWeigthedMovingAverageComposite;
 	IndicatorComposite fractalAdaptiveMovingAverageComposite;
+	IndicatorComposite averageDirectionalMovementIndexWilderComposite;
 	
 	//TODO
 	
@@ -290,6 +292,7 @@ public class RateChart extends Composite {
 		doubleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Double Linear Weigth Moving Average", DoubleLinearWeigthedMovingAverageComposite.class, localContextTrend);
 		tripleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Triple Linear Weigth Moving Average", TripleLinearWeigthMovingAverageComposite.class, localContextTrend);
 		fractalAdaptiveMovingAverageComposite=addIndicator(expandBarTrend, "Fractal Adaptive Moving Average", FractalAdaptiveMovingAverageComposite.class, localContextTrend);
+		averageDirectionalMovementIndexWilderComposite=addIndicator(expandBarTrend, "Average Directional Movement Index Wilder", AverageDirectionalMovementIndexWilderComposite.class, localContextTrend);
 		
 		//TODO
 		
@@ -606,6 +609,7 @@ public class RateChart extends Composite {
 		doubleLinearWeigthedMovingAverageComposite.setPeriod(period);
 		tripleLinearWeigthedMovingAverageComposite.setPeriod(period);
 		fractalAdaptiveMovingAverageComposite.setPeriod(period);
+		averageDirectionalMovementIndexWilderComposite.setPeriod(period);
 		
 		//TODO Set period
 		
