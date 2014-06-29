@@ -58,7 +58,9 @@ import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.chart.IndicatorComposite;
 import com.munch.exchange.parts.chart.trend.AdaptiveMovingAverageComposite;
+import com.munch.exchange.parts.chart.trend.AverageDirectionalMovementIndexComposite;
 import com.munch.exchange.parts.chart.trend.AverageDirectionalMovementIndexWilderComposite;
+import com.munch.exchange.parts.chart.trend.BollingerBandsComposite;
 import com.munch.exchange.parts.chart.trend.DoubleExponentialMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.DoubleLinearWeigthedMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.ExponentialMovingAverageComposite;
@@ -149,6 +151,8 @@ public class RateChart extends Composite {
 	IndicatorComposite tripleLinearWeigthedMovingAverageComposite;
 	IndicatorComposite fractalAdaptiveMovingAverageComposite;
 	IndicatorComposite averageDirectionalMovementIndexWilderComposite;
+	IndicatorComposite averageDirectionalMovementIndexComposite;
+	IndicatorComposite bollingerBandsComposite;
 	
 	//TODO
 	
@@ -171,7 +175,7 @@ public class RateChart extends Composite {
 	RateChartMACDComposite macdComposite;
 	
 	//Bollinger Bands
-	RateChartBollingerBandsComposite bollingerBandsComposite;
+	RateChartBollingerBandsComposite bollingerBandsComposite2;
 	
 	//Parabolic SAR
 	RateChartParabolicSAR parabolicSARComposite;
@@ -293,6 +297,8 @@ public class RateChart extends Composite {
 		tripleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Triple Linear Weigth Moving Average", TripleLinearWeigthMovingAverageComposite.class, localContextTrend);
 		fractalAdaptiveMovingAverageComposite=addIndicator(expandBarTrend, "Fractal Adaptive Moving Average", FractalAdaptiveMovingAverageComposite.class, localContextTrend);
 		averageDirectionalMovementIndexWilderComposite=addIndicator(expandBarTrend, "Average Directional Movement Index Wilder", AverageDirectionalMovementIndexWilderComposite.class, localContextTrend);
+		averageDirectionalMovementIndexComposite=addIndicator(expandBarTrend, "Average Directional Movement Index", AverageDirectionalMovementIndexComposite.class, localContextTrend);
+		bollingerBandsComposite=addIndicator(expandBarTrend, "Bollinger Bands", BollingerBandsComposite.class, localContextTrend);
 		
 		//TODO
 		
@@ -401,15 +407,15 @@ public class RateChart extends Composite {
 		xpndtmBollingerBands.setText("Bollinger Bands");
 		
 		
-		bollingerBandsComposite=ContextInjectionFactory.make( RateChartBollingerBandsComposite.class,localContextVolatility);
-		xpndtmBollingerBands.setControl(bollingerBandsComposite);
-		xpndtmBollingerBands.setHeight(bollingerBandsComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		bollingerBandsComposite2=ContextInjectionFactory.make( RateChartBollingerBandsComposite.class,localContextVolatility);
+		xpndtmBollingerBands.setControl(bollingerBandsComposite2);
+		xpndtmBollingerBands.setHeight(bollingerBandsComposite2.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		
 		
-		bollingerBandsComposite.setRenderers(mainPlotRenderer, secondPlotrenderer,deviationRenderer);
-		bollingerBandsComposite.setSeriesCollections(mainCollection, secondCollection,deviationCollection );
-		bollingerBandsComposite.setPeriodandMaxProfit(period, maxProfit);
-		bollingerBandsComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
+		bollingerBandsComposite2.setRenderers(mainPlotRenderer, secondPlotrenderer,deviationRenderer);
+		bollingerBandsComposite2.setSeriesCollections(mainCollection, secondCollection,deviationCollection );
+		bollingerBandsComposite2.setPeriodandMaxProfit(period, maxProfit);
+		bollingerBandsComposite2.addCollectionRemovedListener(new CollectionRemovedListener() {
 			@Override
 			public void CollectionRemoved() {
 				refreshPeriod();
@@ -595,7 +601,7 @@ public class RateChart extends Composite {
 		macdComposite.setPeriodandMaxProfit(period, maxProfit);
 		emaComposite.setPeriodandMaxProfit(period, maxProfit);
 		lawAndHightComposite.setPeriodandMaxProfit(period, maxProfit);
-		bollingerBandsComposite.setPeriodandMaxProfit(period, maxProfit);
+		bollingerBandsComposite2.setPeriodandMaxProfit(period, maxProfit);
 		parabolicSARComposite.setPeriodandMaxProfit(period, maxProfit);
 		relativeStrengthIndexComposite.setPeriodandMaxProfit(period, maxProfit);
 		NMAWComposite.setPeriodandMaxProfit(period, maxProfit);
@@ -610,6 +616,8 @@ public class RateChart extends Composite {
 		tripleLinearWeigthedMovingAverageComposite.setPeriod(period);
 		fractalAdaptiveMovingAverageComposite.setPeriod(period);
 		averageDirectionalMovementIndexWilderComposite.setPeriod(period);
+		averageDirectionalMovementIndexComposite.setPeriod(period);
+		bollingerBandsComposite.setPeriod(period);
 		
 		//TODO Set period
 		
