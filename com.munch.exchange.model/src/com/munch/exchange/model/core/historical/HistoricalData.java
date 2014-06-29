@@ -1,13 +1,20 @@
 package com.munch.exchange.model.core.historical;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jfree.data.time.Day;
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.ohlc.OHLC;
+import org.jfree.data.time.ohlc.OHLCItem;
+import org.jfree.data.time.ohlc.OHLCSeries;
+import org.jfree.data.xy.OHLCDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.YIntervalSeries;
 
@@ -95,6 +102,56 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		 
 		 return series;
 	}
+	
+	public OHLCSeries getPosOHLCSeries( int[] period){
+		
+		OHLCSeries series = new OHLCSeries("Positiv OHLC");
+		LinkedList<HistoricalPoint> pointList= getPointsFromPeriod(period,getNoneEmptyPoints());
+		
+		long pos=1;
+		Calendar date=Calendar.getInstance();
+		date.setTimeInMillis(pos);
+		Millisecond current=new Millisecond(date.getTime());
+		
+		for(HistoricalPoint point:pointList){
+			 if(point.get(Type.CLOSE)>point.get(Type.OPEN)){
+				 series.add(current,point.get(Type.OPEN), point.get(Type.HIGH), point.get(Type.LOW), point.get(Type.CLOSE));
+			 }
+			 //current=(Day)current.next();
+			 pos++;
+			 date.setTimeInMillis(pos);
+			 current =new Millisecond(date.getTime());
+		}
+		 
+		 return series;
+	}
+	
+	public OHLCSeries getNegOHLCSeries( int[] period){
+		
+		OHLCSeries series = new OHLCSeries("Negativ OHLC");
+		LinkedList<HistoricalPoint> pointList= getPointsFromPeriod(period,getNoneEmptyPoints());
+		//Date d=pointList.getFirst().getDate().getTime();
+		
+		//pointList.getFirst().getDate().add(Calendar.DAY_OF_YEAR, amount);
+		long pos=1;
+		Calendar date=Calendar.getInstance();
+		date.setTimeInMillis(pos);
+		Millisecond current=new Millisecond(date.getTime());
+		
+		for(HistoricalPoint point:pointList){
+			 if(point.get(Type.CLOSE)<=point.get(Type.OPEN)){
+				 series.add(current,point.get(Type.OPEN), point.get(Type.HIGH), point.get(Type.LOW), point.get(Type.CLOSE));
+			 }
+			 //current=(Day)current.next();
+			 pos++;
+			 date.setTimeInMillis(pos);
+			 current =new Millisecond(date.getTime());
+		}
+		 
+		 return series;
+	}
+	
+	
 	
 	public YIntervalSeries getYIntervalSeries( String serie_name, int[] period){
 		

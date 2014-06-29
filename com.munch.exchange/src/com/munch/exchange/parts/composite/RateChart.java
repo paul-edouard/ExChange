@@ -38,11 +38,16 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
+import org.jfree.chart.renderer.xy.HighLowRenderer;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.time.ohlc.OHLCSeries;
+import org.jfree.data.time.ohlc.OHLCSeriesCollection;
+import org.jfree.data.xy.DefaultHighLowDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -107,6 +112,8 @@ public class RateChart extends Composite {
 	private XYErrorRenderer errorPlotRenderer=new XYErrorRenderer();
 	private DeviationRenderer deviationPercentPlotRenderer=new DeviationRenderer();
 	private DeviationRenderer deviationRenderer = new DeviationRenderer(true, false);
+	private CandlestickRenderer candlestickRenderer=new CandlestickRenderer(0.0);
+	
 	//TODO
 	
 	//The Series Collections
@@ -116,7 +123,7 @@ public class RateChart extends Composite {
 	private YIntervalSeriesCollection errorCollection=new YIntervalSeriesCollection();
 	private YIntervalSeriesCollection deviationPercentCollection=new YIntervalSeriesCollection();
 	private YIntervalSeriesCollection deviationCollection=new YIntervalSeriesCollection();
-	
+	private OHLCSeriesCollection oHLCSeriesCollection=new OHLCSeriesCollection();
 	
 
 	private ExchangeRate rate;
@@ -163,16 +170,16 @@ public class RateChart extends Composite {
 	RateChartLawAndHightComposite lawAndHightComposite;
 	
 	//Moving Average
-	RateChartMovingAverageComposite movingAverageComposite;
+	//RateChartMovingAverageComposite movingAverageComposite;
 	
 	//NMAW
-	NMAWComposite NMAWComposite;
+	//NMAWComposite NMAWComposite;
 	
 	//EMA
-	RateChartEMAComposite emaComposite;
+	//RateChartEMAComposite emaComposite;
 	
 	//MACD
-	RateChartMACDComposite macdComposite;
+	//RateChartMACDComposite macdComposite;
 	
 	//Bollinger Bands
 	RateChartBollingerBandsComposite bollingerBandsComposite2;
@@ -288,17 +295,17 @@ public class RateChart extends Composite {
 		//======   Adaptive Moving Average      ======    
 		//=============================================
 		adaptiveMovingAverageComposite=addIndicator(expandBarTrend, "Adaptive Moving Average", AdaptiveMovingAverageComposite.class, localContextTrend);
-		simpleMovingAverageComposite=addIndicator(expandBarTrend, "Simple Moving Average", SimpleMovingAverageComposite.class, localContextTrend);
-		exponentialMovingAverageComposite=addIndicator(expandBarTrend, "Exponential Moving Average", ExponentialMovingAverageComposite.class, localContextTrend);
-		smoothedMovingAverageComposite=addIndicator(expandBarTrend, "Smoothed Moving Average", SmoothedMovingAverageComposite.class, localContextTrend);
-		linearWeightedMovingAverageComposite=addIndicator(expandBarTrend, "Linear Weighted Moving Average", LinearWeightedMovingAverageComposite.class, localContextTrend);
+		averageDirectionalMovementIndexComposite=addIndicator(expandBarTrend, "Average Directional Movement Index", AverageDirectionalMovementIndexComposite.class, localContextTrend);
+		averageDirectionalMovementIndexWilderComposite=addIndicator(expandBarTrend, "Average Directional Movement Index Wilder", AverageDirectionalMovementIndexWilderComposite.class, localContextTrend);
+		bollingerBandsComposite=addIndicator(expandBarTrend, "Bollinger Bands", BollingerBandsComposite.class, localContextTrend);
 		doubleExponentialMovingAverageComposite=addIndicator(expandBarTrend, "Double Exponential Moving Average", DoubleExponentialMovingAverageComposite.class, localContextTrend);
 		doubleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Double Linear Weigth Moving Average", DoubleLinearWeigthedMovingAverageComposite.class, localContextTrend);
-		tripleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Triple Linear Weigth Moving Average", TripleLinearWeigthMovingAverageComposite.class, localContextTrend);
+		exponentialMovingAverageComposite=addIndicator(expandBarTrend, "Exponential Moving Average", ExponentialMovingAverageComposite.class, localContextTrend);
 		fractalAdaptiveMovingAverageComposite=addIndicator(expandBarTrend, "Fractal Adaptive Moving Average", FractalAdaptiveMovingAverageComposite.class, localContextTrend);
-		averageDirectionalMovementIndexWilderComposite=addIndicator(expandBarTrend, "Average Directional Movement Index Wilder", AverageDirectionalMovementIndexWilderComposite.class, localContextTrend);
-		averageDirectionalMovementIndexComposite=addIndicator(expandBarTrend, "Average Directional Movement Index", AverageDirectionalMovementIndexComposite.class, localContextTrend);
-		bollingerBandsComposite=addIndicator(expandBarTrend, "Bollinger Bands", BollingerBandsComposite.class, localContextTrend);
+		linearWeightedMovingAverageComposite=addIndicator(expandBarTrend, "Linear Weighted Moving Average", LinearWeightedMovingAverageComposite.class, localContextTrend);
+		simpleMovingAverageComposite=addIndicator(expandBarTrend, "Simple Moving Average", SimpleMovingAverageComposite.class, localContextTrend);
+		smoothedMovingAverageComposite=addIndicator(expandBarTrend, "Smoothed Moving Average", SmoothedMovingAverageComposite.class, localContextTrend);
+		tripleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Triple Linear Weigth Moving Average", TripleLinearWeigthMovingAverageComposite.class, localContextTrend);
 		
 		//TODO
 		
@@ -307,7 +314,7 @@ public class RateChart extends Composite {
 		//=============================================
 		
 		
-		
+		/*
 		ExpandItem xpndtmMovingAvg = new ExpandItem(expandBarTrend, SWT.NONE);
 		xpndtmMovingAvg.setExpanded(true);
 		xpndtmMovingAvg.setText("Moving Average");
@@ -327,12 +334,13 @@ public class RateChart extends Composite {
 				refreshPeriod();
 			}
 		});
-		
+		*/
 		
 		//=============================================
 		//======              NMAW               ======    
 		//=============================================
 		
+		/*
 		ExpandItem xpndtmNMAW = new ExpandItem(expandBarTrend, SWT.NONE);
 		xpndtmNMAW.setExpanded(true);
 		xpndtmNMAW.setText("NMAW");
@@ -352,11 +360,11 @@ public class RateChart extends Composite {
 				refreshPeriod();
 			}
 		});
-		
+		*/
 		//=============================================
 		//==== EMA (Exponential Moving Average)  ======    
 		//=============================================
-		
+		/*
 		ExpandItem xpndtmEma = new ExpandItem(expandBarTrend, SWT.NONE);
 		xpndtmEma.setText("EMA (Exponential Moving Average)");
 		xpndtmEma.setExpanded(true);
@@ -375,10 +383,11 @@ public class RateChart extends Composite {
 				refreshPeriod();
 			}
 		});
-		
+		*/
 		//==================================================
 		//== MACD (Moving Average Convergence/Divergence) ==    
 		//==================================================
+		/*
 		ExpandItem xpndtmMacd = new ExpandItem(expandBarTrend, SWT.NONE);
 		xpndtmMacd.setExpanded(true);
 		xpndtmMacd.setText("MACD (Moving Average Convergence/Divergence)");
@@ -397,7 +406,7 @@ public class RateChart extends Composite {
 				refreshPeriod();
 			}
 		});
-		
+		*/
 		//==================================================
 		//==              Bollinger Bands                 ==    
 		//==================================================
@@ -597,14 +606,14 @@ public class RateChart extends Composite {
 		// ===================================
 		// Distribute new Period and max profit
 		// ===================================
-		movingAverageComposite.setPeriodandMaxProfit(period, maxProfit);
-		macdComposite.setPeriodandMaxProfit(period, maxProfit);
-		emaComposite.setPeriodandMaxProfit(period, maxProfit);
+		//movingAverageComposite.setPeriodandMaxProfit(period, maxProfit);
+		//macdComposite.setPeriodandMaxProfit(period, maxProfit);
+		//emaComposite.setPeriodandMaxProfit(period, maxProfit);
 		lawAndHightComposite.setPeriodandMaxProfit(period, maxProfit);
 		bollingerBandsComposite2.setPeriodandMaxProfit(period, maxProfit);
 		parabolicSARComposite.setPeriodandMaxProfit(period, maxProfit);
 		relativeStrengthIndexComposite.setPeriodandMaxProfit(period, maxProfit);
-		NMAWComposite.setPeriodandMaxProfit(period, maxProfit);
+		//NMAWComposite.setPeriodandMaxProfit(period, maxProfit);
 		
 		adaptiveMovingAverageComposite.setPeriod(period);
 		simpleMovingAverageComposite.setPeriod(period);
@@ -672,6 +681,15 @@ public class RateChart extends Composite {
 			mainPlotRenderer.setSeriesStroke(fiel_pos,new BasicStroke(2.0f));
 			mainPlotRenderer.setSeriesPaint(fiel_pos, Color.BLUE);
 		}
+		
+		OHLCSeries pos=rate.getHistoricalData().getPosOHLCSeries(period);
+		OHLCSeries neg=rate.getHistoricalData().getNegOHLCSeries(period);
+		oHLCSeriesCollection.addSeries(pos);
+		oHLCSeriesCollection.addSeries(neg);
+		candlestickRenderer.setAutoWidthFactor(0.7);
+		candlestickRenderer.setAutoWidthMethod(CandlestickRenderer.WIDTHMETHOD_SMALLEST);
+		
+		//TODO
 		
 		
 		return mainCollection;
@@ -849,7 +867,8 @@ public class RateChart extends Composite {
 	        
 	        //Plot
 	        XYPlot plot1 = new XYPlot(mainCollection, null, rangeAxis1, mainPlotRenderer);
-	        plot1.setBackgroundPaint(Color.lightGray);
+	        //plot1.setBackgroundPaint(Color.lightGray);
+	        plot1.setBackgroundPaint(Color.BLACK);
 	        plot1.setDomainGridlinePaint(Color.white);
 	        plot1.setRangeGridlinePaint(Color.white);
 	        
@@ -867,6 +886,9 @@ public class RateChart extends Composite {
 			//Add the deviation Graph
 			addDevGraph(plot1, rangeAxis1, i);
 			i++;
+			//Add the Candle Stick Graph
+			addCandleStickGraph(plot1, rangeAxis1, i);
+			i++;
 			
 	        return plot1;
 	    	
@@ -880,15 +902,19 @@ public class RateChart extends Composite {
 	    private void addErrorGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
 	    	
 	    	//TODO
-	    	
 	    	//plot.setRangeAxis(i, rangeAxis1);
 	    	plot.setDataset(i,errorCollection);
 	    	plot.setRenderer(i, errorPlotRenderer);
 	    	
 	    	errorPlotRenderer.setBaseLinesVisible(true);
 			errorPlotRenderer.setBaseShapesVisible(false);
-	    	
 	    }
+	    
+	    private void addCandleStickGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
+	    	plot.setDataset(i,oHLCSeriesCollection);
+	    	plot.setRenderer(i, candlestickRenderer);
+	    }
+	    
 	    
 	    
 	    /**

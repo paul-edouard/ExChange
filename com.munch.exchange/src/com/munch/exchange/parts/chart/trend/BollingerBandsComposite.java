@@ -34,7 +34,7 @@ public class BollingerBandsComposite extends IndicatorComposite {
 	@Override
 	protected void createParameters() {
 		IndicatorParameter Period=new IndicatorParameter(PERIOD, Type.INTEGER, 6, 1, 200, 0, this);
-		IndicatorParameter Factor=new IndicatorParameter(FACTOR, Type.DOUBLE, 2, 0, 4, 2, this);
+		IndicatorParameter Factor=new IndicatorParameter(FACTOR, Type.DOUBLE, 2, 0, 6, 2, this);
 		paramMap.put(Period.getName(),Period);
 		paramMap.put(Factor.getName(),Factor);
 
