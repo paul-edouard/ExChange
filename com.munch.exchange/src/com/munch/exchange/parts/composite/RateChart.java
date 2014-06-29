@@ -672,6 +672,12 @@ public class RateChart extends Composite {
 		int fiel_pos=mainCollection.indexOf(field);
 		if(fiel_pos>=0)mainCollection.removeSeries(fiel_pos);
 		
+		fiel_pos=oHLCSeriesCollection.indexOf("Positiv OHLC");
+		if(fiel_pos>=0)oHLCSeriesCollection.removeSeries(fiel_pos);
+		
+		//fiel_pos=oHLCSeriesCollection.indexOf("Negativ OHLC");
+		//if(fiel_pos>=0)oHLCSeriesCollection.removeSeries(fiel_pos);
+		
 		XYSeries series = rate.getHistoricalData().getXYSeries(field, period);
 		mainCollection.addSeries(series);
 		fiel_pos=mainCollection.indexOf(field);
@@ -682,14 +688,15 @@ public class RateChart extends Composite {
 			mainPlotRenderer.setSeriesPaint(fiel_pos, Color.BLUE);
 		}
 		
-		OHLCSeries pos=rate.getHistoricalData().getPosOHLCSeries(period);
-		OHLCSeries neg=rate.getHistoricalData().getNegOHLCSeries(period);
-		oHLCSeriesCollection.addSeries(pos);
-		oHLCSeriesCollection.addSeries(neg);
-		candlestickRenderer.setAutoWidthFactor(0.7);
-		candlestickRenderer.setAutoWidthMethod(CandlestickRenderer.WIDTHMETHOD_SMALLEST);
 		
-		//TODO
+		
+		OHLCSeries pos=rate.getHistoricalData().getPosOHLCSeries("Positiv OHLC",period);
+		oHLCSeriesCollection.addSeries(pos);
+		fiel_pos=oHLCSeriesCollection.indexOf("Positiv OHLC");
+		if(fiel_pos>=0){
+			candlestickRenderer.setSeriesPaint(fiel_pos, Color.black);
+			candlestickRenderer.setSeriesStroke(fiel_pos,new BasicStroke(1.5f));
+		}
 		
 		
 		return mainCollection;
@@ -867,8 +874,8 @@ public class RateChart extends Composite {
 	        
 	        //Plot
 	        XYPlot plot1 = new XYPlot(mainCollection, null, rangeAxis1, mainPlotRenderer);
-	        //plot1.setBackgroundPaint(Color.lightGray);
-	        plot1.setBackgroundPaint(Color.BLACK);
+	        plot1.setBackgroundPaint(Color.lightGray);
+	        //plot1.setBackgroundPaint(Color.BLACK);
 	        plot1.setDomainGridlinePaint(Color.white);
 	        plot1.setRangeGridlinePaint(Color.white);
 	        
@@ -902,7 +909,6 @@ public class RateChart extends Composite {
 	    private void addErrorGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
 	    	
 	    	//TODO
-	    	//plot.setRangeAxis(i, rangeAxis1);
 	    	plot.setDataset(i,errorCollection);
 	    	plot.setRenderer(i, errorPlotRenderer);
 	    	
@@ -913,6 +919,10 @@ public class RateChart extends Composite {
 	    private void addCandleStickGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
 	    	plot.setDataset(i,oHLCSeriesCollection);
 	    	plot.setRenderer(i, candlestickRenderer);
+	    	
+	    	candlestickRenderer.setAutoWidthFactor(0.7);
+			candlestickRenderer.setAutoWidthMethod(CandlestickRenderer.WIDTHMETHOD_SMALLEST);
+			//candlestickRenderer.setDownPaint(Color.);
 	    }
 	    
 	    

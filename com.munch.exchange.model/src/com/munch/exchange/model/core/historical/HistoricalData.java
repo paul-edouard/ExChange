@@ -103,9 +103,9 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		 return series;
 	}
 	
-	public OHLCSeries getPosOHLCSeries( int[] period){
+	public OHLCSeries getPosOHLCSeries( String key,int[] period){
 		
-		OHLCSeries series = new OHLCSeries("Positiv OHLC");
+		OHLCSeries series = new OHLCSeries(key);
 		LinkedList<HistoricalPoint> pointList= getPointsFromPeriod(period,getNoneEmptyPoints());
 		
 		long pos=1;
@@ -114,9 +114,9 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		Millisecond current=new Millisecond(date.getTime());
 		
 		for(HistoricalPoint point:pointList){
-			 if(point.get(Type.CLOSE)>point.get(Type.OPEN)){
+			// if(point.get(Type.CLOSE)>point.get(Type.OPEN)){
 				 series.add(current,point.get(Type.OPEN), point.get(Type.HIGH), point.get(Type.LOW), point.get(Type.CLOSE));
-			 }
+			 //}
 			 //current=(Day)current.next();
 			 pos++;
 			 date.setTimeInMillis(pos);
@@ -126,9 +126,9 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		 return series;
 	}
 	
-	public OHLCSeries getNegOHLCSeries( int[] period){
+	public OHLCSeries getNegOHLCSeries( String key, int[] period){
 		
-		OHLCSeries series = new OHLCSeries("Negativ OHLC");
+		OHLCSeries series = new OHLCSeries(key);
 		LinkedList<HistoricalPoint> pointList= getPointsFromPeriod(period,getNoneEmptyPoints());
 		//Date d=pointList.getFirst().getDate().getTime();
 		
