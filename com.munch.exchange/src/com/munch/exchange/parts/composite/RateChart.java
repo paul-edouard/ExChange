@@ -281,8 +281,8 @@ public class RateChart extends Composite {
 		xpndtmLowHight.setHeight(lawAndHightComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		
 		
-		lawAndHightComposite.setRenderers(mainPlotRenderer, secondPlotrenderer,errorPlotRenderer);
-		lawAndHightComposite.setSeriesCollections(mainCollection, secondCollection,errorCollection);
+		lawAndHightComposite.setRenderers(mainPlotRenderer, secondPlotrenderer,errorPlotRenderer,candlestickRenderer);
+		lawAndHightComposite.setSeriesCollections(mainCollection, secondCollection,errorCollection,oHLCSeriesCollection);
 		lawAndHightComposite.setPeriodandMaxProfit(period, maxProfit);
 		lawAndHightComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
 			@Override
@@ -665,37 +665,6 @@ public class RateChart extends Composite {
 		if(field.equals(HistoricalPoint.FIELD_Volume)){
 			XYSeries series = rate.getHistoricalData().getXYSeries(field, period);
 			return new XYSeriesCollection(series);
-		}
-		
-		
-		//Clear
-		int fiel_pos=mainCollection.indexOf(field);
-		if(fiel_pos>=0)mainCollection.removeSeries(fiel_pos);
-		
-		fiel_pos=oHLCSeriesCollection.indexOf("Positiv OHLC");
-		if(fiel_pos>=0)oHLCSeriesCollection.removeSeries(fiel_pos);
-		
-		//fiel_pos=oHLCSeriesCollection.indexOf("Negativ OHLC");
-		//if(fiel_pos>=0)oHLCSeriesCollection.removeSeries(fiel_pos);
-		
-		XYSeries series = rate.getHistoricalData().getXYSeries(field, period);
-		mainCollection.addSeries(series);
-		fiel_pos=mainCollection.indexOf(field);
-		if(fiel_pos>=0){
-			mainPlotRenderer.setSeriesShapesVisible(fiel_pos, false);
-			mainPlotRenderer.setSeriesLinesVisible(fiel_pos, true);
-			mainPlotRenderer.setSeriesStroke(fiel_pos,new BasicStroke(2.0f));
-			mainPlotRenderer.setSeriesPaint(fiel_pos, Color.BLUE);
-		}
-		
-		
-		
-		OHLCSeries pos=rate.getHistoricalData().getPosOHLCSeries("Positiv OHLC",period);
-		oHLCSeriesCollection.addSeries(pos);
-		fiel_pos=oHLCSeriesCollection.indexOf("Positiv OHLC");
-		if(fiel_pos>=0){
-			candlestickRenderer.setSeriesPaint(fiel_pos, Color.black);
-			candlestickRenderer.setSeriesStroke(fiel_pos,new BasicStroke(1.5f));
 		}
 		
 		
