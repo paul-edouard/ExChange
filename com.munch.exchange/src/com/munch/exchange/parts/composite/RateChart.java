@@ -68,6 +68,7 @@ import com.munch.exchange.parts.chart.trend.AverageDirectionalMovementIndexWilde
 import com.munch.exchange.parts.chart.trend.BollingerBandsComposite;
 import com.munch.exchange.parts.chart.trend.DoubleExponentialMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.DoubleLinearWeigthedMovingAverageComposite;
+import com.munch.exchange.parts.chart.trend.EnvelopesComposite;
 import com.munch.exchange.parts.chart.trend.ExponentialMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.FractalAdaptiveMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.LinearWeightedMovingAverageComposite;
@@ -160,6 +161,7 @@ public class RateChart extends Composite {
 	IndicatorComposite averageDirectionalMovementIndexWilderComposite;
 	IndicatorComposite averageDirectionalMovementIndexComposite;
 	IndicatorComposite bollingerBandsComposite;
+	IndicatorComposite envelopesComposite;
 	
 	//TODO
 	
@@ -301,11 +303,13 @@ public class RateChart extends Composite {
 		doubleExponentialMovingAverageComposite=addIndicator(expandBarTrend, "Double Exponential Moving Average", DoubleExponentialMovingAverageComposite.class, localContextTrend);
 		doubleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Double Linear Weigth Moving Average", DoubleLinearWeigthedMovingAverageComposite.class, localContextTrend);
 		exponentialMovingAverageComposite=addIndicator(expandBarTrend, "Exponential Moving Average", ExponentialMovingAverageComposite.class, localContextTrend);
+		envelopesComposite=addIndicator(expandBarTrend, "Envelopes", EnvelopesComposite.class, localContextTrend);
 		fractalAdaptiveMovingAverageComposite=addIndicator(expandBarTrend, "Fractal Adaptive Moving Average", FractalAdaptiveMovingAverageComposite.class, localContextTrend);
 		linearWeightedMovingAverageComposite=addIndicator(expandBarTrend, "Linear Weighted Moving Average", LinearWeightedMovingAverageComposite.class, localContextTrend);
 		simpleMovingAverageComposite=addIndicator(expandBarTrend, "Simple Moving Average", SimpleMovingAverageComposite.class, localContextTrend);
 		smoothedMovingAverageComposite=addIndicator(expandBarTrend, "Smoothed Moving Average", SmoothedMovingAverageComposite.class, localContextTrend);
 		tripleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Triple Linear Weigth Moving Average", TripleLinearWeigthMovingAverageComposite.class, localContextTrend);
+		
 		
 		//TODO
 		
@@ -627,6 +631,7 @@ public class RateChart extends Composite {
 		averageDirectionalMovementIndexWilderComposite.setPeriod(period);
 		averageDirectionalMovementIndexComposite.setPeriod(period);
 		bollingerBandsComposite.setPeriod(period);
+		envelopesComposite.setPeriod(period);
 		
 		//TODO Set period
 		
