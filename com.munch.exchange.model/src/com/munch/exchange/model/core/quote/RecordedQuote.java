@@ -45,7 +45,8 @@ public class RecordedQuote extends DatePointList<QuotePoint> {
 		hist_p.setClose(point.getLastTradePrice());
 		hist_p.setHigh(point.getDaysHigh());
 		hist_p.setLow(point.getDaysLow());
-		hist_p.setOpen(point.getLastTradePrice());
+		hist_p.setOpen(point.getOpen());
+		//System.out.println("Open: "+point.getOpen());
 		hist_p.setVolume(point.getAverageDailyVolume());
 		return hist_p;
 		

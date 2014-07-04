@@ -16,6 +16,7 @@ public class QuotePoint extends DatePoint {
 	static final String FIELD_Days_Low="daysLow";
 	static final String FIELD_Days_High="daysHigh";
 	static final String FIELD_Year_Low="yearLow";
+	static final String FIELD_Open="open";
 	static final String FIELD_Year_High="yearHigh";
 	static final String FIELD_Market_Capitalization="marketCapitalization";
 	static final String FIELD_Last_Trade_Price="lastTradePrice";
@@ -29,6 +30,7 @@ public class QuotePoint extends DatePoint {
 	private float daysHigh;
 	private float yearLow;
 	private float yearHigh;
+	private float open;
 	
 	private String marketCapitalization;
 	private float lastTradePrice;
@@ -39,7 +41,7 @@ public class QuotePoint extends DatePoint {
 
 	public float get(String field){
 		if(field.equals(FIELD_Low))return this.getDaysLow();
-		else if(field.equals(FIELD_Open))return this.getLastTradePrice();
+		else if(field.equals(FIELD_Open))return this.getOpen();
 		else if(field.equals(FIELD_Adj_Close))return this.getLastTradePrice();
 		else if(field.equals(FIELD_Close))return this.getLastTradePrice();
 		else if(field.equals(FIELD_High))return this.getDaysHigh();
@@ -56,6 +58,18 @@ public class QuotePoint extends DatePoint {
 	public void setAverageDailyVolume(long averageDailyVolume) {
 		changes.firePropertyChange(FIELD_Average_Daily_Volume, this.averageDailyVolume, this.averageDailyVolume = averageDailyVolume);
 	}
+	
+	
+
+
+	public float getOpen() {
+		return open;
+	}
+
+
+	public void setOpen(float open) {
+	changes.firePropertyChange(FIELD_Open, this.open, this.open = open);}
+	
 
 
 	public float getChange() {
@@ -187,6 +201,8 @@ public class QuotePoint extends DatePoint {
 		this.setVolume(Long.parseLong(Root.getAttribute(FIELD_Volume)));
 		this.setYearHigh(Float.valueOf(Root.getAttribute(FIELD_Year_High)));
 		this.setYearLow(Float.valueOf(Root.getAttribute(FIELD_Year_Low)));
+		if(Root.hasAttribute(FIELD_Open))
+			this.setOpen(Float.valueOf(Root.getAttribute(FIELD_Open)));
 		
 		super.initAttribute(Root);
 	}
@@ -205,6 +221,7 @@ public class QuotePoint extends DatePoint {
 		e.setAttribute(FIELD_Volume,String.valueOf(this.getVolume()));
 		e.setAttribute(FIELD_Year_High,String.valueOf(this.getYearHigh()));
 		e.setAttribute(FIELD_Year_Low,String.valueOf(this.getYearLow()));
+		e.setAttribute(FIELD_Open,String.valueOf(this.getOpen()));
 		
 		super.setAttribute(e);
 	}

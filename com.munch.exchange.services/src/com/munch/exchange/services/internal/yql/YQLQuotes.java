@@ -152,6 +152,7 @@ public class YQLQuotes  extends YQLTable {
 		point.setVolume(this.getVolume());
 		point.setYearHigh(this.getYearHigh());
 		point.setYearLow(this.getYearLow());
+		point.setOpen(this.getOpen());
 		
 		point.setDate(this.getLastDateTime());
 		
@@ -212,6 +213,24 @@ public class YQLQuotes  extends YQLTable {
 	public float getBid() {
 		try {
 			return this.getCurrent().getFloat("Bid");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+	
+	public float getOpen(JSONObject JSONobj) {
+		
+		if(!JSONobj.has("Open"))return Float.NaN;
+		
+		
+		try {
+			
+			Object obj=JSONobj.get("Open");
+			if(obj.toString().equals("null"))
+				return Float.NaN;
+			
+			return JSONobj.getFloat("Open");
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return Float.NaN;

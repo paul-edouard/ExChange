@@ -138,6 +138,9 @@ public class YQLQuote extends YQLTable {
 			point.setVolume(this.getVolume(obj));
 			point.setYearHigh(this.getYearHigh(obj));
 			point.setYearLow(this.getYearLow(obj));
+			point.setOpen(this.getOpen(obj));
+			//System.out.println("Open: "+this.getOpen(obj));
+			
 			
 			point.setDate(point.getLastTradeDate());
 			
@@ -292,6 +295,24 @@ public class YQLQuote extends YQLTable {
 				return Float.NaN;
 			
 			return JSONobj.getFloat("DaysLow");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Float.NaN;
+		}
+	}
+	
+	private float getOpen(JSONObject JSONobj) {
+		
+		if(!JSONobj.has("Open"))return Float.NaN;
+		
+		
+		try {
+			
+			Object obj=JSONobj.get("Open");
+			if(obj.toString().equals("null"))
+				return Float.NaN;
+			
+			return JSONobj.getFloat("Open");
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return Float.NaN;
