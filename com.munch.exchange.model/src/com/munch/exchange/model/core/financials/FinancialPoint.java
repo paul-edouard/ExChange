@@ -10,6 +10,8 @@ import com.munch.exchange.model.tool.DateTool;
 public abstract class FinancialPoint extends DatePoint {
 	
 	static final String FIELD_PeriodEnding="PeriodEnding";
+	static final String FIELD_EffectiveDate="EffectiveDate";
+	
 	static final String FIELD_PeriodType="type";
 	
 	public static final String PeriodeTypeNone="none";
@@ -18,6 +20,7 @@ public abstract class FinancialPoint extends DatePoint {
 	
 	
 	protected Calendar PeriodEnding;
+	protected Calendar EffectiveDate;
 	
 	private String periodType=PeriodeTypeNone;
 	
@@ -94,8 +97,16 @@ public abstract class FinancialPoint extends DatePoint {
 		//PeriodEnding = periodEnding;
 	}
 
-	
-	
+
+	public Calendar getEffectiveDate() {
+		if(EffectiveDate==null)return PeriodEnding;
+		return EffectiveDate;
+	}
+
+	public void setEffectiveDate(Calendar effectiveDate) {
+		changes.firePropertyChange(FIELD_EffectiveDate, this.EffectiveDate,
+				this.EffectiveDate = effectiveDate);
+	}
 
 	public String getPeriodType() {
 		return periodType;
@@ -109,6 +120,7 @@ public abstract class FinancialPoint extends DatePoint {
 	@Override
 	protected void initAttribute(Element rootElement) {
 		this.setPeriodEnding(DateTool.StringToDate(rootElement.getAttribute(FIELD_PeriodEnding)));
+		this.setEffectiveDate(DateTool.StringToDate(rootElement.getAttribute(FIELD_EffectiveDate)));
 		this.setPeriodType(rootElement.getAttribute(FIELD_PeriodType));
 		
 		super.initAttribute(rootElement);
@@ -117,6 +129,7 @@ public abstract class FinancialPoint extends DatePoint {
 	@Override
 	protected void setAttribute(Element rootElement) {
 		rootElement.setAttribute(FIELD_PeriodEnding, DateTool.dateToString( this.getPeriodEnding()));
+		rootElement.setAttribute(FIELD_EffectiveDate, DateTool.dateToString( this.getEffectiveDate()));
 		rootElement.setAttribute(FIELD_PeriodType, this.getPeriodType());
 		
 		super.setAttribute(rootElement);

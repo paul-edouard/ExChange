@@ -75,27 +75,7 @@ package com.munch.exchange.model.analytic.indicator.trend;
 
 public class FractalAdaptiveMovingAverage {
 	
-	private static double getHighestPrice(double[] Price,int i,int from, int to){
-		double h=Double.NEGATIVE_INFINITY;
-		for(int j=from;j<to;j++){
-			if((i-j)<0)continue;
-			if(Price[i-j]>h)
-				h=Price[i-j];
-		}
-		if(h==Double.NEGATIVE_INFINITY)return 0;
-		return h;
-	}
 	
-	private static double getLowestPrice(double[] Price,int i,int from, int to){
-		double l=Double.POSITIVE_INFINITY;
-		for(int j=from;j<to;j++){
-			if((i-j)<0)continue;
-			if(Price[i-j]<l)
-				l=Price[i-j];
-		}
-		if(l==Double.POSITIVE_INFINITY)return 0;
-		return l;
-	}
 	
 	private static double[] fractalDimension(double[] Low,double[] High,int Period){
 		double[] D=new double[High.length];
@@ -104,9 +84,9 @@ public class FractalAdaptiveMovingAverage {
 		double N3;
 		
 		for(int i=0;i<High.length;i++){
-			N1=(getHighestPrice(High,i,0,Period)-getLowestPrice(Low,i,0,Period))/((double)Period);
-			N2=(getHighestPrice(High,i,Period,2*Period)-getLowestPrice(Low,i,Period,2*Period))/((double)Period);
-			N3=(getHighestPrice(High,i,0,2*Period)-getLowestPrice(Low,i,0,2*Period))/((double) (2*Period));
+			N1=(utils.getHighestPrice(High,i,0,Period)-utils.getLowestPrice(Low,i,0,Period))/((double)Period);
+			N2=(utils.getHighestPrice(High,i,Period,2*Period)-utils.getLowestPrice(Low,i,Period,2*Period))/((double)Period);
+			N3=(utils.getHighestPrice(High,i,0,2*Period)-utils.getLowestPrice(Low,i,0,2*Period))/((double) (2*Period));
 			
 			if( N1>0 && N2>0 && N3>0)
 				D[i]=(Math.log(N1+N2)-Math.log(N3))/Math.log(2);

@@ -166,8 +166,8 @@ public class YQLIncomeStatement extends YQLTable {
 	public static void main(String[] args) {
 		YQLIncomeStatement incomeStatement=new YQLIncomeStatement("DAI.DE");
 		incomeStatement.setTimeFrameToQuaterly();
-	//	System.out.println(incomeStatement.getResult().toString(1));
-		incomeStatement.getPointList();
+		System.out.println(incomeStatement.getResult().toString(1));
+	//	incomeStatement.getPointList();
 	}
 
 }

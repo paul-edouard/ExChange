@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 
 import com.munch.exchange.IEventConstant;
+import com.munch.exchange.job.FinancialDataLoader;
 import com.munch.exchange.job.HistoricalDataLoader;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
@@ -31,6 +32,7 @@ import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.composite.RateCommonInfoGroup;
 import com.munch.exchange.parts.composite.RateTitle;
 import com.munch.exchange.parts.composite.RateWeb;
+import com.munch.exchange.parts.composite.StockFinancials;
 import com.munch.exchange.parts.composite.StockInfoGroup;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IKeyStatisticProvider;
@@ -63,9 +65,11 @@ public class RateEditorPart {
 	OverviewRateChart chartComposite;
 	RateChart rateChart;
 	RateWeb rateWeb;
+	StockFinancials stockFinancials;
 	RateCommonInfoGroup commonInfoComposite;
 	Shell shell;
 	HistoricalDataLoader historicalDataLoader;
+	FinancialDataLoader financialDataLoader;
 	
 	//private Label lblTitle;
 	
@@ -80,6 +84,7 @@ public class RateEditorPart {
 		
 		
 		historicalDataLoader=ContextInjectionFactory.make( HistoricalDataLoader.class,context);
+		financialDataLoader=ContextInjectionFactory.make( FinancialDataLoader.class,context);
 		
 		TabFolder tabFolder = new TabFolder(parent, SWT.BOTTOM);
 		tabFolder.setBounds(0, 0, 122, 43);
@@ -87,10 +92,14 @@ public class RateEditorPart {
 		createOverviewTabFolderItem(tabFolder, "Overview");
 		createWebTabFolder(tabFolder,"Web");
 		createChartTabFolder(tabFolder, "Chart");
+		if(rate instanceof Stock )
+			createStockFinancialsTabFolder(tabFolder, "Financials");
 		
 		rate.getHistoricalData().addUsedClass(this.getClass());
 		
+		//++++++++++++++++++++++
 		//Start Loading Data
+		//Historical
 		if(rate.getHistoricalData().isEmpty()){
 			historicalDataLoader.schedule();
 		}
@@ -98,6 +107,8 @@ public class RateEditorPart {
 			eventBroker.send(IEventConstant.HISTORICAL_DATA_LOADED,rate.getUUID());
 			eventBroker.send(IEventConstant.OPTIMIZATION_RESULTS_LOADED,rate.getUUID());
 		}
+		//Financial
+		financialDataLoader.schedule();
 		
 	}
 	
@@ -157,17 +168,17 @@ public class RateEditorPart {
 		TabItem tbtmNewItem = new TabItem(tabFolder, SWT.NONE);
 		tbtmNewItem.setText(title);
 		
-		Composite compositeChart = new Composite(tabFolder, SWT.NONE);
-		tbtmNewItem.setControl(compositeChart);
+		Composite parentComposite = new Composite(tabFolder, SWT.NONE);
+		tbtmNewItem.setControl(parentComposite);
 		GridLayout gridLayout = new GridLayout(1, false);
 		gridLayout.marginHeight = 0;
 		//gridLayout.verticalSpacing = 0;
 		gridLayout.marginWidth = 0;
-		compositeChart.setLayout(gridLayout);
+		parentComposite.setLayout(gridLayout);
 		
 		//Create a context instance
 		IEclipseContext localContact=EclipseContextFactory.create();
-		localContact.set(Composite.class, compositeChart);
+		localContact.set(Composite.class, parentComposite);
 		localContact.setParent(context);
 				
 		//////////////////////////////////
@@ -175,6 +186,32 @@ public class RateEditorPart {
 		//////////////////////////////////
 		rateChart=ContextInjectionFactory.make( RateChart.class,localContact);
 		rateChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+	}
+	
+	//stockFInancials
+	private void createStockFinancialsTabFolder(TabFolder tabFolder, String title){
+		TabItem tbtmNewItem = new TabItem(tabFolder, SWT.NONE);
+		tbtmNewItem.setText(title);
+		
+		Composite parentComposite = new Composite(tabFolder, SWT.NONE);
+		tbtmNewItem.setControl(parentComposite);
+		GridLayout gridLayout = new GridLayout(1, false);
+		gridLayout.marginHeight = 0;
+		//gridLayout.verticalSpacing = 0;
+		gridLayout.marginWidth = 0;
+		parentComposite.setLayout(gridLayout);
+		
+		//Create a context instance
+		IEclipseContext localContact=EclipseContextFactory.create();
+		localContact.set(Composite.class, parentComposite);
+		localContact.setParent(context);
+				
+		//////////////////////////////////
+		//Create the Chart Composite
+		//////////////////////////////////
+		stockFinancials=ContextInjectionFactory.make( StockFinancials.class,localContact);
+		stockFinancials.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 	}
 	
