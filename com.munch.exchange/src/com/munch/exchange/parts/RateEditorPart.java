@@ -32,8 +32,8 @@ import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.composite.RateCommonInfoGroup;
 import com.munch.exchange.parts.composite.RateTitle;
 import com.munch.exchange.parts.composite.RateWeb;
-import com.munch.exchange.parts.composite.StockFinancials;
 import com.munch.exchange.parts.composite.StockInfoGroup;
+import com.munch.exchange.parts.financials.StockFinancials;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IKeyStatisticProvider;
 

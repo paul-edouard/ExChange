@@ -143,7 +143,7 @@ public class RateWeb extends Composite {
 		browser = new Browser(this, SWT.NONE);
 		browser.addTitleListener(new TitleListener() {
 			public void changed(TitleEvent event) {
-				System.out.println("Title Change: "+event.title+", URL"+browser.getUrl());
+				//System.out.println("Title Change: "+event.title+", URL"+browser.getUrl());
 				if(!textURI.getText().equals(browser.getUrl())){
 					textURI.setText(browser.getUrl());
 				}

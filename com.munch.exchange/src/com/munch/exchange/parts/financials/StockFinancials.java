@@ -1,4 +1,4 @@
-package com.munch.exchange.parts.composite;
+package com.munch.exchange.parts.financials;
 
 import javax.inject.Inject;
 
@@ -15,6 +15,14 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.financials.HistoricalIncomeStatement;
 import com.munch.exchange.model.core.financials.IncomeStatementPoint;
 import com.munch.exchange.services.IExchangeRateProvider;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 
 public class StockFinancials extends Composite {
 	
@@ -26,14 +34,31 @@ public class StockFinancials extends Composite {
 	
 	
 	private Stock stock;
+	private TreeViewer treeViewer;
+	private Tree tree;
+	private Button btnAddColumn;
 	
 	@Inject
 	public StockFinancials(Composite parent,ExchangeRate rate) {
 		super(parent, SWT.NONE);
 		this.stock=(Stock) rate;
+		setLayout(new GridLayout(1, false));
 		
+		Composite compositeHeader = new Composite(this, SWT.NONE);
+		compositeHeader.setLayout(new GridLayout(1, false));
+		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
-			
+		btnAddColumn = new Button(compositeHeader, SWT.NONE);
+		btnAddColumn.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+		btnAddColumn.setText("Add Column");
+		
+		treeViewer = new TreeViewer(this, SWT.BORDER);
+		tree = treeViewer.getTree();
+		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 	}
 	
@@ -67,5 +92,4 @@ public class StockFinancials extends Composite {
 			}
 		}
 	}
-
 }

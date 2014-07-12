@@ -24,7 +24,11 @@ public abstract class FinancialPoint extends DatePoint {
 	
 	private String periodType=PeriodeTypeNone;
 	
-
+	
+	public abstract String getValue(String fieldKey);
+	public abstract void setValue(String fieldKey);
+	
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
