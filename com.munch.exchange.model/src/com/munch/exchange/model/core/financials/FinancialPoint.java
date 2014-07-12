@@ -9,8 +9,8 @@ import com.munch.exchange.model.tool.DateTool;
 
 public abstract class FinancialPoint extends DatePoint {
 	
-	static final String FIELD_PeriodEnding="PeriodEnding";
-	static final String FIELD_EffectiveDate="EffectiveDate";
+	public static final String FIELD_PeriodEnding="PeriodEnding";
+	public static final String FIELD_EffectiveDate="EffectiveDate";
 	
 	static final String FIELD_PeriodType="type";
 	
@@ -25,8 +25,8 @@ public abstract class FinancialPoint extends DatePoint {
 	private String periodType=PeriodeTypeNone;
 	
 	
-	public abstract String getValue(String fieldKey);
-	public abstract void setValue(String fieldKey);
+	public abstract long getValue(String fieldKey);
+	public abstract void setValue(String fieldKey,long value);
 	
 	
 	@Override
@@ -85,7 +85,7 @@ public abstract class FinancialPoint extends DatePoint {
 		return super.compareTo(o);
 	}
 
-	public String LongValueToString(long l){
+	public static String LongValueToString(long l){
 		if(l==Long.MIN_VALUE)return "-";
 		else{
 			return String.valueOf(l);

@@ -23,7 +23,7 @@ public class HistoricalCashFlow extends DatePointList<CashFlowPoint> {
 		return getPoints(CashFlowPoint.PeriodeTypeQuaterly);
 	}
 	
-	private HistoricalCashFlow getPoints(String periodtype){
+	public HistoricalCashFlow getPoints(String periodtype){
 		HistoricalCashFlow ps=new HistoricalCashFlow();
 		for(DatePoint p:this){
 			if(!(p instanceof CashFlowPoint))continue;

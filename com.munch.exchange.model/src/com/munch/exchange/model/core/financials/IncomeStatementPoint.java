@@ -376,6 +376,59 @@ public class IncomeStatementPoint extends FinancialPoint {
 		
 		super.setAttribute(rootElement);
 	}
+	@Override
+	public long getValue(String fieldKey) {
+		if(fieldKey.equals(FIELD_CostofRevenue))return CostofRevenue;
+		if(fieldKey.equals(FIELD_DiscontinuedOperations))return DiscontinuedOperations;
+		if(fieldKey.equals(FIELD_EarningsBeforeInterestAndTaxes))return EarningsBeforeInterestAndTaxes;
+		if(fieldKey.equals(FIELD_EffectOfAccountingChanges))return EffectOfAccountingChanges;
+		if(fieldKey.equals(FIELD_ExtraordinaryItems))return ExtraordinaryItems;
+		if(fieldKey.equals(FIELD_GrossProfit))return GrossProfit;
+		if(fieldKey.equals(FIELD_IncomeBeforeTax))return IncomeBeforeTax;
+		if(fieldKey.equals(FIELD_InterestExpense))return InterestExpense;
+		if(fieldKey.equals(FIELD_MinorityInterest))return MinorityInterest;
+		if(fieldKey.equals(FIELD_NetIncome))return NetIncome;
+		if(fieldKey.equals(FIELD_NetIncomeApplicableToCommonShares))return NetIncomeApplicableToCommonShares;
+		if(fieldKey.equals(FIELD_NetIncomeFromContinuingOps))return NetIncomeFromContinuingOps;
+		if(fieldKey.equals(FIELD_NonRecurring))return NonRecurring;
+		if(fieldKey.equals(FIELD_OperatingIncomeorLoss))return OperatingIncomeorLoss;
+		if(fieldKey.equals(FIELD_OtherItems))return OtherItems;
+		if(fieldKey.equals(FIELD_Others))return Others;
+		if(fieldKey.equals(FIELD_PreferredStockAndOtherAdjustments))return PreferredStockAndOtherAdjustments;
+		if(fieldKey.equals(FIELD_ResearchDevelopment))return ResearchDevelopment;
+		if(fieldKey.equals(FIELD_SellingGeneralandAdministrative))return SellingGeneralandAdministrative;
+		if(fieldKey.equals(FIELD_TotalOperatingExpenses))return TotalOperatingExpenses;
+		if(fieldKey.equals(FIELD_TotalOtherIncome_ExpensesNet))return TotalOtherIncome_ExpensesNet;
+		if(fieldKey.equals(FIELD_TotalRevenue))return TotalRevenue;
+	
+		return Long.MIN_VALUE;
+	}
+	@Override
+	public void setValue(String fieldKey , long value) {
+		if(fieldKey.equals(FIELD_CostofRevenue))CostofRevenue=value;
+		if(fieldKey.equals(FIELD_DiscontinuedOperations))DiscontinuedOperations=value;
+		if(fieldKey.equals(FIELD_EarningsBeforeInterestAndTaxes))EarningsBeforeInterestAndTaxes=value;
+		if(fieldKey.equals(FIELD_EffectOfAccountingChanges))EffectOfAccountingChanges=value;
+		if(fieldKey.equals(FIELD_ExtraordinaryItems))ExtraordinaryItems=value;
+		if(fieldKey.equals(FIELD_GrossProfit))GrossProfit=value;
+		if(fieldKey.equals(FIELD_IncomeBeforeTax))IncomeBeforeTax=value;
+		if(fieldKey.equals(FIELD_InterestExpense))InterestExpense=value;
+		if(fieldKey.equals(FIELD_MinorityInterest)) MinorityInterest=value;
+		if(fieldKey.equals(FIELD_NetIncome))NetIncome=value;
+		if(fieldKey.equals(FIELD_NetIncomeApplicableToCommonShares)) NetIncomeApplicableToCommonShares=value;
+		if(fieldKey.equals(FIELD_NetIncomeFromContinuingOps))NetIncomeFromContinuingOps=value;
+		if(fieldKey.equals(FIELD_NonRecurring))NonRecurring=value;
+		if(fieldKey.equals(FIELD_OperatingIncomeorLoss))OperatingIncomeorLoss=value;
+		if(fieldKey.equals(FIELD_OtherItems)) OtherItems=value;
+		if(fieldKey.equals(FIELD_Others))Others=value;
+		if(fieldKey.equals(FIELD_PreferredStockAndOtherAdjustments))PreferredStockAndOtherAdjustments=value;
+		if(fieldKey.equals(FIELD_ResearchDevelopment))ResearchDevelopment=value;
+		if(fieldKey.equals(FIELD_SellingGeneralandAdministrative))SellingGeneralandAdministrative=value;
+		if(fieldKey.equals(FIELD_TotalOperatingExpenses))TotalOperatingExpenses=value;
+		if(fieldKey.equals(FIELD_TotalOtherIncome_ExpensesNet))TotalOtherIncome_ExpensesNet=value;
+		if(fieldKey.equals(FIELD_TotalRevenue))TotalRevenue=value;
+		
+	}
 	
 	
 	

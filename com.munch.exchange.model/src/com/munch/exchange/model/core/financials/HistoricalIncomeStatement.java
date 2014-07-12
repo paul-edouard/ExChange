@@ -25,7 +25,7 @@ public class HistoricalIncomeStatement extends DatePointList<IncomeStatementPoin
 		return getPoints(IncomeStatementPoint.PeriodeTypeQuaterly);
 	}
 	
-	private HistoricalIncomeStatement getPoints(String periodtype){
+	public HistoricalIncomeStatement getPoints(String periodtype){
 		HistoricalIncomeStatement ps=new HistoricalIncomeStatement();
 		for(DatePoint p:this){
 			if(!(p instanceof IncomeStatementPoint))continue;

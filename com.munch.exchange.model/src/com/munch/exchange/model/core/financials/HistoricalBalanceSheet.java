@@ -23,7 +23,7 @@ public class HistoricalBalanceSheet extends DatePointList<BalanceSheetPoint> {
 		return getPoints(BalanceSheetPoint.PeriodeTypeQuaterly);
 	}
 	
-	private HistoricalBalanceSheet getPoints(String periodtype){
+	public HistoricalBalanceSheet getPoints(String periodtype){
 		HistoricalBalanceSheet ps=new HistoricalBalanceSheet();
 		for(DatePoint p:this){
 			if(!(p instanceof BalanceSheetPoint))continue;

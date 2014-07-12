@@ -587,6 +587,18 @@ public class BalanceSheetPoint extends FinancialPoint {
 		
 		super.setAttribute(rootElement);
 	}
+
+	@Override
+	public long getValue(String fieldKey) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setValue(String fieldKey, long value) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 
 	
