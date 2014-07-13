@@ -15,7 +15,9 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.financials.CashFlowPoint;
 import com.munch.exchange.model.core.financials.FinancialPoint;
+import com.munch.exchange.model.core.financials.HistoricalCashFlow;
 import com.munch.exchange.model.core.financials.HistoricalIncomeStatement;
 import com.munch.exchange.model.core.financials.IncomeStatementPoint;
 import com.munch.exchange.model.tool.DateTool;
@@ -103,6 +105,7 @@ public class StockFinancials extends Composite {
 		}
 		
 		treeViewer.refresh();
+		treeViewer.expandToLevel(2);
 		
 	}
 	
@@ -172,7 +175,7 @@ public class StockFinancials extends Composite {
 			@Optional @UIEventTopic(IEventConstant.FINANCIAL_DATA_LOADED) String rate_uuid) {
 
 		if(!isCompositeAbleToReact(rate_uuid))return;
-		/*
+		
 		HistoricalIncomeStatement his=stock.getFinancials().getIncomeStatement().getQuaterlyPoints();
 		for(DatePoint point:his){
 			if(point instanceof IncomeStatementPoint){
@@ -180,7 +183,19 @@ public class StockFinancials extends Composite {
 				System.out.println(isp);
 			}
 		}
+		
+		/*
+		HistoricalCashFlow his=stock.getFinancials().getCashFlow().getQuaterlyPoints();
+		for(DatePoint point:his){
+			if(point instanceof CashFlowPoint){
+				CashFlowPoint isp=(CashFlowPoint) point;
+				System.out.println(isp);
+			}
+		}
 		*/
+		
+		
+		
 		createColumns();
 		
 	}

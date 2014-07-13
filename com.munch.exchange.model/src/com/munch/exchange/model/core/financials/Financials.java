@@ -79,7 +79,7 @@ public class Financials extends ParameterElement {
 			FinancialPoint p=(FinancialPoint)point;
 			if(!p.getDate().equals(date))continue;
 			
-			System.out.println("Key in INcone: "+key);
+			//System.out.println("Key in INcone: "+key);
 			
 			long val=p.getValue(key);
 			if(val!=0)return val;

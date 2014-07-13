@@ -7,7 +7,7 @@ import com.munch.exchange.model.tool.DateTool;
 public class CashFlowPoint extends FinancialPoint {
 	
 
-	public static final String FIELD_NetIncome = "NetIncome";
+	public static final String FIELD_NetIncome = "NetIncomeCashFlow";
 	public static final String FIELD_Depreciation = "Depreciation";
 	public static final String FIELD_AdjustmentsToNetIncome = "AdjustmentsToNetIncome";
 	public static final String FIELD_ChangesInAccountsReceivables = "ChangesInAccountsReceivables";
@@ -385,13 +385,60 @@ public class CashFlowPoint extends FinancialPoint {
 
 	@Override
 	public long getValue(String fieldKey) {
-		// TODO Auto-generated method stub
+		
+		if(fieldKey.equals(FIELD_NetIncome))return NetIncome;
+		if(fieldKey.equals(FIELD_Depreciation))return Depreciation;
+		if(fieldKey.equals(FIELD_AdjustmentsToNetIncome))return AdjustmentsToNetIncome;
+		
+		if(fieldKey.equals(FIELD_ChangesInAccountsReceivables))return ChangesInAccountsReceivables;
+		if(fieldKey.equals(FIELD_ChangesInInventories))return ChangesInInventories;
+		if(fieldKey.equals(FIELD_ChangesInOtherOperatingActivities))return ChangesInOtherOperatingActivities;
+		if(fieldKey.equals(FIELD_TotalCashFlowFromOperatingActivities))return TotalCashFlowFromOperatingActivities;
+		
+		if(fieldKey.equals(FIELD_CapitalExpenditures))return CapitalExpenditures;
+		if(fieldKey.equals(FIELD_Investments))return Investments;
+		
+		if(fieldKey.equals(FIELD_OtherCashflowsfromInvestingActivities))return OtherCashflowsfromInvestingActivities;
+		if(fieldKey.equals(FIELD_TotalCashFlowsFromInvestingActivities))return TotalCashFlowsFromInvestingActivities;
+		if(fieldKey.equals(FIELD_DividendsPaid))return DividendsPaid;
+		if(fieldKey.equals(FIELD_SalePurchaseofStock))return SalePurchaseofStock;
+		if(fieldKey.equals(FIELD_NetBorrowings))return NetBorrowings;
+		
+		if(fieldKey.equals(FIELD_OtherCashFlowsfromFinancingActivities))return OtherCashFlowsfromFinancingActivities;
+		if(fieldKey.equals(FIELD_TotalCashFlowsFromFinancingActivities))return TotalCashFlowsFromFinancingActivities;
+		if(fieldKey.equals(FIELD_EffectOfExchangeRateChanges))return EffectOfExchangeRateChanges;
+		if(fieldKey.equals(FIELD_ChangeInCashandCashEquivalents))return ChangeInCashandCashEquivalents;
+		
+		
 		return 0;
 	}
 
 	@Override
 	public void setValue(String fieldKey, long value) {
-		// TODO Auto-generated method stub
+		if(fieldKey.equals(FIELD_NetIncome)) NetIncome=value;
+		if(fieldKey.equals(FIELD_Depreciation)) Depreciation=value;
+		if(fieldKey.equals(FIELD_AdjustmentsToNetIncome)) AdjustmentsToNetIncome=value;
+		
+		if(fieldKey.equals(FIELD_ChangesInAccountsReceivables)) ChangesInAccountsReceivables=value;
+		if(fieldKey.equals(FIELD_ChangesInInventories)) ChangesInInventories=value;
+		if(fieldKey.equals(FIELD_ChangesInOtherOperatingActivities)) ChangesInOtherOperatingActivities=value;
+		if(fieldKey.equals(FIELD_TotalCashFlowFromOperatingActivities))TotalCashFlowFromOperatingActivities=value;
+		
+		
+		if(fieldKey.equals(FIELD_CapitalExpenditures)) CapitalExpenditures=value;
+		if(fieldKey.equals(FIELD_Investments)) Investments=value;
+		
+		if(fieldKey.equals(FIELD_OtherCashflowsfromInvestingActivities)) OtherCashflowsfromInvestingActivities=value;
+		if(fieldKey.equals(FIELD_TotalCashFlowsFromInvestingActivities)) TotalCashFlowsFromInvestingActivities=value;
+		if(fieldKey.equals(FIELD_DividendsPaid)) DividendsPaid=value;
+		if(fieldKey.equals(FIELD_SalePurchaseofStock)) SalePurchaseofStock=value;
+		if(fieldKey.equals(FIELD_NetBorrowings)) NetBorrowings=value;
+		
+		if(fieldKey.equals(FIELD_OtherCashFlowsfromFinancingActivities)) OtherCashFlowsfromFinancingActivities=value;
+		if(fieldKey.equals(FIELD_TotalCashFlowsFromFinancingActivities)) TotalCashFlowsFromFinancingActivities=value;
+		if(fieldKey.equals(FIELD_EffectOfExchangeRateChanges)) EffectOfExchangeRateChanges=value;
+		if(fieldKey.equals(FIELD_ChangeInCashandCashEquivalents)) ChangeInCashandCashEquivalents=value;
+		
 		
 	}
 

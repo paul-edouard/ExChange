@@ -6,6 +6,8 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
+import com.munch.exchange.model.core.financials.BalanceSheetPoint;
+import com.munch.exchange.model.core.financials.CashFlowPoint;
 import com.munch.exchange.model.core.financials.FinancialPoint;
 import com.munch.exchange.model.core.financials.Financials;
 import com.munch.exchange.model.core.financials.IncomeStatementPoint;
@@ -117,15 +119,86 @@ IStructuredContentProvider, ITreeContentProvider{
 		//==========================
 		//== Non-recurring Events ==
 		//==========================
-		//FinancialElement NetIncomeFromContinuingOps=new FinancialElement(NetIncome,"Net Income From Continuing Ops",IncomeStatementPoint.FIELD_NetIncomeFromContinuingOps);
-		
+		FinancialElement NonrecurringEvents=new FinancialElement(NetIncome,"Non-recurring Events","Non-recurring Events");
+		new FinancialElement(NonrecurringEvents,"Discontinued Operations",IncomeStatementPoint.FIELD_DiscontinuedOperations);
+		new FinancialElement(NonrecurringEvents,"Extraordinary Items",IncomeStatementPoint.FIELD_ExtraordinaryItems);
+		new FinancialElement(NonrecurringEvents,"Effect Of Accounting Changes",IncomeStatementPoint.FIELD_EffectOfAccountingChanges);
+		new FinancialElement(NonrecurringEvents,"Other Items",IncomeStatementPoint.FIELD_OtherItems);
 		
 		
 		
 		FinancialElement bc=new FinancialElement(this.root,"Balance Sheet",Financials.FIELD_BalanceSheet);
+		//========================
+		//==       Assets       == (Anlagevermögen)
+		//========================
 		
+		FinancialElement Assets=new FinancialElement(bc,"Total Assets",BalanceSheetPoint.FIELD_TotalAssets);
+		FinancialElement CurrentAssets=new FinancialElement(Assets,"Total Current Assets",BalanceSheetPoint.FIELD_TotalCurrentAssets);
+		new FinancialElement(CurrentAssets,"Cash And Cash Equivalents",BalanceSheetPoint.FIELD_CashAndCashEquivalents);
+		new FinancialElement(CurrentAssets,"Short Term Investments",BalanceSheetPoint.FIELD_ShortTermInvestments);
+		new FinancialElement(CurrentAssets,"Net Receivables",BalanceSheetPoint.FIELD_NetReceivables);
+		new FinancialElement(CurrentAssets,"Inventory",BalanceSheetPoint.FIELD_Inventory);
+		new FinancialElement(CurrentAssets,"Other Current Assets",BalanceSheetPoint.FIELD_OtherCurrentAssets);
+		
+		new FinancialElement(Assets,"LongTermInvestments",BalanceSheetPoint.FIELD_LongTermInvestments);
+		new FinancialElement(Assets,"Property Plant and Equipment",BalanceSheetPoint.FIELD_PropertyPlantandEquipment);
+		new FinancialElement(Assets,"Goodwill",BalanceSheetPoint.FIELD_Goodwill);
+		new FinancialElement(Assets,"Intangible Assets",BalanceSheetPoint.FIELD_IntangibleAssets);
+		new FinancialElement(Assets,"Accumulated Amortization",BalanceSheetPoint.FIELD_AccumulatedAmortization);
+		new FinancialElement(Assets,"Other Assets",BalanceSheetPoint.FIELD_OtherAssets);
+		new FinancialElement(Assets,"Deferred Long Term Asset Charges",BalanceSheetPoint.FIELD_DeferredLongTermAssetCharges);
+		
+		//========================
+		//==    Liabilities     == (Verbindlichkeit)
+		//========================
+		FinancialElement Liabilities=new FinancialElement(bc,"Total Liabilities",BalanceSheetPoint.FIELD_TotalLiabilities);
+		FinancialElement CurrentLiabilities=new FinancialElement(Liabilities,"Total Current Liabilities",BalanceSheetPoint.FIELD_TotalCurrentLiabilities);
+		new FinancialElement(CurrentLiabilities,"Accounts Payable",BalanceSheetPoint.FIELD_AccountsPayable);
+		new FinancialElement(CurrentLiabilities,"Short Current Long Term Debt",BalanceSheetPoint.FIELD_Short_CurrentLongTermDebt);
+		new FinancialElement(CurrentLiabilities,"Other Current Liabilities",BalanceSheetPoint.FIELD_OtherCurrentLiabilities);
+		
+		new FinancialElement(Liabilities,"Long Term Debt",BalanceSheetPoint.FIELD_LongTermDebt);
+		new FinancialElement(Liabilities,"Other Liabilities",BalanceSheetPoint.FIELD_OtherLiabilities);
+		new FinancialElement(Liabilities,"Deferred Long Term Liability Charges",BalanceSheetPoint.FIELD_DeferredLongTermLiabilityCharges);
+		new FinancialElement(Liabilities,"Minority Interest",BalanceSheetPoint.FIELD_MinorityInterest);
+		new FinancialElement(Liabilities,"Negative Goodwill",BalanceSheetPoint.FIELD_NegativeGoodwill);
+		//TODO
 		
 		FinancialElement cf=new FinancialElement(this.root,"Cash Flow",Financials.FIELD_CashFlow);
+		FinancialElement cfNetIncome=new FinancialElement(cf,"Net Income",CashFlowPoint.FIELD_NetIncome);
+		
+		//==================================================================
+		//==      Operating Activities, Cash Flows Provided By or Used In == (Betriebliche Tätigkeit)
+		//==================================================================
+		FinancialElement  CashFlowFromOperatingActivities=new FinancialElement(cf,"Total Cash Flow From Operating Activities",CashFlowPoint.FIELD_TotalCashFlowFromOperatingActivities);
+		new FinancialElement(CashFlowFromOperatingActivities,"Depreciation",CashFlowPoint.FIELD_Depreciation);
+		new FinancialElement(CashFlowFromOperatingActivities,"Adjustments To Net Income",CashFlowPoint.FIELD_AdjustmentsToNetIncome);
+		new FinancialElement(CashFlowFromOperatingActivities,"Changes In Accounts Receivables",CashFlowPoint.FIELD_ChangesInAccountsReceivables);
+		new FinancialElement(CashFlowFromOperatingActivities,"Changes In Liabilities",CashFlowPoint.FIELD_ChangesInLiabilities);
+		new FinancialElement(CashFlowFromOperatingActivities,"Changes In Inventories",CashFlowPoint.FIELD_ChangesInInventories);
+		new FinancialElement(CashFlowFromOperatingActivities,"Changes In Other Operating Activities",CashFlowPoint.FIELD_ChangesInOtherOperatingActivities);
+		
+		//==================================================================
+		//==      Investing Activities, Cash Flows Provided By or Used In == (Investitionstätigkeit)
+		//==================================================================
+		FinancialElement  TotalCashFlowsFromInvestingActivities=new FinancialElement(cf,"Total Cash Flows From Investing Activities",CashFlowPoint.FIELD_TotalCashFlowsFromInvestingActivities);
+		new FinancialElement(TotalCashFlowsFromInvestingActivities,"Capital Expenditures",CashFlowPoint.FIELD_CapitalExpenditures);
+		new FinancialElement(TotalCashFlowsFromInvestingActivities,"Investments",CashFlowPoint.FIELD_Investments);
+		new FinancialElement(TotalCashFlowsFromInvestingActivities,"Other Cash flows from Investing Activities",CashFlowPoint.FIELD_OtherCashflowsfromInvestingActivities);
+		
+		//==================================================================
+		//==      Financing Activities, Cash Flows Provided By or Used In == (Finanzierungstätigkeit)
+		//==================================================================
+		FinancialElement  TotalCashFlowsFromFinancingActivities=new FinancialElement(cf,"Total Cash Flows From Financing Activities",CashFlowPoint.FIELD_TotalCashFlowsFromFinancingActivities);
+		new FinancialElement(TotalCashFlowsFromFinancingActivities,"Dividends Paid",CashFlowPoint.FIELD_DividendsPaid);
+		new FinancialElement(TotalCashFlowsFromFinancingActivities,"Sale Purchase of Stock",CashFlowPoint.FIELD_SalePurchaseofStock);
+		new FinancialElement(TotalCashFlowsFromFinancingActivities,"Net Borrowings",CashFlowPoint.FIELD_NetBorrowings);
+		new FinancialElement(TotalCashFlowsFromFinancingActivities,"Other Cash Flows from Financing Activities",CashFlowPoint.FIELD_OtherCashFlowsfromFinancingActivities);
+		
+		
+		new FinancialElement(cf,"Effect Of Exchange Rate Changes",CashFlowPoint.FIELD_EffectOfExchangeRateChanges);
+		new FinancialElement(cf,"Change In Cash and Cash Equivalents",CashFlowPoint.FIELD_ChangeInCashandCashEquivalents);
+		
 		
 	}
 	

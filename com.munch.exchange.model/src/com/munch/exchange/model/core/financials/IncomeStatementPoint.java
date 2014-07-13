@@ -386,6 +386,7 @@ public class IncomeStatementPoint extends FinancialPoint {
 		if(fieldKey.equals(FIELD_GrossProfit))return GrossProfit;
 		if(fieldKey.equals(FIELD_IncomeBeforeTax))return IncomeBeforeTax;
 		if(fieldKey.equals(FIELD_InterestExpense))return InterestExpense;
+		if(fieldKey.equals(FIELD_IncomeTaxExpense))return IncomeTaxExpense;
 		if(fieldKey.equals(FIELD_MinorityInterest))return MinorityInterest;
 		if(fieldKey.equals(FIELD_NetIncome))return NetIncome;
 		if(fieldKey.equals(FIELD_NetIncomeApplicableToCommonShares))return NetIncomeApplicableToCommonShares;
@@ -401,7 +402,7 @@ public class IncomeStatementPoint extends FinancialPoint {
 		if(fieldKey.equals(FIELD_TotalOtherIncome_ExpensesNet))return TotalOtherIncome_ExpensesNet;
 		if(fieldKey.equals(FIELD_TotalRevenue))return TotalRevenue;
 	
-		return Long.MIN_VALUE;
+		return 0;
 	}
 	@Override
 	public void setValue(String fieldKey , long value) {
@@ -413,6 +414,7 @@ public class IncomeStatementPoint extends FinancialPoint {
 		if(fieldKey.equals(FIELD_GrossProfit))GrossProfit=value;
 		if(fieldKey.equals(FIELD_IncomeBeforeTax))IncomeBeforeTax=value;
 		if(fieldKey.equals(FIELD_InterestExpense))InterestExpense=value;
+		if(fieldKey.equals(FIELD_IncomeTaxExpense))IncomeTaxExpense=value;
 		if(fieldKey.equals(FIELD_MinorityInterest)) MinorityInterest=value;
 		if(fieldKey.equals(FIELD_NetIncome))NetIncome=value;
 		if(fieldKey.equals(FIELD_NetIncomeApplicableToCommonShares)) NetIncomeApplicableToCommonShares=value;

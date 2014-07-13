@@ -468,40 +468,40 @@ public class BalanceSheetPoint extends FinancialPoint {
 		
 		return "BalanceSheetPoint [ PeriodEnding="+DateTool.dateToString(PeriodEnding) 
 				+ ", type=" + this.getPeriodType()
-				+ ", CashAndCashEquivalents="+ this.LongValueToString(CashAndCashEquivalents )
-				+ ", ShortTermInvestments="+ this.LongValueToString(ShortTermInvestments )
-				+ ", NetReceivables=" + this.LongValueToString(NetReceivables)
-				+ ", Inventory=" + this.LongValueToString(Inventory )
-				+ ", OtherCurrentAssets="+ this.LongValueToString(OtherCurrentAssets )
-				+ ", TotalCurrentAssets="+ this.LongValueToString(TotalCurrentAssets )
-				+ ", LongTermInvestments="+ this.LongValueToString(LongTermInvestments )
-				+ ", PropertyPlantandEquipment="+ this.LongValueToString(PropertyPlantandEquipment )
-				+ ", Goodwill=" + this.LongValueToString(Goodwill)
-				+ ", IntangibleAssets=" + this.LongValueToString(IntangibleAssets)
-				+ ", AccumulatedAmortization=" + this.LongValueToString(AccumulatedAmortization)
-				+ ", OtherAssets=" +this.LongValueToString( OtherAssets)
-				+ ", DeferredLongTermAssetCharges="+this.LongValueToString( DeferredLongTermAssetCharges)
-				+ ", TotalAssets=" +this.LongValueToString( TotalAssets)
-				+ ", AccountsPayable=" + this.LongValueToString(AccountsPayable)
-				+ ", Short_CurrentLongTermDebt=" + this.LongValueToString(Short_CurrentLongTermDebt)
-				+ ", OtherCurrentLiabilities=" + this.LongValueToString(OtherCurrentLiabilities)
-				+ ", TotalCurrentLiabilities=" +this.LongValueToString( TotalCurrentLiabilities)
-				+ ", LongTermDebt=" + this.LongValueToString(LongTermDebt )
-				+ ", OtherLiabilities="+ this.LongValueToString(OtherLiabilities )
-				+ ", DeferredLongTermLiabilityCharges="+this.LongValueToString( DeferredLongTermLiabilityCharges )
-				+ ", MinorityInterest="+this.LongValueToString( MinorityInterest )
-				+ ", NegativeGoodwill=" +this.LongValueToString( NegativeGoodwill)
-				+ ", TotalLiabilities=" + this.LongValueToString(TotalLiabilities)
-				+ ", MiscStocksOptionsWarrants=" + this.LongValueToString(MiscStocksOptionsWarrants)
-				+ ", RedeemablePreferredStock=" +this.LongValueToString( RedeemablePreferredStock)
-				+ ", PreferredStock=" + this.LongValueToString(PreferredStock )
-				+ ", CommonStock="+ this.LongValueToString(CommonStock )
-				+ ", RetainedEarnings=" +this.LongValueToString( RetainedEarnings)
-				+ ", TreasuryStock=" +this.LongValueToString( TreasuryStock )
-				+ ", CapitalSurplus="+this.LongValueToString( CapitalSurplus )
-				+ ", OtherStockholderEquity="+this.LongValueToString( OtherStockholderEquity )
-				+ ", TotalStockholderEquity="+ this.LongValueToString(TotalStockholderEquity )
-				+ ", NetTangibleAssets="+this.LongValueToString( NetTangibleAssets )
+				+ ", CashAndCashEquivalents="+ LongValueToString(CashAndCashEquivalents )
+				+ ", ShortTermInvestments="+ LongValueToString(ShortTermInvestments )
+				+ ", NetReceivables=" + LongValueToString(NetReceivables)
+				+ ", Inventory=" + LongValueToString(Inventory )
+				+ ", OtherCurrentAssets="+ LongValueToString(OtherCurrentAssets )
+				+ ", TotalCurrentAssets="+ LongValueToString(TotalCurrentAssets )
+				+ ", LongTermInvestments="+ LongValueToString(LongTermInvestments )
+				+ ", PropertyPlantandEquipment="+ LongValueToString(PropertyPlantandEquipment )
+				+ ", Goodwill=" + LongValueToString(Goodwill)
+				+ ", IntangibleAssets=" + LongValueToString(IntangibleAssets)
+				+ ", AccumulatedAmortization=" + LongValueToString(AccumulatedAmortization)
+				+ ", OtherAssets=" +LongValueToString( OtherAssets)
+				+ ", DeferredLongTermAssetCharges="+LongValueToString( DeferredLongTermAssetCharges)
+				+ ", TotalAssets=" +LongValueToString( TotalAssets)
+				+ ", AccountsPayable=" + LongValueToString(AccountsPayable)
+				+ ", Short_CurrentLongTermDebt=" + LongValueToString(Short_CurrentLongTermDebt)
+				+ ", OtherCurrentLiabilities=" + LongValueToString(OtherCurrentLiabilities)
+				+ ", TotalCurrentLiabilities=" +LongValueToString( TotalCurrentLiabilities)
+				+ ", LongTermDebt=" + LongValueToString(LongTermDebt )
+				+ ", OtherLiabilities="+ LongValueToString(OtherLiabilities )
+				+ ", DeferredLongTermLiabilityCharges="+LongValueToString( DeferredLongTermLiabilityCharges )
+				+ ", MinorityInterest="+LongValueToString( MinorityInterest )
+				+ ", NegativeGoodwill=" +LongValueToString( NegativeGoodwill)
+				+ ", TotalLiabilities=" + LongValueToString(TotalLiabilities)
+				+ ", MiscStocksOptionsWarrants=" + LongValueToString(MiscStocksOptionsWarrants)
+				+ ", RedeemablePreferredStock=" +LongValueToString( RedeemablePreferredStock)
+				+ ", PreferredStock=" + LongValueToString(PreferredStock )
+				+ ", CommonStock="+ LongValueToString(CommonStock )
+				+ ", RetainedEarnings=" +LongValueToString( RetainedEarnings)
+				+ ", TreasuryStock=" +LongValueToString( TreasuryStock )
+				+ ", CapitalSurplus="+LongValueToString( CapitalSurplus )
+				+ ", OtherStockholderEquity="+LongValueToString( OtherStockholderEquity )
+				+ ", TotalStockholderEquity="+ LongValueToString(TotalStockholderEquity )
+				+ ", NetTangibleAssets="+LongValueToString( NetTangibleAssets )
 				+ "]";
 	}
 
@@ -590,13 +590,81 @@ public class BalanceSheetPoint extends FinancialPoint {
 
 	@Override
 	public long getValue(String fieldKey) {
-		// TODO Auto-generated method stub
+		if(fieldKey.equals(FIELD_CashAndCashEquivalents))return CashAndCashEquivalents;
+		if(fieldKey.equals(FIELD_ShortTermInvestments))return ShortTermInvestments;
+		if(fieldKey.equals(FIELD_NetReceivables))return NetReceivables;
+		if(fieldKey.equals(FIELD_Inventory))return Inventory;
+		if(fieldKey.equals(FIELD_OtherCurrentAssets))return OtherCurrentAssets;
+		if(fieldKey.equals(FIELD_TotalCurrentAssets))return TotalCurrentAssets;
+		if(fieldKey.equals(FIELD_LongTermInvestments))return LongTermInvestments;
+		if(fieldKey.equals(FIELD_PropertyPlantandEquipment))return PropertyPlantandEquipment;
+		if(fieldKey.equals(FIELD_Goodwill))return Goodwill;
+		if(fieldKey.equals(FIELD_IntangibleAssets))return IntangibleAssets;
+		if(fieldKey.equals(FIELD_AccumulatedAmortization))return AccumulatedAmortization;
+		if(fieldKey.equals(FIELD_OtherAssets))return OtherAssets;
+		if(fieldKey.equals(FIELD_DeferredLongTermAssetCharges))return DeferredLongTermAssetCharges;
+		if(fieldKey.equals(FIELD_TotalAssets))return TotalAssets;
+		if(fieldKey.equals(FIELD_AccountsPayable))return AccountsPayable;
+		if(fieldKey.equals(FIELD_Short_CurrentLongTermDebt))return Short_CurrentLongTermDebt;
+		if(fieldKey.equals(FIELD_OtherCurrentLiabilities))return OtherCurrentLiabilities;
+		if(fieldKey.equals(FIELD_TotalCurrentLiabilities))return TotalCurrentLiabilities;
+		if(fieldKey.equals(FIELD_LongTermDebt))return LongTermDebt;
+		if(fieldKey.equals(FIELD_OtherLiabilities))return OtherLiabilities;
+		if(fieldKey.equals(FIELD_DeferredLongTermLiabilityCharges))return DeferredLongTermLiabilityCharges;
+		if(fieldKey.equals(FIELD_MinorityInterest))return MinorityInterest;
+		if(fieldKey.equals(FIELD_NegativeGoodwill))return NegativeGoodwill;
+		if(fieldKey.equals(FIELD_TotalLiabilities))return TotalLiabilities;
+		if(fieldKey.equals(FIELD_MiscStocksOptionsWarrants))return MiscStocksOptionsWarrants;
+		if(fieldKey.equals(FIELD_RedeemablePreferredStock))return RedeemablePreferredStock;
+		if(fieldKey.equals(FIELD_PreferredStock))return PreferredStock;
+		if(fieldKey.equals(FIELD_CommonStock))return CommonStock;
+		if(fieldKey.equals(FIELD_RetainedEarnings))return RetainedEarnings;
+		if(fieldKey.equals(FIELD_TreasuryStock))return TreasuryStock;
+		if(fieldKey.equals(FIELD_CapitalSurplus))return CapitalSurplus;
+		if(fieldKey.equals(FIELD_OtherStockholderEquity))return OtherStockholderEquity;
+		if(fieldKey.equals(FIELD_TotalStockholderEquity))return TotalStockholderEquity;
+		if(fieldKey.equals(FIELD_NetTangibleAssets))return NetTangibleAssets;
+		
 		return 0;
 	}
 
 	@Override
 	public void setValue(String fieldKey, long value) {
-		// TODO Auto-generated method stub
+		
+		if(fieldKey.equals(FIELD_CashAndCashEquivalents))CashAndCashEquivalents=value;
+		if(fieldKey.equals(FIELD_ShortTermInvestments))ShortTermInvestments=value;
+		if(fieldKey.equals(FIELD_NetReceivables))NetReceivables=value;
+		if(fieldKey.equals(FIELD_Inventory))Inventory=value;
+		if(fieldKey.equals(FIELD_OtherCurrentAssets))OtherCurrentAssets=value;
+		if(fieldKey.equals(FIELD_TotalCurrentAssets))TotalCurrentAssets=value;
+		if(fieldKey.equals(FIELD_LongTermInvestments))LongTermInvestments=value;
+		if(fieldKey.equals(FIELD_PropertyPlantandEquipment))PropertyPlantandEquipment=value;
+		if(fieldKey.equals(FIELD_Goodwill))Goodwill=value;
+		if(fieldKey.equals(FIELD_IntangibleAssets))IntangibleAssets=value;
+		if(fieldKey.equals(FIELD_AccumulatedAmortization))AccumulatedAmortization=value;
+		if(fieldKey.equals(FIELD_OtherAssets))OtherAssets=value;
+		if(fieldKey.equals(FIELD_DeferredLongTermAssetCharges))DeferredLongTermAssetCharges=value;
+		if(fieldKey.equals(FIELD_TotalAssets))TotalAssets=value;
+		if(fieldKey.equals(FIELD_AccountsPayable))AccountsPayable=value;
+		if(fieldKey.equals(FIELD_Short_CurrentLongTermDebt))Short_CurrentLongTermDebt=value;
+		if(fieldKey.equals(FIELD_OtherCurrentLiabilities))OtherCurrentLiabilities=value;
+		if(fieldKey.equals(FIELD_TotalCurrentLiabilities))TotalCurrentLiabilities=value;
+		if(fieldKey.equals(FIELD_LongTermDebt))LongTermDebt=value;
+		if(fieldKey.equals(FIELD_OtherLiabilities))OtherLiabilities=value;
+		if(fieldKey.equals(FIELD_DeferredLongTermLiabilityCharges))DeferredLongTermLiabilityCharges=value;
+		if(fieldKey.equals(FIELD_MinorityInterest))MinorityInterest=value;
+		if(fieldKey.equals(FIELD_NegativeGoodwill))NegativeGoodwill=value;
+		if(fieldKey.equals(FIELD_TotalLiabilities))TotalLiabilities=value;
+		if(fieldKey.equals(FIELD_MiscStocksOptionsWarrants))MiscStocksOptionsWarrants=value;
+		if(fieldKey.equals(FIELD_RedeemablePreferredStock))RedeemablePreferredStock=value;
+		if(fieldKey.equals(FIELD_PreferredStock))PreferredStock=value;
+		if(fieldKey.equals(FIELD_CommonStock))CommonStock=value;
+		if(fieldKey.equals(FIELD_RetainedEarnings))RetainedEarnings=value;
+		if(fieldKey.equals(FIELD_TreasuryStock))TreasuryStock=value;
+		if(fieldKey.equals(FIELD_CapitalSurplus))CapitalSurplus=value;
+		if(fieldKey.equals(FIELD_OtherStockholderEquity))OtherStockholderEquity=value;
+		if(fieldKey.equals(FIELD_TotalStockholderEquity))TotalStockholderEquity=value;
+		if(fieldKey.equals(FIELD_NetTangibleAssets))NetTangibleAssets=value;
 		
 	}
 	
