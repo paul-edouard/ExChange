@@ -64,8 +64,9 @@ public class Financials extends ParameterElement {
 	}
 	
 	
-	public long getValue(String periodType,Calendar date,String key){
+	public long getValue(String periodType,Calendar date,String key,String sectorKey){
 		
+		if(sectorKey.equals(FIELD_BalanceSheet)){
 		for(DatePoint point:BalanceSheet.getPoints(periodType)){
 			FinancialPoint p=(FinancialPoint)point;
 			if(!p.getDate().equals(date))continue;
@@ -74,7 +75,9 @@ public class Financials extends ParameterElement {
 			if(val!=0)return val;
 			
 		}
+		}
 		
+		if(sectorKey.equals(FIELD_IncomeStatement)){
 		for(DatePoint point:IncomeStatement.getPoints(periodType)){
 			FinancialPoint p=(FinancialPoint)point;
 			if(!p.getDate().equals(date))continue;
@@ -85,7 +88,9 @@ public class Financials extends ParameterElement {
 			if(val!=0)return val;
 			
 		}
+		}
 		
+		if(sectorKey.equals(FIELD_CashFlow)){
 		for(DatePoint point:CashFlow.getPoints(periodType)){
 			FinancialPoint p=(FinancialPoint)point;
 			if(!p.getDate().equals(date))continue;
@@ -93,6 +98,7 @@ public class Financials extends ParameterElement {
 			long val=p.getValue(key);
 			if(val!=0)return val;
 			
+		}
 		}
 		
 		
