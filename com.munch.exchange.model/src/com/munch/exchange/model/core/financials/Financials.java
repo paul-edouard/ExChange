@@ -57,6 +57,7 @@ public class Financials extends ParameterElement {
 		}
 		
 		java.util.Collections.sort(list);
+		java.util.Collections.reverse(list);
 		
 		return list;
 		

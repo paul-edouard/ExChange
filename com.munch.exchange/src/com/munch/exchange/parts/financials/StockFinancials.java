@@ -140,7 +140,7 @@ public class StockFinancials extends Composite {
 		public String getText(Object element) {
 			if(element instanceof FinancialElement){
 				FinancialElement entity=(FinancialElement) element;
-				System.out.println("Element: "+entity+"Key: "+entity.fieldKey);
+				//System.out.println("Element: "+entity+"Key: "+entity.fieldKey);
 				long val=stock.getFinancials().getValue(FinancialPoint.PeriodeTypeQuaterly,date, entity.fieldKey);
 				if(val==0)return "-";
 				return FinancialPoint.LongValueToString(val);
