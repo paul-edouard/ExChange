@@ -61,6 +61,8 @@ public class StockFinancials extends Composite {
 	
 	private double unitFactor=1;
 	
+	private String modus;
+	
 	@Inject
 	public StockFinancials(Composite parent,ExchangeRate rate) {
 		super(parent, SWT.NONE);
@@ -157,6 +159,15 @@ public class StockFinancials extends Composite {
 	}
 	
 	
+	public TreeViewer getTreeViewer() {
+		return treeViewer;
+	}
+
+	public String getModus() {
+		return modus;
+	}
+
+
 	private void refreshColumns(){
 		removeColumns();
 		createColumns();
@@ -172,7 +183,7 @@ public class StockFinancials extends Composite {
 	
 	private void createColumns(){
 		
-		String modus=FinancialPoint.PeriodeTypeQuaterly;
+		modus=FinancialPoint.PeriodeTypeQuaterly;
 		if(btnAnnualy.getSelection())
 			modus=FinancialPoint.PeriodeTypeAnnual;
 		
@@ -181,6 +192,8 @@ public class StockFinancials extends Composite {
 		for(Calendar date :this.stock.getFinancials().getDateList(modus)){
 			TreeViewerColumn dateColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
 			dateColumn.setLabelProvider(new valueColumnLabelProvider(date));
+			dateColumn.setEditingSupport(new StockFinancialsEditingSupport(this, stock, date));
+			
 			TreeColumn trclmn = dateColumn.getColumn();
 			trclmn.setWidth(150);
 			trclmn.setText(DateTool.dateToDayString(date));
