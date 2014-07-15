@@ -36,19 +36,33 @@ public class StockFinancialsEditingSupport extends EditingSupport {
 	  protected boolean canEdit(Object element) {
 	    return true;
 	  }
-
+	  
+	  String savedValue="";
+	  
 	  @Override
 	  protected Object getValue(Object element) {
 		FinancialElement entity = (FinancialElement) element;
 		long val=stock.getFinancials().getValue(stockFinancials.getModus(),date, entity.fieldKey,entity.sectorKey);
-		if(val==0)return "-";
-		return String.valueOf(val);
-
+		if(val==0)savedValue="-";
+		else
+			savedValue=stockFinancials.getStringOfValue(val);
+		
+		
+		return savedValue;
 	  }
 
 	  @Override
 	  protected void setValue(Object element, Object value) {
 		FinancialElement entity = (FinancialElement) element;
-	   //TODO
+		String value_str=(String) value;
+		if(value_str.equals(savedValue))return;
+		
+		long val=stockFinancials.getValueOfString(value_str);
+		stock.getFinancials().setValue(stockFinancials.getModus(),date, entity.fieldKey,entity.sectorKey,val);
+		this.stockFinancials.getTreeViewer().refresh();
+		
+		this.stockFinancials.getBtnCancel().setEnabled(true);
+		this.stockFinancials.getBtnSave().setEnabled(true);
+		
 	  }
 	} 

@@ -4,6 +4,12 @@ import com.munch.exchange.model.core.Stock;
 
 public interface IFinancialsProvider {
 	
+	// ==========================================
+	// ==      SAVE THE FINANCIALS DATA        ==
+	// ==========================================
+	
+	boolean saveAll(Stock stock);
+	
 	
 	// ==================================
 	// ==      INCOME STATEMENT        ==

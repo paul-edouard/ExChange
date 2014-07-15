@@ -24,6 +24,7 @@ import com.munch.exchange.model.core.financials.IncomeStatementPoint;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.financials.StockFinancialsContentProvider.FinancialElement;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.services.IFinancialsProvider;
 
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
@@ -46,6 +47,9 @@ public class StockFinancials extends Composite {
 	@Inject
 	private IExchangeRateProvider exchangeRateProvider;
 	
+	@Inject
+	private IFinancialsProvider financialsProvider;
+	
 	
 	private StockFinancialsContentProvider contentProvider=new StockFinancialsContentProvider();
 	
@@ -62,6 +66,8 @@ public class StockFinancials extends Composite {
 	private double unitFactor=1;
 	
 	private String modus;
+	private Button btnCancel;
+	private Button btnSave;
 	
 	@Inject
 	public StockFinancials(Composite parent,ExchangeRate rate) {
@@ -70,7 +76,7 @@ public class StockFinancials extends Composite {
 		setLayout(new GridLayout(1, false));
 		
 		Composite compositeHeader = new Composite(this, SWT.NONE);
-		compositeHeader.setLayout(new GridLayout(5, false));
+		compositeHeader.setLayout(new GridLayout(7, false));
 		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		btnQuaterly = new Button(compositeHeader, SWT.RADIO);
@@ -134,9 +140,36 @@ public class StockFinancials extends Composite {
 		btnAddColumn.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				
+				stock.getFinancials().addPoint(modus);
+				refreshColumns();
+				
 			}
 		});
 		btnAddColumn.setText("Add Column");
+		
+		btnSave = new Button(compositeHeader, SWT.NONE);
+		btnSave.setEnabled(false);
+		btnSave.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				financialsProvider.saveAll(stock);
+				btnSave.setEnabled(false);
+				btnCancel.setEnabled(false);
+			}
+		});
+		btnSave.setText("Save");
+		
+		btnCancel = new Button(compositeHeader, SWT.NONE);
+		btnCancel.setEnabled(false);
+		btnCancel.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//financialsProvider.loadBalanceSheet(stock);
+				
+			}
+		});
+		btnCancel.setText("Cancel");
 		
 		treeViewer = new TreeViewer(this,  SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL);
@@ -165,6 +198,18 @@ public class StockFinancials extends Composite {
 
 	public String getModus() {
 		return modus;
+	}
+	
+	public double getUnitFactor() {
+		return unitFactor;
+	}
+	
+	public Button getBtnCancel() {
+		return btnCancel;
+	}
+
+	public Button getBtnSave() {
+		return btnSave;
 	}
 
 
@@ -249,31 +294,40 @@ public class StockFinancials extends Composite {
 				FinancialElement entity=(FinancialElement) element;
 				long val=stock.getFinancials().getValue(modus,date, entity.fieldKey,entity.sectorKey);
 				if(val==0)return "-";
-				return getStringOfValue(val);
+				return StockFinancials.this.getStringOfValue(val);
 			}
 			return element == null ? "" : element.toString();
 		}
 		
 		
-		private String getStringOfValue(long value){
-			
-			if(value==Long.MIN_VALUE)return "";
-			
-			if(unitFactor==1){
-				return String.valueOf(value);
-			}
-			else if(unitFactor==1000){
-				return String.valueOf((long) (value/unitFactor));
-			}
-			else if(unitFactor==1000000){
-				//return String.format("%.1f",  ((double)value)/unitFactor);
-				return String.valueOf((long) (value/unitFactor));
-			}
-			return "-";
-			
+	}
+	
+	public String getStringOfValue(long value){
+		if(value==Long.MIN_VALUE)return "";
+		
+		if(unitFactor==1){
+			return String.valueOf(value);
 		}
-		
-		
+		else if(unitFactor==1000){
+			return String.valueOf((long) (value/unitFactor));
+		}
+		else if(unitFactor==1000000){
+			//return String.format("%.1f",  ((double)value)/unitFactor);
+			return String.valueOf((long) (value/unitFactor));
+		}
+		return "-";
+	}
+	
+	public long getValueOfString(String value){
+		if(value.equals("") || value.equals("-"))
+			return Long.MIN_VALUE;
+		try{
+		double val=Double.valueOf(value)*unitFactor;
+			return (long) val;
+		}
+		catch(NumberFormatException ex){
+			return Long.MIN_VALUE;
+		}
 	}
 	
 	

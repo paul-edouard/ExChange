@@ -69,6 +69,15 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		return Xml.save(stock.getFinancials().getCashFlow(), fileStr);
 	}
 	
+	public boolean saveAll(Stock stock){
+		if(!saveIncomeStatement(stock))return false;
+		if(!saveBalanceSheet(stock))return false;
+		if(!saveCashFlow(stock))return false;
+		
+		return true;
+	}
+	
+	
 	private LinkedList<IncomeStatementPoint> getLastIncomeStatementPoints(Stock stock){
 		YQLIncomeStatement yql=new YQLIncomeStatement(stock.getSymbol());
 		yql.setTimeFrameToQuaterly();

@@ -4,11 +4,15 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
+
 import com.munch.exchange.model.core.DatePoint;
+import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.ParameterElement;
 
 public class Financials extends ParameterElement {
 	
+	private static Logger logger = Logger.getLogger(Financials.class);
 	
 	public static final String FIELD_BalanceSheet = "BalanceSheet";
 	public static final String FIELD_IncomeStatement = "IncomeStatement";
@@ -40,6 +44,38 @@ public class Financials extends ParameterElement {
 		changes.firePropertyChange(FIELD_CashFlow, CashFlow, CashFlow = cashFlow);
 	}
 	
+	public void addPoint(String periodType){
+		Calendar lastpoint=getDateList(periodType).getLast();
+		logger.info("Last point:"+DateTool.dateToDayString(lastpoint));
+		Calendar newpoint=Calendar.getInstance();
+		newpoint.setTimeInMillis(lastpoint.getTimeInMillis());
+		
+		if(periodType.equals(FinancialPoint.PeriodeTypeQuaterly)){
+			newpoint.add(Calendar.MONTH, -3);
+			//logger.info("Max Day of Month:"+newpoint.getActualMaximum(Calendar.DAY_OF_MONTH));
+			newpoint.set(Calendar.DAY_OF_MONTH, newpoint.getActualMaximum(Calendar.DAY_OF_MONTH));
+		}
+		else if(periodType.equals(FinancialPoint.PeriodeTypeAnnual)){
+			newpoint.add(Calendar.YEAR, -1);
+		}
+		
+		BalanceSheetPoint bs_point=new BalanceSheetPoint();
+		bs_point.setDate(newpoint);bs_point.setPeriodEnding(newpoint);
+		bs_point.setPeriodType(periodType);
+		BalanceSheet.addLast(bs_point);
+		
+		IncomeStatementPoint is_point=new IncomeStatementPoint();
+		is_point.setDate(newpoint);is_point.setPeriodEnding(newpoint);
+		is_point.setPeriodType(periodType);
+		IncomeStatement.addLast(is_point);
+		
+		CashFlowPoint cf_point=new CashFlowPoint();
+		cf_point.setDate(newpoint);cf_point.setPeriodEnding(newpoint);
+		cf_point.setPeriodType(periodType);
+		CashFlow.addLast(cf_point);
+		
+	}
+	
 	
 	public LinkedList<Calendar> getDateList(String periodType){
 		LinkedList<Calendar> list=new LinkedList<Calendar>();
@@ -60,6 +96,39 @@ public class Financials extends ParameterElement {
 		java.util.Collections.reverse(list);
 		
 		return list;
+		
+	}
+	
+	public void setValue(String periodType,Calendar date,String key,String sectorKey,long value){
+		if(sectorKey.equals(FIELD_BalanceSheet)){
+			for(DatePoint point:BalanceSheet.getPoints(periodType)){
+				FinancialPoint p=(FinancialPoint)point;
+				if(!p.getDate().equals(date))continue;
+				
+				p.setValue(key, value);
+				
+			}
+			}
+			
+			if(sectorKey.equals(FIELD_IncomeStatement)){
+			for(DatePoint point:IncomeStatement.getPoints(periodType)){
+				FinancialPoint p=(FinancialPoint)point;
+				if(!p.getDate().equals(date))continue;
+				
+				p.setValue(key, value);
+				
+			}
+			}
+			
+			if(sectorKey.equals(FIELD_CashFlow)){
+			for(DatePoint point:CashFlow.getPoints(periodType)){
+				FinancialPoint p=(FinancialPoint)point;
+				if(!p.getDate().equals(date))continue;
+				
+				p.setValue(key, value);
+				
+			}
+			}
 		
 	}
 	
