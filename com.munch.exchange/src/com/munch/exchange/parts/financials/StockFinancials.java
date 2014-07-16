@@ -8,36 +8,31 @@ import javax.inject.Inject;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ScrollBar;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 
 import com.munch.exchange.IEventConstant;
-import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
-import com.munch.exchange.model.core.financials.CashFlowPoint;
 import com.munch.exchange.model.core.financials.FinancialPoint;
-import com.munch.exchange.model.core.financials.HistoricalCashFlow;
-import com.munch.exchange.model.core.financials.HistoricalIncomeStatement;
-import com.munch.exchange.model.core.financials.IncomeStatementPoint;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.financials.StockFinancialsContentProvider.FinancialElement;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IFinancialsProvider;
-
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.TreeViewerColumn;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Combo;
 
 public class StockFinancials extends Composite {
 	
@@ -59,6 +54,7 @@ public class StockFinancials extends Composite {
 	private Button btnAddColumn;
 	private Button btnQuaterly;
 	private Button btnAnnualy;
+	private ScrollBar horizontalScrollBar;
 	private LinkedList<TreeViewerColumn> columns=new LinkedList<TreeViewerColumn>();
 	private Label lblUnit;
 	private Combo comboUnit;
@@ -175,6 +171,52 @@ public class StockFinancials extends Composite {
 				| SWT.V_SCROLL);
 		treeViewer.setContentProvider(contentProvider);
 		treeViewer.setInput(contentProvider.getRoot());
+		horizontalScrollBar=treeViewer.getTree().getHorizontalBar();
+		
+		horizontalScrollBar.addSelectionListener(new SelectionAdapter()
+        {
+            public void widgetSelected(SelectionEvent e)
+            {
+                boolean rightScroll = e.detail == SWT.ARROW_DOWN || e.detail == SWT.PAGE_DOWN;
+                boolean leftScroll = e.detail == SWT.ARROW_UP || e.detail == SWT.PAGE_UP;
+ 
+                if (rightScroll)
+                {
+                    for (int i = 1; i < horizontalScrollBar.getSelection() + 1; i++)
+                    {
+                        TreeColumn col = getTreeViewer().getTree().getColumns()[i];
+                        col.setWidth(0);
+                    }
+                }
+                else if (leftScroll)
+                {
+                    for (int i = getTreeViewer().getTree().getColumnCount() - 1; i > horizontalScrollBar.getSelection(); i--)
+                    {
+                        TreeColumn col = getTreeViewer().getTree().getColumns()[i];
+                        if (col.getWidth() !=/* getColumnDescriptions()[i].getWidth()*/150)
+                            col.setWidth(/*getColumnDescriptions()[i].getWidth()*/150);
+                    }
+                }
+                else
+                // thumb/slider moved
+                {
+                    int sliderLocation = horizontalScrollBar.getSelection();
+ 
+                    for (int i = 1; i < getTreeViewer().getTree().getColumnCount() - 1; i++)
+                    {
+                        TreeColumn col = getTreeViewer().getTree().getColumns()[i];
+ 
+                        if (i < sliderLocation)
+                            col.setWidth(0);
+                        else
+                            col.setWidth(/*getColumnDescriptions()[i].getWidth()*/150);
+                    }
+                }
+            }
+        });
+		
+		
+		
 		tree = treeViewer.getTree();
 		tree.setLinesVisible(true);
 		tree.setHeaderVisible(true);

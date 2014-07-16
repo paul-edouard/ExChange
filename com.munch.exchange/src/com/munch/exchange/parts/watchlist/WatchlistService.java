@@ -20,7 +20,6 @@ import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.limit.OrderTrigger;
-import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
 import com.munch.exchange.model.core.quote.QuotePoint;
 import com.munch.exchange.model.core.watchlist.Watchlist;
@@ -179,7 +178,8 @@ public class WatchlistService {
 	
 	public WatchlistEntity findEntityFromList(Watchlist watchlist,String uuid){
 		
-		
+		if(watchlist==null)return null;
+		if (watchlist.getList()==null)return null;
 			for(WatchlistEntity ent:watchlist.getList()){
 				if(ent.getRateUuid().equals(uuid)){
 					return ent;
