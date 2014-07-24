@@ -55,7 +55,13 @@ public class StockFinancials extends Composite {
 	private Button btnQuaterly;
 	private Button btnAnnualy;
 	private ScrollBar horizontalScrollBar;
+	
+	int maxVisibleColumns=5;
+	int firstVisibleColumn=0;
+	
 	private LinkedList<TreeViewerColumn> columns=new LinkedList<TreeViewerColumn>();
+	
+	
 	private Label lblUnit;
 	private Combo comboUnit;
 	
@@ -64,6 +70,10 @@ public class StockFinancials extends Composite {
 	private String modus;
 	private Button btnCancel;
 	private Button btnSave;
+	private Button btnLastest;
+	private Button btnFirst;
+	private Button btnLast;
+	private Button btnNext;
 	
 	@Inject
 	public StockFinancials(Composite parent,ExchangeRate rate) {
@@ -72,7 +82,7 @@ public class StockFinancials extends Composite {
 		setLayout(new GridLayout(1, false));
 		
 		Composite compositeHeader = new Composite(this, SWT.NONE);
-		compositeHeader.setLayout(new GridLayout(7, false));
+		compositeHeader.setLayout(new GridLayout(11, false));
 		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		btnQuaterly = new Button(compositeHeader, SWT.RADIO);
@@ -84,6 +94,7 @@ public class StockFinancials extends Composite {
 					btnAnnualy.setSelection(false);
 					btnQuaterly.setEnabled(false);
 					btnAnnualy.setEnabled(true);
+					firstVisibleColumn=0;
 					refreshColumns();
 				}
 			}
@@ -99,6 +110,7 @@ public class StockFinancials extends Composite {
 					btnQuaterly.setSelection(false);
 					btnAnnualy.setEnabled(false);
 					btnQuaterly.setEnabled(true);
+					firstVisibleColumn=0;
 					refreshColumns();
 				}
 			}
@@ -138,11 +150,58 @@ public class StockFinancials extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				
 				stock.getFinancials().addPoint(modus);
+				if(firstVisibleColumn<columns.size()-maxVisibleColumns)firstVisibleColumn++;
 				refreshColumns();
 				
 			}
 		});
 		btnAddColumn.setText("Add Column");
+		
+		btnLastest = new Button(compositeHeader, SWT.NONE);
+		btnLastest.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				firstVisibleColumn=0;
+				refreshColumnsVisibility();
+			}
+		});
+		btnLastest.setText("<<");
+		
+		btnLast = new Button(compositeHeader, SWT.NONE);
+		btnLast.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(firstVisibleColumn>0)firstVisibleColumn--;
+				refreshColumnsVisibility();
+				
+			}
+		});
+		btnLast.setText("<");
+		
+		btnNext = new Button(compositeHeader, SWT.NONE);
+		btnNext.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(firstVisibleColumn<columns.size()-maxVisibleColumns)firstVisibleColumn++;
+				refreshColumnsVisibility();
+				
+				
+			}
+		});
+		btnNext.setText(">");
+		
+		btnFirst = new Button(compositeHeader, SWT.NONE);
+		btnFirst.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(columns.size()-maxVisibleColumns>=0)firstVisibleColumn=columns.size()-maxVisibleColumns;
+				else
+					firstVisibleColumn=0;
+				refreshColumnsVisibility();
+				
+			}
+		});
+		btnFirst.setText(">>");
 		
 		btnSave = new Button(compositeHeader, SWT.NONE);
 		btnSave.setEnabled(false);
@@ -173,50 +232,7 @@ public class StockFinancials extends Composite {
 		treeViewer.setInput(contentProvider.getRoot());
 		horizontalScrollBar=treeViewer.getTree().getHorizontalBar();
 		
-		horizontalScrollBar.addSelectionListener(new SelectionAdapter()
-        {
-            public void widgetSelected(SelectionEvent e)
-            {
-                boolean rightScroll = e.detail == SWT.ARROW_DOWN || e.detail == SWT.PAGE_DOWN;
-                boolean leftScroll = e.detail == SWT.ARROW_UP || e.detail == SWT.PAGE_UP;
- 
-                if (rightScroll)
-                {
-                    for (int i = 1; i < horizontalScrollBar.getSelection() + 1; i++)
-                    {
-                        TreeColumn col = getTreeViewer().getTree().getColumns()[i];
-                        col.setWidth(0);
-                    }
-                }
-                else if (leftScroll)
-                {
-                    for (int i = getTreeViewer().getTree().getColumnCount() - 1; i > horizontalScrollBar.getSelection(); i--)
-                    {
-                        TreeColumn col = getTreeViewer().getTree().getColumns()[i];
-                        if (col.getWidth() !=/* getColumnDescriptions()[i].getWidth()*/150)
-                            col.setWidth(/*getColumnDescriptions()[i].getWidth()*/150);
-                    }
-                }
-                else
-                // thumb/slider moved
-                {
-                    int sliderLocation = horizontalScrollBar.getSelection();
- 
-                    for (int i = 1; i < getTreeViewer().getTree().getColumnCount() - 1; i++)
-                    {
-                        TreeColumn col = getTreeViewer().getTree().getColumns()[i];
- 
-                        if (i < sliderLocation)
-                            col.setWidth(0);
-                        else
-                            col.setWidth(/*getColumnDescriptions()[i].getWidth()*/150);
-                    }
-                }
-            }
-        });
-		
-		
-		
+	
 		tree = treeViewer.getTree();
 		tree.setLinesVisible(true);
 		tree.setHeaderVisible(true);
@@ -258,7 +274,7 @@ public class StockFinancials extends Composite {
 	private void refreshColumns(){
 		removeColumns();
 		createColumns();
-		treeViewer.refresh();
+		refreshColumnsVisibility();
 	}
 	
 	private void removeColumns(){
@@ -282,15 +298,29 @@ public class StockFinancials extends Composite {
 			dateColumn.setEditingSupport(new StockFinancialsEditingSupport(this, stock, date));
 			
 			TreeColumn trclmn = dateColumn.getColumn();
-			trclmn.setWidth(150);
+			//trclmn.setWidth(150);
 			trclmn.setText(DateTool.dateToDayString(date));
 			
 			columns.add(dateColumn);
 			
 		}
 		
-		treeViewer.refresh();
+		//treeViewer.refresh();
 		treeViewer.expandToLevel(2);
+		
+	}
+	
+	private void refreshColumnsVisibility(){
+		int pos=0;
+		for(TreeViewerColumn dateColumn:columns){
+			if(pos>=firstVisibleColumn && pos<firstVisibleColumn+maxVisibleColumns)
+				dateColumn.getColumn().setWidth(150);
+			else
+				dateColumn.getColumn().setWidth(0);
+			pos++;
+		}
+		
+		treeViewer.refresh();
 		
 	}
 	
@@ -414,6 +444,8 @@ public class StockFinancials extends Composite {
 		*/
 		
 		createColumns();
+		firstVisibleColumn=0;
+		refreshColumnsVisibility();
 		
 	}
 }
