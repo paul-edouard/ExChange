@@ -76,7 +76,7 @@ IStructuredContentProvider, ITreeContentProvider{
 	
 	private void buildFinancialElements(){
 		//new FinancialElement(this.root,"Period Ending",FinancialPoint.FIELD_PeriodEnding);
-		new FinancialElement(this.root,"Effetive Date",FinancialPoint.FIELD_EffectiveDate,"None");
+		new FinancialElement(this.root,"Effective Date",FinancialPoint.FIELD_EffectiveDate,"None");
 		
 		
 		FinancialElement is=new FinancialElement(this.root,"Income Statement",Financials.FIELD_IncomeStatement,Financials.FIELD_IncomeStatement);

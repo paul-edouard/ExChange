@@ -29,6 +29,7 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.financials.FinancialPoint;
+import com.munch.exchange.model.core.financials.IncomeStatementPoint;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.financials.StockFinancialsContentProvider.FinancialElement;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -243,7 +244,7 @@ public class StockFinancials extends Composite {
 		mainColumn.setLabelProvider(new mainColumnLabelProvider());
 		TreeColumn trclmnName = mainColumn.getColumn();
 		trclmnName.setWidth(300);
-		trclmnName.setText("Items");
+		trclmnName.setText("Period");
 		
 		treeViewer.refresh();
 		
@@ -299,16 +300,36 @@ public class StockFinancials extends Composite {
 			
 			TreeColumn trclmn = dateColumn.getColumn();
 			//trclmn.setWidth(150);
-			trclmn.setText(DateTool.dateToDayString(date));
+			trclmn.setText(getColumnHeaderName(date));
 			
 			columns.add(dateColumn);
 			
 		}
 		
-		//treeViewer.refresh();
 		treeViewer.expandToLevel(2);
 		
 	}
+	
+	private String getColumnHeaderName(Calendar date){
+		if(modus.equals(FinancialPoint.PeriodeTypeAnnual)){
+			return String.valueOf(date.get(Calendar.YEAR));
+		}
+		else{
+			if(date.get(Calendar.MONTH)>0 && date.get(Calendar.MONTH)<=3){
+				return "Q1 "+String.valueOf(date.get(Calendar.YEAR));
+			}
+			else if(date.get(Calendar.MONTH)>3 && date.get(Calendar.MONTH)<=6){
+				return "Q2 "+String.valueOf(date.get(Calendar.YEAR));
+			}
+			else if(date.get(Calendar.MONTH)>6 && date.get(Calendar.MONTH)<=9){
+				return "Q3 "+String.valueOf(date.get(Calendar.YEAR));
+			}
+			else{
+				return "Q4 "+String.valueOf(date.get(Calendar.YEAR));
+			}
+		}
+	}
+	
 	
 	private void refreshColumnsVisibility(){
 		int pos=0;
@@ -364,9 +385,14 @@ public class StockFinancials extends Composite {
 			
 			if(element instanceof FinancialElement){
 				FinancialElement entity=(FinancialElement) element;
-				long val=stock.getFinancials().getValue(modus,date, entity.fieldKey,entity.sectorKey);
-				if(val==0)return "-";
-				return StockFinancials.this.getStringOfValue(val);
+				if(entity.fieldKey.equals(FinancialPoint.FIELD_EffectiveDate)){
+					return DateTool.dateToDayString(stock.getFinancials().getEffectiveDate(modus,date));
+				}
+				else{
+					long val=stock.getFinancials().getValue(modus,date, entity.fieldKey,entity.sectorKey);
+					if(val==0)return "-";
+					return StockFinancials.this.getStringOfValue(val,entity.fieldKey);
+				}
 			}
 			return element == null ? "" : element.toString();
 		}
@@ -374,8 +400,17 @@ public class StockFinancials extends Composite {
 		
 	}
 	
-	public String getStringOfValue(long value){
+	public String getStringOfValue(long value,String key){
+		
 		if(value==Long.MIN_VALUE)return "";
+		
+		if(key.equals(IncomeStatementPoint.FIELD_Employees)){
+			return String.valueOf(value);
+		}
+		else if(key.equals(IncomeStatementPoint.FIELD_EarningsPerShare)){
+			return String.valueOf(((double)value)/100);
+		}
+		
 		
 		if(unitFactor==1){
 			return String.valueOf(value);
@@ -390,11 +425,20 @@ public class StockFinancials extends Composite {
 		return "-";
 	}
 	
-	public long getValueOfString(String value){
+	public long getValueOfString(String value,String key){
+		
 		if(value.equals("") || value.equals("-"))
 			return Long.MIN_VALUE;
 		try{
-		double val=Double.valueOf(value)*unitFactor;
+			if(key.equals(IncomeStatementPoint.FIELD_Employees)){
+				return Long.valueOf(value);
+			}
+			else if(key.equals(IncomeStatementPoint.FIELD_EarningsPerShare)){
+				double val=Double.valueOf(value)*100;
+				return (long) val;
+			}
+			
+			double val=Double.valueOf(value)*unitFactor;
 			return (long) val;
 		}
 		catch(NumberFormatException ex){
