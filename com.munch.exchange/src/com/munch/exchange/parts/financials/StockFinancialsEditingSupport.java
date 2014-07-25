@@ -4,6 +4,7 @@ import java.util.Calendar;
 
 import javax.print.attribute.standard.Finishings;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TableViewer;
@@ -83,10 +84,12 @@ public class StockFinancialsEditingSupport extends EditingSupport {
 		else{
 			long val=stockFinancials.getValueOfString(value_str,entity.fieldKey);
 			stock.getFinancials().setValue(stockFinancials.getModus(),date, entity.fieldKey,entity.sectorKey,val);
+			
+			
 			specialSettingRules(val,stockFinancials.getModus(),date, entity.fieldKey,entity.sectorKey);
+			
 			setQ4Employees(val,entity.fieldKey);
 			setQ4OutstandingShares(val,entity.fieldKey);
-			
 			setQ4Values(val,entity.fieldKey,entity.sectorKey);
 		}
 		
@@ -196,6 +199,10 @@ public class StockFinancialsEditingSupport extends EditingSupport {
 			 
 			 if(erPerShare==Long.MIN_VALUE)return;
 			 
+			 if(!MessageDialog.openQuestion(stockFinancials.getShell(),
+					 "Update Net Income", "Do you want to update the net income?"))return;
+			 
+			 
 			 long netIncome=erPerShare*value/100;
 			 
 			 
@@ -212,6 +219,18 @@ public class StockFinancialsEditingSupport extends EditingSupport {
 				  sectorKey.equals(Financials.FIELD_IncomeStatement) ){
 			  stock.getFinancials().setValue(stockFinancials.getModus(),date,
 						 CashFlowPoint.FIELD_NetIncome,Financials.FIELD_CashFlow,value);
+			  
+			  long erPerShare=stock.getFinancials().getValue(modus, date,
+						 IncomeStatementPoint.FIELD_EarningsPerShare, Financials.FIELD_IncomeStatement);
+				 
+			  if(erPerShare==Long.MIN_VALUE)return;
+				 
+			  if(!MessageDialog.openQuestion(stockFinancials.getShell(),
+						 "Update Net Income", "Do you want to update the Outstanding Shares?"))return;
+			  
+			  long OutstandingShares=100*value/erPerShare;
+			  stock.getFinancials().setValue(stockFinancials.getModus(),date,
+						 IncomeStatementPoint.FIELD_OutstandingShares,Financials.FIELD_IncomeStatement,OutstandingShares);
 			  
 		  }
 		  
