@@ -15,6 +15,7 @@ import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 
 import com.munch.exchange.IEventConstant;
+import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
@@ -80,6 +81,10 @@ public class HistoricalDataLoader extends Job {
 				historicalDataProvider.loadInterval(rate,hisDatas,intervals[i],intervals[i+1]);
 				monitor.worked(i);
 				
+			}
+			if(rate instanceof EconomicData){
+				EconomicData ecoData=(EconomicData)rate;
+				historicalDataProvider.loadVintageDates(hisDatas,ecoData);
 			}
 			
 			if (monitor.isCanceled()) return Status.CANCEL_STATUS;

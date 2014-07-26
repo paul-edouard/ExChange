@@ -2,6 +2,7 @@ package com.munch.exchange.services;
 
 import java.util.Calendar;
 
+import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.historical.HistoricalData;
 
@@ -24,6 +25,8 @@ public interface IHistoricalDataProvider {
 	 * @return null if no exchange
 	 */
 	boolean load(ExchangeRate rate);
+	
+	boolean loadVintageDates(HistoricalData hisDatas,EconomicData ecoData);
 
 	/**
 	 * search if new historical data are available

@@ -14,7 +14,6 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
-import com.munch.exchange.model.core.watchlist.Watchlists;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Xml;
 import com.munch.exchange.services.IHistoricalDataProvider;
@@ -87,7 +86,7 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 		HashMap<Integer,HistoricalData > map=splitHisData(rate);
 		for(Integer i:map.keySet()){
 			File f=new File(getSavePath(rate)+File.separator+String.valueOf(i)+".xml");
-			System.out.println("Writing file: "+f.getAbsolutePath());
+			//System.out.println("Writing file: "+f.getAbsolutePath());
 			if(!Xml.save(map.get(i), f.getAbsolutePath()))
 				return false;
 			
@@ -184,21 +183,43 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 		HistoricalData hisDatas = new HistoricalData();
 		for(int i=0;i<intervals.length;i=i+2){
 			loadInterval(rate,hisDatas,intervals[i],intervals[i+1]);
+			System.out.println(">>>>> #####  Setting Vintage Date:0");
 		}
+		
+		//System.out.println(">>>>> #####  Setting Vintage Date:1");
 		if(rate instanceof EconomicData){
 			EconomicData ed = (EconomicData) rate;
 			//Set the vintage date
+			//System.out.println("#####  Setting Vintage Date:2");
 			FredSeriesVintageDate v=new FredSeriesVintageDate(ed.getId());
 			LinkedList<Calendar> vintageDates=v.getVintageList();
 			for(int i=1;i<=vintageDates.size();i++){
 				Calendar vintageDate=vintageDates.get(vintageDates.size()-i);
-				if(hisDatas.size()-i>0)
+				if(hisDatas.size()-i>0){
 					hisDatas.get(hisDatas.size()-i).setVintageDate(vintageDate);
+				//	System.out.println("#####Vintage Date:"+DateTool.dateToString(vintageDate));
+				}
 			}
+			
+			
 		}
 	
 		return save(rate,hisDatas);
 	}
+	
+	public boolean loadVintageDates(HistoricalData hisDatas,EconomicData ecoData){
+		FredSeriesVintageDate v=new FredSeriesVintageDate(ecoData.getId());
+		LinkedList<Calendar> vintageDates=v.getVintageList();
+		for(int i=1;i<=vintageDates.size();i++){
+			Calendar vintageDate=vintageDates.get(vintageDates.size()-i);
+			if(hisDatas.size()-i>0){
+				hisDatas.get(hisDatas.size()-i).setVintageDate(vintageDate);
+				//System.out.println("#####Vintage Date:"+DateTool.dateToString(vintageDate));
+			}
+		}
+		return true;
+	}
+	
 	
 	@Override
 	public boolean save(ExchangeRate rate,HistoricalData hisDatas ){
@@ -212,7 +233,7 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 	
 	@Override
 	public void loadInterval(ExchangeRate rate, HistoricalData hisDatas,Calendar start,Calendar end){
-		System.out.println("Interval:" + DateTool.dateToString(start) + " to "
+		System.out.println(" Interval:" + DateTool.dateToString(start) + " to "
 				+ DateTool.dateToString(end));
 
 		LinkedList<HistoricalPoint> points = new LinkedList<HistoricalPoint>();
