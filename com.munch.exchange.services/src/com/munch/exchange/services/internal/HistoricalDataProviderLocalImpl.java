@@ -19,6 +19,7 @@ import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Xml;
 import com.munch.exchange.services.IHistoricalDataProvider;
 import com.munch.exchange.services.internal.fred.FredObservations;
+import com.munch.exchange.services.internal.fred.FredSeriesVintageDate;
 import com.munch.exchange.services.internal.onvista.OnVistaTable;
 import com.munch.exchange.services.internal.yql.YQLHistoricalData;
 
@@ -184,7 +185,17 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 		for(int i=0;i<intervals.length;i=i+2){
 			loadInterval(rate,hisDatas,intervals[i],intervals[i+1]);
 		}
-		
+		if(rate instanceof EconomicData){
+			EconomicData ed = (EconomicData) rate;
+			//Set the vintage date
+			FredSeriesVintageDate v=new FredSeriesVintageDate(ed.getId());
+			LinkedList<Calendar> vintageDates=v.getVintageList();
+			for(int i=1;i<=vintageDates.size();i++){
+				Calendar vintageDate=vintageDates.get(vintageDates.size()-i);
+				if(hisDatas.size()-i>0)
+					hisDatas.get(hisDatas.size()-i).setVintageDate(vintageDate);
+			}
+		}
 	
 		return save(rate,hisDatas);
 	}
@@ -218,6 +229,16 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 			EconomicData ed = (EconomicData) rate;
 			FredObservations obs = new FredObservations(ed.getId(), start, end);
 			points = obs.getObservations();
+			//Set the vintage date
+			/*
+			FredSeriesVintageDate v=new FredSeriesVintageDate(ed.getId());
+			LinkedList<Calendar> vintageDates=v.getVintageList();
+			for(HistoricalPoint point:points){
+				for(Calendar date:vintageDates){
+					
+				}
+			}
+			*/
 
 		} else {
 			YQLHistoricalData hisData = new YQLHistoricalData(rate.getSymbol(),
@@ -260,6 +281,15 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 			EconomicData ed=(EconomicData)rate;
 			FredObservations obs=new FredObservations(ed.getId(),rate.getHistoricalData().getLast().getDate(), rate.getEnd());
 			points=obs.getObservations();
+			
+			FredSeriesVintageDate v=new FredSeriesVintageDate(ed.getId());
+			LinkedList<Calendar> vintageDates=v.getVintageList();
+			for(int i=1;i<=vintageDates.size();i++){
+				Calendar vintageDate=vintageDates.get(vintageDates.size()-i);
+				if(points.size()-i>0)
+					points.get(points.size()-i).setVintageDate(vintageDate);
+			}
+			
 			
 		}
 		else{
