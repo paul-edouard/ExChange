@@ -76,6 +76,52 @@ public class Financials extends ParameterElement {
 		
 	}
 	
+	public Calendar getQ1Date(int year){
+		LinkedList<Calendar> dates=getDateList(FinancialPoint.PeriodeTypeQuaterly);
+		for(Calendar d :dates){
+			if(d.get(Calendar.YEAR)!=year)continue;
+			if(d.get(Calendar.MONTH)>0 && d.get(Calendar.MONTH)<=3)
+				return d;
+		}
+		
+		return null;
+	}
+	
+	public Calendar getQ2Date(int year){
+		LinkedList<Calendar> dates=getDateList(FinancialPoint.PeriodeTypeQuaterly);
+		for(Calendar d :dates){
+			if(d.get(Calendar.YEAR)!=year)continue;
+			if(d.get(Calendar.MONTH)>3 && d.get(Calendar.MONTH)<=6)
+				return d;
+		}
+		
+		return null;
+	}
+	
+	public Calendar getQ3Date(int year){
+		LinkedList<Calendar> dates=getDateList(FinancialPoint.PeriodeTypeQuaterly);
+		for(Calendar d :dates){
+			if(d.get(Calendar.YEAR)!=year)continue;
+			if(d.get(Calendar.MONTH)>6 && d.get(Calendar.MONTH)<=9)
+				return d;
+		}
+		
+		return null;
+	}
+	
+	public Calendar getQ4Date(int year){
+		LinkedList<Calendar> dates=getDateList(FinancialPoint.PeriodeTypeQuaterly);
+		for(Calendar d :dates){
+			if(d.get(Calendar.YEAR)!=year)continue;
+			if(d.get(Calendar.MONTH)>9 && d.get(Calendar.MONTH)<=12)
+				return d;
+		}
+		
+		return null;
+	}
+	
+	
+	
 	
 	public LinkedList<Calendar> getDateList(String periodType){
 		LinkedList<Calendar> list=new LinkedList<Calendar>();
@@ -96,7 +142,6 @@ public class Financials extends ParameterElement {
 		java.util.Collections.reverse(list);
 		
 		return list;
-		
 	}
 	
 	public void setValue(String periodType,Calendar date,String key,String sectorKey,long value){
@@ -132,6 +177,30 @@ public class Financials extends ParameterElement {
 		
 	}
 	
+	
+	public Calendar getEffectiveDate(String periodType,Calendar date){
+		for(DatePoint point:IncomeStatement.getPoints(periodType)){
+			FinancialPoint p=(FinancialPoint)point;
+			if(!p.getDate().equals(date))continue;
+			
+			return p.getEffectiveDate();
+			
+		}
+		
+		return null;
+	}
+	
+	public void setEffectiveDate(String periodType,Calendar date,Calendar effectiveDate){
+		
+		for(DatePoint point:IncomeStatement.getPoints(periodType)){
+			FinancialPoint p=(FinancialPoint)point;
+			if(!p.getDate().equals(date))continue;
+			
+			p.setEffectiveDate(effectiveDate);
+			
+		}
+		
+	}
 	
 	public long getValue(String periodType,Calendar date,String key,String sectorKey){
 		

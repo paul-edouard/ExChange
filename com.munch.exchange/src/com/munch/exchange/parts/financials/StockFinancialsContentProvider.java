@@ -76,10 +76,14 @@ IStructuredContentProvider, ITreeContentProvider{
 	
 	private void buildFinancialElements(){
 		//new FinancialElement(this.root,"Period Ending",FinancialPoint.FIELD_PeriodEnding);
-		new FinancialElement(this.root,"Effetive Date",FinancialPoint.FIELD_EffectiveDate,"None");
+		new FinancialElement(this.root,"Effective Date",FinancialPoint.FIELD_EffectiveDate,"None");
 		
 		
 		FinancialElement is=new FinancialElement(this.root,"Income Statement",Financials.FIELD_IncomeStatement,Financials.FIELD_IncomeStatement);
+		
+		FinancialElement earningPerShare=new FinancialElement(is,"Earnings Per Share",IncomeStatementPoint.FIELD_EarningsPerShare,Financials.FIELD_IncomeStatement);
+		new FinancialElement(earningPerShare,"Outstanding Shares",IncomeStatementPoint.FIELD_OutstandingShares,Financials.FIELD_IncomeStatement);
+		
 		FinancialElement totalRevenu=new FinancialElement(is,"Total Revenue",IncomeStatementPoint.FIELD_TotalRevenue,Financials.FIELD_IncomeStatement);
 		new FinancialElement(totalRevenu,"Cost of Revenue",IncomeStatementPoint.FIELD_CostofRevenue,Financials.FIELD_IncomeStatement);
 		new FinancialElement(is,"Gross Profit",IncomeStatementPoint.FIELD_GrossProfit,Financials.FIELD_IncomeStatement);
@@ -198,6 +202,9 @@ IStructuredContentProvider, ITreeContentProvider{
 		
 		new FinancialElement(cf,"Effect Of Exchange Rate Changes",CashFlowPoint.FIELD_EffectOfExchangeRateChanges,Financials.FIELD_CashFlow);
 		new FinancialElement(cf,"Change In Cash and Cash Equivalents",CashFlowPoint.FIELD_ChangeInCashandCashEquivalents,Financials.FIELD_CashFlow);
+		
+		
+		new FinancialElement(this.root,"Employees",IncomeStatementPoint.FIELD_Employees,Financials.FIELD_IncomeStatement);
 		
 		
 	}

@@ -11,6 +11,7 @@ import com.munch.exchange.model.xml.XmlParameterElement;
 public abstract class DatePoint extends XmlParameterElement implements Comparable<DatePoint>{
 	
 	static final String FIELD_Date="date";
+	static final String FIELD_VintageDate="vintageDate";
 	
 	public static final String FIELD_Low="low";
 	public static final String FIELD_Open="open";
@@ -21,7 +22,7 @@ public abstract class DatePoint extends XmlParameterElement implements Comparabl
 
 	
 	protected Calendar date=Calendar.getInstance();
-	
+	protected Calendar vintageDate=Calendar.getInstance();
 	
 
 	public Calendar getDate() {
@@ -33,8 +34,14 @@ public abstract class DatePoint extends XmlParameterElement implements Comparabl
 		//this.date = date;
 	}
 	
+	public Calendar getVintageDate() {
+		return vintageDate;
+	}
+
+	public void setVintageDate(Calendar vintageDate) {
+	changes.firePropertyChange(FIELD_VintageDate, this.vintageDate, this.vintageDate = vintageDate);}
 	
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -75,6 +82,9 @@ public abstract class DatePoint extends XmlParameterElement implements Comparabl
 	@Override
 	protected void initAttribute(Element rootElement) {
 		this.setDate(DateTool.StringToDate(rootElement.getAttribute(FIELD_Date)));
+		if(rootElement.hasAttribute(FIELD_VintageDate)){
+			this.setVintageDate(DateTool.StringToDate(rootElement.getAttribute(FIELD_VintageDate)));
+		}
 	}
 
 	@Override
@@ -83,6 +93,7 @@ public abstract class DatePoint extends XmlParameterElement implements Comparabl
 	@Override
 	protected void setAttribute(Element rootElement) {
 		rootElement.setAttribute(FIELD_Date,DateTool.dateToString( this.getDate()));
+		rootElement.setAttribute(FIELD_VintageDate,DateTool.dateToString( this.getVintageDate()));
 	}
 
 	@Override

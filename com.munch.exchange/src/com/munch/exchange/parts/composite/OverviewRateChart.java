@@ -33,10 +33,13 @@ import org.jfree.experimental.chart.swt.ChartComposite;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.HistoricalDataLoader;
+import com.munch.exchange.model.core.DatePoint;
+import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.services.IExchangeRateProvider;
 
 public class OverviewRateChart extends Composite {
@@ -218,7 +221,7 @@ public class OverviewRateChart extends Composite {
 			return;
 		if (!incoming.getUUID().equals(rate.getUUID()))
 			return;
-
+		
 		
 		fireHistoricalData();
 		this.layout();
@@ -239,6 +242,17 @@ public class OverviewRateChart extends Composite {
 			c_comp.setVisible(true);
 		    LastDays.setVisible(true);
 		    lblLastDays.setText("Plot last Days: ");
+		    
+		    if(rate instanceof EconomicData){
+		    	for(DatePoint point:rate.getHistoricalData()){
+		    		HistoricalPoint p=(HistoricalPoint) point;
+		    		System.out.println("Date: "+DateTool.dateToString(point.getDate())+
+		    				", VintageDate: "+DateTool.dateToString(point.getVintageDate())+
+		    				"Value: "+p.getClose());
+		    	}
+		    }
+		    
+		    
 		}
 	}
 	

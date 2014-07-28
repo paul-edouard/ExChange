@@ -49,7 +49,8 @@ public class FinancialDataLoader extends Job {
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		
-		logger.info("Starting loading financial data: "+stock.getFullName()+", time: "+Calendar.getInstance().getTime().toString());
+		if(stock!=null)
+			logger.info("Starting loading financial data: "+stock.getFullName()+", time: "+Calendar.getInstance().getTime().toString());
 		
 		if(stock==null)return Status.CANCEL_STATUS;
 		

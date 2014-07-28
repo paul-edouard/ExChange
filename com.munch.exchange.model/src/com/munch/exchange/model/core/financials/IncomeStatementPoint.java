@@ -38,6 +38,19 @@ public class IncomeStatementPoint extends FinancialPoint {
 	public static final String FIELD_NetIncomeApplicableToCommonShares = "NetIncomeApplicableToCommonShares";
 	
 	
+	public static final String FIELD_Employees  = "Employees";
+	public static final String FIELD_EarningsPerShare = "EarningsPerShare";
+	public static final String FIELD_OutstandingShares  = "OutstandingShares";
+	
+	
+	//========================
+	//==    Added values    ==
+	//========================
+	private long Employees;
+	private long EarningsPerShare;
+	private long OutstandingShares;
+	
+	
 	
 	// 1
 	private long TotalRevenue;
@@ -118,8 +131,32 @@ public class IncomeStatementPoint extends FinancialPoint {
 	//=======================
 	//== GETTER AND SETTER ==
 	//=======================
+	
+	
+	
 	public long getTotalRevenue() {
 		return TotalRevenue;
+	}
+	public long getEmployees() {
+		return Employees;
+	}
+	public void setEmployees(long employees) {
+		changes.firePropertyChange(FIELD_Employees, this.Employees,
+				this.Employees = employees);
+	}
+	public long getEarningsPerShare() {
+		return EarningsPerShare;
+	}
+	public void setEarningsPerShare(long earningsPerShare) {
+		changes.firePropertyChange(FIELD_EarningsPerShare, this.EarningsPerShare,
+				this.EarningsPerShare = earningsPerShare);
+	}
+	public long getOutstandingShares() {
+		return OutstandingShares;
+	}
+	public void setOutstandingShares(long outstandingShares) {
+		changes.firePropertyChange(FIELD_OutstandingShares, this.OutstandingShares,
+				this.OutstandingShares = outstandingShares);
 	}
 	public void setTotalRevenue(long totalRevenue) {
 		changes.firePropertyChange(FIELD_TotalRevenue, TotalRevenue, TotalRevenue = totalRevenue);
@@ -341,6 +378,15 @@ public class IncomeStatementPoint extends FinancialPoint {
 		this.setNetIncome(Long.parseLong(rootElement.getAttribute(FIELD_NetIncome)));
 		this.setPreferredStockAndOtherAdjustments(Long.parseLong(rootElement.getAttribute(FIELD_PreferredStockAndOtherAdjustments)));
 		this.setNetIncomeApplicableToCommonShares(Long.parseLong(rootElement.getAttribute(FIELD_NetIncomeApplicableToCommonShares)));
+		
+		if(rootElement.hasAttribute(FIELD_Employees))
+			this.setEmployees(Long.parseLong(rootElement.getAttribute(FIELD_Employees)));
+		if(rootElement.hasAttribute(FIELD_EarningsPerShare))
+			this.setEarningsPerShare(Long.parseLong(rootElement.getAttribute(FIELD_EarningsPerShare)));
+		if(rootElement.hasAttribute(FIELD_OutstandingShares))
+			this.setOutstandingShares(Long.parseLong(rootElement.getAttribute(FIELD_OutstandingShares)));
+		
+		
 
 		super.initAttribute(rootElement);
 	}
@@ -372,6 +418,10 @@ public class IncomeStatementPoint extends FinancialPoint {
 		rootElement.setAttribute(FIELD_PreferredStockAndOtherAdjustments,String.valueOf(this.getPreferredStockAndOtherAdjustments()));
 		rootElement.setAttribute(FIELD_NetIncomeApplicableToCommonShares,String.valueOf(this.getNetIncomeApplicableToCommonShares()));
 		
+		rootElement.setAttribute(FIELD_Employees,String.valueOf(this.getEmployees()));
+		rootElement.setAttribute(FIELD_EarningsPerShare,String.valueOf(this.getEarningsPerShare()));
+		rootElement.setAttribute(FIELD_OutstandingShares,String.valueOf(this.getOutstandingShares()));
+		
 		
 		
 		super.setAttribute(rootElement);
@@ -401,6 +451,10 @@ public class IncomeStatementPoint extends FinancialPoint {
 		if(fieldKey.equals(FIELD_TotalOperatingExpenses))return TotalOperatingExpenses;
 		if(fieldKey.equals(FIELD_TotalOtherIncome_ExpensesNet))return TotalOtherIncome_ExpensesNet;
 		if(fieldKey.equals(FIELD_TotalRevenue))return TotalRevenue;
+		
+		if(fieldKey.equals(FIELD_Employees))return Employees;
+		if(fieldKey.equals(FIELD_EarningsPerShare))return EarningsPerShare;
+		if(fieldKey.equals(FIELD_OutstandingShares))return OutstandingShares;
 	
 		return 0;
 	}
@@ -429,6 +483,10 @@ public class IncomeStatementPoint extends FinancialPoint {
 		if(fieldKey.equals(FIELD_TotalOperatingExpenses))TotalOperatingExpenses=value;
 		if(fieldKey.equals(FIELD_TotalOtherIncome_ExpensesNet))TotalOtherIncome_ExpensesNet=value;
 		if(fieldKey.equals(FIELD_TotalRevenue))TotalRevenue=value;
+		
+		if(fieldKey.equals(FIELD_Employees)) Employees=value;
+		if(fieldKey.equals(FIELD_EarningsPerShare)) EarningsPerShare=value;
+		if(fieldKey.equals(FIELD_OutstandingShares)) OutstandingShares=value;
 		
 	}
 	
