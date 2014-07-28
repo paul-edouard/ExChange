@@ -76,6 +76,7 @@ public class HtmlTest {
 	
 	
 	
+	
 	public static void main(String[] args) {
 		
 		System.out.println(HtmlTest.getHtmlPage("https://www.destatis.de/DE/ZahlenFakten/Indikatoren/Konjunkturindikatoren/Arbeitsmarkt/arb110.html"));
