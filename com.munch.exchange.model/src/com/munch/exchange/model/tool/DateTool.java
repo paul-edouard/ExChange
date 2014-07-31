@@ -39,6 +39,11 @@ public class DateTool {
 		return format.format(date.getTime());
 	}
 	
+	public static String dateToMonthString(Calendar date){
+		SimpleDateFormat format=new SimpleDateFormat("yyyyMM");
+		return format.format(date.getTime());
+	}
+	
 	public static String OnVistadateToDayString(Calendar date){
 		SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy");
 		return format.format(date.getTime());
