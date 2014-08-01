@@ -16,5 +16,6 @@
 	<classpathentry exported="true" kind="lib" path="jsoup-1.7.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="log4j-1.2.17.jar"/>
 	<classpathentry exported="true" kind="lib" path="jxl.jar"/>
+	<classpathentry exported="true" kind="lib" path="pdfbox-app-1.8.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

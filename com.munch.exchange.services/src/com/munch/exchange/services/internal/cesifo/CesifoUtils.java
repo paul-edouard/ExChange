@@ -8,6 +8,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Calendar;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.util.PDFTextStripper;
+
 import jxl.Cell;
 import jxl.CellType;
 import jxl.Sheet;
@@ -102,6 +105,9 @@ public class CesifoUtils {
 	}
 	
 	public static void main(String[] args) {
+		
+		
+		
 		//String docKey="gsk-d";
 		String docKey="kred-d";
 		

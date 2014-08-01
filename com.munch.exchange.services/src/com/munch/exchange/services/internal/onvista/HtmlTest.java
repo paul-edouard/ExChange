@@ -21,6 +21,8 @@ public class HtmlTest {
 		URL url = new URL(urlPath);
 		
 		URLConnection connection = url.openConnection();
+		
+		/*
 		connection.setRequestProperty("REQUEST_METHOD", "GET");
 
 		connection.setDoInput(true);
@@ -28,7 +30,7 @@ public class HtmlTest {
 		connection.setUseCaches(true);
 
 		connection.setRequestProperty("Content-Type", "multipart-formdata");
-		
+		*/
 		//connection.getOutputStream();
 		connection.connect();
 		
@@ -74,13 +76,37 @@ public class HtmlTest {
 	  return out.toString();
 	}
 	
-	
+	private static String getPDF(String input,String searchStr){
+		String returnStr="";
+		String[] tockens=input.split("\n");
+		for(int i=0;i<tockens.length;i++){
+			if(!tockens[i].contains(searchStr))continue;
+			
+			String[] splits=tockens[i].split("\"");
+			
+			for(int j=0;j<splits.length;j++){
+				if(splits[j].contains(searchStr)){
+					//System.out.println(splits[j]);
+					returnStr+=splits[j];
+					
+				}
+			}
+		}
+		return returnStr;
+	}
 	
 	
 	public static void main(String[] args) {
 		
-		System.out.println(HtmlTest.getHtmlPage("https://www.destatis.de/DE/ZahlenFakten/Indikatoren/Konjunkturindikatoren/Arbeitsmarkt/arb110.html"));
+		//System.out.println(HtmlTest.getHtmlPage("https://www.destatis.de/DE/ZahlenFakten/Indikatoren/Konjunkturindikatoren/Arbeitsmarkt/arb110.html"));
+		//String text=(HtmlTest.getHtmlPage("http://www.heidelbergcement.com/global/de/company/investor_relations/financial_publications/financial_reports.htm"));
+		//System.out.println("PDF: "+HtmlTest.getPDF(text,"Q22014"));
 		
+		//String text=(HtmlTest.getHtmlPage("http://www.daimler.com/investor-relations"));
+		//System.out.println("PDF:\n"+HtmlTest.getPDF(text,"Q2_2014"));
+		
+		String text=(HtmlTest.getHtmlPage("http://www.jenoptik.com/de-zwischenberichte-pdf"));
+		System.out.println("PDF:\n"+HtmlTest.getPDF(text,"2014-1.pdf"));
 		
 		
 		
