@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ScrollBar;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 
@@ -57,7 +59,7 @@ public class StockFinancials extends Composite {
 	private Button btnAnnualy;
 	private ScrollBar horizontalScrollBar;
 	
-	int maxVisibleColumns=5;
+	int maxVisibleColumns=6;
 	int firstVisibleColumn=0;
 	
 	private LinkedList<TreeViewerColumn> columns=new LinkedList<TreeViewerColumn>();
@@ -75,16 +77,33 @@ public class StockFinancials extends Composite {
 	private Button btnFirst;
 	private Button btnLast;
 	private Button btnNext;
+	private TabFolder tabFolder;
+	private TabItem itemTable;
+	private Composite composite;
+	private TabItem tbtmParser;
+	private Composite compositeParser;
 	
 	@Inject
 	public StockFinancials(Composite parent,ExchangeRate rate) {
 		super(parent, SWT.NONE);
 		this.stock=(Stock) rate;
 		setLayout(new GridLayout(1, false));
+		unitFactor=1000000;
 		
-		Composite compositeHeader = new Composite(this, SWT.NONE);
-		compositeHeader.setLayout(new GridLayout(11, false));
+		tabFolder = new TabFolder(this, SWT.NONE);
+		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		itemTable = new TabItem(tabFolder, SWT.NONE);
+		itemTable.setText("Table");
+		
+		composite = new Composite(tabFolder, SWT.NONE);
+		itemTable.setControl(composite);
+		composite.setLayout(new GridLayout(1, false));
+		
+		Composite compositeHeader = new Composite(composite, SWT.NONE);
 		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeHeader.setSize(610, 35);
+		compositeHeader.setLayout(new GridLayout(11, false));
 		
 		btnQuaterly = new Button(compositeHeader, SWT.RADIO);
 		btnQuaterly.setEnabled(false);
@@ -143,7 +162,6 @@ public class StockFinancials extends Composite {
 		comboUnit.add("1.000");
 		comboUnit.add("1.000.000");
 		comboUnit.setText("1.000.000");
-		unitFactor=1000000;
 		
 		btnAddColumn = new Button(compositeHeader, SWT.NONE);
 		btnAddColumn.addSelectionListener(new SelectionAdapter() {
@@ -227,7 +245,7 @@ public class StockFinancials extends Composite {
 		});
 		btnCancel.setText("Cancel");
 		
-		treeViewer = new TreeViewer(this,  SWT.BORDER| SWT.MULTI
+		treeViewer = new TreeViewer(composite,  SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL);
 		treeViewer.setContentProvider(contentProvider);
 		treeViewer.setInput(contentProvider.getRoot());
@@ -235,9 +253,10 @@ public class StockFinancials extends Composite {
 		
 	
 		tree = treeViewer.getTree();
+		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tree.setSize(610, 225);
 		tree.setLinesVisible(true);
 		tree.setHeaderVisible(true);
-		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 		//Main Column
 		TreeViewerColumn mainColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
@@ -245,6 +264,12 @@ public class StockFinancials extends Composite {
 		TreeColumn trclmnName = mainColumn.getColumn();
 		trclmnName.setWidth(300);
 		trclmnName.setText("Period");
+		
+		tbtmParser = new TabItem(tabFolder, SWT.NONE);
+		tbtmParser.setText("Parser");
+		
+		compositeParser = new FinancialReportParserComposite(tabFolder, SWT.NONE);
+		tbtmParser.setControl(compositeParser);
 		
 		treeViewer.refresh();
 		
