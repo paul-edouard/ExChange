@@ -1,15 +1,17 @@
 package com.munch.exchange.services;
 
+import java.util.LinkedList;
+
 import com.munch.exchange.model.core.Stock;
 
 public interface IFinancialsProvider {
-	
+
 	// ==========================================
 	// ==      SAVE THE FINANCIALS DATA        ==
 	// ==========================================
 	
 	boolean saveAll(Stock stock);
-	
+
 	
 	// ==================================
 	// ==      INCOME STATEMENT        ==
@@ -17,7 +19,6 @@ public interface IFinancialsProvider {
 
 	
 	boolean loadIncomeStatement(Stock stock);
-
 	
 	boolean updateIncomeStatement(Stock stock);
 	
@@ -28,20 +29,27 @@ public interface IFinancialsProvider {
 
 
 	boolean loadBalanceSheet(Stock stock);
-
 	
 	boolean updateBalanceSheet(Stock stock);
 	
-	
-	
+
 	// ==================================
 	// ==          CASH FLOW           ==
 	// ==================================
 
 	boolean loadCashFlow(Stock stock);
 
-	
 	boolean updateCashFlow(Stock stock);
+	
+	// ===================================
+	// ==  REPORT READER CONFIGURATION  ==
+	// ===================================
+	
+	boolean loadReportReaderConfiguration(Stock stock);
 
-
+	boolean saveReportReaderConfiguration(Stock stock);
+	
+	String getHtmlContent(String url);
+	LinkedList<String> findPDFDocument(String url);
+	
 }

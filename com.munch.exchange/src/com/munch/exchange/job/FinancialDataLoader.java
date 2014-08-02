@@ -58,6 +58,8 @@ public class FinancialDataLoader extends Job {
 		boolean r_cf=financialsProvider.loadCashFlow(stock);
 		boolean r_is=financialsProvider.loadIncomeStatement(stock);
 		
+		financialsProvider.loadReportReaderConfiguration(stock);
+		
 		if(r_bs && r_cf && r_is){
 			eventBroker.send(IEventConstant.FINANCIAL_DATA_LOADED,stock.getUUID());
 		}

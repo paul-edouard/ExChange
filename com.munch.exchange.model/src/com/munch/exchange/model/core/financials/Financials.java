@@ -1,7 +1,6 @@
 package com.munch.exchange.model.core.financials;
 
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
@@ -17,11 +16,19 @@ public class Financials extends ParameterElement {
 	public static final String FIELD_BalanceSheet = "BalanceSheet";
 	public static final String FIELD_IncomeStatement = "IncomeStatement";
 	public static final String FIELD_CashFlow = "CashFlow";
+	public static final String FIELD_ReportReaderConfiguration = "ReportReaderConfiguration";
 	
 	private HistoricalBalanceSheet BalanceSheet=new HistoricalBalanceSheet();
 	private HistoricalIncomeStatement IncomeStatement=new HistoricalIncomeStatement();
 	private HistoricalCashFlow CashFlow=new HistoricalCashFlow();
+	private ReportReaderConfiguration reportReaderConfiguration=new ReportReaderConfiguration();
 	
+	
+	public ReportReaderConfiguration getReportReaderConfiguration() {
+		return reportReaderConfiguration;
+	}
+	public void setReportReaderConfiguration(ReportReaderConfiguration reportReaderConfiguration) {
+	changes.firePropertyChange(FIELD_ReportReaderConfiguration, this.reportReaderConfiguration, this.reportReaderConfiguration = reportReaderConfiguration);}
 	
 	public HistoricalBalanceSheet getBalanceSheet() {
 		return BalanceSheet;

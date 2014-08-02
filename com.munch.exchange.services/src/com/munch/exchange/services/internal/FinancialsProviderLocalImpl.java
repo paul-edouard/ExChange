@@ -1,7 +1,11 @@
 package com.munch.exchange.services.internal;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.LinkedList;
+
+import org.apache.log4j.Logger;
 
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
@@ -11,8 +15,11 @@ import com.munch.exchange.model.core.financials.HistoricalBalanceSheet;
 import com.munch.exchange.model.core.financials.HistoricalCashFlow;
 import com.munch.exchange.model.core.financials.HistoricalIncomeStatement;
 import com.munch.exchange.model.core.financials.IncomeStatementPoint;
+import com.munch.exchange.model.core.financials.ReportReaderConfiguration;
 import com.munch.exchange.model.xml.Xml;
 import com.munch.exchange.services.IFinancialsProvider;
+import com.munch.exchange.services.internal.web.HtmlFunctions;
+import com.munch.exchange.services.internal.web.PdfFunctions;
 import com.munch.exchange.services.internal.yql.YQLBalanceSheet;
 import com.munch.exchange.services.internal.yql.YQLCashFlow;
 import com.munch.exchange.services.internal.yql.YQLIncomeStatement;
@@ -23,7 +30,11 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 	final private static String IncomeStatementStr="IncomeStatement.xml";
 	final private static String BalanceSheetStr="BalanceSheet.xml";
 	final private static String CashFlowStr="CashFlow.xml";
+	final private static String ReportReaderConfigurationStr="ReportReaderConfiguration.xml";
 	
+	
+	
+	private static Logger logger = Logger.getLogger(FinancialsProviderLocalImpl.class);
 	
 	private String getSavePath(Stock stock){
 		File dir=new File(stock.getDataPath()+File.separator+FinancialsPathStr);
@@ -46,7 +57,7 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		
 		String fileStr=getFileName(stock,IncomeStatementStr);
 		
-		System.out.println("Writing file: "+fileStr);
+		logger.info("Writing file: "+fileStr);
 		return Xml.save(stock.getFinancials().getIncomeStatement(), fileStr);
 	}
 	
@@ -56,8 +67,17 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		
 		String fileStr=getFileName(stock,BalanceSheetStr);
 		
-		System.out.println("Writing file: "+fileStr);
+		logger.info("Writing file: "+fileStr);
 		return Xml.save(stock.getFinancials().getBalanceSheet(), fileStr);
+	}
+	
+	public boolean saveReportReaderConfiguration(Stock stock){
+		if(stock==null)return false;
+		
+		String fileStr=getFileName(stock,ReportReaderConfigurationStr);
+		
+		logger.info("Writing file: "+fileStr);
+		return Xml.save(stock.getFinancials().getReportReaderConfiguration(), fileStr);
 	}
 	
 	private boolean saveCashFlow(Stock stock){
@@ -65,7 +85,7 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		
 		String fileStr=getFileName(stock,CashFlowStr);
 		
-		System.out.println("Writing file: "+fileStr);
+		logger.info("Writing file: "+fileStr);
 		return Xml.save(stock.getFinancials().getCashFlow(), fileStr);
 	}
 	
@@ -73,6 +93,7 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		if(!saveIncomeStatement(stock))return false;
 		if(!saveBalanceSheet(stock))return false;
 		if(!saveCashFlow(stock))return false;
+		if(!saveReportReaderConfiguration(stock))return false;
 		
 		return true;
 	}
@@ -154,7 +175,30 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		
 		return res;
 	}
-
+	
+	
+	@Override
+	public boolean loadReportReaderConfiguration(Stock stock) {
+		if(stock==null)return false;
+		if(stock.getDataPath()==null)return false;
+		if(stock.getDataPath().isEmpty())return false;
+		//if(!stock.getHistoricalData().isEmpty())return false;
+		
+		File localFile=new File(getFileName(stock,ReportReaderConfigurationStr));
+		if(localFile.exists()){
+			ReportReaderConfiguration reportReaderConfiguration=new ReportReaderConfiguration();
+			if( Xml.load(reportReaderConfiguration, localFile.getAbsolutePath())){
+				stock.getFinancials().setReportReaderConfiguration(reportReaderConfiguration);
+				logger.info("Report Reader Configuration localy found for "+stock.getFullName());
+				
+				updateIncomeStatement(stock);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
 	@Override
 	public boolean loadIncomeStatement(Stock stock) {
 		if(stock==null)return false;
@@ -167,7 +211,7 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 			HistoricalIncomeStatement his=new HistoricalIncomeStatement();
 			if( Xml.load(his, localFile.getAbsolutePath())){
 				stock.getFinancials().setIncomeStatement(his);
-				System.out.println("Income statement localy found for "+stock.getFullName());
+				logger.info("Income statement localy found for "+stock.getFullName());
 				
 				updateIncomeStatement(stock);
 				return true;
@@ -180,7 +224,7 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		LinkedList<IncomeStatementPoint> last_points=getLastIncomeStatementPoints(stock);
 		
 		if(last_points.isEmpty()){
-			System.out.println("No income statement found for the stock: "+stock.getFullName());
+			logger.info("No income statement found for the stock: "+stock.getFullName());
 			return false;
 		}
 		else{
@@ -208,7 +252,7 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 			if(!stock.getFinancials().getIncomeStatement().contains(point)){
 				stock.getFinancials().getIncomeStatement().add(point);
 				stock.getFinancials().getIncomeStatement().sort();
-				System.out.println("Income Statement Point added: "+point);
+				logger.info("Income Statement Point added: "+point);
 				isUpdated = true;
 			}
 		}
@@ -216,10 +260,10 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		if(isUpdated){
 			System.out.println("The Stock was updated: \""+stock.getFullName());
 			if(this.saveIncomeStatement(stock)){
-				System.out.println("The new Data were automaticaly saved!");
+				logger.info("The new Data were automaticaly saved!");
 			}
 			else{
-				System.out.println("Error: cannot save the updated data!");
+				logger.info("Error: cannot save the updated data!");
 				return false;
 			}
 		}
@@ -240,7 +284,7 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 			HistoricalBalanceSheet his=new HistoricalBalanceSheet();
 			if( Xml.load(his, localFile.getAbsolutePath())){
 				stock.getFinancials().setBalanceSheet(his);
-				System.out.println("Balance sheet localy found for "+stock.getFullName());
+				logger.info("Balance sheet localy found for "+stock.getFullName());
 				updateBalanceSheet(stock);
 				return true;
 			}
@@ -251,7 +295,7 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		LinkedList<BalanceSheetPoint> last_points=getLastBalanceSheetPoints(stock);
 		
 		if(last_points.isEmpty()){
-			System.out.println("No income statement found for the stock: "+stock.getFullName());
+			logger.info("No income statement found for the stock: "+stock.getFullName());
 			return false;
 		}
 		else{
@@ -283,18 +327,18 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 			if(!stock.getFinancials().getBalanceSheet().contains(point)){
 				stock.getFinancials().getBalanceSheet().add(point);
 				stock.getFinancials().getBalanceSheet().sort();
-				System.out.println("Balance Sheet Point added: "+point);
+				logger.info("Balance Sheet Point added: "+point);
 				isUpdated = true;
 			}
 		}
 		
 		if(isUpdated){
-			System.out.println("The Stock was updated: \""+stock.getFullName());
+			logger.info("The Stock was updated: \""+stock.getFullName());
 			if(this.saveBalanceSheet(stock)){
-				System.out.println("The new Data were automaticaly saved!");
+				logger.info("The new Data were automaticaly saved!");
 			}
 			else{
-				System.out.println("Error: cannot save the updated data!");
+				logger.info("Error: cannot save the updated data!");
 				return false;
 			}
 		}
@@ -314,7 +358,7 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 			HistoricalCashFlow his=new HistoricalCashFlow();
 			if( Xml.load(his, localFile.getAbsolutePath())){
 				stock.getFinancials().setCashFlow(his);
-				System.out.println("Cash flow localy found for "+stock.getFullName());
+				logger.info("Cash flow localy found for "+stock.getFullName());
 				updateCashFlow(stock);
 				return true;
 			}
@@ -326,7 +370,7 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		LinkedList<CashFlowPoint> last_points=getLastCashFlowPoints(stock);
 		
 		if(last_points.isEmpty()){
-			System.out.println("No income statement found for the stock: "+stock.getFullName());
+			logger.info("No income statement found for the stock: "+stock.getFullName());
 			return false;
 		}
 		else{
@@ -352,24 +396,47 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 			if(!stock.getFinancials().getCashFlow().contains(point)){
 				stock.getFinancials().getCashFlow().add(point);
 				stock.getFinancials().getCashFlow().sort();
-				System.out.println("Cash Flow Point added: "+point);
+				logger.info("Cash Flow Point added: "+point);
 				isUpdated = true;
 			}
 		}
 		
 		if(isUpdated){
-			System.out.println("The Stock was updated: \""+stock.getFullName());
+			logger.info("The Stock was updated: \""+stock.getFullName());
 			if(this.saveCashFlow(stock)){
-				System.out.println("The new Data were automaticaly saved!");
+				logger.info("The new Data were automaticaly saved!");
 			}
 			else{
-				System.out.println("Error: cannot save the updated data!");
+				logger.info("Error: cannot save the updated data!");
 				return false;
 			}
 		}
 		
 		return false;
 	}
+	
+	
+	// ===================================
+	// ==  REPORT READER CONFIGURATION  ==
+	// ===================================
+	
+	
+	public String getHtmlContent(String url){
+		try {
+			URLEncoder.encode(url, "UTF-8");
+			return HtmlFunctions.getHtmlPage(url);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			return "Cannot encode the url: "+url;
+		}
+	}
+	public LinkedList<String> findPDFDocument(String url){
+		String content=getHtmlContent(url);
+		return PdfFunctions.findPdfFiles(content);
+	}
+	
+	
+	
 
 public static void main(String[] args) {
 		

@@ -5,6 +5,9 @@ import java.util.LinkedList;
 
 import javax.inject.Inject;
 
+import org.eclipse.e4.core.contexts.ContextInjectionFactory;
+import org.eclipse.e4.core.contexts.EclipseContextFactory;
+import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.UIEventTopic;
@@ -47,6 +50,7 @@ public class StockFinancials extends Composite {
 	
 	@Inject
 	private IFinancialsProvider financialsProvider;
+
 	
 	
 	private StockFinancialsContentProvider contentProvider=new StockFinancialsContentProvider();
@@ -81,10 +85,10 @@ public class StockFinancials extends Composite {
 	private TabItem itemTable;
 	private Composite composite;
 	private TabItem tbtmParser;
-	private Composite compositeParser;
+	private FinancialReportParserComposite compositeParser;
 	
 	@Inject
-	public StockFinancials(Composite parent,ExchangeRate rate) {
+	public StockFinancials(Composite parent,ExchangeRate rate,IEclipseContext context) {
 		super(parent, SWT.NONE);
 		this.stock=(Stock) rate;
 		setLayout(new GridLayout(1, false));
@@ -268,7 +272,13 @@ public class StockFinancials extends Composite {
 		tbtmParser = new TabItem(tabFolder, SWT.NONE);
 		tbtmParser.setText("Parser");
 		
-		compositeParser = new FinancialReportParserComposite(tabFolder, SWT.NONE);
+		
+		//Create a context instance
+		IEclipseContext localContact=EclipseContextFactory.create();
+		localContact.set(Composite.class, tabFolder);
+		localContact.setParent(context);
+		
+		compositeParser=ContextInjectionFactory.make( FinancialReportParserComposite.class,localContact);
 		tbtmParser.setControl(compositeParser);
 		
 		treeViewer.refresh();
