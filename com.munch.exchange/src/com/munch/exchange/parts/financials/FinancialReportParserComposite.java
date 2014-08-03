@@ -26,9 +26,11 @@ import org.eclipse.swt.widgets.TreeColumn;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.financials.FinancialPoint;
 import com.munch.exchange.model.core.financials.ReportReaderConfiguration;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IFinancialsProvider;
+import org.eclipse.swt.widgets.Combo;
 
 public class FinancialReportParserComposite extends Composite {
 	
@@ -48,11 +50,17 @@ public class FinancialReportParserComposite extends Composite {
 	
 	private StockFinancialsContentProvider contentProvider=new StockFinancialsContentProvider();
 	
+	private String modus;
+	
 	private Text textCompanyWebsite;
 	private StyledText styledText;
 	private Text txtReportwebsite;
 	private TreeViewer treeViewer;
 	private Tree tree;
+	private Button btnQuaterly;
+	private Button btnAnnualy;
+	private Combo comboDocuments;
+	private Text textPattern;
 	
 	
 	@Inject
@@ -82,11 +90,7 @@ public class FinancialReportParserComposite extends Composite {
 		btnSave.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				stock.getFinancials().getReportReaderConfiguration().setWebsite(textCompanyWebsite.getText());
-				styledText.append(config.getWebsite()+"\n");
-				//styledText.append("Stock: "+stock.getFinancials().getReportReaderConfiguration().getWebsite());
-				financialsProvider.saveReportReaderConfiguration(stock);
-				
+				save();
 			}
 		});
 		btnSave.setText("Save");
@@ -115,21 +119,33 @@ public class FinancialReportParserComposite extends Composite {
 		GridLayout gl_composite = new GridLayout(2, false);
 		composite.setLayout(gl_composite);
 		
-		Button btnQuaterly = new Button(composite, SWT.RADIO);
+		btnQuaterly = new Button(composite, SWT.RADIO);
 		btnQuaterly.setEnabled(false);
 		btnQuaterly.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				if(btnQuaterly.getSelection()){
+					btnAnnualy.setSelection(false);
+					btnQuaterly.setEnabled(false);
+					btnAnnualy.setEnabled(true);
+					refreshAfterPeriod();
+				}
 			}
 		});
 		btnQuaterly.setSelection(true);
 		btnQuaterly.setSize(66, 16);
 		btnQuaterly.setText("Quaterly");
 		
-		Button btnAnnualy = new Button(composite, SWT.RADIO);
+		btnAnnualy = new Button(composite, SWT.RADIO);
 		btnAnnualy.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				if(btnAnnualy.getSelection()){
+					btnQuaterly.setSelection(false);
+					btnAnnualy.setEnabled(false);
+					btnQuaterly.setEnabled(true);
+					refreshAfterPeriod();
+				}
 			}
 		});
 		btnAnnualy.setText("Annualy");
@@ -147,8 +163,46 @@ public class FinancialReportParserComposite extends Composite {
 		txtReportwebsite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Button btnRepweb = new Button(compositeHeader, SWT.NONE);
+		btnRepweb.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String content=financialsProvider.getHtmlContent(txtReportwebsite.getText());
+				styledText.append("* * * REPORT WEBSITE * * *\n"+content+"\n");
+				
+				comboDocuments.removeAll();
+				String[] docs=config.searchDocuments(content, textPattern.getText());
+				for(int i=0;i<docs.length;i++){
+					comboDocuments.add(docs[i]);
+					styledText.append("* * * DOC: "+docs[i]+"\n");
+				}
+				if(docs.length>0){
+					comboDocuments.select(0);
+				}
+				
+				
+			}
+		});
 		btnRepweb.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
 		btnRepweb.setText(">>");
+		
+		Label lblDocuments = new Label(compositeHeader, SWT.NONE);
+		lblDocuments.setText("Documents:");
+		new Label(compositeHeader, SWT.NONE);
+		
+		Composite composite_1 = new Composite(compositeHeader, SWT.NONE);
+		composite_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		composite_1.setLayout(new GridLayout(2, false));
+		
+		Label lblPattern = new Label(composite_1, SWT.NONE);
+		lblPattern.setText("Pattern: ");
+		
+		textPattern = new Text(composite_1, SWT.BORDER);
+		textPattern.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		new Label(compositeHeader, SWT.NONE);
+		
+		comboDocuments = new Combo(compositeHeader, SWT.NONE);
+		comboDocuments.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		new Label(compositeHeader, SWT.NONE);
 		
 		styledText = new StyledText(compositeLeft, SWT.BORDER| SWT.H_SCROLL | SWT.V_SCROLL);
 		styledText.setAlwaysShowScrollBars(false);
@@ -176,16 +230,84 @@ public class FinancialReportParserComposite extends Composite {
 		trclmnItem.setText("Item");
 		sashForm.setWeights(new int[] {266, 271});
 		
-		treeViewer.refresh();
 		
+		refresh();
 		
 	}
 	
 	
-	private void initFields(){
+	private void refresh(){
 		if(config.getWebsite()!=null)
 			textCompanyWebsite.setText(config.getWebsite());
+		
+		if(config.getSelectedPeriodType()!=null){
+			if(config.getSelectedPeriodType()==FinancialPoint.PeriodeTypeQuaterly){
+				btnAnnualy.setSelection(false);
+				btnQuaterly.setSelection(true);
+				btnAnnualy.setEnabled(true);
+				btnQuaterly.setEnabled(false);
+			}
+			else if(config.getSelectedPeriodType()==FinancialPoint.PeriodeTypeAnnual){
+				btnAnnualy.setSelection(true);
+				btnQuaterly.setSelection(false);
+				btnAnnualy.setEnabled(false);
+				btnQuaterly.setEnabled(true);
+			}
+		}
+		
+		
+		refreshAfterPeriod();
+		
 	}
+	
+	private void refreshAfterPeriod(){
+		if(btnQuaterly.getSelection()){
+			if(config.getQuaterlyReportWebsite()!=null)
+				txtReportwebsite.setText(config.getQuaterlyReportWebsite());
+			if(config.getQuaterlyPattern()!=null)
+				textPattern.setText(config.getQuaterlyPattern());
+			
+			
+		}
+		else{
+			if(config.getAnnualyReportWebsite()!=null)
+				txtReportwebsite.setText(config.getAnnualyReportWebsite());
+			if(config.getAnnualyPattern()!=null)
+				textPattern.setText(config.getAnnualyPattern());
+		}
+		
+		
+		treeViewer.refresh();
+	}
+	
+	
+	private void save(){
+		//Save the Company web site
+		config.setWebsite(textCompanyWebsite.getText());
+		styledText.append("Saving: "+config.getWebsite()+"\n");
+		
+		//Save the current period type
+		if(btnQuaterly.getSelection())
+			config.setSelectedPeriodType(FinancialPoint.PeriodeTypeQuaterly);
+		else
+			config.setSelectedPeriodType(FinancialPoint.PeriodeTypeAnnual);
+		
+		//Save the Report web site
+		if(btnQuaterly.getSelection())
+			config.setQuaterlyReportWebsite(txtReportwebsite.getText());
+		else
+			config.setAnnualyReportWebsite(txtReportwebsite.getText());
+		
+		//Save the pattern
+		if(btnQuaterly.getSelection())
+			config.setQuaterlyPattern(textPattern.getText());
+		else
+			config.setAnnualyPattern(textPattern.getText());		
+		
+		
+		financialsProvider.saveReportReaderConfiguration(stock);
+	}
+	
 	
 	
 	@Inject
@@ -196,10 +318,7 @@ public class FinancialReportParserComposite extends Composite {
 		
 		this.config=stock.getFinancials().getReportReaderConfiguration();
 		
-		initFields();
-		
-		treeViewer.refresh();
-		
+		refresh();
 	}
 	
 	private boolean isCompositeAbleToReact(String rate_uuid){
@@ -216,5 +335,4 @@ public class FinancialReportParserComposite extends Composite {
 		
 		return true;
 	}
-	
 }
