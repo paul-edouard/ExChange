@@ -116,6 +116,7 @@ public class FinancialReportParserComposite extends Composite {
 		composite.setLayout(gl_composite);
 		
 		Button btnQuaterly = new Button(composite, SWT.RADIO);
+		btnQuaterly.setEnabled(false);
 		btnQuaterly.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -131,7 +132,6 @@ public class FinancialReportParserComposite extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 			}
 		});
-		btnAnnualy.setEnabled(false);
 		btnAnnualy.setText("Annualy");
 		new Label(compositeHeader, SWT.NONE);
 		

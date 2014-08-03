@@ -27,7 +27,7 @@ public class Parameter implements XmlElementIF, Serializable {
 	private Collection<Parameter> childs;
 	
 	public enum Type implements Serializable {
-		INTEGER(1), STRING(2), FLOAT(3), NONE(0);
+		INTEGER(1), STRING(2), FLOAT(3), NONE(0), PARAMETER(4);
 		private int val;
 
 		private Type(int value) {

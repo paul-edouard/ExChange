@@ -9,15 +9,24 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	
 	
 	static final String FIELD_Website="Website";
-	
+	static final String FIELD_SelectedPeriodType="SelectedPeriodType";
+	static final String FIELD_ReportWebsite="ReportWebsite";
 	
 	
 	private String website;
+	//private String selectedPeriodType;
 	
-
 	public String getWebsite() {
 		return website;
 	}
+	
+	public String getSelectedPeriodType(){
+		return this.getStringParam(FIELD_SelectedPeriodType);
+	}
+	public void setSelectedPeriodType(String selectedPeriodType){
+		this.setParam(FIELD_SelectedPeriodType, selectedPeriodType);
+	}
+	
 
 	public void setWebsite(String website) {
 	changes.firePropertyChange(FIELD_Website, this.website, this.website = website);}
