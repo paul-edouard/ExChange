@@ -278,8 +278,10 @@ public class StockFinancials extends Composite {
 		localContact.set(Composite.class, tabFolder);
 		localContact.setParent(context);
 		
+		
 		compositeParser=ContextInjectionFactory.make( FinancialReportParserComposite.class,localContact);
 		tbtmParser.setControl(compositeParser);
+		
 		
 		treeViewer.refresh();
 		
@@ -384,20 +386,7 @@ public class StockFinancials extends Composite {
 	//################################
 	//##     ColumnLabelProvider    ##
 	//################################
-	class mainColumnLabelProvider extends ColumnLabelProvider{
-		public Image getImage(Object element) {
-			return null;
-		}
-		public String getText(Object element) {
-			if(element instanceof FinancialElement){
-				//System.out.println("Financial element:"+ element.toString());
-				FinancialElement entity=(FinancialElement) element;
-				return entity.name;
-			}
-			//System.out.println("No Financial element?"+ element.toString());
-			return element == null ? "" : element.toString();
-		}
-	}
+	
 	
 	class valueColumnLabelProvider extends ColumnLabelProvider{
 		
