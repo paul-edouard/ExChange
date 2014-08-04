@@ -49,7 +49,10 @@ public interface IFinancialsProvider {
 
 	boolean saveReportReaderConfiguration(Stock stock);
 	
+	String loadReportDocument(Stock stock,String url);
+	
 	String getHtmlContent(String url);
 	LinkedList<String> findPDFDocument(String url);
+	
 	
 }

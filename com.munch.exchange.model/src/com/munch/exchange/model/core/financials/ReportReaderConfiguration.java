@@ -22,6 +22,12 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	static final String FIELD_QuaterlyDocuments="QuaterlyDocuments";
 	static final String FIELD_AnnualyDocuments="AnnualyDocuments";
 	
+	static final String FIELD_QuaterlySearchPeriod="QuaterlySearchPeriod";
+	static final String FIELD_AnnualySearchPeriod="AnnualySearchPeriod";
+	
+	static final String FIELD_QuaterlySearchPeriodActivated="QuaterlySearchPeriodActivated";
+	static final String FIELD_AnnualySearchPeriodActivated="AnnualySearchPeriodActivated";
+	
 	
 	private String website;
 	//private String selectedPeriodType;
@@ -32,6 +38,11 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	private String quaterlyPattern;
 	private String annualyPattern;
 	
+	private String quaterlySearchPeriod;
+	private String annualySearchPeriod;
+	
+	private boolean quaterlySearchPeriodActivated;
+	private boolean annualySearchPeriodActivated;
 	
 	
 	public String getWebsite() {
@@ -45,15 +56,28 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		this.setParam(FIELD_SelectedPeriodType, selectedPeriodType);
 	}
 	
-	public static String[] searchDocuments(String content, String pattern){
+	public static String[] searchDocuments(String content, String pattern,String searchPeriod){
 		LinkedList<String> docs=new LinkedList<String>();
 		String[] tockens=content.split("\n");
+		String[] ptockens=searchPeriod.split("-");
+		
 		for(int i=0;i<tockens.length;i++){
 			String[] splits=tockens[i].split("\"");
 			
 			for(int j=0;j<splits.length;j++){
+				//Test the searchPeriod
+				boolean p_found=false;
+				if(ptockens.length==0)p_found=true;
+				if(ptockens.length==1)p_found=splits[j].contains(ptockens[0]);
+				if(ptockens.length==2)p_found=(splits[j].contains(ptockens[0]) && splits[j].contains(ptockens[1]));
+				
+				if(!p_found)continue;
+				
+				
+				//Test the pattern
 				if(splits[j].matches(pattern)){
-					docs.add(splits[j]);
+					if(!docs.contains(splits[j]))
+						docs.add(splits[j]);
 					
 				}
 			}
@@ -136,6 +160,38 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	changes.firePropertyChange(FIELD_AnnualyPattern, this.annualyPattern, this.annualyPattern = annualyPattern);}
 	
 
+	public String getQuaterlySearchPeriod() {
+		return quaterlySearchPeriod;
+	}
+
+	public void setQuaterlySearchPeriod(String quaterlySearchPeriod) {
+	changes.firePropertyChange(FIELD_QuaterlySearchPeriod, this.quaterlySearchPeriod, this.quaterlySearchPeriod = quaterlySearchPeriod);}
+	
+
+	public String getAnnualySearchPeriod() {
+		return annualySearchPeriod;
+	}
+
+	public void setAnnualySearchPeriod(String annualySearchPeriod) {
+	changes.firePropertyChange(FIELD_AnnualySearchPeriod, this.annualySearchPeriod, this.annualySearchPeriod = annualySearchPeriod);}
+	
+
+	public boolean isQuaterlySearchPeriodActivated() {
+		return quaterlySearchPeriodActivated;
+	}
+
+	public void setQuaterlySearchPeriodActivated(boolean quaterlySearchPeriodActivated) {
+	changes.firePropertyChange(FIELD_QuaterlySearchPeriodActivated, this.quaterlySearchPeriodActivated, this.quaterlySearchPeriodActivated = quaterlySearchPeriodActivated);}
+	
+
+	public boolean isAnnualySearchPeriodActivated() {
+		return annualySearchPeriodActivated;
+	}
+
+	public void setAnnualySearchPeriodActivated(boolean annualySearchPeriodActivated) {
+	changes.firePropertyChange(FIELD_AnnualySearchPeriodActivated, this.annualySearchPeriodActivated, this.annualySearchPeriodActivated = annualySearchPeriodActivated);}
+	
+
 	@Override
 	protected void initAttribute(Element rootElement) {
 		this.setWebsite((rootElement.getAttribute(FIELD_Website)));
@@ -145,6 +201,12 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		
 		this.setAnnualyPattern((rootElement.getAttribute(FIELD_AnnualyPattern)));
 		this.setQuaterlyPattern((rootElement.getAttribute(FIELD_QuaterlyPattern)));
+		
+		this.setAnnualySearchPeriod((rootElement.getAttribute(FIELD_AnnualySearchPeriod)));
+		this.setQuaterlySearchPeriod((rootElement.getAttribute(FIELD_QuaterlySearchPeriod)));
+		
+		this.setAnnualySearchPeriodActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_AnnualySearchPeriodActivated)));
+		this.setQuaterlySearchPeriodActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_QuaterlySearchPeriodActivated)));
 		
 		
 	}
@@ -164,6 +226,12 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		
 		rootElement.setAttribute(FIELD_AnnualyPattern,this.getAnnualyPattern());
 		rootElement.setAttribute(FIELD_QuaterlyPattern,this.getQuaterlyPattern());
+		
+		rootElement.setAttribute(FIELD_AnnualySearchPeriod,this.getAnnualySearchPeriod());
+		rootElement.setAttribute(FIELD_QuaterlySearchPeriod,this.getQuaterlySearchPeriod());
+		
+		rootElement.setAttribute(FIELD_AnnualySearchPeriodActivated,String.valueOf(this.isAnnualySearchPeriodActivated()));
+		rootElement.setAttribute(FIELD_QuaterlySearchPeriodActivated,String.valueOf(this.isQuaterlySearchPeriodActivated()));
 		
 	}
 

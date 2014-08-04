@@ -1,7 +1,9 @@
 package com.munch.exchange.services.internal;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.LinkedList;
 
@@ -433,6 +435,29 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 	public LinkedList<String> findPDFDocument(String url){
 		String content=getHtmlContent(url);
 		return PdfFunctions.findPdfFiles(content);
+	}
+	
+	public String loadReportDocument(Stock stock,String url){
+		String targetPath=this.getSavePath(stock)+File.separator;
+		File urlFile=new File(url);
+		String targetFile=targetPath+urlFile.getName();
+		
+		if(new File(targetFile).exists())
+			return PdfFunctions.getPDFContentFromFile(targetFile);
+		
+		//Save the url
+		try {
+			HtmlFunctions.saveUrl(targetFile, url.replace(" ", "%20"));
+			return PdfFunctions.getPDFContentFromFile(targetFile);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return "";
+		} catch (IOException e) {
+			e.printStackTrace();
+			return "";
+		}
+		
+		
 	}
 	
 	

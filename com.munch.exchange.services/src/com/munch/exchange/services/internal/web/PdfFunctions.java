@@ -8,7 +8,7 @@ import org.apache.pdfbox.util.PDFTextStripper;
 
 public class PdfFunctions {
 	
-	public String getPDFContentFromFile(String filename){
+	public static String getPDFContentFromFile(String filename){
 		try {
 			PDDocument document = PDDocument.load(filename);
 			PDFTextStripper s = new PDFTextStripper();

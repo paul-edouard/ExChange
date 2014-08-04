@@ -1,5 +1,7 @@
 package com.munch.exchange.parts.financials;
 
+import java.util.Calendar;
+
 import javax.inject.Inject;
 
 import org.eclipse.e4.core.di.annotations.Optional;
@@ -30,7 +32,10 @@ import com.munch.exchange.model.core.financials.FinancialPoint;
 import com.munch.exchange.model.core.financials.ReportReaderConfiguration;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IFinancialsProvider;
+
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.wb.swt.SWTResourceManager;
 
 public class FinancialReportParserComposite extends Composite {
 	
@@ -50,7 +55,9 @@ public class FinancialReportParserComposite extends Composite {
 	
 	private StockFinancialsContentProvider contentProvider=new StockFinancialsContentProvider();
 	
-	private String modus;
+	private int period_year=0;
+	private int period_qua=0;
+	
 	
 	private Text textCompanyWebsite;
 	private StyledText styledText;
@@ -61,6 +68,10 @@ public class FinancialReportParserComposite extends Composite {
 	private Button btnAnnualy;
 	private Combo comboDocuments;
 	private Text textPattern;
+	private Button btnPeriod;
+	private Button btnBack;
+	private Button btnNext;
+	private Text textPeriod;
 	
 	
 	@Inject
@@ -167,42 +178,120 @@ public class FinancialReportParserComposite extends Composite {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String content=financialsProvider.getHtmlContent(txtReportwebsite.getText());
+				styledText.setText("");
 				styledText.append("* * * REPORT WEBSITE * * *\n"+content+"\n");
 				
 				comboDocuments.removeAll();
-				String[] docs=config.searchDocuments(content, textPattern.getText());
+				String searchPeriod="";
+				if(btnPeriod.getSelection())searchPeriod=textPeriod.getText();
+					
+				String[] docs=ReportReaderConfiguration.searchDocuments(content, textPattern.getText(),searchPeriod);
 				for(int i=0;i<docs.length;i++){
 					comboDocuments.add(docs[i]);
 					styledText.append("* * * DOC: "+docs[i]+"\n");
+					
 				}
+				
 				if(docs.length>0){
 					comboDocuments.select(0);
 				}
 				
+				loadAndAnalyseDocument();
 				
 			}
 		});
 		btnRepweb.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
 		btnRepweb.setText(">>");
 		
-		Label lblDocuments = new Label(compositeHeader, SWT.NONE);
-		lblDocuments.setText("Documents:");
-		new Label(compositeHeader, SWT.NONE);
+		Group grpDocuments = new Group(compositeLeft, SWT.NONE);
+		grpDocuments.setFont(SWTResourceManager.getFont("Segoe UI", 7, SWT.NORMAL));
+		grpDocuments.setLayout(new GridLayout(1, false));
+		grpDocuments.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		grpDocuments.setText("Documents");
 		
-		Composite composite_1 = new Composite(compositeHeader, SWT.NONE);
-		composite_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		composite_1.setLayout(new GridLayout(2, false));
+		Composite compositeDoc1 = new Composite(grpDocuments, SWT.NONE);
+		compositeDoc1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeDoc1.setLayout(new GridLayout(3, false));
 		
-		Label lblPattern = new Label(composite_1, SWT.NONE);
+		btnPeriod = new Button(compositeDoc1, SWT.CHECK);
+		btnPeriod.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				
+				textPeriod.setEnabled(btnPeriod.getSelection());
+				btnBack.setEnabled(btnPeriod.getSelection());
+				btnNext.setEnabled(btnPeriod.getSelection());
+				
+			}
+		});
+		btnPeriod.setText("period");
+		
+		textPeriod = new Text(compositeDoc1, SWT.BORDER);
+		textPeriod.setEnabled(false);
+		textPeriod.setEditable(false);
+		textPeriod.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Composite composite_2 = new Composite(compositeDoc1, SWT.NONE);
+		composite_2.setSize(48, 35);
+		GridLayout gl_composite_2 = new GridLayout(2, false);
+		gl_composite_2.horizontalSpacing = 0;
+		gl_composite_2.marginHeight = 0;
+		gl_composite_2.marginWidth = 0;
+		gl_composite_2.verticalSpacing = 0;
+		composite_2.setLayout(gl_composite_2);
+		
+		btnBack = new Button(composite_2, SWT.NONE);
+		btnBack.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(btnQuaterly.getSelection()){
+					period_qua--;
+					if(period_qua==0){
+						period_qua=3;period_year--;
+					}
+					textPeriod.setText("Q"+String.valueOf(period_qua)+"-"+String.valueOf(period_year));
+				}
+				else{
+					period_year--;
+					textPeriod.setText(String.valueOf(period_year));
+				}
+			}
+		});
+		btnBack.setEnabled(false);
+		btnBack.setText("<");
+		
+		btnNext = new Button(composite_2, SWT.NONE);
+		btnNext.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(btnQuaterly.getSelection()){
+					period_qua++;
+					if(period_qua>3){
+						period_qua=1;period_year++;
+					}
+					textPeriod.setText("Q"+String.valueOf(period_qua)+"-"+String.valueOf(period_year));
+				}
+				else{
+					period_year++;
+					textPeriod.setText(String.valueOf(period_year));
+				}
+			}
+		});
+		btnNext.setEnabled(false);
+		btnNext.setText(">");
+		
+		Composite composite_3 = new Composite(grpDocuments, SWT.NONE);
+		composite_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		composite_3.setLayout(new GridLayout(2, false));
+		
+		Label lblPattern = new Label(composite_3, SWT.NONE);
 		lblPattern.setText("Pattern: ");
 		
-		textPattern = new Text(composite_1, SWT.BORDER);
+		textPattern = new Text(composite_3, SWT.BORDER);
 		textPattern.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		new Label(compositeHeader, SWT.NONE);
 		
-		comboDocuments = new Combo(compositeHeader, SWT.NONE);
+		comboDocuments = new Combo(grpDocuments, SWT.NONE);
 		comboDocuments.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		new Label(compositeHeader, SWT.NONE);
 		
 		styledText = new StyledText(compositeLeft, SWT.BORDER| SWT.H_SCROLL | SWT.V_SCROLL);
 		styledText.setAlwaysShowScrollBars(false);
@@ -228,10 +317,47 @@ public class FinancialReportParserComposite extends Composite {
 		TreeColumn trclmnItem = treeViewerColumn.getColumn();
 		trclmnItem.setWidth(200);
 		trclmnItem.setText("Item");
+		
+		TreeViewerColumn treeViewerColumnActivation = new TreeViewerColumn(treeViewer, SWT.NONE);
+		TreeColumn trclmnActivation = treeViewerColumnActivation.getColumn();
+		trclmnActivation.setWidth(100);
+		trclmnActivation.setText("Activation");
+		
+		TreeViewerColumn treeViewerColumnLineStart = new TreeViewerColumn(treeViewer, SWT.NONE);
+		TreeColumn trclmnLineStart = treeViewerColumnLineStart.getColumn();
+		trclmnLineStart.setWidth(100);
+		trclmnLineStart.setText("Line start");
+		
+		TreeViewerColumn treeViewerColumnPosition = new TreeViewerColumn(treeViewer, SWT.NONE);
+		TreeColumn trclmnPosition = treeViewerColumnPosition.getColumn();
+		trclmnPosition.setWidth(100);
+		trclmnPosition.setText("Position");
+		
+		TreeViewerColumn treeViewerColumnValu = new TreeViewerColumn(treeViewer, SWT.NONE);
+		TreeColumn trclmnValue =treeViewerColumnValu.getColumn();
+		trclmnValue.setWidth(100);
+		trclmnValue.setText("Value");
 		sashForm.setWeights(new int[] {266, 271});
 		
 		
 		refresh();
+		
+	}
+	
+	private void loadAndAnalyseDocument(){
+		if(comboDocuments.getItemCount()==1)
+			comboDocuments.setBackground(SWTResourceManager.getColor(SWT.COLOR_GREEN));
+		else{
+			comboDocuments.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
+			return;
+		}
+		
+		String url=textCompanyWebsite.getText()+comboDocuments.getItem(0);
+		String document=financialsProvider.loadReportDocument(stock, url);
+		
+		styledText.setText("");
+		styledText.append("* * * DOC:\n"+document+"\n");
+		
 		
 	}
 	
@@ -255,17 +381,68 @@ public class FinancialReportParserComposite extends Composite {
 			}
 		}
 		
+		period_year=getExpectedYear();
+		period_qua=getExpectedQuartal();
+		
 		
 		refreshAfterPeriod();
 		
 	}
 	
+	private int getExpectedQuartal() {
+		Calendar date = Calendar.getInstance();
+		if (date.get(Calendar.MONTH) > 0 && date.get(Calendar.MONTH) <= 3) {
+			return 3;
+		} else if (date.get(Calendar.MONTH) > 3
+				&& date.get(Calendar.MONTH) <= 6) {
+			return 1;
+		} else if (date.get(Calendar.MONTH) > 6
+				&& date.get(Calendar.MONTH) <= 9) {
+			return 2;
+		} else {
+			return 3;
+		}
+	}
+	
+	private int getExpectedYear(){
+		Calendar date=Calendar.getInstance();
+		if(date.get(Calendar.MONTH)>0 && date.get(Calendar.MONTH)<=3){
+			return date.get(Calendar.YEAR);
+		}
+		else{
+			return date.get(Calendar.YEAR)+1;
+		}
+	}
+	
+	
+	
 	private void refreshAfterPeriod(){
 		if(btnQuaterly.getSelection()){
+			
+			Calendar date = Calendar.getInstance();
+			period_year=date.get(Calendar.YEAR);
+			
 			if(config.getQuaterlyReportWebsite()!=null)
 				txtReportwebsite.setText(config.getQuaterlyReportWebsite());
 			if(config.getQuaterlyPattern()!=null)
 				textPattern.setText(config.getQuaterlyPattern());
+			if(config.isQuaterlySearchPeriodActivated()){
+				btnPeriod.setSelection(config.isQuaterlySearchPeriodActivated());
+				textPeriod.setEnabled(btnPeriod.getSelection());
+				btnBack.setEnabled(btnPeriod.getSelection());
+				btnNext.setEnabled(btnPeriod.getSelection());
+			}
+			if(config.getQuaterlySearchPeriod()!=null && !config.getQuaterlySearchPeriod().isEmpty()){
+				textPeriod.setText(config.getQuaterlySearchPeriod());
+				String[] tockens=textPeriod.getText().split("-");
+				if(tockens.length==2){
+					period_qua=Integer.valueOf(tockens[0].replace("Q", ""));
+					period_year=Integer.valueOf(tockens[1]);
+				}
+			}
+			else{
+				textPeriod.setText("Q"+String.valueOf(period_qua)+"-"+String.valueOf(period_year));
+			}
 			
 			
 		}
@@ -274,6 +451,19 @@ public class FinancialReportParserComposite extends Composite {
 				txtReportwebsite.setText(config.getAnnualyReportWebsite());
 			if(config.getAnnualyPattern()!=null)
 				textPattern.setText(config.getAnnualyPattern());
+			if(config.isAnnualySearchPeriodActivated()){
+				btnPeriod.setSelection(config.isAnnualySearchPeriodActivated());
+				textPeriod.setEnabled(btnPeriod.getSelection());
+				btnBack.setEnabled(btnPeriod.getSelection());
+				btnNext.setEnabled(btnPeriod.getSelection());
+			}
+			if(config.getAnnualySearchPeriod()!=null && !config.getAnnualySearchPeriod().isEmpty()){
+				textPeriod.setText(config.getAnnualySearchPeriod());
+				period_year=Integer.valueOf(textPeriod.getText());
+			}
+			else{
+				textPeriod.setText(String.valueOf(period_year));
+			}
 		}
 		
 		
@@ -302,7 +492,19 @@ public class FinancialReportParserComposite extends Composite {
 		if(btnQuaterly.getSelection())
 			config.setQuaterlyPattern(textPattern.getText());
 		else
-			config.setAnnualyPattern(textPattern.getText());		
+			config.setAnnualyPattern(textPattern.getText());
+		
+		//Save the period selection
+		if(btnQuaterly.getSelection())
+			config.setQuaterlySearchPeriodActivated(btnPeriod.getSelection());
+		else
+			config.setAnnualySearchPeriodActivated(btnPeriod.getSelection());
+		
+		//Save the period 
+		if(btnQuaterly.getSelection())
+			config.setQuaterlySearchPeriod(textPeriod.getText());
+		else
+			config.setAnnualySearchPeriod(textPeriod.getText());
 		
 		
 		financialsProvider.saveReportReaderConfiguration(stock);
