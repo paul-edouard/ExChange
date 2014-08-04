@@ -1,10 +1,12 @@
 package com.munch.exchange.model.core.financials;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.xml.Parameter;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class ReportReaderConfiguration extends XmlParameterElement {
@@ -238,7 +240,103 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	@Override
 	protected void appendChild(Element rootElement, Document doc) {
 		// TODO Auto-generated method stub
+	}
+	
+	private HashMap<String, SearchKeyValEl> getAllSearchKeyValEl(String periodType){
+		HashMap<String, SearchKeyValEl> map=new HashMap<String, SearchKeyValEl>();
+		
+		for(Parameter param:this.getParameter().getChilds()){
+			if(param.getKey().startsWith(periodType)){
+				SearchKeyValEl el=new SearchKeyValEl(param.getKey(),(String)param.getValue());
+				map.put(el.fieldKey+"_"+el.sectorKey, el);
+			}
+		}
+		
+		return map;
+	}
+	
+	private HashMap<String, SearchKeyValEl> getAllQuaterlySearchKeyValEl(){
+		return getAllSearchKeyValEl(FinancialPoint.PeriodeTypeQuaterly);
+	}
+	private HashMap<String, SearchKeyValEl> getAllAnnualySearchKeyValEl(){
+		return getAllSearchKeyValEl(FinancialPoint.PeriodeTypeAnnual);
+	}
+	
+	public SearchKeyValEl getQuaterlySearchKeyValEl(String fieldKey,String sectorKey){
+		HashMap<String, SearchKeyValEl> map=getAllQuaterlySearchKeyValEl();
+		if(map.containsKey(fieldKey+"_"+sectorKey)){
+			return map.get(fieldKey+"_"+sectorKey);
+		}
+		return new SearchKeyValEl(FinancialPoint.PeriodeTypeQuaterly,fieldKey,sectorKey);
+	}
+	
+	public SearchKeyValEl getAnnualySearchKeyValEl(String fieldKey,String sectorKey){
+		HashMap<String, SearchKeyValEl> map=getAllAnnualySearchKeyValEl();
+		if(map.containsKey(fieldKey+"_"+sectorKey)){
+			return map.get(fieldKey+"_"+sectorKey);
+		}
+		return new SearchKeyValEl(FinancialPoint.PeriodeTypeAnnual,fieldKey,sectorKey);
+	}
+	
+	public void updateSearchKeyValEl(SearchKeyValEl el){
+		this.setParam(el.getKey(), el.getContent());
+	}
+	
+	
+	//this.setParam(key, docs);
+	
+	//FinancialPoint.PeriodeTypeQuaterly
+	
+	public class SearchKeyValEl{
+		public String fieldKey;
+		public String sectorKey;
+		public String periodType;
+		
+		public String activation;
+		public String startLineWith;
+		public int position=0;
+		public int factor=1;
+		
+		public long value=Long.MIN_VALUE;
+		
+		public SearchKeyValEl(String periodType,String fieldKey,String sectorKey){
+			this.fieldKey=fieldKey;
+			this.periodType=periodType;
+			this.sectorKey=sectorKey;
+		}
+		
+		public SearchKeyValEl(String key,String content){
+			String[] keys=key.split("_");
+			String[] contents=content.split(";");
+			
+			if(keys.length!=3)return;
+			if(contents.length!=4)return;
+			
+			periodType=keys[0];
+			fieldKey=keys[1];
+			sectorKey=keys[2];
+			
+			activation=contents[0];
+			startLineWith=contents[1];
+			position=Integer.valueOf(contents[2]);
+			factor=Integer.valueOf(contents[3]);
+			
+		}
+		
+		
+		public String getKey(){
+			return periodType+"_"+fieldKey+"_"+sectorKey;
+		}
+
+		public String getContent() {
+			return activation+";"+startLineWith+";"+String.valueOf(position)+";"+String.valueOf(factor);
+		}
+		
+		
+		
+		
 		
 	}
+	
 
 }

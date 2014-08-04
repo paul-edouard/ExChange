@@ -264,7 +264,7 @@ public class StockFinancials extends Composite {
 		
 		//Main Column
 		TreeViewerColumn mainColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
-		mainColumn.setLabelProvider(new mainColumnLabelProvider());
+		mainColumn.setLabelProvider(new MainColumnLabelProvider());
 		TreeColumn trclmnName = mainColumn.getColumn();
 		trclmnName.setWidth(300);
 		trclmnName.setText("Period");

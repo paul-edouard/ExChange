@@ -5,7 +5,7 @@ import org.eclipse.swt.graphics.Image;
 
 import com.munch.exchange.parts.financials.StockFinancialsContentProvider.FinancialElement;
 
-public class mainColumnLabelProvider extends ColumnLabelProvider{
+public class MainColumnLabelProvider extends ColumnLabelProvider{
 	public Image getImage(Object element) {
 		return null;
 	}

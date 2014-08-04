@@ -2,11 +2,13 @@ package com.munch.exchange.parts.financials;
 
 import java.util.Calendar;
 
+import javax.crypto.spec.PSource;
 import javax.inject.Inject;
 
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.SWT;
@@ -30,6 +32,8 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.financials.FinancialPoint;
 import com.munch.exchange.model.core.financials.ReportReaderConfiguration;
+import com.munch.exchange.model.core.financials.ReportReaderConfiguration.SearchKeyValEl;
+import com.munch.exchange.parts.financials.StockFinancialsContentProvider.FinancialElement;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IFinancialsProvider;
 
@@ -313,28 +317,38 @@ public class FinancialReportParserComposite extends Composite {
 		tree.setBounds(0, 0, 85, 85);
 		
 		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
-		treeViewerColumn.setLabelProvider(new mainColumnLabelProvider());
+		treeViewerColumn.setLabelProvider(new MainColumnLabelProvider());
 		TreeColumn trclmnItem = treeViewerColumn.getColumn();
 		trclmnItem.setWidth(200);
 		trclmnItem.setText("Item");
 		
 		TreeViewerColumn treeViewerColumnActivation = new TreeViewerColumn(treeViewer, SWT.NONE);
 		TreeColumn trclmnActivation = treeViewerColumnActivation.getColumn();
+		treeViewerColumnActivation.setLabelProvider(new ActivationColumnLabelProvider());
 		trclmnActivation.setWidth(100);
 		trclmnActivation.setText("Activation");
 		
 		TreeViewerColumn treeViewerColumnLineStart = new TreeViewerColumn(treeViewer, SWT.NONE);
 		TreeColumn trclmnLineStart = treeViewerColumnLineStart.getColumn();
+		treeViewerColumnLineStart.setLabelProvider(new LineStartColumnLabelProvider());
 		trclmnLineStart.setWidth(100);
 		trclmnLineStart.setText("Line start");
 		
 		TreeViewerColumn treeViewerColumnPosition = new TreeViewerColumn(treeViewer, SWT.NONE);
 		TreeColumn trclmnPosition = treeViewerColumnPosition.getColumn();
+		treeViewerColumnPosition.setLabelProvider(new PositionColumnLabelProvider());
 		trclmnPosition.setWidth(100);
 		trclmnPosition.setText("Position");
 		
+		TreeViewerColumn treeViewerColumnFactor = new TreeViewerColumn(treeViewer, SWT.NONE);
+		TreeColumn trclmnFactor = treeViewerColumnFactor.getColumn();
+		treeViewerColumnFactor.setLabelProvider(new FactorColumnLabelProvider());
+		trclmnFactor.setWidth(100);
+		trclmnFactor.setText("Factor");
+		
 		TreeViewerColumn treeViewerColumnValu = new TreeViewerColumn(treeViewer, SWT.NONE);
 		TreeColumn trclmnValue =treeViewerColumnValu.getColumn();
+		treeViewerColumnValu.setLabelProvider(new ValueColumnLabelProvider());
 		trclmnValue.setWidth(100);
 		trclmnValue.setText("Value");
 		sashForm.setWeights(new int[] {266, 271});
@@ -537,4 +551,109 @@ public class FinancialReportParserComposite extends Composite {
 		
 		return true;
 	}
+	
+	
+	//################################
+	//##     ColumnLabelProvider    ##
+	//################################
+	
+	class ActivationColumnLabelProvider extends ColumnLabelProvider {
+
+		public String getText(Object element) {
+			if (element instanceof FinancialElement) {
+				FinancialElement entity = (FinancialElement) element;
+				if (btnQuaterly.getSelection()) {
+					SearchKeyValEl el = config.getQuaterlySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					return el.activation;
+				} else {
+					SearchKeyValEl el = config.getAnnualySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					return el.activation;
+				}
+			}
+			return "";
+		}
+	}
+	
+	class LineStartColumnLabelProvider extends ColumnLabelProvider {
+
+		public String getText(Object element) {
+			if (element instanceof FinancialElement) {
+				FinancialElement entity = (FinancialElement) element;
+				if (btnQuaterly.getSelection()) {
+					SearchKeyValEl el = config.getQuaterlySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					return el.startLineWith;
+				} else {
+					SearchKeyValEl el = config.getAnnualySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					return el.startLineWith;
+				}
+			}
+			return "";
+		}
+	}
+	
+	class PositionColumnLabelProvider extends ColumnLabelProvider {
+
+		public String getText(Object element) {
+			if (element instanceof FinancialElement) {
+				FinancialElement entity = (FinancialElement) element;
+				if (btnQuaterly.getSelection()) {
+					SearchKeyValEl el = config.getQuaterlySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					return String.valueOf(el.position);
+				} else {
+					SearchKeyValEl el = config.getAnnualySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					return String.valueOf(el.position);
+				}
+			}
+			return "";
+		}
+	}
+	
+	class FactorColumnLabelProvider extends ColumnLabelProvider {
+
+		public String getText(Object element) {
+			if (element instanceof FinancialElement) {
+				FinancialElement entity = (FinancialElement) element;
+				if (btnQuaterly.getSelection()) {
+					SearchKeyValEl el = config.getQuaterlySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					return String.valueOf(el.factor);
+				} else {
+					SearchKeyValEl el = config.getAnnualySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					return String.valueOf(el.factor);
+				}
+			}
+			return "";
+		}
+	}
+	
+	class ValueColumnLabelProvider extends ColumnLabelProvider {
+
+		public String getText(Object element) {
+			if (element instanceof FinancialElement) {
+				FinancialElement entity = (FinancialElement) element;
+				if (btnQuaterly.getSelection()) {
+					SearchKeyValEl el = config.getQuaterlySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					if(el.value!=Long.MIN_VALUE)
+						return String.valueOf(el.value);
+					return "";
+				} else {
+					SearchKeyValEl el = config.getAnnualySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					if(el.value!=Long.MIN_VALUE)
+						return String.valueOf(el.value);
+					return "";
+				}
+			}
+			return "";
+		}
+	}
+	
 }
