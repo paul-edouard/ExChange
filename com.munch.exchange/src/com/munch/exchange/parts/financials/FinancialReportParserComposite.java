@@ -1,6 +1,8 @@
 package com.munch.exchange.parts.financials;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 import javax.crypto.spec.PSource;
 import javax.inject.Inject;
@@ -59,8 +61,11 @@ public class FinancialReportParserComposite extends Composite {
 	
 	private StockFinancialsContentProvider contentProvider=new StockFinancialsContentProvider();
 	
+	
 	private int period_year=0;
 	private int period_qua=0;
+	
+	private String lastContent;
 	
 	
 	private Text textCompanyWebsite;
@@ -78,6 +83,23 @@ public class FinancialReportParserComposite extends Composite {
 	private Text textPeriod;
 	
 	
+	public Stock getStock() {
+		return stock;
+	}
+
+	public ReportReaderConfiguration getConfig() {
+		return config;
+	}
+
+	public TreeViewer getTreeViewer() {
+		return treeViewer;
+	}
+	
+
+	public Button getBtnQuaterly() {
+		return btnQuaterly;
+	}
+
 	@Inject
 	public FinancialReportParserComposite(Composite parent,ExchangeRate rate) {
 		super(parent, SWT.NONE);
@@ -286,13 +308,22 @@ public class FinancialReportParserComposite extends Composite {
 		
 		Composite composite_3 = new Composite(grpDocuments, SWT.NONE);
 		composite_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		composite_3.setLayout(new GridLayout(2, false));
+		composite_3.setLayout(new GridLayout(3, false));
 		
 		Label lblPattern = new Label(composite_3, SWT.NONE);
 		lblPattern.setText("Pattern: ");
 		
 		textPattern = new Text(composite_3, SWT.BORDER);
 		textPattern.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Button btnReparse = new Button(composite_3, SWT.NONE);
+		btnReparse.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				parseDocument();
+			}
+		});
+		btnReparse.setText("Reparse");
 		
 		comboDocuments = new Combo(grpDocuments, SWT.NONE);
 		comboDocuments.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -325,24 +356,32 @@ public class FinancialReportParserComposite extends Composite {
 		TreeViewerColumn treeViewerColumnActivation = new TreeViewerColumn(treeViewer, SWT.NONE);
 		TreeColumn trclmnActivation = treeViewerColumnActivation.getColumn();
 		treeViewerColumnActivation.setLabelProvider(new ActivationColumnLabelProvider());
+		treeViewerColumnActivation.setEditingSupport(
+				new FinancialReportEditingSupport(this, FinancialReportEditingSupport.FIELD_Activation));
 		trclmnActivation.setWidth(100);
 		trclmnActivation.setText("Activation");
 		
 		TreeViewerColumn treeViewerColumnLineStart = new TreeViewerColumn(treeViewer, SWT.NONE);
 		TreeColumn trclmnLineStart = treeViewerColumnLineStart.getColumn();
 		treeViewerColumnLineStart.setLabelProvider(new LineStartColumnLabelProvider());
+		treeViewerColumnLineStart.setEditingSupport(
+				new FinancialReportEditingSupport(this, FinancialReportEditingSupport.FIELD_StartLineWith));
 		trclmnLineStart.setWidth(100);
 		trclmnLineStart.setText("Line start");
 		
 		TreeViewerColumn treeViewerColumnPosition = new TreeViewerColumn(treeViewer, SWT.NONE);
 		TreeColumn trclmnPosition = treeViewerColumnPosition.getColumn();
 		treeViewerColumnPosition.setLabelProvider(new PositionColumnLabelProvider());
+		treeViewerColumnPosition.setEditingSupport(
+				new FinancialReportEditingSupport(this, FinancialReportEditingSupport.FIELD_Position));
 		trclmnPosition.setWidth(100);
 		trclmnPosition.setText("Position");
 		
 		TreeViewerColumn treeViewerColumnFactor = new TreeViewerColumn(treeViewer, SWT.NONE);
 		TreeColumn trclmnFactor = treeViewerColumnFactor.getColumn();
 		treeViewerColumnFactor.setLabelProvider(new FactorColumnLabelProvider());
+		treeViewerColumnFactor.setEditingSupport(
+				new FinancialReportEditingSupport(this, FinancialReportEditingSupport.FIELD_Factor));
 		trclmnFactor.setWidth(100);
 		trclmnFactor.setText("Factor");
 		
@@ -371,12 +410,31 @@ public class FinancialReportParserComposite extends Composite {
 		
 		styledText.setText("");
 		styledText.append("* * * DOC:\n"+document+"\n");
+		lastContent=document;
 		
+		parseDocument();
 		
 	}
 	
+	private void parseDocument() {
+		// Analyze the document
+		LinkedList<SearchKeyValEl> allFoundElts = null;
+		if (btnQuaterly.getSelection()) {
+			allFoundElts=config.parseQuaterlyDocument(lastContent);
+		} else {
+			allFoundElts=config.parseQuaterlyDocument(lastContent);
+		}
+		if(allFoundElts==null)return;
+
+		for (SearchKeyValEl el : allFoundElts) {
+				styledText.append(el+"\n");
+		}
+		//TODO
+		refreshAfterPeriod();
+	}
 	
-	private void refresh(){
+	
+	public void refresh(){
 		if(config.getWebsite()!=null)
 			textCompanyWebsite.setText(config.getWebsite());
 		
@@ -430,7 +488,7 @@ public class FinancialReportParserComposite extends Composite {
 	
 	
 	
-	private void refreshAfterPeriod(){
+	public void refreshAfterPeriod(){
 		if(btnQuaterly.getSelection()){
 			
 			Calendar date = Calendar.getInstance();

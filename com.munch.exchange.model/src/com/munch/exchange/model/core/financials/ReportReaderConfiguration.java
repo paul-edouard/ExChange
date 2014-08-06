@@ -3,6 +3,7 @@ package com.munch.exchange.model.core.financials;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -11,6 +12,8 @@ import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class ReportReaderConfiguration extends XmlParameterElement {
 	
+	
+	private static Logger logger = Logger.getLogger(ReportReaderConfiguration.class);
 	
 	static final String FIELD_Website="Website";
 	static final String FIELD_SelectedPeriodType="SelectedPeriodType";
@@ -46,6 +49,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	private boolean quaterlySearchPeriodActivated;
 	private boolean annualySearchPeriodActivated;
 	
+	private HashMap<String, Long> keyValueMap=new HashMap<String, Long>();
 	
 	public String getWebsite() {
 		return website;
@@ -248,6 +252,9 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		for(Parameter param:this.getParameter().getChilds()){
 			if(param.getKey().startsWith(periodType)){
 				SearchKeyValEl el=new SearchKeyValEl(param.getKey(),(String)param.getValue());
+				if(this.keyValueMap.containsKey(el.getKey())){
+					el.value=this.keyValueMap.get(el.getKey());
+				}
 				map.put(el.fieldKey+"_"+el.sectorKey, el);
 			}
 		}
@@ -255,10 +262,10 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		return map;
 	}
 	
-	private HashMap<String, SearchKeyValEl> getAllQuaterlySearchKeyValEl(){
+	public HashMap<String, SearchKeyValEl> getAllQuaterlySearchKeyValEl(){
 		return getAllSearchKeyValEl(FinancialPoint.PeriodeTypeQuaterly);
 	}
-	private HashMap<String, SearchKeyValEl> getAllAnnualySearchKeyValEl(){
+	public HashMap<String, SearchKeyValEl> getAllAnnualySearchKeyValEl(){
 		return getAllSearchKeyValEl(FinancialPoint.PeriodeTypeAnnual);
 	}
 	
@@ -282,6 +289,33 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		this.setParam(el.getKey(), el.getContent());
 	}
 	
+	private LinkedList<SearchKeyValEl> parseDocument(String document,String periodType){
+		
+		LinkedList<SearchKeyValEl> allFoundElts=new LinkedList<SearchKeyValEl>();
+		
+		this.keyValueMap.clear();
+		HashMap<String, SearchKeyValEl> map =getAllSearchKeyValEl(periodType);
+		if (map == null)
+			return allFoundElts;
+
+		for (String key : map.keySet()) {
+			SearchKeyValEl el = map.get(key);
+			if(el.searchValue(document)){
+				allFoundElts.add(el);
+				this.keyValueMap.put(el.getKey(), el.value);
+			}
+		}
+		
+		return allFoundElts;
+	}
+	
+	public LinkedList<SearchKeyValEl> parseQuaterlyDocument(String document){
+		return parseDocument(document,FinancialPoint.PeriodeTypeQuaterly);
+	}
+	public LinkedList<SearchKeyValEl> parseAnnualyDocument(String document){
+		return parseDocument(document,FinancialPoint.PeriodeTypeAnnual);
+	}
+	
 	
 	//this.setParam(key, docs);
 	
@@ -292,12 +326,13 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		public String sectorKey;
 		public String periodType;
 		
-		public String activation;
-		public String startLineWith;
+		public String activation="";
+		public String startLineWith="";
 		public int position=0;
 		public int factor=1;
 		
 		public long value=Long.MIN_VALUE;
+		private String foundString="";
 		
 		public SearchKeyValEl(String periodType,String fieldKey,String sectorKey){
 			this.fieldKey=fieldKey;
@@ -332,7 +367,52 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 			return activation+";"+startLineWith+";"+String.valueOf(position)+";"+String.valueOf(factor);
 		}
 		
-		
+		public boolean searchValue(String content){
+			//TODO
+			//logger.info("Start: "+this.toString());
+			value=Long.MIN_VALUE;
+			boolean isActivated=false;
+			String[] allLines=content.split("\n");
+			for(int i=0;i<allLines.length;i++){
+				String line=allLines[i];
+				if(line.contains(this.activation))isActivated=true;
+				
+				if(!isActivated)continue;
+				
+				logger.info("Activated: "+line);
+				
+				if(line.startsWith(this.startLineWith)){
+					String newLine=line.replaceFirst(this.startLineWith, "");
+					while(newLine.contains("  ")){
+						newLine=newLine.replaceAll("  ", " ");
+					}
+					
+					String[] tockens=newLine.split(" ");
+					logger.info("Number of tockens: "+tockens.length);
+					if(tockens.length>this.position && !tockens[this.position].isEmpty()){
+						foundString=tockens[this.position];
+						this.value=(long) (this.factor*Float.parseFloat(foundString.replace(",", "")));
+					}
+					isActivated=false;
+				}
+				
+				if(!isActivated)break;
+				
+			}
+			
+			return value!=Long.MIN_VALUE;
+			
+		}
+
+		@Override
+		public String toString() {
+			return "SearchKeyValEl [fieldKey=" + fieldKey + ", sectorKey="
+					+ sectorKey + ", periodType=" + periodType
+					+ ", activation=" + activation + ", startLineWith="
+					+ startLineWith + ", position=" + position + ", factor="
+					+ factor + ", value=" + value + ", foundString="
+					+ foundString + "]";
+		}
 		
 		
 		
