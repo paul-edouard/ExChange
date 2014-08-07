@@ -391,7 +391,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 					logger.info("Number of tockens: "+tockens.length);
 					if(tockens.length>this.position && !tockens[this.position].isEmpty()){
 						foundString=tockens[this.position];
-						this.value=(long) (this.factor*Float.parseFloat(foundString.replace(",", "")));
+						this.value=(long) (this.factor*Double.parseDouble(foundString.replace(",", "")));
 					}
 					isActivated=false;
 				}

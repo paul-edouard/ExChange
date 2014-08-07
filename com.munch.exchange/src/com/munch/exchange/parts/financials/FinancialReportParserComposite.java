@@ -308,22 +308,13 @@ public class FinancialReportParserComposite extends Composite {
 		
 		Composite composite_3 = new Composite(grpDocuments, SWT.NONE);
 		composite_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		composite_3.setLayout(new GridLayout(3, false));
+		composite_3.setLayout(new GridLayout(2, false));
 		
 		Label lblPattern = new Label(composite_3, SWT.NONE);
 		lblPattern.setText("Pattern: ");
 		
 		textPattern = new Text(composite_3, SWT.BORDER);
 		textPattern.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
-		Button btnReparse = new Button(composite_3, SWT.NONE);
-		btnReparse.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				parseDocument();
-			}
-		});
-		btnReparse.setText("Reparse");
 		
 		comboDocuments = new Combo(grpDocuments, SWT.NONE);
 		comboDocuments.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -334,6 +325,27 @@ public class FinancialReportParserComposite extends Composite {
 		
 		Composite compositeRight = new Composite(sashForm, SWT.NONE);
 		compositeRight.setLayout(new GridLayout(1, false));
+		
+		Composite composite_1 = new Composite(compositeRight, SWT.NONE);
+		composite_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		composite_1.setLayout(new GridLayout(2, false));
+		
+		Button btnReparse = new Button(composite_1, SWT.NONE);
+		btnReparse.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				parseDocument();
+			}
+		});
+		btnReparse.setText("Reparse");
+		
+		Button btnSendToTable = new Button(composite_1, SWT.NONE);
+		btnSendToTable.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+		btnSendToTable.setText("Send to Table");
 		
 		treeViewer = new TreeViewer(compositeRight,  SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL);
