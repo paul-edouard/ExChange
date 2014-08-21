@@ -89,6 +89,8 @@ public class FredSeries {
 	
 	private JSONObject getFirstSeries(){
 		JSONObject obj=this.getJSONObject();
+		if(obj==null)return null;
+		if(!obj.has("seriess"))return null;
 		JSONArray  array=obj.getJSONArray("seriess");
 		for(int i=0;i<array.length();i++){
 			//Object o=array.get(i);

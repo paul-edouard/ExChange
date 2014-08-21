@@ -26,7 +26,6 @@ public class FinancialReportEditingSupport extends EditingSupport {
 		this.financialReportParserComposite=f;
 		this.editor = new TextCellEditor(this.financialReportParserComposite.getTreeViewer().getTree());
 		this.modus=modus;
-		
 	}
 
 	@Override

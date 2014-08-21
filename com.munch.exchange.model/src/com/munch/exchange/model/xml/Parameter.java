@@ -27,7 +27,7 @@ public class Parameter implements XmlElementIF, Serializable {
 	private Collection<Parameter> childs;
 	
 	public enum Type implements Serializable {
-		INTEGER(1), STRING(2), FLOAT(3), NONE(0), PARAMETER(4);
+		INTEGER(1), STRING(2), FLOAT(3), NONE(0), PARAMETER(4), DOUBLE(5);
 		private int val;
 
 		private Type(int value) {
@@ -97,6 +97,14 @@ public class Parameter implements XmlElementIF, Serializable {
 		this.childs=new LinkedList<Parameter>();
 	}
 	
+	public Parameter(String key, double value) {
+		super();
+		this.key = key;
+		this.value = value;
+		this.type = Type.DOUBLE;
+		this.childs=new LinkedList<Parameter>();
+	}
+	
 	
 	private Parameter(String key, Object value, Type type) {
 		super();
@@ -146,6 +154,10 @@ public class Parameter implements XmlElementIF, Serializable {
 				type=Type.INTEGER;
 			else if(value instanceof Float)
 				type=Type.FLOAT;
+			else if(value instanceof Double)
+				type=Type.DOUBLE;
+			else if(value instanceof Parameter)
+				type=Type.PARAMETER;
 		}
 		
 		return type;
@@ -195,6 +207,9 @@ public class Parameter implements XmlElementIF, Serializable {
 			break;
 		case FLOAT:
 			value=Float.parseFloat(val);
+			break;
+		case DOUBLE:
+			value=Double.parseDouble(val);
 			break;	
 
 		default:
@@ -213,6 +228,9 @@ public class Parameter implements XmlElementIF, Serializable {
 			
 		case FLOAT:
 			return String.valueOf((Float) value);
+		
+		case DOUBLE:
+			return String.valueOf((Double) value);
 
 		default:
 			return String.valueOf( value);

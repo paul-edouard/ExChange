@@ -1,5 +1,6 @@
 package com.munch.exchange.model.xml;
 
+import java.awt.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -45,6 +46,12 @@ public class ParameterElement {
 		Object o=getParam(key,Parameter.Type.INTEGER);
 		if(o!=null && o instanceof Float)return (Float)o;
 		return Float.MIN_VALUE;
+	}
+	
+	protected Double getDoubleParam(String key){
+		Object o=getParam(key,Parameter.Type.DOUBLE);
+		if(o!=null && o instanceof Double)return (Double)o;
+		return Double.MIN_VALUE;
 	}
 	
 	protected Object getParam(String key, Parameter.Type type){

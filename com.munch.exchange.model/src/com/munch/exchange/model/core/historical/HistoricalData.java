@@ -314,9 +314,16 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	
 	
 	public float calculateMaxProfit(int[] period, String field){
-		float maxProfitPercent=0;
-		
 		LinkedList<HistoricalPoint> pList=getPointsFromPeriod(period,getNoneEmptyPoints());
+		return calculateMaxProfit(pList,field);
+	}
+	
+	public float calculateMaxProfit(String field){
+		return calculateMaxProfit(getNoneEmptyPoints(),field);
+	}
+	
+	private float calculateMaxProfit(LinkedList<HistoricalPoint> pList , String field){
+		float maxProfitPercent=0;
 		if(pList.isEmpty() || pList.size()==1){
 			logger.info("Plist is empty");
 			return 0;
@@ -335,6 +342,8 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		
 		return maxProfitPercent/pList.getFirst().get(field);
 	}
+	
+	
 	
 	public float calculateMaxProfit(Calendar startdate, String field){
 		int[] period=calculatePeriod(startdate);

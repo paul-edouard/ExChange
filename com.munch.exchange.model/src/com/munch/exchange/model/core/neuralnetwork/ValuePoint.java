@@ -1,0 +1,101 @@
+package com.munch.exchange.model.core.neuralnetwork;
+
+import java.util.Calendar;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import com.munch.exchange.model.core.DatePoint;
+import com.munch.exchange.model.tool.DateTool;
+import com.munch.exchange.model.xml.XmlParameterElement;
+
+public class ValuePoint extends XmlParameterElement implements Comparable<ValuePoint> {
+	
+	static final String FIELD_Date="Date";
+	static final String FIELD_Value="Value";
+	
+	
+	private Calendar date=Calendar.getInstance();
+	private double value=0;
+	
+	public ValuePoint(Calendar date,double value){
+		this.date=date;
+		this.value=value;
+	}
+	
+	public ValuePoint(){
+		
+	}
+	
+	public Calendar getDate() {
+		return date;
+	}
+
+	public void setDate(Calendar date) {
+	changes.firePropertyChange(FIELD_Date, this.date, this.date = date);}
+	
+
+	public double getValue() {
+		return value;
+	}
+
+	public void setValue(double value) {
+	changes.firePropertyChange(FIELD_Value, this.value, this.value = value);}
+	
+
+	@Override
+	protected void initAttribute(Element rootElement) {
+		this.setDate(DateTool.StringToDate(rootElement.getAttribute(FIELD_Date)));
+		this.setValue(Double.valueOf(rootElement.getAttribute(FIELD_Value)));
+	}
+
+	@Override
+	protected void initChild(Element childElement) {}
+
+	@Override
+	protected void setAttribute(Element rootElement) {
+		rootElement.setAttribute(FIELD_Date,DateTool.dateToString( this.getDate()));
+		rootElement.setAttribute(FIELD_Value,String.valueOf( this.getValue()));
+	}
+
+	@Override
+	protected void appendChild(Element rootElement, Document doc) {}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((date == null) ? 0 : date.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		
+		if (!(obj instanceof ValuePoint)) {
+			return false;
+		}
+		ValuePoint other = (ValuePoint) obj;
+		if (date == null) {
+			if (other.date != null) {
+				return false;
+			}
+		} else if (!date.equals(other.date)) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public int compareTo(ValuePoint o) {
+		 if( this.date.getTimeInMillis() < o.date.getTimeInMillis() )   
+			 return -1;        
+		 if( this.date.getTimeInMillis() >  o.date.getTimeInMillis())  
+			 return 1; 
+		return 0;
+	}
+
+}

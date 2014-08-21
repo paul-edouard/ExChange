@@ -27,6 +27,7 @@ public class QuoteLoader extends Job {
 	boolean stop=false;
 	public static final int RESTART_TIMEOUT=20000;
 	
+	private int currentRestartTimeout=RESTART_TIMEOUT;
 	
 	@Inject
 	IQuoteProvider quoteProvider;
@@ -111,9 +112,15 @@ public class QuoteLoader extends Job {
 		}
 		
 		if(totalUpdatedRates>0)
-			schedule(RESTART_TIMEOUT);
+			currentRestartTimeout=RESTART_TIMEOUT;
 		else
-			schedule(RESTART_TIMEOUT*3);
+			currentRestartTimeout+=RESTART_TIMEOUT;
+		
+		if(currentRestartTimeout>10*RESTART_TIMEOUT)
+			currentRestartTimeout=10*RESTART_TIMEOUT;
+		
+		schedule(currentRestartTimeout);
+		
 		return Status.OK_STATUS;
 		
 	}

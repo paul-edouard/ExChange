@@ -34,6 +34,7 @@ import com.munch.exchange.parts.composite.RateTitle;
 import com.munch.exchange.parts.composite.RateWeb;
 import com.munch.exchange.parts.composite.StockInfoGroup;
 import com.munch.exchange.parts.financials.StockFinancials;
+import com.munch.exchange.parts.neuralnetwork.NeuralNetworkComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IKeyStatisticProvider;
 
@@ -66,6 +67,9 @@ public class RateEditorPart {
 	RateChart rateChart;
 	RateWeb rateWeb;
 	StockFinancials stockFinancials;
+	NeuralNetworkComposite neuronalNetworkComposite;
+	
+	
 	RateCommonInfoGroup commonInfoComposite;
 	Shell shell;
 	HistoricalDataLoader historicalDataLoader;
@@ -92,8 +96,11 @@ public class RateEditorPart {
 		createOverviewTabFolderItem(tabFolder, "Overview");
 		createWebTabFolder(tabFolder,"Web");
 		createChartTabFolder(tabFolder, "Chart");
-		if(rate instanceof Stock )
+		if(rate instanceof Stock ){
 			createStockFinancialsTabFolder(tabFolder, "Financials");
+			createStockNeuronalNetworkTabFolder(tabFolder, "Neuronal Network");
+			
+		}
 		
 		rate.getHistoricalData().addUsedClass(this.getClass());
 		
@@ -214,6 +221,37 @@ public class RateEditorPart {
 		stockFinancials.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 	}
+	
+	
+	// Neuronal Network
+	private void createStockNeuronalNetworkTabFolder(TabFolder tabFolder,String title) {
+		TabItem tbtmNewItem = new TabItem(tabFolder, SWT.NONE);
+		tbtmNewItem.setText(title);
+
+		Composite parentComposite = new Composite(tabFolder, SWT.NONE);
+		tbtmNewItem.setControl(parentComposite);
+		GridLayout gridLayout = new GridLayout(1, false);
+		gridLayout.marginHeight = 0;
+		// gridLayout.verticalSpacing = 0;
+		gridLayout.marginWidth = 0;
+		parentComposite.setLayout(gridLayout);
+
+		// Create a context instance
+		IEclipseContext localContact = EclipseContextFactory.create();
+		localContact.set(Composite.class, parentComposite);
+		localContact.setParent(context);
+
+		// ////////////////////////////////
+		// Create the Chart Composite
+		// ////////////////////////////////
+		neuronalNetworkComposite = ContextInjectionFactory.make(
+				NeuralNetworkComposite.class, localContact);
+		neuronalNetworkComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL,
+				true, true, 1, 1));
+
+	}
+	
+	
 	
 	private void createWebTabFolder(TabFolder tabFolder, String title){
 		TabItem tbtmNewItem = new TabItem(tabFolder, SWT.NONE);

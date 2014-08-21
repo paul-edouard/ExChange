@@ -41,6 +41,7 @@ public class FredSeriesVintageDate {
 		LinkedList<Calendar> dateList=new LinkedList<Calendar>();
 		
 		JSONObject obj=this.getJSONObject();
+		if(obj==null)return dateList;
 		JSONArray  array=obj.getJSONArray("vintage_dates");
 		//System.out.println(array.length());
 		for(int i=0;i<array.length();i++){

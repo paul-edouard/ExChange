@@ -83,15 +83,15 @@ public class YQL {
 			
 			is.close();
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
+			logger.info("UnsupportedEncodingException: "+e);
 			e.printStackTrace();
 		}
 		catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.info("MalformedURLException: "+e);
+			//e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.info("IOException: "+e);
+			//e.printStackTrace();
 		}
 		
 		return result;

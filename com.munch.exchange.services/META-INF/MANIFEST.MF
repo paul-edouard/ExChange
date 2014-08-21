@@ -10,6 +10,6 @@ Require-Bundle: com.munch.exchange.model;bundle-version="1.0.0",
  org.eclipse.jface;bundle-version="3.9.1",
  org.eclipse.core.runtime;bundle-version="3.9.0",
  com.munch.exchange.libs;bundle-version="1.0.0"
-Service-Component: Component/ExchangeRateProvider.xml,Component/AnalystEstimationProvider.xml,Component/DividentProvider.xml,Component/FinancialsProvider.xml,Component/HistoricalDataProvider.xml,Component/KeyStatisticProvider.xml,Component/QuoteProvider.xml,Component/BundleResource.xml,Component/OptimizationResultsProvider.xml,
- Component/WatchlistProvider.xml
+Service-Component: Component/ExchangeRateProvider.xml,Component/AnalystEstimationProvider.xml,Component/DividentProvider.xml,Component/FinancialsProvider.xml,Component/HistoricalDataProvider.xml,Component/KeyStatisticProvider.xml,Component/QuoteProvider.xml,Component/BundleResource.xml,Component/OptimizationResultsProvider.xml,Component/WatchlistProvider.xml,
+ Component/NeuralNetworkProvider.xml
 Export-Package: com.munch.exchange.services;uses:="org.eclipse.jface.resource,org.eclipse.swt.graphics,com.munch.exchange.model.core"

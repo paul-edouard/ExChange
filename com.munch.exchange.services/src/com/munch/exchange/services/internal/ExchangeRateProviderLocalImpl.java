@@ -448,8 +448,8 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			
 			FredSeries f_s=new FredSeries(com);
 			EconomicData n_ed=f_s.getEconomicData();
-			
-			com.setEnd(n_ed.getEnd());
+			if(n_ed!=null)
+				com.setEnd(n_ed.getEnd());
 			
 			isUpdated=true;
 		}

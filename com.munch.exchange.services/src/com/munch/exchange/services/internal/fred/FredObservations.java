@@ -63,6 +63,7 @@ public class FredObservations {
 		plist=new LinkedList<HistoricalPoint>();
 		
 		JSONObject obj=this.getJSONObject();
+		if(obj==null)return plist;
 		JSONArray  array=obj.getJSONArray("observations");
 		for(int i=0;i<array.length();i++){
 			if(array.get(i) instanceof JSONObject){
