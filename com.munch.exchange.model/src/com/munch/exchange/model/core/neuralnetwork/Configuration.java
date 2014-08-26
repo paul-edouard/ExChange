@@ -3,8 +3,11 @@ package com.munch.exchange.model.core.neuralnetwork;
 import java.util.Calendar;
 import java.util.LinkedList;
 
+import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
+import org.neuroph.core.learning.LearningRule;
+import org.neuroph.nnet.MultiLayerPerceptron;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -34,7 +37,18 @@ public class Configuration extends XmlParameterElement {
 	
 	private Calendar lastInputPointDate=null;
 	
+	private MultiLayerPerceptron currentNetwork;
 	
+	
+	public MultiLayerPerceptron getCurrentNetwork() {
+		return currentNetwork;
+	}
+
+	public void setCurrentNetwork(MultiLayerPerceptron currentNetwork) {
+	this.currentNetwork = currentNetwork;
+	}
+	
+
 	public DataSet createTrainingDataSet(){
 		
 		

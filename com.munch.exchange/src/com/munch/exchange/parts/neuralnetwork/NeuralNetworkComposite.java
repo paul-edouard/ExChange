@@ -92,6 +92,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private NeuralNetworkOutputObjFunc objFunc;
 	private Optimizer<double[]> optimizer = new Optimizer<double[]>();
 	
+	private NeuralNetworkChart neuralNetworkChart;
 	
 	private double maxProfit=0;
 	private double maxPenaltyProfit=0;
@@ -366,9 +367,10 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				logger.info("Number of input: "+nbOfInput);
 				// create multi layer perceptron
 		        MultiLayerPerceptron myMlPerceptron = new MultiLayerPerceptron(TransferFunctionType.SIGMOID, nbOfInput,nbOfInput/2,nbOfInput/4,nbOfInput/8, 1);
+		        stock.getNeuralNetwork().getConfiguration().setCurrentNetwork(myMlPerceptron);
 		        
 		        ResilientPropagation resilientPropagation=new ResilientPropagation();
-		        resilientPropagation.setMaxIterations(18000);
+		        resilientPropagation.setMaxIterations(100);
 		        
 		        myMlPerceptron.setLearningRule(resilientPropagation);
 		        
@@ -427,8 +429,12 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		textGenError.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Composite compositeGraph = new Composite(compositeRight, SWT.NONE);
+		compositeGraph.setLayout(new GridLayout(1, false));
 		compositeGraph.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		sashForm.setWeights(new int[] {401, 595});
+		
+		//TODO
+		createNeuralNetworkChart(ctxt,compositeGraph);
 		
 		
 		treeViewer.refresh();
@@ -438,6 +444,20 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		fireReadyToTrain();
 		
 	}
+	
+	private void createNeuralNetworkChart(IEclipseContext context, Composite parentComposite){
+		//Create a context instance
+		IEclipseContext localContact=EclipseContextFactory.create();
+		localContact.set(Composite.class, parentComposite);
+		localContact.setParent(context);
+						
+		//////////////////////////////////
+		//Create the Chart Composite
+		//////////////////////////////////
+		neuralNetworkChart=ContextInjectionFactory.make( NeuralNetworkChart.class,localContact);
+		neuralNetworkChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	}
+	
 	
 	private void fireReadyToTrain(){
 		Configuration config=stock.getNeuralNetwork().getConfiguration();
@@ -586,6 +606,10 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
     public void handleLearningEvent(LearningEvent event) {
         BackPropagation bp = (BackPropagation)event.getSource();
         System.out.println(bp.getCurrentIteration() + ". iteration : "+ bp.getTotalNetworkError());
+        
+        eventBroker.send(IEventConstant.NEURAL_NETWORK_NEW_CURRENT,stock.getUUID());
+        
+        
     } 
 	
 	/**
