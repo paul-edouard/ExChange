@@ -2,6 +2,7 @@ package com.munch.exchange.parts.neuralnetwork;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -75,6 +76,7 @@ import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.nnet.learning.BackPropagation;
 import org.neuroph.nnet.learning.MomentumBackpropagation;
 import org.neuroph.nnet.learning.ResilientPropagation;
+import org.neuroph.util.NeuronProperties;
 import org.neuroph.util.TransferFunctionType;
 
 public class NeuralNetworkComposite extends Composite implements LearningEventListener{
@@ -366,11 +368,21 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				int nbOfInput=trainingSet.getRowAt(0).getInput().length;
 				logger.info("Number of input: "+nbOfInput);
 				// create multi layer perceptron
-		        MultiLayerPerceptron myMlPerceptron = new MultiLayerPerceptron(TransferFunctionType.SIGMOID, nbOfInput,nbOfInput/2,nbOfInput/4,nbOfInput/8, 1);
+				List<Integer> neuronsInLayers=new LinkedList<Integer>();
+				neuronsInLayers.add(nbOfInput);
+				neuronsInLayers.add(nbOfInput/2);
+				neuronsInLayers.add(nbOfInput/4);
+				neuronsInLayers.add(1);
+				
+				NeuronProperties neuronProperties = new NeuronProperties();
+                neuronProperties.setProperty("useBias", false);
+                neuronProperties.setProperty("transferFunction", TransferFunctionType.SIGMOID);
+				
+		        MultiLayerPerceptron myMlPerceptron = new MultiLayerPerceptron(neuronsInLayers, neuronProperties);
 		        stock.getNeuralNetwork().getConfiguration().setCurrentNetwork(myMlPerceptron);
 		        
 		        ResilientPropagation resilientPropagation=new ResilientPropagation();
-		        resilientPropagation.setMaxIterations(100);
+		        resilientPropagation.setMaxIterations(1000);
 		        
 		        myMlPerceptron.setLearningRule(resilientPropagation);
 		        

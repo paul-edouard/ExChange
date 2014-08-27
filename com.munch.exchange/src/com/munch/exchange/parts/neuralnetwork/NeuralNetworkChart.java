@@ -1,11 +1,14 @@
 package com.munch.exchange.parts.neuralnetwork;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import javax.inject.Inject;
 
+import org.apache.log4j.Logger;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.ui.di.UIEventTopic;
@@ -17,8 +20,12 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBubbleRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.DefaultXYZDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
+import org.neuroph.core.Connection;
 import org.neuroph.core.Layer;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.Neuron;
@@ -28,21 +35,32 @@ import org.neuroph.nnet.MultiLayerPerceptron;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.services.IExchangeRateProvider;
 
 public class NeuralNetworkChart extends Composite {
 	
 	
+	private static Logger logger = Logger.getLogger(NeuralNetworkChart.class);
+	
 	private JFreeChart chart;
 	private Composite compositeChart;
 	private XYBubbleRenderer bubbleRenderer=new XYBubbleRenderer(1);
+	private XYLineAndShapeRenderer lineAndShapeRenderer =new XYLineAndShapeRenderer(true, false);
+	
 	private DefaultXYZDataset xyzDataset=new DefaultXYZDataset();
+	private XYSeriesCollection xySeriesCollection=new XYSeriesCollection();
 	
 	private MultiLayerPerceptron neuralNetwork;
 	private Stock stock;
 	
+	private HashMap<Neuron, double[]> neuronXYZPosMap=new HashMap<Neuron, double[]>();
+	
+	
 	@Inject
 	private IExchangeRateProvider exchangeRateProvider;
+	
+	
 	
 	/**
 	 * Create the composite.
@@ -97,7 +115,6 @@ public class NeuralNetworkChart extends Composite {
         chart = new JFreeChart("Network",
                 JFreeChart.DEFAULT_TITLE_FONT, plot, false);
         chart.setBackgroundPaint(Color.white);
-        
       
         return chart;
     	
@@ -109,8 +126,9 @@ public class NeuralNetworkChart extends Composite {
        NumberAxis domainAxis = new NumberAxis(name);
        domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
        domainAxis.setAutoRange(true);
-       domainAxis.setLowerMargin(0.15);
-       domainAxis.setUpperMargin(0.15);
+       domainAxis.setLowerMargin(0.05);
+       domainAxis.setUpperMargin(0.05);
+       domainAxis.setVisible(false);
        return domainAxis;
    }
     
@@ -121,6 +139,9 @@ public class NeuralNetworkChart extends Composite {
     	plot.setRenderer(bubbleRenderer);
     	plot.setDataset(xyzDataset);
     	
+    	plot.setRenderer(1, lineAndShapeRenderer);
+    	plot.setDataset(1, xySeriesCollection);
+    	
     	plot.setDomainPannable(true);
         plot.setRangePannable(true);
         
@@ -128,6 +149,7 @@ public class NeuralNetworkChart extends Composite {
         //plot1.setBackgroundPaint(Color.BLACK);
         plot.setDomainGridlinePaint(Color.white);
         plot.setRangeGridlinePaint(Color.white);
+        
          
         bubbleRenderer.setSeriesPaint(0, Color.blue);
     	
@@ -153,6 +175,8 @@ public class NeuralNetworkChart extends Composite {
     	
     	
     	Layer[] layers=neuralNetwork.getLayers();
+    	int numberOfConnections=0;
+    	
     	for(int i=0;i<layers.length;i++){
     		Layer layer=layers[i];
     		Neuron[] neurons=layer.getNeurons();
@@ -160,9 +184,30 @@ public class NeuralNetworkChart extends Composite {
     		for(int j=0;j<neurons.length;j++){
     			Neuron neuron=neurons[j];
     			
-    			y.add((i+1) * -5.0);
+    			y.add((i+0.2) * -5.0);
     			x.add(j * 20.0 - 10.0 * neurons.length);
     			z.add(neuron.getOutput() * 15);
+    			
+    			neuronXYZPosMap.put(neuron, new double[]{x.getLast(),y.getLast(),z.getLast()});
+    			
+    			Connection[] inputConnections=neuron.getInputConnections();
+    			logger.info("Layer: "+i+", Number of input connections: "+inputConnections.length);
+    			
+    			for(int k=0;k<inputConnections.length;k++){
+    				Connection connection=inputConnections[k];
+    				if(neuronXYZPosMap.containsKey(connection.getFromNeuron())){
+    					numberOfConnections++;
+    					XYSeries series = new XYSeries("Connection: "+numberOfConnections);
+    					double[] pos=neuronXYZPosMap.get(connection.getFromNeuron());
+    		            series.add(pos[0], pos[1]);
+    		            series.add(x.getLast(),y.getLast());
+    		            addConnectionSeries(connection,series);
+    				}
+    			}
+    			
+    			
+    			//neuron.
+    			
     		}
     		
     	}
@@ -178,12 +223,36 @@ public class NeuralNetworkChart extends Composite {
     	
     }
     
+    private void addConnectionSeries(Connection connection, XYSeries series){
+    	
+    	Color col=new Color(255,255,255);
+    	int val=(int)Math.min(255, Math.abs((int)255*connection.getWeight().getValue()));
+    	if(connection.getWeight().getValue()>0){
+    		col=new Color(val,0,255-val);
+    	}
+    	else{
+    		col=new Color(255-val,0,val);
+    	}
+    	this.xySeriesCollection.addSeries(series);
+    	int pos=xySeriesCollection.indexOf(series.getKey());
+		if(pos>=0){
+			lineAndShapeRenderer.setSeriesShapesVisible(pos, false);
+			lineAndShapeRenderer.setSeriesLinesVisible(pos, true);
+			lineAndShapeRenderer.setSeriesStroke(pos,new BasicStroke(10*(float)Math.abs(connection.getWeight().getValue())));
+			lineAndShapeRenderer.setSeriesPaint(pos, col);
+		}
+    	
+    }
+    
     private void clearDataSet(){
     	if(this.xyzDataset!=null){
     		while(xyzDataset.getSeriesCount()>0){
     			xyzDataset.removeSeries(xyzDataset.getSeriesKey(0));
     		}
     	}
+    	
+    	this.xySeriesCollection.removeAllSeries();
+    	
     }
     
     //################################
