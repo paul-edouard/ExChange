@@ -2,6 +2,7 @@ package com.munch.exchange.model.core.neuralnetwork;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Calendar;
 import java.util.LinkedList;
 
 import org.w3c.dom.Document;
@@ -21,6 +22,29 @@ public class ValuePointList extends LinkedList<ValuePoint> implements
 	private static final long serialVersionUID = -3034931276048074434L;
 	
 	protected PropertyChangeSupport changes = new PropertyChangeSupport(this);
+	
+	
+	/*
+	public void setNextValueDates(){
+		ValuePoint lastPoint=null;
+		long mid_diff=0;
+		for(ValuePoint point:this){
+			if(lastPoint!=null){
+				lastPoint.setNextValueDate(point.getDate());
+				mid_diff=point.getDate().getTimeInMillis()-lastPoint.getDate().getTimeInMillis();
+			}
+			lastPoint=point;
+		}
+		
+		if(this.getLast().getNextValueDate()==null && this.size()>1){
+			mid_diff=mid_diff/(this.size()-1);
+			Calendar expectedNextValue=Calendar.getInstance();
+			expectedNextValue.setTimeInMillis(this.getLast().getDate().getTimeInMillis()+mid_diff);
+		}
+		
+	}
+	*/
+	
 	
 	
 	public double[] toDoubleArray(){

@@ -219,6 +219,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnActivateDayOf.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				stock.getNeuralNetwork().getConfiguration()
+						.setDayOfWeekActivated(btnActivateDayOf.getSelection());
 			}
 		});
 		btnActivateDayOf.setText("Day of week");

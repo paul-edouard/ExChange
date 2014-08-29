@@ -13,9 +13,11 @@ public class ValuePoint extends XmlParameterElement implements Comparable<ValueP
 	
 	static final String FIELD_Date="Date";
 	static final String FIELD_Value="Value";
+	static final String FIELD_NextValueDate="NextValueDate";
 	
 	
 	private Calendar date=Calendar.getInstance();
+	private Calendar nextValueDate=null;
 	private double value=0;
 	
 	public ValuePoint(Calendar date,double value){
@@ -27,6 +29,15 @@ public class ValuePoint extends XmlParameterElement implements Comparable<ValueP
 		
 	}
 	
+	
+	public Calendar getNextValueDate() {
+		return nextValueDate;
+	}
+
+	public void setNextValueDate(Calendar nextValueDate) {
+	changes.firePropertyChange(FIELD_NextValueDate, this.nextValueDate, this.nextValueDate = nextValueDate);}
+	
+
 	public Calendar getDate() {
 		return date;
 	}

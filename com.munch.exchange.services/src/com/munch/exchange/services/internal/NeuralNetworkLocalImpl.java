@@ -93,7 +93,9 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		Configuration config=stock.getNeuralNetwork().getConfiguration();
 		//TODO
 		
-		//Step 1: search the last available input point date
+		//=======================================================
+		//==Step 1: search the last available input point date ==
+		//=======================================================
 		if(config.getPeriod()==PeriodType.DAY){
 			//Rate Series
 			for(TimeSeries series:config.getTimeSeriesFromCategory(TimeSeriesCategory.RATE)){
@@ -105,16 +107,30 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		config.setLastInputPointDate(config.getOutputPointList().getFirst().getDate());
 		
 		
-		//Step 2: create the input value lists
+		//===========================================
+		//==  Step 2: create the input value lists ==
+		//===========================================
 		if(config.getPeriod()==PeriodType.DAY){
 			//Rate Series
 			for(TimeSeries series:config.getTimeSeriesFromCategory(TimeSeriesCategory.RATE)){
 				series.getInputValues().clear();
 				for(HistoricalPoint his_point:hisPointList){
 					ValuePoint point=new ValuePoint(his_point.getDate(),his_point.get(series.getName()));
+					
+					//======================================
+					//==Set the next value date: + 1 DAY  ==
+					//======================================
+					Calendar expectedNextValue=Calendar.getInstance();
+					expectedNextValue.setTimeInMillis(his_point.getDate().getTimeInMillis()+PeriodType.DAY.getPeriod());
+					point.setNextValueDate(expectedNextValue);
+					
 					series.getInputValues().add(point);
 				}
-			}	
+			}
+			//Financial Series
+			for(TimeSeries series:config.getTimeSeriesFromCategory(TimeSeriesCategory.FINANCIAL)){
+				//series.adaptInputValuesToMasterValuePointList(masterValuePointList);
+			}
 		}
 		
 		

@@ -38,13 +38,68 @@ public class TimeSeries extends XmlParameterElement{
 		numberOfPastValues=12;
 	}
 	
+	public void adaptInputValuesToMasterValuePointList(ValuePointList masterValuePointList){
+		
+		ValuePointList adpatedInputValues=new ValuePointList();
+		
+		for(int i=0;i<masterValuePointList.size();i++){
+			
+			ValuePoint masterPoint=masterValuePointList.get(i);
+			ValuePoint correspondingInputPoint=null;
+			long calculatedTimeToNextValue=0;
+			for(ValuePoint point:inputValues){
+				
+				//Find the corresponding point
+				if(masterPoint.getDate().getTimeInMillis()>=point.getDate().getTimeInMillis()){
+					if(correspondingInputPoint==null){
+						correspondingInputPoint=point;
+						
+						//Calculate the time remaining to the next value
+						for(int j=i;j<masterValuePointList.size();j++){
+							ValuePoint nextMasterPoint=masterValuePointList.get(j);
+							if(nextMasterPoint.getNextValueDate().getTimeInMillis()<=point.getNextValueDate().getTimeInMillis()){
+								calculatedTimeToNextValue+=masterPoint.getNextValueDate().getTimeInMillis()-masterPoint.getDate().getTimeInMillis();
+							}
+							else{
+								break;
+							}
+						}
+						break;
+					}
+				}
+				
+			}
+			
+			//Create and add the new value point
+			if(correspondingInputPoint!=null){
+				ValuePoint newPoint=new ValuePoint(masterPoint.getDate(), correspondingInputPoint.getValue());
+				Calendar nextvalueDate=Calendar.getInstance();
+				nextvalueDate.setTimeInMillis(masterPoint.getDate().getTimeInMillis()+calculatedTimeToNextValue);
+				
+				adpatedInputValues.add(newPoint);
+				
+			}
+			
+		}
+		
+		
+		inputValues=adpatedInputValues;
+		
+	}
+	
 	
 	public LinkedList<double[]> transformSeriesToDoubleArrayList(Calendar lastInputPointDate){
 		LinkedList<LinkedList<Double>> doubleListList=new LinkedList<LinkedList<Double>>();
+		
+		//Initialize the Lists
+		if(this.isTimeRemainingActivated()){
+			doubleListList.add(new LinkedList<Double>());
+		}
 		for(int j=0;j<numberOfPastValues;j++){
 			doubleListList.add(new LinkedList<Double>());
 		}
 		
+		//Fill the lists
 		for(int i=0;i<inputValues.size()-1;i++){
 			ValuePoint point=inputValues.get(i);
 			if(point.getDate().getTimeInMillis()<lastInputPointDate.getTimeInMillis())continue;
@@ -52,20 +107,40 @@ public class TimeSeries extends XmlParameterElement{
 			for(int j=0;j<numberOfPastValues;j++){
 				doubleListList.get(j).add(inputValues.get(i-j).getValue());
 			}
+			
+			if(this.isTimeRemainingActivated()){
+				doubleListList.getLast().add((double)point.getNextValueDate().getTimeInMillis()-point.getDate().getTimeInMillis());
+			}
+			
 		}
 		
 		LinkedList<double[]> doubleArrayList=new LinkedList<double[]>();
-		for(int j=0;j<numberOfPastValues;j++){
+		for(int j=0;j<doubleListList.size();j++){
 			doubleArrayList.add(new double[doubleListList.getFirst().size()]);
 		}
 		
-		for(int j=0;j<numberOfPastValues;j++){
+		for(int j=0;j<doubleListList.size();j++){
 			for(int i=0;i<doubleListList.getFirst().size();i++){
 				doubleArrayList.get(j)[i]=doubleListList.get(j).get(i);
 			}
 		}
 		
 		return doubleArrayList;
+		
+	}
+	
+	public LinkedList<String> getInputNeuronNames(){
+		
+		LinkedList<String> names=new LinkedList<String>();
+		
+		for(int j=0;j<numberOfPastValues;j++){
+			names.add(this.category.name()+"_"+this.Name+"_"+String.valueOf(j+1));
+		}
+		
+		if(this.isTimeRemainingActivated()){
+			names.add(this.category.name()+"_"+this.Name+"_TimeRemaining");
+		}
+		return names;
 		
 	}
 	

@@ -21,6 +21,7 @@ public class Configuration extends XmlParameterElement {
 	
 	static final String FIELD_Period="Period";
 	static final String FIELD_DayOfWeekActivated="DayOfWeekActivated";
+	static final String FIELD_DayOfWeek="Day of Week";
 	static final String FIELD_Name="Name";
 	static final String FIELD_LastUpdate="LastUpdate";
 	static final String FIELD_AllTimeSeries="AllTimeSeries";
@@ -48,19 +49,36 @@ public class Configuration extends XmlParameterElement {
 	this.currentNetwork = currentNetwork;
 	}
 	
+	public LinkedList<String> getInputNeuronNames(){
+		
+		LinkedList<String> names=new LinkedList<String>();
+		if(dayOfWeekActivated){
+			names.add(FIELD_DayOfWeek);
+		}
+		for(TimeSeries series:this.getSortedTimeSeries()){
+			names.addAll(series.getInputNeuronNames());
+		}
+		
+		return names;
+	}
 
 	public DataSet createTrainingDataSet(){
 		
-		
+		//Create the input arrays
 		LinkedList<double[]> doubleArrayList=new LinkedList<double[]>();
-		for(TimeSeries series:allTimeSeries){
+		LinkedList<TimeSeries> sortedTimeSeries=this.getSortedTimeSeries();
+		if(dayOfWeekActivated){
+			createDayOfWeekSeries(sortedTimeSeries);
+		}
+		for(TimeSeries series:sortedTimeSeries){
 			doubleArrayList.addAll(series.transformSeriesToDoubleArrayList(lastInputPointDate));
 		}
 		
+		//Create the output array
 		double[] outputArray=createOutputArray(doubleArrayList.get(0).length);
 		
+		//Create the Training set
 		DataSet trainingSet = new DataSet(doubleArrayList.size(), 1);
-		
 		
 		for(int i=0;i<doubleArrayList.get(0).length;i++){
 			
@@ -74,12 +92,22 @@ public class Configuration extends XmlParameterElement {
 			}
 			
 			 trainingSet.addRow(new DataSetRow(input, output));
-			
 		}
 		
+		//Normalize the training set
 		trainingSet.normalize();
 		
 		return trainingSet;
+	}
+	
+	private void createDayOfWeekSeries(LinkedList<TimeSeries> sortedTimeSeries){
+		TimeSeries dayOfWeekSerie=new TimeSeries(FIELD_DayOfWeek, TimeSeriesCategory.RATE);
+		dayOfWeekSerie.setNumberOfPastValues(1);
+		for(ValuePoint point:sortedTimeSeries.getFirst().getInputValues()){
+			double dayofWeek=(double)point.getDate().get(Calendar.DAY_OF_WEEK);
+			dayOfWeekSerie.getInputValues().add(new ValuePoint(point.getDate(), dayofWeek));
+		}
+		sortedTimeSeries.addFirst(dayOfWeekSerie);
 	}
 	
 	private double[] createOutputArray(int maxNumberOfValues){
@@ -172,6 +200,19 @@ public class Configuration extends XmlParameterElement {
 	public LinkedList<TimeSeries> getAllTimeSeries() {
 		return allTimeSeries;
 	}
+	
+	public LinkedList<TimeSeries> getSortedTimeSeries(){
+		LinkedList<TimeSeries> list=new LinkedList<TimeSeries>();
+		for(TimeSeries series:this.getTimeSeriesFromCategory(TimeSeriesCategory.RATE)){
+			list.add(series);
+		}
+		for(TimeSeries series:this.getTimeSeriesFromCategory(TimeSeriesCategory.FINANCIAL)){
+			list.add(series);
+		}
+		return list;
+	}
+	
+	
 	
 	public LinkedList<TimeSeries> getTimeSeriesFromCategory(TimeSeriesCategory category){
 		LinkedList<TimeSeries> list=new LinkedList<TimeSeries>();
