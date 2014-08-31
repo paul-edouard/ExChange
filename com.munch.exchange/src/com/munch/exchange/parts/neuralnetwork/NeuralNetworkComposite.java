@@ -30,6 +30,7 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.parts.OptimizationErrorPart;
@@ -369,6 +370,16 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				
 				int nbOfInput=trainingSet.getRowAt(0).getInput().length;
 				logger.info("Number of input: "+nbOfInput);
+				
+				int nbofInner=4;
+				double[] con=new double[NetworkArchitecture.calculateActivatedConnectionsSize(nbOfInput, nbofInner)];
+				for(int i=0;i<con.length;i++){
+					con[i]=1;
+				}
+				logger.info("Number of doubles: "+con.length);
+				
+				NetworkArchitecture arch=new NetworkArchitecture(nbOfInput,nbofInner,con);
+				/*
 				// create multi layer perceptron
 				List<Integer> neuronsInLayers=new LinkedList<Integer>();
 				neuronsInLayers.add(nbOfInput);
@@ -381,23 +392,17 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
                 neuronProperties.setProperty("transferFunction", TransferFunctionType.SIGMOID);
 				
 		        MultiLayerPerceptron myMlPerceptron = new MultiLayerPerceptron(neuronsInLayers, neuronProperties);
-		        stock.getNeuralNetwork().getConfiguration().setCurrentNetwork(myMlPerceptron);
+		        
+		        
+		        */
+				org.neuroph.core.NeuralNetwork myMlPerceptron=arch.getNetworks().getFirst();
+		        stock.getNeuralNetwork().getConfiguration().setCurrentNetwork(arch.getNetworks().getFirst());
 		        
 		        ResilientPropagation resilientPropagation=new ResilientPropagation();
-		        resilientPropagation.setMaxIterations(1000);
+		        resilientPropagation.setMaxIterations(3);
 		        
 		        myMlPerceptron.setLearningRule(resilientPropagation);
 		        
-		        
-		        // enable batch if using MomentumBackpropagation
-		        /*
-		        if( myMlPerceptron.getLearningRule() instanceof MomentumBackpropagation ){
-		        	((MomentumBackpropagation)myMlPerceptron.getLearningRule()).setBatchMode(true);
-		        	((MomentumBackpropagation)myMlPerceptron.getLearningRule()).setMomentum(0.01);
-		        	((MomentumBackpropagation)myMlPerceptron.getLearningRule()).setMaxIterations(200);
-		        }
-		        */
-
 		        LearningRule learningRule = myMlPerceptron.getLearningRule();
 		        learningRule.addListener(NeuralNetworkComposite.this);
 		        
@@ -409,16 +414,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		        // test perceptron
 		        System.out.println("Testing trained neural network");
 		        testNeuralNetwork(myMlPerceptron, trainingSet);
-
-		        // save trained neural network
-		        //myMlPerceptron.save("myMlPerceptron.nnet");
-
-		        // load saved neural network
-		        //NeuralNetwork loadedMlPerceptron = NeuralNetwork.load("myMlPerceptron.nnet");
-
-		        // test loaded neural network
-		        //System.out.println("Testing loaded neural network");
-		        //testNeuralNetwork(loadedMlPerceptron, trainingSet);
+				
+		       
 				
 			}
 		});

@@ -3,6 +3,7 @@ package com.munch.exchange.model.core.neuralnetwork;
 import java.util.Calendar;
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
@@ -18,6 +19,7 @@ import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class Configuration extends XmlParameterElement {
 	
+	private static Logger logger = Logger.getLogger(Configuration.class);
 	
 	static final String FIELD_Period="Period";
 	static final String FIELD_DayOfWeekActivated="DayOfWeekActivated";
@@ -38,14 +40,14 @@ public class Configuration extends XmlParameterElement {
 	
 	private Calendar lastInputPointDate=null;
 	
-	private MultiLayerPerceptron currentNetwork;
+	private org.neuroph.core.NeuralNetwork currentNetwork;
 	
 	
-	public MultiLayerPerceptron getCurrentNetwork() {
+	public org.neuroph.core.NeuralNetwork getCurrentNetwork() {
 		return currentNetwork;
 	}
 
-	public void setCurrentNetwork(MultiLayerPerceptron currentNetwork) {
+	public void setCurrentNetwork(org.neuroph.core.NeuralNetwork currentNetwork) {
 	this.currentNetwork = currentNetwork;
 	}
 	

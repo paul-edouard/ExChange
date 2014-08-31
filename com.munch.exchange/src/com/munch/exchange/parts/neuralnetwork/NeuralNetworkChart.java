@@ -51,7 +51,7 @@ public class NeuralNetworkChart extends Composite {
 	private DefaultXYZDataset xyzDataset=new DefaultXYZDataset();
 	private XYSeriesCollection xySeriesCollection=new XYSeriesCollection();
 	
-	private MultiLayerPerceptron neuralNetwork;
+	private org.neuroph.core.NeuralNetwork neuralNetwork;
 	private Stock stock;
 	
 	private HashMap<Neuron, double[]> neuronXYZPosMap=new HashMap<Neuron, double[]>();
