@@ -66,8 +66,8 @@ public class QueensFitnessFunction extends OptimizationModule implements
     if ((rows == null) || (rows.length < c)) {
       this.mrows = rows = new int[c];
       this.mcols = cols = new int[c];
-      this.mdiagA = diagA = new int[c + c - 1];
-      this.mdiagB = diagB = new int[c + c - 1];
+      this.mdiagA = diagA = new int[c + c /*- 1*/];
+      this.mdiagB = diagB = new int[c + c  /*- 1*/];
     } else {
       Arrays.fill(rows = this.mrows, 0);
       Arrays.fill(cols = this.mcols, 0);

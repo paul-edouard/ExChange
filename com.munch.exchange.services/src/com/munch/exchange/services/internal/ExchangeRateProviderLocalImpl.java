@@ -370,7 +370,9 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		
 		boolean isUpdated=false;
 		
+		/*
 		Calendar today=Calendar.getInstance();
+		
 		if(rate.getLastUpdate()!=null && 
 				DateTool.dateToDayString( rate.getLastUpdate()).equals(DateTool.dateToDayString(today))){
 			return isUpdated;
@@ -379,9 +381,10 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			rate.setLastUpdate(today);
 			isUpdated=true;
 		}
+		*/
 		
 		// Update the End Date from YQL
-		if(rate instanceof Stock || rate instanceof Fund){
+		if(/*rate instanceof Stock || */rate instanceof Fund){
 			
 			
 			YQLStocks yqlStocks=new YQLStocks(rate.getSymbol());
@@ -426,6 +429,11 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			}
 			
 			
+		}
+		else if(rate instanceof Stock){
+			Stock stock=(Stock)rate;
+			stock.setEnd(Calendar.getInstance());
+			isUpdated=true;
 		}
 		//Update for Indice
 		else if(rate instanceof Indice){

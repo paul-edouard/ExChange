@@ -1,5 +1,6 @@
 package com.munch.exchange.model.core.neuralnetwork;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +31,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	private static Logger logger = Logger.getLogger(NetworkArchitecture.class);
 	
 	
-	public static String NETWORK_SAVE_PATH;
+	private static String NETWORK_SAVE_PATH;
 	
 	static final String FIELD_NumberOfInnerNeurons="NumberOfInnerNeurons";
 	static final String FIELD_NumberOfInputNeurons="NumberOfInputNeurons";
@@ -38,6 +39,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	static final String FIELD_MaxNumberOfSavedNetworks="MaxNumberOfSavedNetworks";
 	static final String FIELD_Networks="Networks";
+	static final String FIELD_Network="Network";
+	static final String FIELD_NetworkLabel="NetworkLabel";
 	
 	private int numberOfInnerNeurons;
 	private int numberOfInputNeurons;
@@ -49,7 +52,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	private List<Layer> layers;
 	
 	private int maxNumberOfSavedNetworks=50;
-	private LinkedList<org.neuroph.core.NeuralNetwork> networks=new LinkedList<org.neuroph.core.NeuralNetwork>();
+	private LinkedList<NeuralNetwork> networks=new LinkedList<NeuralNetwork>();
 	
 	
 	public NetworkArchitecture(int numberOfInputNeurons,int numberOfInnerNeurons,double[] cons ){
@@ -334,26 +337,40 @@ public class NetworkArchitecture extends XmlParameterElement {
 
 	@Override
 	protected void initAttribute(Element rootElement) {
-		// TODO Auto-generated method stub
 		
+		this.setNumberOfInnerNeurons(Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfInnerNeurons)));
+		this.setNumberOfInputNeurons(Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfInputNeurons)));
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	protected void initChild(Element childElement) {
-		// TODO Auto-generated method stub
 		
+		if(childElement.getTagName().equals(FIELD_Network)){
+			String networkLabel=childElement.getAttribute(FIELD_NetworkLabel);
+			NeuralNetwork nnet=NeuralNetwork.createFromFile(NETWORK_SAVE_PATH+File.pathSeparator+networkLabel+".nnet");
+			this.networks.add(nnet);
+		}
 	}
 
 	@Override
 	protected void setAttribute(Element rootElement) {
-		// TODO Auto-generated method stub
-		
+		rootElement.setAttribute(FIELD_NumberOfInnerNeurons,String.valueOf(this.getNumberOfInnerNeurons()));
+		rootElement.setAttribute(FIELD_NumberOfInputNeurons,String.valueOf(this.getNumberOfInputNeurons()));
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	protected void appendChild(Element rootElement, Document doc) {
-		// TODO Auto-generated method stub
 		
+		for(NeuralNetwork network:this.networks){
+			Element e=doc.createElement(FIELD_Network);
+			e.setAttribute(FIELD_NetworkLabel,String.valueOf(network.getLabel()));
+			//Save the network
+			network.save(NETWORK_SAVE_PATH+File.pathSeparator+network.getLabel()+".nnet");
+			rootElement.appendChild(e);
+		}
+	
 	}
 
 }
