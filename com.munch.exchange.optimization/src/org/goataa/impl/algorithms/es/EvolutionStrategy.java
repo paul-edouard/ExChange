@@ -226,7 +226,7 @@ public class EvolutionStrategy<X> extends
     int k=0;
     // the basic loop of the Evolution Strategy Algorithm 30.1
     for (;;) {
-      // for eachgeneration do...
+      // for each generation do...
 
       // for each individual in the population
       for (i = pop.length; (--i) >= 0;) {

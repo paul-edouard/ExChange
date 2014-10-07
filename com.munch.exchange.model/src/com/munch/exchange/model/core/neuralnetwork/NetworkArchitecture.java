@@ -55,6 +55,19 @@ public class NetworkArchitecture extends XmlParameterElement {
 	private LinkedList<NeuralNetwork> networks=new LinkedList<NeuralNetwork>();
 	
 	
+	public NetworkArchitecture(){}
+	
+	public NetworkArchitecture(int numberOfInputNeurons,int numberOfInnerNeurons,boolean[] cons ){
+		this.numberOfInputNeurons=numberOfInputNeurons;
+		this.numberOfInnerNeurons=numberOfInnerNeurons;
+		
+		int activatedConnectionsSize=calculateActivatedConnectionsSize(numberOfInputNeurons, numberOfInnerNeurons);
+		if(cons.length==activatedConnectionsSize){
+			this.actConsArray=cons;
+		}
+	}
+	
+	
 	public NetworkArchitecture(int numberOfInputNeurons,int numberOfInnerNeurons,double[] cons ){
 		
 		this.numberOfInputNeurons=numberOfInputNeurons;
@@ -73,21 +86,25 @@ public class NetworkArchitecture extends XmlParameterElement {
 			}
 		}
 		
+		addNewNeuralNetwork();
+		
+	}
+	
+	public void addNewNeuralNetwork(){
 		//Creation of the neurons
 		createNeuronMap();
-		
+				
 		//Creation of the connection matrix
 		convertActConsArrayToMatrix();
-		
+				
 		//Creation of the neuron connections
 		createNeuronConnection();
-		
+				
 		//Creation of the layers
 		createLayers();
-		
+				
 		//Creation of the first network
 		createNetwork();
-		
 	}
 	
 	
@@ -243,7 +260,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		//initialization of the weigths
 		network.randomizeWeights(new NguyenWidrowRandomizer(-0.7, 0.7));
 		
-		networks.clear();
+		//networks.clear();
 		networks.add(network);
 	}
 	
@@ -301,6 +318,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	
+	//****************************************
+	//***      GETTER AND SETTER          ****
+	//****************************************
 	
 	public int getNumberOfInnerNeurons() {
 		return numberOfInnerNeurons;
@@ -334,12 +354,56 @@ public class NetworkArchitecture extends XmlParameterElement {
 	public void setNetworks(LinkedList<org.neuroph.core.NeuralNetwork> networks) {
 	changes.firePropertyChange(FIELD_Networks, this.networks, this.networks = networks);}
 	
+	
+	public boolean[] getActConsArray() {
+		return actConsArray;
+	}
 
+
+	public void setActConsArray(boolean[] actConsArray) {
+		this.actConsArray = actConsArray;
+	}
+	
+	
+	
+	//****************************************
+	//***             XML                 ****
+	//****************************************
+	
+	
+
+
+	private String actConsToString(){
+		String ret="";
+		for(int i=0;i<actConsArray.length;i++){
+			if(i==actConsArray.length-1){
+				ret+=String.valueOf(actConsArray[i]);
+			}
+			else{
+				ret+=String.valueOf(actConsArray[i])+",";
+			}
+		}
+		
+		return ret;
+	}
+	
+	private void actConsFromString(String input){
+		
+		String[] tockens=input.split(",");
+		actConsArray=new boolean[tockens.length];
+		for(int i=0;i<tockens.length;i++){
+			actConsArray[i]=Boolean.valueOf(tockens[i]);
+		}
+		
+	}
+	
+	
 	@Override
 	protected void initAttribute(Element rootElement) {
 		
 		this.setNumberOfInnerNeurons(Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfInnerNeurons)));
 		this.setNumberOfInputNeurons(Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfInputNeurons)));
+		actConsFromString(rootElement.getAttribute(FIELD_ActivatedConnections));
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -357,6 +421,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	protected void setAttribute(Element rootElement) {
 		rootElement.setAttribute(FIELD_NumberOfInnerNeurons,String.valueOf(this.getNumberOfInnerNeurons()));
 		rootElement.setAttribute(FIELD_NumberOfInputNeurons,String.valueOf(this.getNumberOfInputNeurons()));
+		rootElement.setAttribute(FIELD_ActivatedConnections,actConsToString());
 	}
 
 	@SuppressWarnings("rawtypes")
