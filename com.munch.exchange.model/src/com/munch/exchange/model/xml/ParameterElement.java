@@ -54,6 +54,12 @@ public class ParameterElement {
 		return Double.MIN_VALUE;
 	}
 	
+	protected Boolean getBooleanParam(String key){
+		Object o=getParam(key,Parameter.Type.BOOLEAN);
+		if(o!=null && o instanceof Boolean)return (Boolean)o;
+		return false;
+	}
+	
 	protected Object getParam(String key, Parameter.Type type){
 		Parameter par_type=this.getParameter().getChild(key);
 		if(par_type!=null && par_type.getType()==type){
