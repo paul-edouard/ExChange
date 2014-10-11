@@ -32,6 +32,13 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	public static String ES_Rho="ES Rho";
 	public static String ES_Plus="ES Plus";
 	
+	
+	//Evolutionary Algorithm
+	public static String ALGORITHM_Simple_Generational_EA="Simple Generational EA";
+	
+	public static String EA_BinarySearchOperation_="ES Dimension";
+	
+	
 	//Selection Algorithm
 	public static String SELECTION_ALGORITHM="Selection Algorithm";
 	public static String SELECTION_ALGORITHM_Tournament="Tournament";

@@ -63,6 +63,7 @@ import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
+import org.eclipse.swt.widgets.Group;
 
 public class NeuralNetworkComposite extends Composite implements LearningEventListener{
 	
@@ -120,7 +121,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private Menu menu;
 	private MenuItem mntmAddSerie;
 	private MenuItem mntmRemove;
-	private Combo comboTrain;
 	private Button btnStartTrain;
 	
 	
@@ -334,16 +334,45 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		Composite compositeRight = new Composite(sashForm, SWT.NONE);
 		compositeRight.setLayout(new GridLayout(1, false));
 		
-		Composite compositeRightHeader = new Composite(compositeRight, SWT.NONE);
-		compositeRightHeader.setLayout(new GridLayout(6, false));
-		compositeRightHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		Group grpLearning = new Group(compositeRight, SWT.NONE);
+		grpLearning.setLayout(new GridLayout(6, false));
+		grpLearning.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		grpLearning.setText("Learning");
 		
-		comboTrain = new Combo(compositeRightHeader, SWT.NONE);
-		comboTrain.setEnabled(false);
-		comboTrain.setItems(new String[] {"Train", "Opt. and Train"});
-		comboTrain.setText("Train");
+		Label lblConfiguration = new Label(grpLearning, SWT.NONE);
+		lblConfiguration.setText("Configuration:");
 		
-		btnStartTrain = new Button(compositeRightHeader, SWT.NONE);
+		Button btnArchOptConf = new Button(grpLearning, SWT.NONE);
+		btnArchOptConf.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO Architecture Optimization configuration
+			}
+		});
+		btnArchOptConf.setText("Arch. Opt.");
+		
+		Button btnLearnOptConf = new Button(grpLearning, SWT.NONE);
+		btnLearnOptConf.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO Learn Optimization configuration
+			}
+		});
+		btnLearnOptConf.setText("Learn Opt.");
+		
+		Button btnLearnAlg = new Button(grpLearning, SWT.NONE);
+		btnLearnAlg.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO Learn Algorithm
+			}
+		});
+		btnLearnAlg.setText("Learn Alg.");
+		
+		Label label = new Label(grpLearning, SWT.NONE);
+		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		btnStartTrain = new Button(grpLearning, SWT.NONE);
 		btnStartTrain.setEnabled(false);
 		btnStartTrain.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -405,6 +434,10 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		});
 		btnStartTrain.setText("Start");
 		
+		Composite compositeRightHeader = new Composite(compositeRight, SWT.NONE);
+		compositeRightHeader.setLayout(new GridLayout(4, false));
+		compositeRightHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
 		Label lblError = new Label(compositeRightHeader, SWT.NONE);
 		lblError.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		lblError.setText("Error:");
@@ -458,8 +491,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		Configuration config=stock.getNeuralNetwork().getConfiguration();
 		boolean readyToTrain=config!=null && config.getAllTimeSeries()!=null && config.getOutputPointList()!=null &&
 				config.getAllTimeSeries().size()>0 && config.getOutputPointList().size()>0;
-		
-		comboTrain.setEnabled(readyToTrain);
 		btnStartTrain.setEnabled(readyToTrain);
 		
 	}
