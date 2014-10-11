@@ -1,10 +1,15 @@
 package com.munch.exchange.model.core.optimization;
 
+import java.util.LinkedList;
+
 import org.apache.log4j.Logger;
 import org.goataa.impl.algorithms.ea.selection.RandomSelection;
 import org.goataa.impl.algorithms.ea.selection.TournamentSelection;
 import org.goataa.impl.algorithms.es.EvolutionStrategy;
+import org.goataa.impl.searchOperations.strings.real.nullary.DoubleArrayUniformCreation;
+import org.goataa.impl.termination.StepLimitPropChange;
 import org.goataa.impl.utils.Individual;
+import org.goataa.spec.INullarySearchOperation;
 import org.goataa.spec.ISOOptimizationAlgorithm;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -35,6 +40,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	public static String SELECTION_ALGORITHM_Random="Random";
 	
 	//Nullary Search Operation
+	public static String NULLARY_SEARCH_OPERATION ="Nullary search operation";
 	public static String NULLARY_SEARCH_OPERATION_Uniform_Creation="Uniform_Creation";
 	
 	//Termination
@@ -42,7 +48,15 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	
 	
 	static final String FIELD_Type="Type";
+	static final String FIELD_Name="Name";
+	
+	
 	private String type;
+	private String name;
+	
+	public AlgorithmParameters(String name){
+		this.name=name;
+	}
 	
 	public ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> createAlgorithm(){
 		if(type.equals(ALGORITHM_Evolution_Strategy)){
@@ -60,13 +74,32 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 			// (lambda+mu) strategy 
 			ES.setPlus(this.getBooleanParam(ES_Plus));
 			
+			//Selection Algorithm
 			if(this.getStringParam(SELECTION_ALGORITHM).equals(SELECTION_ALGORITHM_Tournament)){
 				ES.setSelectionAlgorithm(new TournamentSelection(this.getIntegerParam(Tournament_Size)));
 			}
 			else if(this.getStringParam(SELECTION_ALGORITHM).equals(SELECTION_ALGORITHM_Random)){
 				ES.setSelectionAlgorithm(RandomSelection.RANDOM_SELECTION);
 			}
-			coucou
+			
+			// Nullary Search Operation
+			if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NULLARY_SEARCH_OPERATION_Uniform_Creation)){
+				
+				DoubleArrayUniformCreation creation=new DoubleArrayUniformCreation(ES.getDimension(), ES.getMinimum(), ES.getMaximum());
+				ES.setNullarySearchOperation(creation);
+			}
+			
+			int steps=0;
+			if(ES.isPlus()){
+				steps=steps*(ES.getLambda()+ES.getMu())+ES.getMu();
+			}
+			else{
+				steps=steps*ES.getLambda()+ES.getMu();
+			}
+			
+			
+			ES.setTerminationCriterion(new StepLimitPropChange<X>(steps));
+			
 			
 			return ES;
 		}
@@ -74,6 +107,29 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 		return null;
 		
 	}
+	
+	
+	public void addLastBestResults(ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> algorithm,OptimizationResults oldBestResults){
+		
+		if(!(algorithm instanceof EvolutionStrategy))return;
+		EvolutionStrategy<X> ES=(EvolutionStrategy<X>) algorithm;
+		
+		if(!(ES.getNullarySearchOperation() instanceof DoubleArrayUniformCreation))return;
+		
+		DoubleArrayUniformCreation creation=(DoubleArrayUniformCreation) ES.getNullarySearchOperation();
+		
+		LinkedList<double[]> oldResults =new LinkedList<double[]>();
+		if(oldBestResults!=null && oldBestResults.getResults()!=null){	
+			for(ResultEntity ent : oldBestResults.getResults()){
+				oldResults.add(ent.getDoubleArray());
+			}
+		}
+		
+		creation.setOldResults(oldResults);
+		
+		
+	}
+	
 
 	public String getType() {
 		return type;
@@ -84,9 +140,26 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	}
 	
 
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+	changes.firePropertyChange(FIELD_Name, this.name, this.name = name);}
+	
+	
+	
+	
+	
+	@Override
+	public String getTagName() {
+		return this.name;
+	}
+
 	@Override
 	protected void initAttribute(Element rootElement) {
 		this.setType(rootElement.getAttribute(FIELD_Type));
+		this.setName(rootElement.getAttribute(FIELD_Name));
 	}
 
 	@Override
@@ -98,6 +171,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	@Override
 	protected void setAttribute(Element rootElement) {
 		rootElement.setAttribute(FIELD_Type,this.getType());
+		rootElement.setAttribute(FIELD_Name,this.getName());
 	}
 
 	@Override

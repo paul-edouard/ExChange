@@ -12,6 +12,7 @@ import org.neuroph.nnet.MultiLayerPerceptron;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
 import com.munch.exchange.model.tool.DateTool;
@@ -29,6 +30,7 @@ public class Configuration extends XmlParameterElement {
 	static final String FIELD_AllTimeSeries="AllTimeSeries";
 	static final String FIELD_OutputPointList="OutputPointList";
 	static final String FIELD_LastInputPointDate="LastInputPointDate";
+	static final String FIELD_OptLearnParam="OptLearnParam";
 	
 	private PeriodType period=PeriodType.DAY;
 	private boolean dayOfWeekActivated=false;
@@ -39,17 +41,14 @@ public class Configuration extends XmlParameterElement {
 	private ValuePointList outputPointList=new ValuePointList();
 	
 	private Calendar lastInputPointDate=null;
+		
+	private AlgorithmParameters<Double> optLearnParam=new AlgorithmParameters<Double>("Optimization learn parameters");
+	private AlgorithmParameters<Boolean> optArchitectureParam=new AlgorithmParameters<Boolean>("Optimization architecture parameters");
+	private LearnParameters learnParam=new LearnParameters("Neural Network learn parameters");
 	
-	private org.neuroph.core.NeuralNetwork currentNetwork;
+	private int maxNumberOfSavedAchitectures=200;
+	private LinkedList<NetworkArchitecture> networkArchitectures=new LinkedList<NetworkArchitecture>();
 	
-	
-	public org.neuroph.core.NeuralNetwork getCurrentNetwork() {
-		return currentNetwork;
-	}
-
-	public void setCurrentNetwork(org.neuroph.core.NeuralNetwork currentNetwork) {
-	this.currentNetwork = currentNetwork;
-	}
 	
 	public LinkedList<String> getInputNeuronNames(){
 		
@@ -159,6 +158,15 @@ public class Configuration extends XmlParameterElement {
 	
 	}
 	
+	
+
+	public AlgorithmParameters<Double> getOptLearnParam() {
+		return optLearnParam;
+	}
+
+	public void setOptLearnParam(AlgorithmParameters<Double> optLearnParam) {
+	changes.firePropertyChange(FIELD_OptLearnParam, this.optLearnParam, this.optLearnParam = optLearnParam);}
+	
 
 	public ValuePointList getOutputPointList() {
 		return outputPointList;
@@ -241,18 +249,33 @@ public class Configuration extends XmlParameterElement {
 		this.setDayOfWeekActivated(Boolean.getBoolean(rootElement.getAttribute(FIELD_DayOfWeekActivated)));
 		
 		allTimeSeries.clear();
+		networkArchitectures.clear();
 		
 	}
 
 	@Override
 	protected void initChild(Element childElement) {
 		TimeSeries ent=new TimeSeries();
+		NetworkArchitecture arch=new NetworkArchitecture();
 		if(childElement.getTagName().equals(ent.getTagName())){
 			ent.init(childElement);
 			allTimeSeries.add(ent);
 		}
 		else if(childElement.getTagName().equals(outputPointList.getTagName())){
 			outputPointList.init(childElement);
+		}
+		else if(childElement.getTagName().equals(optLearnParam.getTagName())){
+			optLearnParam.init(childElement);
+		}
+		else if(childElement.getTagName().equals(learnParam.getTagName())){
+			learnParam.init(childElement);
+		}
+		else if(childElement.getTagName().equals(optArchitectureParam.getTagName())){
+			optArchitectureParam.init(childElement);
+		}
+		else if(childElement.getTagName().equals(arch.getTagName())){
+			arch.init(childElement);
+			networkArchitectures.add(arch);
 		}
 		
 	}
@@ -273,6 +296,13 @@ public class Configuration extends XmlParameterElement {
 			rootElement.appendChild(ent.toDomElement(doc));
 		}
 		rootElement.appendChild(outputPointList.toDomElement(doc));
+		rootElement.appendChild(optLearnParam.toDomElement(doc));
+		rootElement.appendChild(learnParam.toDomElement(doc));
+		rootElement.appendChild(optArchitectureParam.toDomElement(doc));
+		
+		for(NetworkArchitecture ent:networkArchitectures){
+			rootElement.appendChild(ent.toDomElement(doc));
+		}
 		
 	}
 

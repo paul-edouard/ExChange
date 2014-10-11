@@ -24,6 +24,7 @@ import org.neuroph.util.random.NguyenWidrowRandomizer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class NetworkArchitecture extends XmlParameterElement {
@@ -52,7 +53,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 	private List<Layer> layers;
 	
 	private int maxNumberOfSavedNetworks=50;
-	private LinkedList<NeuralNetwork> networks=new LinkedList<NeuralNetwork>();
+	private NeuralNetwork network=new NeuralNetwork();
+	
+	private OptimizationResults optResuts=new OptimizationResults();
 	
 	
 	public NetworkArchitecture(){}
@@ -261,7 +264,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		network.randomizeWeights(new NguyenWidrowRandomizer(-0.7, 0.7));
 		
 		//networks.clear();
-		networks.add(network);
+		this.network=network;
 	}
 	
 	private void convertActConsMatrixToArray(){
@@ -346,15 +349,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 	changes.firePropertyChange(FIELD_MaxNumberOfSavedNetworks, this.maxNumberOfSavedNetworks, this.maxNumberOfSavedNetworks = maxNumberOfSavedNetworks);}
 	
 	
-
-	public LinkedList<org.neuroph.core.NeuralNetwork> getNetworks() {
-		return networks;
-	}
-
-	public void setNetworks(LinkedList<org.neuroph.core.NeuralNetwork> networks) {
-	changes.firePropertyChange(FIELD_Networks, this.networks, this.networks = networks);}
-	
-	
 	public boolean[] getActConsArray() {
 		return actConsArray;
 	}
@@ -413,7 +407,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 		if(childElement.getTagName().equals(FIELD_Network)){
 			String networkLabel=childElement.getAttribute(FIELD_NetworkLabel);
 			NeuralNetwork nnet=NeuralNetwork.createFromFile(NETWORK_SAVE_PATH+File.pathSeparator+networkLabel+".nnet");
-			this.networks.add(nnet);
+			this.network=nnet;
+		}
+		else if(childElement.getTagName().equals(optResuts.getTagName())){
+			optResuts.init(childElement);
 		}
 	}
 
@@ -428,14 +425,16 @@ public class NetworkArchitecture extends XmlParameterElement {
 	@Override
 	protected void appendChild(Element rootElement, Document doc) {
 		
-		for(NeuralNetwork network:this.networks){
+		//for(NeuralNetwork network:this.networks){
 			Element e=doc.createElement(FIELD_Network);
 			e.setAttribute(FIELD_NetworkLabel,String.valueOf(network.getLabel()));
 			//Save the network
 			network.save(NETWORK_SAVE_PATH+File.pathSeparator+network.getLabel()+".nnet");
 			rootElement.appendChild(e);
-		}
-	
+		//}
+			
+			
+			rootElement.appendChild(optResuts.toDomElement(doc));
 	}
 
 }
