@@ -68,6 +68,11 @@ public class ParameterElement {
 		return null;
 	}
 	
+	public boolean hasParamKey(String key){
+		Parameter par_type=this.getParameter().getChild(key);
+		return par_type!=null;
+	}
+	
 	protected void setParam(String key, Object value){
 		
 		Parameter par_type=this.getParameter().getChild(key);

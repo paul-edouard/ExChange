@@ -3,9 +3,13 @@ package com.munch.exchange.model.core.optimization;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
+import org.goataa.impl.algorithms.ea.SimpleGenerationalEA;
 import org.goataa.impl.algorithms.ea.selection.RandomSelection;
 import org.goataa.impl.algorithms.ea.selection.TournamentSelection;
 import org.goataa.impl.algorithms.es.EvolutionStrategy;
+import org.goataa.impl.searchOperations.strings.bits.booleans.binary.BooleanArrayUniformCrossover;
+import org.goataa.impl.searchOperations.strings.bits.booleans.nullary.BooleanArrayUniformCreation;
+import org.goataa.impl.searchOperations.strings.bits.booleans.unary.BooleanArraySingleBitFlipMutation;
 import org.goataa.impl.searchOperations.strings.real.nullary.DoubleArrayUniformCreation;
 import org.goataa.impl.termination.StepLimitPropChange;
 import org.goataa.impl.utils.Individual;
@@ -23,7 +27,6 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	
 	//Evolution Strategy
 	public static String ALGORITHM_Evolution_Strategy="Evolution Strategy";
-	
 	public static String ES_Dimension="ES Dimension";
 	public static String ES_Minimum="ES Minimum";
 	public static String ES_Maximum="ES Maximum";
@@ -35,8 +38,11 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	
 	//Evolutionary Algorithm
 	public static String ALGORITHM_Simple_Generational_EA="Simple Generational EA";
-	
-	public static String EA_BinarySearchOperation_="ES Dimension";
+	public static String EA_MutationRate="EA Mutation Rate";
+	public static String EA_CrossoverRate="EA Crossover Rate";
+	public static String EA_PopulationSize="EA Population Size";
+	public static String EA_MatingPoolSize="EA Mating Pool Size";
+	public static String EA_Dimension="EA Dimension";
 	
 	
 	//Selection Algorithm
@@ -48,7 +54,17 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	
 	//Nullary Search Operation
 	public static String NULLARY_SEARCH_OPERATION ="Nullary search operation";
-	public static String NULLARY_SEARCH_OPERATION_Uniform_Creation="Uniform_Creation";
+	public static String NSO_Uniform_Creation="NSO Uniform Creation";
+	public static String NSO_BooleanArrayUniformCreation="NSO Boolean Array Uniform Creation";
+	
+	
+	//Binary Search Operation
+	public static String BINARY_SEARCH_OPERATION="Binary Search Operation";
+	public static String BSO_BooleanArrayUniformCrossover="BSO Boolean Array Uniform Crossover";
+	
+	//Unary Search Operation
+	public static String UNARY_SEARCH_OPERATION="Unary Search Operation";
+	public static String USO_BooleanArraySingleBitFlipMutation="USO Boolean Array Single Bit Flip Mutation";
 	
 	//Termination
 	public static String TERMINATION_Steps="Steps";
@@ -65,7 +81,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 		this.name=name;
 	}
 	
-	public ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> createAlgorithm(){
+	public ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> createDoubleAlgorithm(){
 		if(type.equals(ALGORITHM_Evolution_Strategy)){
 			//Creation
 			EvolutionStrategy<X> ES = new EvolutionStrategy<X>();
@@ -90,13 +106,13 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 			}
 			
 			// Nullary Search Operation
-			if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NULLARY_SEARCH_OPERATION_Uniform_Creation)){
+			if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_Uniform_Creation)){
 				
 				DoubleArrayUniformCreation creation=new DoubleArrayUniformCreation(ES.getDimension(), ES.getMinimum(), ES.getMaximum());
 				ES.setNullarySearchOperation(creation);
 			}
 			
-			int steps=0;
+			int steps=this.getIntegerParam(TERMINATION_Steps);
 			if(ES.isPlus()){
 				steps=steps*(ES.getLambda()+ES.getMu())+ES.getMu();
 			}
@@ -107,14 +123,66 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 			
 			ES.setTerminationCriterion(new StepLimitPropChange<X>(steps));
 			
-			
 			return ES;
+		}
+		
+		return null;
+	}
+	
+	
+	
+	public ISOOptimizationAlgorithm<boolean[], X, Individual<boolean[], X>> createBooleanAlgorithm(){
+		if(type.equals(ALGORITHM_Simple_Generational_EA)){
+			//Creation
+			SimpleGenerationalEA<boolean[],X> EA = new SimpleGenerationalEA<boolean[],X>();
+			EA.setMutationRate(this.getDoubleParam(EA_MutationRate));
+			EA.setCrossoverRate(this.getDoubleParam(EA_CrossoverRate));
+			EA.setPopulationSize(this.getIntegerParam(EA_PopulationSize));
+			EA.setMatingPoolSize(this.getIntegerParam(EA_MatingPoolSize));
+			
+			//Selection Algorithm
+			if(this.getStringParam(SELECTION_ALGORITHM).equals(SELECTION_ALGORITHM_Tournament)){
+				EA.setSelectionAlgorithm(new TournamentSelection(this.getIntegerParam(Tournament_Size)));
+			}
+			else if(this.getStringParam(SELECTION_ALGORITHM).equals(SELECTION_ALGORITHM_Random)){
+				EA.setSelectionAlgorithm(RandomSelection.RANDOM_SELECTION);
+			}
+			
+			// Nullary Search Operation
+			if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_BooleanArrayUniformCreation)){
+				INullarySearchOperation<boolean[]> create=new BooleanArrayUniformCreation(this.getIntegerParam(EA_Dimension));
+				EA.setNullarySearchOperation(create);
+			}
+			
+			//Binary Search Operation
+			if(this.getStringParam(BINARY_SEARCH_OPERATION).equals(BSO_BooleanArrayUniformCrossover)){
+				EA.setBinarySearchOperation(BooleanArrayUniformCrossover.BOOLEAN_ARRAY_UNIFORM_CROSSOVER);
+			}
+			
+			//Unary Search Operation
+			if(this.getStringParam(UNARY_SEARCH_OPERATION).equals(USO_BooleanArraySingleBitFlipMutation)){
+				EA.setUnarySearchOperation(BooleanArraySingleBitFlipMutation.BOOLEAN_ARRAY_SINGLE_BIT_FLIP_MUTATION);
+			}
+			
+			int steps=this.getIntegerParam(TERMINATION_Steps);;
+			EA.setTerminationCriterion(new StepLimitPropChange<X>(steps));
+			
+			return EA;
 		}
 		
 		return null;
 		
 	}
 	
+	
+	public void addLastBestResults(SimpleGenerationalEA<boolean[],X> EA,LinkedList<boolean[]> oldResults){
+		
+		if(!(EA.getNullarySearchOperation() instanceof BooleanArrayUniformCreation))return;
+		
+		BooleanArrayUniformCreation creation=(BooleanArrayUniformCreation) EA.getNullarySearchOperation();
+		creation.setOldResults(oldResults);
+		
+	}
 	
 	public void addLastBestResults(ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> algorithm,OptimizationResults oldBestResults){
 		
@@ -134,7 +202,6 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 		
 		creation.setOldResults(oldResults);
 		
-		
 	}
 	
 
@@ -153,9 +220,6 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 
 	public void setName(String name) {
 	changes.firePropertyChange(FIELD_Name, this.name, this.name = name);}
-	
-	
-	
 	
 	
 	@Override

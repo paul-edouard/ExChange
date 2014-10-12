@@ -3,6 +3,7 @@
 
 package org.goataa.impl.searchOperations.strings.bits.booleans.nullary;
 
+import java.util.LinkedList;
 import java.util.Random;
 
 import org.goataa.impl.searchOperations.strings.FixedLengthStringCreation;
@@ -18,7 +19,12 @@ public final class BooleanArrayUniformCreation extends
 
   /** a constant required by Java serialization */
   private static final long serialVersionUID = 1;
-
+  
+  
+  
+  private LinkedList<boolean[]> oldResults=null;
+  
+  
   /**
    * The uniform boolean string creator
    *
@@ -28,6 +34,12 @@ public final class BooleanArrayUniformCreation extends
   public BooleanArrayUniformCreation(final int dim) {
     super(dim);
   }
+  
+  
+  public void setOldResults(LinkedList<boolean[]> oldResults) {
+		this.oldResults = oldResults;
+}
+  
 
   /**
    * This is a nullary search operation which creates strings of boolean
@@ -39,6 +51,12 @@ public final class BooleanArrayUniformCreation extends
    */
   @Override
   public boolean[] create(final Random r) {
+	  
+	if(oldResults!=null && !oldResults.isEmpty()){
+			return oldResults.pollLast();
+	}  
+	  
+	  
     boolean[] bs;
     int i;
 

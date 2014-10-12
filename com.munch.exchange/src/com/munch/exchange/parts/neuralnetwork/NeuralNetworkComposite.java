@@ -18,6 +18,8 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.MouseAdapter;
@@ -63,6 +65,8 @@ import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
+import com.munch.exchange.wizard.LearnParameterWizard;
+
 import org.eclipse.swt.widgets.Group;
 
 public class NeuralNetworkComposite extends Composite implements LearningEventListener{
@@ -356,6 +360,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				//TODO Learn Optimization configuration
+				
 			}
 		});
 		btnLearnOptConf.setText("Learn Opt.");
@@ -365,6 +370,11 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				//TODO Learn Algorithm
+				LearnParameterWizard wizard=new LearnParameterWizard(stock.getNeuralNetwork().getConfiguration().getLearnParam());
+				WizardDialog dialog = new WizardDialog(shell, wizard);
+				if (dialog.open() != Window.OK)
+					return;
+				
 			}
 		});
 		btnLearnAlg.setText("Learn Alg.");
@@ -408,6 +418,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		        
 		        
 		        */
+				/*
 				org.neuroph.core.NeuralNetwork myMlPerceptron=arch.getNetworks().getFirst();
 		        stock.getNeuralNetwork().getConfiguration().setCurrentNetwork(arch.getNetworks().getFirst());
 		        
@@ -427,7 +438,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		        // test perceptron
 		        System.out.println("Testing trained neural network");
 		        testNeuralNetwork(myMlPerceptron, trainingSet);
-				
+				*/
 		       
 				
 			}

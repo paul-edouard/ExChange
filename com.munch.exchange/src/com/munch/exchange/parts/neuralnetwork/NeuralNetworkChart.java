@@ -281,8 +281,8 @@ public class NeuralNetworkChart extends Composite {
 		if (!isCompositeAbleToReact(rate_uuid))
 			return;
 		
-		
-		this.neuralNetwork=this.stock.getNeuralNetwork().getConfiguration().getCurrentNetwork();
+		//TODO
+		//this.neuralNetwork=this.stock.getNeuralNetwork().getConfiguration().getCurrentNetwork();
 		
 		updateYXZDataSet();
 		

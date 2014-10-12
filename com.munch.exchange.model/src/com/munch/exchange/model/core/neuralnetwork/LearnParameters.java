@@ -1,6 +1,9 @@
 package com.munch.exchange.model.core.neuralnetwork;
 
 import org.apache.log4j.Logger;
+import org.neuroph.core.learning.LearningRule;
+import org.neuroph.nnet.learning.BackPropagation;
+import org.neuroph.nnet.learning.MomentumBackpropagation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -12,8 +15,27 @@ public class LearnParameters extends XmlParameterElement {
 	static final String FIELD_Type="Type";
 	static final String FIELD_Name="Name";
 	
+	//MomentumBackpropagation
+	public static final String MOMENTUM_BACK_PROPAGATION="Momentum Back Propagation";
+	public static final String MBP_Momentum="MBP Momentum";
 	
-	private String type;
+	
+	//ResilientPropagation
+	
+	
+	
+	//IterativeLearning
+	public static final String IL_LearningRate="IL Learning Rate";
+	
+	//Iterations
+	public static final String Max_Iterations="Max Iterations";
+	
+	//Batch Modus
+	public static final String BatchMode="BatchMode";
+	
+	
+	
+	private String type="";
 	private String name;
 	
 	
@@ -22,6 +44,21 @@ public class LearnParameters extends XmlParameterElement {
 	public LearnParameters(String name){
 		this.name=name;
 	}
+	
+	
+	public LearningRule createLearningRule(){
+		if(type.equals(MOMENTUM_BACK_PROPAGATION)){
+			MomentumBackpropagation bp=new MomentumBackpropagation();
+			bp.setMomentum(this.getDoubleParam(MBP_Momentum));
+			bp.setLearningRate(this.getDoubleParam(IL_LearningRate));
+			
+			bp.setMaxIterations(this.getIntegerParam(Max_Iterations));
+			bp.setBatchMode(this.getBooleanParam(BatchMode));
+		}
+		
+		return null;
+	}
+	
 	
 	public String getType() {
 		return type;
@@ -40,6 +77,44 @@ public class LearnParameters extends XmlParameterElement {
 	changes.firePropertyChange(FIELD_Name, this.name, this.name = name);}
 	
 	
+	
+
+	@Override
+	public Integer getIntegerParam(String key) {
+		// TODO Auto-generated method stub
+		return super.getIntegerParam(key);
+	}
+
+
+	@Override
+	public Float getFloatParam(String key) {
+		// TODO Auto-generated method stub
+		return super.getFloatParam(key);
+	}
+
+
+	@Override
+	public Double getDoubleParam(String key) {
+		// TODO Auto-generated method stub
+		return super.getDoubleParam(key);
+	}
+
+
+	@Override
+	public Boolean getBooleanParam(String key) {
+		// TODO Auto-generated method stub
+		return super.getBooleanParam(key);
+	}
+	
+	
+
+
+	@Override
+	public void setParam(String key, Object value) {
+		// TODO Auto-generated method stub
+		super.setParam(key, value);
+	}
+
 
 	@Override
 	protected void initAttribute(Element rootElement) {

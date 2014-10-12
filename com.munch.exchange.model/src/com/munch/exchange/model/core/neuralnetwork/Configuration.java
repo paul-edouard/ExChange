@@ -158,7 +158,14 @@ public class Configuration extends XmlParameterElement {
 	
 	}
 	
-	
+
+	public AlgorithmParameters<Boolean> getOptArchitectureParam() {
+		return optArchitectureParam;
+	}
+
+	public LearnParameters getLearnParam() {
+		return learnParam;
+	}
 
 	public AlgorithmParameters<Double> getOptLearnParam() {
 		return optLearnParam;
