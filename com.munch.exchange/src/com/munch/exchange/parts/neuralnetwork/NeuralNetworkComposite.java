@@ -65,7 +65,8 @@ import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
-import com.munch.exchange.wizard.LearnParameterWizard;
+import com.munch.exchange.wizard.parameter.learning.LearnParameterWizard;
+import com.munch.exchange.wizard.parameter.optimization.OptimizationDoubleParamWizard;
 
 import org.eclipse.swt.widgets.Group;
 
@@ -359,7 +360,14 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnLearnOptConf.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO Learn Optimization configuration
+				//logger.info(stock.getNeuralNetwork().getConfiguration().getOptLearnParam());
+				//logger.info(stock.getNeuralNetwork().getConfiguration().getOptLearnParam().createCopy());
+				OptimizationDoubleParamWizard wizard=new OptimizationDoubleParamWizard(
+						stock.getNeuralNetwork().getConfiguration().getOptLearnParam().createCopy());
+				WizardDialog dialog = new WizardDialog(shell, wizard);
+				if (dialog.open() == Window.OK){
+					stock.getNeuralNetwork().getConfiguration().setOptLearnParam(wizard.getOptLearnParam());
+				}
 				
 			}
 		});
@@ -369,11 +377,16 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnLearnAlg.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO Learn Algorithm
-				LearnParameterWizard wizard=new LearnParameterWizard(stock.getNeuralNetwork().getConfiguration().getLearnParam());
+				//logger.info(stock.getNeuralNetwork().getConfiguration().getLearnParam());
+				//logger.info(stock.getNeuralNetwork().getConfiguration().getLearnParam().createCopy());
+				LearnParameterWizard wizard=new LearnParameterWizard(
+						stock.getNeuralNetwork().getConfiguration().getLearnParam().createCopy());
 				WizardDialog dialog = new WizardDialog(shell, wizard);
-				if (dialog.open() != Window.OK)
-					return;
+				if (dialog.open() == Window.OK){
+					stock.getNeuralNetwork().getConfiguration().setLearnParam(wizard.getParam());
+					//logger.info("New Param: "+wizard.getParam());
+					//logger.info("New Param: "+stock.getNeuralNetwork().getConfiguration().getLearnParam());
+				}
 				
 			}
 		});

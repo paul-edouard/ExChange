@@ -17,6 +17,7 @@ public class ParameterElement {
 	 *********************/
 	
 	protected Parameter parameter;
+	
 	    
 	public Parameter getParameter() {
 			if(parameter==null)parameter=Parameter.createRoot(this.getClass());
@@ -30,31 +31,31 @@ public class ParameterElement {
 	}
 	
 	
-	protected String getStringParam(String key){
+	public String getStringParam(String key){
 		Object o=getParam(key,Parameter.Type.STRING);
 		if(o!=null && o instanceof String)return (String)o;
 		return "";
 	}
 	
-	protected Integer getIntegerParam(String key){
+	public Integer getIntegerParam(String key){
 		Object o=getParam(key,Parameter.Type.INTEGER);
 		if(o!=null && o instanceof Integer)return (Integer)o;
 		return Integer.MIN_VALUE;
 	}
 	
-	protected Float getFloatParam(String key){
-		Object o=getParam(key,Parameter.Type.INTEGER);
+	public Float getFloatParam(String key){
+		Object o=getParam(key,Parameter.Type.FLOAT);
 		if(o!=null && o instanceof Float)return (Float)o;
 		return Float.MIN_VALUE;
 	}
 	
-	protected Double getDoubleParam(String key){
+	public Double getDoubleParam(String key){
 		Object o=getParam(key,Parameter.Type.DOUBLE);
 		if(o!=null && o instanceof Double)return (Double)o;
 		return Double.MIN_VALUE;
 	}
 	
-	protected Boolean getBooleanParam(String key){
+	public Boolean getBooleanParam(String key){
 		Object o=getParam(key,Parameter.Type.BOOLEAN);
 		if(o!=null && o instanceof Boolean)return (Boolean)o;
 		return false;
@@ -62,6 +63,12 @@ public class ParameterElement {
 	
 	protected Object getParam(String key, Parameter.Type type){
 		Parameter par_type=this.getParameter().getChild(key);
+		//System.out.println(par_type);
+		//System.out.println("Search Type:"+type);
+		//if(par_type!=null){
+		//	System.out.println(par_type.getType());
+		//	System.out.println("Value: "+par_type.getValue());
+		//}
 		if(par_type!=null && par_type.getType()==type){
 			return par_type.getValue();
 		}
@@ -73,7 +80,7 @@ public class ParameterElement {
 		return par_type!=null;
 	}
 	
-	protected void setParam(String key, Object value){
+	public void setParam(String key, Object value){
 		
 		Parameter par_type=this.getParameter().getChild(key);
 		if(par_type==null){

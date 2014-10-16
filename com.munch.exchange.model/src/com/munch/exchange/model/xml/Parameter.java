@@ -254,6 +254,34 @@ public class Parameter implements XmlElementIF, Serializable {
 		}
 	}
 	
+	private void typeFromString(String type){
+		
+		//INTEGER(1), STRING(2), FLOAT(3), NONE(0), PARAMETER(4), DOUBLE(5), BOOLEAN(6);
+		
+		if(type.equals("1")){
+			this.type=Type.INTEGER;
+		}
+		else if(type.equals("2")){
+			this.type=Type.STRING;
+		}
+		else if(type.equals("3")){
+			this.type=Type.FLOAT;
+		}
+		else if(type.equals("0")){
+			this.type=Type.NONE;
+		}
+		else if(type.equals("4")){
+			this.type=Type.PARAMETER;
+		}
+		else if(type.equals("5")){
+			this.type=Type.DOUBLE;
+		}
+		else if(type.equals("6")){
+			this.type=Type.BOOLEAN;
+		}
+		
+	}
+	
 	
 	@Override
 	public String toString() {
@@ -311,7 +339,12 @@ public class Parameter implements XmlElementIF, Serializable {
 		if(el.getTagName().equals(this.getTagName())){
 			
 			key=el.getAttribute(KeyStr);
-			type.fromString(el.getAttribute(TypeStr));
+			//if(key.equals("IL Learning Rate")){
+			//	System.out.println(el.getAttribute(TypeStr));
+			//}
+			//type.fromString(el.getAttribute(TypeStr));
+			typeFromString(el.getAttribute(TypeStr));
+			
 			StringToValue(el.getAttribute(ValueStr));
 			
 			//if(!moduleId.equals("None"))System.out.println(moduleId+" Node:"+this);

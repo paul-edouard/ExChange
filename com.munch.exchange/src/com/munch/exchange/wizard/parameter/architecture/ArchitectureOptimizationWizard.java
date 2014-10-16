@@ -1,4 +1,4 @@
-package com.munch.exchange.wizard;
+package com.munch.exchange.wizard.parameter.architecture;
 
 import org.eclipse.jface.wizard.Wizard;
 

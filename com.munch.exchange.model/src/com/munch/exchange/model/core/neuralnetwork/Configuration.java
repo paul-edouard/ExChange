@@ -42,9 +42,9 @@ public class Configuration extends XmlParameterElement {
 	
 	private Calendar lastInputPointDate=null;
 		
-	private AlgorithmParameters<Double> optLearnParam=new AlgorithmParameters<Double>("Optimization learn parameters");
-	private AlgorithmParameters<Boolean> optArchitectureParam=new AlgorithmParameters<Boolean>("Optimization architecture parameters");
-	private LearnParameters learnParam=new LearnParameters("Neural Network learn parameters");
+	private AlgorithmParameters<Double> optLearnParam=new AlgorithmParameters<Double>("Optimization_learn_parameters");
+	private AlgorithmParameters<Boolean> optArchitectureParam=new AlgorithmParameters<Boolean>("Optimization_architecture_parameters");
+	private LearnParameters learnParam=new LearnParameters("Neural_Network_learn_parameters");
 	
 	private int maxNumberOfSavedAchitectures=200;
 	private LinkedList<NetworkArchitecture> networkArchitectures=new LinkedList<NetworkArchitecture>();
@@ -166,6 +166,20 @@ public class Configuration extends XmlParameterElement {
 	public LearnParameters getLearnParam() {
 		return learnParam;
 	}
+	
+	
+
+	public void setOptArchitectureParam(AlgorithmParameters<Boolean> optArchitectureParam) {
+	this.optArchitectureParam = optArchitectureParam;
+	}
+	
+
+	public void setLearnParam(LearnParameters learnParam) {
+		
+		this.learnParam = learnParam;
+		
+	}
+	
 
 	public AlgorithmParameters<Double> getOptLearnParam() {
 		return optLearnParam;

@@ -1,4 +1,4 @@
-package com.munch.exchange.wizard;
+package com.munch.exchange.wizard.parameter.learning;
 
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;

@@ -81,6 +81,14 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 		this.name=name;
 	}
 	
+	public AlgorithmParameters<X> createCopy(){
+		AlgorithmParameters<X> copy=new AlgorithmParameters<X>(this.name);
+		copy.setType(this.type);
+		copy.setParameter(this.getParameter().createCopy());
+		return copy;
+		
+	}
+	
 	public ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> createDoubleAlgorithm(){
 		if(type.equals(ALGORITHM_Evolution_Strategy)){
 			//Creation

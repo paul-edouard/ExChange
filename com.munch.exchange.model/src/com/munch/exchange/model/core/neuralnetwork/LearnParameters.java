@@ -45,6 +45,16 @@ public class LearnParameters extends XmlParameterElement {
 		this.name=name;
 	}
 	
+	public LearnParameters createCopy(){
+		
+		LearnParameters copy=new LearnParameters(this.name);
+		copy.setType(this.type);
+		copy.setParameter(this.getParameter().createCopy());
+		
+		return copy;
+		
+	}
+	
 	
 	public LearningRule createLearningRule(){
 		if(type.equals(MOMENTUM_BACK_PROPAGATION)){
@@ -78,43 +88,6 @@ public class LearnParameters extends XmlParameterElement {
 	
 	
 	
-
-	@Override
-	public Integer getIntegerParam(String key) {
-		// TODO Auto-generated method stub
-		return super.getIntegerParam(key);
-	}
-
-
-	@Override
-	public Float getFloatParam(String key) {
-		// TODO Auto-generated method stub
-		return super.getFloatParam(key);
-	}
-
-
-	@Override
-	public Double getDoubleParam(String key) {
-		// TODO Auto-generated method stub
-		return super.getDoubleParam(key);
-	}
-
-
-	@Override
-	public Boolean getBooleanParam(String key) {
-		// TODO Auto-generated method stub
-		return super.getBooleanParam(key);
-	}
-	
-	
-
-
-	@Override
-	public void setParam(String key, Object value) {
-		// TODO Auto-generated method stub
-		super.setParam(key, value);
-	}
-
 
 	@Override
 	protected void initAttribute(Element rootElement) {
