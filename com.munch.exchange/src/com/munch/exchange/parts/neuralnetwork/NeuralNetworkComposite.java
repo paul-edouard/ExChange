@@ -65,6 +65,7 @@ import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
+import com.munch.exchange.wizard.parameter.architecture.ArchitectureOptimizationWizard;
 import com.munch.exchange.wizard.parameter.learning.LearnParameterWizard;
 import com.munch.exchange.wizard.parameter.optimization.OptimizationDoubleParamWizard;
 
@@ -351,7 +352,13 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnArchOptConf.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO Architecture Optimization configuration
+				ArchitectureOptimizationWizard wizard=new ArchitectureOptimizationWizard(
+						stock.getNeuralNetwork().getConfiguration().getOptArchitectureParam().createCopy());
+				WizardDialog dialog = new WizardDialog(shell, wizard);
+				if (dialog.open() == Window.OK){
+					stock.getNeuralNetwork().getConfiguration().setOptArchitectureParam(
+							wizard.getOptArchitectureParam());
+				}
 			}
 		});
 		btnArchOptConf.setText("Arch. Opt.");

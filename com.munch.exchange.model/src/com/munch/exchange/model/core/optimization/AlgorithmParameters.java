@@ -26,48 +26,51 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	private static Logger logger = Logger.getLogger(AlgorithmParameters.class);
 	
 	//Evolution Strategy
-	public static String ALGORITHM_Evolution_Strategy="Evolution Strategy";
-	public static String ES_Dimension="ES Dimension";
-	public static String ES_Minimum="ES Minimum";
-	public static String ES_Maximum="ES Maximum";
-	public static String ES_Mu="ES Mu";
-	public static String ES_Lambda="ES Lambda";
-	public static String ES_Rho="ES Rho";
-	public static String ES_Plus="ES Plus";
+	public static final String ALGORITHM_Evolution_Strategy="Evolution Strategy";
+	public static final String ES_Dimension="ES Dimension";
+	public static final String ES_Minimum="ES Minimum";
+	public static final String ES_Maximum="ES Maximum";
+	public static final String ES_Mu="ES Mu";
+	public static final String ES_Lambda="ES Lambda";
+	public static final String ES_Rho="ES Rho";
+	public static final String ES_Plus="ES Plus";
 	
+	//Dimension
+	public static final String MaxDimension="Max Dimension";
+	public static final String MinDimension="Min Dimension";
 	
 	//Evolutionary Algorithm
-	public static String ALGORITHM_Simple_Generational_EA="Simple Generational EA";
-	public static String EA_MutationRate="EA Mutation Rate";
-	public static String EA_CrossoverRate="EA Crossover Rate";
-	public static String EA_PopulationSize="EA Population Size";
-	public static String EA_MatingPoolSize="EA Mating Pool Size";
-	public static String EA_Dimension="EA Dimension";
+	public static final String ALGORITHM_Simple_Generational_EA="Simple Generational EA";
+	public static final String EA_MutationRate="EA Mutation Rate";
+	public static final String EA_CrossoverRate="EA Crossover Rate";
+	public static final String EA_PopulationSize="EA Population Size";
+	public static final String EA_MatingPoolSize="EA Mating Pool Size";
+	public static final String EA_Dimension="EA Dimension";
 	
 	
 	//Selection Algorithm
-	public static String SELECTION_ALGORITHM="Selection Algorithm";
-	public static String SELECTION_ALGORITHM_Tournament="Tournament";
-	public static String Tournament_Size="Tournament Size";
+	public static final String SELECTION_ALGORITHM="Selection Algorithm";
+	public static final String SELECTION_ALGORITHM_Tournament="Tournament";
+	public static final String Tournament_Size="Tournament Size";
 	
-	public static String SELECTION_ALGORITHM_Random="Random";
+	public static final String SELECTION_ALGORITHM_Random="Random";
 	
 	//Nullary Search Operation
-	public static String NULLARY_SEARCH_OPERATION ="Nullary search operation";
-	public static String NSO_Uniform_Creation="NSO Uniform Creation";
-	public static String NSO_BooleanArrayUniformCreation="NSO Boolean Array Uniform Creation";
+	public static final String NULLARY_SEARCH_OPERATION ="Nullary search operation";
+	public static final String NSO_Uniform_Creation="NSO Uniform Creation";
+	public static final String NSO_BooleanArrayUniformCreation="NSO Boolean Array Uniform Creation";
 	
 	
 	//Binary Search Operation
-	public static String BINARY_SEARCH_OPERATION="Binary Search Operation";
-	public static String BSO_BooleanArrayUniformCrossover="BSO Boolean Array Uniform Crossover";
+	public static final String BINARY_SEARCH_OPERATION="Binary Search Operation";
+	public static final String BSO_BooleanArrayUniformCrossover="BSO Boolean Array Uniform Crossover";
 	
 	//Unary Search Operation
-	public static String UNARY_SEARCH_OPERATION="Unary Search Operation";
-	public static String USO_BooleanArraySingleBitFlipMutation="USO Boolean Array Single Bit Flip Mutation";
+	public static final String UNARY_SEARCH_OPERATION="Unary Search Operation";
+	public static final String USO_BooleanArraySingleBitFlipMutation="USO Boolean Array Single Bit Flip Mutation";
 	
 	//Termination
-	public static String TERMINATION_Steps="Steps";
+	public static final String TERMINATION_Steps="Steps";
 	
 	
 	static final String FIELD_Type="Type";

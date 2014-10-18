@@ -14,7 +14,7 @@ public class OptimizationDoubleParamWizard extends Wizard {
 	
 	
 	public OptimizationDoubleParamWizard(AlgorithmParameters<Double> optLearnParam) {
-		setWindowTitle("New Wizard");
+		setWindowTitle("Optimization Algorithm");
 		
 		this.optLearnParam=optLearnParam;
 		

@@ -33,8 +33,8 @@ public class EvolutionStrategyWizardPage extends WizardPage {
 	 */
 	public EvolutionStrategyWizardPage(AlgorithmParameters<Double> optLearnParam) {
 		super("wizardPage");
-		setTitle("Wizard Page title");
-		setDescription("Wizard Page description");
+		setTitle("Evolution Strategy");
+		setDescription("Please set the evolution strategy parameters");
 		
 		this.optLearnParam=optLearnParam;
 	}
