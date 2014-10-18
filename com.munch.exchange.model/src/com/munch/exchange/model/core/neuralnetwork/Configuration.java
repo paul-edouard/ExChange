@@ -49,6 +49,42 @@ public class Configuration extends XmlParameterElement {
 	private int maxNumberOfSavedAchitectures=200;
 	private LinkedList<NetworkArchitecture> networkArchitectures=new LinkedList<NetworkArchitecture>();
 	
+	private int numberOfInputNeurons;
+	
+	public NetworkArchitecture searchArchitecture(boolean[] actConsArray){
+		
+		NetworkArchitecture searched=null;
+		
+		for(NetworkArchitecture architecture :networkArchitectures){
+			if(architecture.getActConsArray().length==actConsArray.length){
+				boolean isEqual=true;
+				for(int i=0;i<actConsArray.length;i++){
+					if(architecture.getActConsArray()[i]!=actConsArray[i]){
+						isEqual=false;break;
+					}
+				}
+				if(isEqual){
+					searched=architecture;break;
+				}
+				
+			}
+		}
+		
+		//Create the architecture
+		if(searched==null){
+			int numberOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(
+					actConsArray.length, numberOfInputNeurons);
+			
+			searched=new NetworkArchitecture(numberOfInputNeurons,numberOfInnerNeurons,actConsArray);
+			
+			//Test the Networt validity
+			cc
+		}
+		
+		
+		return null;
+	}
+	
 	
 	public LinkedList<String> getInputNeuronNames(){
 		
@@ -97,6 +133,8 @@ public class Configuration extends XmlParameterElement {
 		
 		//Normalize the training set
 		trainingSet.normalize();
+		
+		numberOfInputNeurons=trainingSet.getRowAt(0).getInput().length;
 		
 		return trainingSet;
 	}

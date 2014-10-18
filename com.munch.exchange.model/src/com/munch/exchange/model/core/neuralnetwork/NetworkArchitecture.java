@@ -68,6 +68,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 		if(cons.length==activatedConnectionsSize){
 			this.actConsArray=cons;
 		}
+		
+		
+		addNewNeuralNetwork();
+		
 	}
 	
 	
@@ -318,6 +322,23 @@ public class NetworkArchitecture extends XmlParameterElement {
 		int n = numberOfInnerNeurons;
 		
 		return a+n+n*a+n*(n-1)/2;
+	}
+	
+	public static int calculateNbOfInnerNeurons(int activatedConnectionsSize,int numberOfInputNeurons){
+		
+		int i = numberOfInputNeurons;
+		int l = activatedConnectionsSize;
+		
+		double a=1;
+		double b=2*i+1;
+		double c=2*(i-l);
+		
+		double delta=b*b-4*a*c;
+		if(delta<0)return 0;
+		
+		int x= (int) ((-b+Math.sqrt(delta))/(2*a));
+		return x;
+		
 	}
 	
 	
