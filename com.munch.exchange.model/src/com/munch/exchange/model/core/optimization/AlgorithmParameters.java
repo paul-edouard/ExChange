@@ -72,6 +72,9 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	//Termination
 	public static final String TERMINATION_Steps="Steps";
 	
+	//Optimization Loops
+	public static final String OPTIMIZATION_Loops="Optimization loops";
+	
 	
 	static final String FIELD_Type="Type";
 	static final String FIELD_Name="Name";

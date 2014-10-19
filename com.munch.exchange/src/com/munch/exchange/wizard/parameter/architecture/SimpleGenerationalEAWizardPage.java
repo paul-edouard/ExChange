@@ -23,7 +23,7 @@ public class SimpleGenerationalEAWizardPage extends WizardPage {
 	private static Logger logger = Logger.getLogger(SimpleGenerationalEAWizardPage.class);
 	
 	
-	private AlgorithmParameters<Boolean> optArchitectureParam;
+	private AlgorithmParameters<boolean[]> optArchitectureParam;
 	
 	private double scalar=100.0d;
 	
@@ -42,7 +42,7 @@ public class SimpleGenerationalEAWizardPage extends WizardPage {
 	/**
 	 * Create the wizard.
 	 */
-	public SimpleGenerationalEAWizardPage(AlgorithmParameters<Boolean> optArchitectureParam) {
+	public SimpleGenerationalEAWizardPage(AlgorithmParameters<boolean[]> optArchitectureParam) {
 		super("wizardPage");
 		setTitle("Algorithm Parameters");
 		setDescription("Please select the algorithm parameters");

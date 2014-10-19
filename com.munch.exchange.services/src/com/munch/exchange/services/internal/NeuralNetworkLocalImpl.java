@@ -10,6 +10,7 @@ import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.NeuralNetwork;
 import com.munch.exchange.model.core.neuralnetwork.PeriodType;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
@@ -48,7 +49,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 	
 
 	@Override
-	public boolean load(Stock stock) {
+	public synchronized boolean load(Stock stock) {
 		if(stock==null)return false;
 		if(stock.getDataPath()==null)return false;
 		if(stock.getDataPath().isEmpty())return false;
@@ -57,7 +58,8 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		File localFile=new File(getFileName(stock,NeuronalNetworkFileStr));
 		NeuralNetwork network=new NeuralNetwork();
 		if(localFile.exists()){
-			//TODO loading neural network info
+			//Set the Network Save Path
+			NetworkArchitecture.setNetworkSavePath(this.getSavePath(stock));
 			
 			if( Xml.load(network, localFile.getAbsolutePath())){
 				stock.setNeuralNetwork(network);
@@ -77,10 +79,14 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 	}
 
 	@Override
-	public boolean save(Stock stock) {
+	public synchronized boolean save(Stock stock) {
 		if(stock==null)return false;
 		
 		String fileStr=getFileName(stock,NeuronalNetworkFileStr);
+		
+		//Set the Network Save Path
+		NetworkArchitecture.setNetworkSavePath(this.getSavePath(stock));
+		
 		
 		logger.info("Writing file: "+fileStr);
 		return Xml.save(stock.getNeuralNetwork(), fileStr);

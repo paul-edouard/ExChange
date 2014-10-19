@@ -18,7 +18,7 @@ import org.eclipse.swt.events.SelectionEvent;
 
 public class EvolutionStrategyWizardPage extends WizardPage {
 	
-	private AlgorithmParameters<Double> optLearnParam;
+	private AlgorithmParameters<double[]> optLearnParam;
 	
 	private Spinner spinnerTotalPopulationSize;
 	private Spinner spinnerNumberOfOffspring;
@@ -31,7 +31,7 @@ public class EvolutionStrategyWizardPage extends WizardPage {
 	/**
 	 * Create the wizard.
 	 */
-	public EvolutionStrategyWizardPage(AlgorithmParameters<Double> optLearnParam) {
+	public EvolutionStrategyWizardPage(AlgorithmParameters<double[]> optLearnParam) {
 		super("wizardPage");
 		setTitle("Evolution Strategy");
 		setDescription("Please set the evolution strategy parameters");

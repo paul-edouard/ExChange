@@ -7,14 +7,14 @@ import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 public class ArchitectureOptimizationWizard extends Wizard {
 	
 	
-	private AlgorithmParameters<Boolean> optArchitectureParam;
+	private AlgorithmParameters<boolean[]> optArchitectureParam;
 	
 	private SimpleGenerationalEAWizardPage sgEaPage;
 	private ArchitectureOptimizationAlgorithmWizardPage archOptAlPage;
 	
 	
 
-	public ArchitectureOptimizationWizard(AlgorithmParameters<Boolean> optArchitectureParam) {
+	public ArchitectureOptimizationWizard(AlgorithmParameters<boolean[]> optArchitectureParam) {
 		setWindowTitle("Architecture Optimization Wizard");
 		
 		this.optArchitectureParam=optArchitectureParam;
@@ -26,7 +26,7 @@ public class ArchitectureOptimizationWizard extends Wizard {
 	
 	
 
-	public AlgorithmParameters<Boolean> getOptArchitectureParam() {
+	public AlgorithmParameters<boolean[]> getOptArchitectureParam() {
 		return optArchitectureParam;
 	}
 

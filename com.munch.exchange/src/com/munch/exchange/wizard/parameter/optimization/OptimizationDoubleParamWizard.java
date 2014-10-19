@@ -7,13 +7,13 @@ import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 public class OptimizationDoubleParamWizard extends Wizard {
 	
 	
-	private AlgorithmParameters<Double> optLearnParam;
+	private AlgorithmParameters<double[]> optLearnParam;
 	
 	private OptimizationAlgorithmWizardPage optAlgPage;
 	private EvolutionStrategyWizardPage esPage;
 	
 	
-	public OptimizationDoubleParamWizard(AlgorithmParameters<Double> optLearnParam) {
+	public OptimizationDoubleParamWizard(AlgorithmParameters<double[]> optLearnParam) {
 		setWindowTitle("Optimization Algorithm");
 		
 		this.optLearnParam=optLearnParam;
@@ -25,7 +25,7 @@ public class OptimizationDoubleParamWizard extends Wizard {
 	
 	
 
-	public AlgorithmParameters<Double> getOptLearnParam() {
+	public AlgorithmParameters<double[]> getOptLearnParam() {
 		return optLearnParam;
 	}
 

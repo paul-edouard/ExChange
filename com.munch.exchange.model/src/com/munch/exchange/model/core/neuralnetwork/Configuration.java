@@ -42,8 +42,8 @@ public class Configuration extends XmlParameterElement {
 	
 	private Calendar lastInputPointDate=null;
 		
-	private AlgorithmParameters<Double> optLearnParam=new AlgorithmParameters<Double>("Optimization_learn_parameters");
-	private AlgorithmParameters<Boolean> optArchitectureParam=new AlgorithmParameters<Boolean>("Optimization_architecture_parameters");
+	private AlgorithmParameters<double[]> optLearnParam=new AlgorithmParameters<double[]>("Optimization_learn_parameters");
+	private AlgorithmParameters<boolean[]> optArchitectureParam=new AlgorithmParameters<boolean[]>("Optimization_architecture_parameters");
 	private LearnParameters learnParam=new LearnParameters("Neural_Network_learn_parameters");
 	
 	private int maxNumberOfSavedAchitectures=200;
@@ -51,10 +51,20 @@ public class Configuration extends XmlParameterElement {
 	
 	private int numberOfInputNeurons;
 	
-	public NetworkArchitecture searchArchitecture(boolean[] actConsArray){
+	
+	
+	/**
+	 * Knowing the connections array this method will search the corresponding architecture
+	 * if no architecture was found a new one will be build
+	 * 
+	 * @param actConsArray
+	 * @return
+	 */
+	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray){
 		
 		NetworkArchitecture searched=null;
 		
+		//Search the architecture in the already created ones
 		for(NetworkArchitecture architecture :networkArchitectures){
 			if(architecture.getActConsArray().length==actConsArray.length){
 				boolean isEqual=true;
@@ -77,12 +87,22 @@ public class Configuration extends XmlParameterElement {
 			
 			searched=new NetworkArchitecture(numberOfInputNeurons,numberOfInnerNeurons,actConsArray);
 			
-			//Test the Networt validity
-			cc
+			//Test the Network validity
+			if(searched.isValid()){
+				//Add the architecture in the list
+				addNetworkArchitecture(searched);
+				return searched;
+			}
 		}
 		
 		
 		return null;
+	}
+	
+
+	
+	private synchronized void addNetworkArchitecture(NetworkArchitecture architecture){
+		networkArchitectures.add(architecture);
 	}
 	
 	
@@ -197,7 +217,7 @@ public class Configuration extends XmlParameterElement {
 	}
 	
 
-	public AlgorithmParameters<Boolean> getOptArchitectureParam() {
+	public AlgorithmParameters<boolean[]> getOptArchitectureParam() {
 		return optArchitectureParam;
 	}
 
@@ -207,7 +227,7 @@ public class Configuration extends XmlParameterElement {
 	
 	
 
-	public void setOptArchitectureParam(AlgorithmParameters<Boolean> optArchitectureParam) {
+	public void setOptArchitectureParam(AlgorithmParameters<boolean[]> optArchitectureParam) {
 	this.optArchitectureParam = optArchitectureParam;
 	}
 	
@@ -219,11 +239,11 @@ public class Configuration extends XmlParameterElement {
 	}
 	
 
-	public AlgorithmParameters<Double> getOptLearnParam() {
+	public AlgorithmParameters<double[]> getOptLearnParam() {
 		return optLearnParam;
 	}
 
-	public void setOptLearnParam(AlgorithmParameters<Double> optLearnParam) {
+	public void setOptLearnParam(AlgorithmParameters<double[]> optLearnParam) {
 	changes.firePropertyChange(FIELD_OptLearnParam, this.optLearnParam, this.optLearnParam = optLearnParam);}
 	
 

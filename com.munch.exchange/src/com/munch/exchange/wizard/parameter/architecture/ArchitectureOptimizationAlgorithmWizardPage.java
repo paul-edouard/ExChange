@@ -18,7 +18,7 @@ public class ArchitectureOptimizationAlgorithmWizardPage extends WizardPage {
 	
 	private static Logger logger = Logger.getLogger(ArchitectureOptimizationAlgorithmWizardPage.class);
 	
-	private AlgorithmParameters<Boolean> optArchitectureParam;
+	private AlgorithmParameters<boolean[]> optArchitectureParam;
 	
 	private Combo comboAlgorithmType;
 	private Spinner spinnerNumberOfSteps;
@@ -28,7 +28,7 @@ public class ArchitectureOptimizationAlgorithmWizardPage extends WizardPage {
 	/**
 	 * Create the wizard.
 	 */
-	public ArchitectureOptimizationAlgorithmWizardPage(AlgorithmParameters<Boolean> optArchitectureParam) {
+	public ArchitectureOptimizationAlgorithmWizardPage(AlgorithmParameters<boolean[]> optArchitectureParam) {
 		super("wizardPage");
 		setTitle("Algorithm Selection");
 		setDescription("Please select the optimization algorithm");

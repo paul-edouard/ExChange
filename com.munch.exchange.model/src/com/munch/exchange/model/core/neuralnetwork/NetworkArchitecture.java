@@ -271,6 +271,46 @@ public class NetworkArchitecture extends XmlParameterElement {
 		this.network=network;
 	}
 	
+	/**
+	 * test the validity of the network
+	 * @return
+	 */
+	public boolean isValid(){
+		
+		Layer[] layers=  this.network.getLayers();
+		for(int i=1;i<layers.length;i++){
+			Layer layer=layers[i];
+			
+			//No neuron
+			if(layer.getNeuronsCount()==0)
+				return false;
+			
+			//Test if the size of previous layers is bigger
+			if(layer.getNeuronsCount()>layers[i-1].getNeuronsCount())
+				return false;
+			
+			for(int j=0;j<layer.getNeuronsCount();j++){
+				Neuron neuron=layer.getNeuronAt(j);
+				
+				//Test if all the inner neurons has at least one input
+				if(!neuron.hasInputConnections())
+					return false;
+				
+				//Test if the inner neuron has at least one output connection
+				if(i!=layers.length-1 && neuron.getOutConnections().length==0){
+					return false;
+				}
+				
+				
+			}
+			
+		}
+		
+		
+		return true;
+	}
+	
+	
 	private void convertActConsMatrixToArray(){
 		
 		actConsArray=new boolean[calculateActivatedConnectionsSize(numberOfInputNeurons,numberOfInnerNeurons)];
@@ -346,9 +386,26 @@ public class NetworkArchitecture extends XmlParameterElement {
 	//***      GETTER AND SETTER          ****
 	//****************************************
 	
+	
+	
+	
+	
 	public int getNumberOfInnerNeurons() {
 		return numberOfInnerNeurons;
 	}
+
+	public NeuralNetwork getNetwork() {
+		return network;
+	}
+
+	public OptimizationResults getOptResuts() {
+		return optResuts;
+	}
+
+	public void setOptResuts(OptimizationResults optResuts) {
+		this.optResuts = optResuts;
+	}
+	
 
 	public void setNumberOfInnerNeurons(int numberOfInnerNeurons) {
 	changes.firePropertyChange(FIELD_NumberOfInnerNeurons, this.numberOfInnerNeurons, this.numberOfInnerNeurons = numberOfInnerNeurons);}
@@ -386,7 +443,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 	//****************************************
 	
 	
-
+	public static void setNetworkSavePath(String networkSavePath) {
+		NETWORK_SAVE_PATH=networkSavePath;
+	}
 
 	private String actConsToString(){
 		String ret="";
