@@ -2,12 +2,14 @@ package com.munch.exchange.model.core.optimization;
 
 import java.util.LinkedList;
 
+import org.goataa.impl.utils.Constants;
+import org.goataa.impl.utils.Individual;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.xml.XmlParameterElement;
 
-public class ResultEntity extends XmlParameterElement {
+public class ResultEntity extends XmlParameterElement implements Comparable<ResultEntity>{
 	
 	
 	private LinkedList<Object> genome=new LinkedList<Object>();
@@ -18,6 +20,9 @@ public class ResultEntity extends XmlParameterElement {
 	private final String DOUBLE="double";
 	
 	static final String FIELD_Genome="genome";
+	static final String FIELD_Value="Value";
+	
+	private double value=Constants.WORST_FITNESS;
 	
 	public ResultEntity(){
 		
@@ -28,6 +33,14 @@ public class ResultEntity extends XmlParameterElement {
 			genome.add(doubles[i]);
 		}
 	}
+	
+	public ResultEntity(double[] doubles,double value){
+		for(int i=0;i<doubles.length;i++){
+			genome.add(doubles[i]);
+		}
+		this.value=value;
+	}
+	
 	
 	public double[] getDoubleArray(){
 		LinkedList<Double> list=new LinkedList<Double>();
@@ -46,7 +59,41 @@ public class ResultEntity extends XmlParameterElement {
 		
 	}
 	
+	public Individual<double[], double[]> toDoubleIndividual(){
+		Individual<double[], double[]> ind=new Individual<double[], double[]>();
+		
+		LinkedList<Double> allDoubles=new LinkedList<Double>();
+		
+		for(Object obj : this.genome){
+			if(obj instanceof Double){
+				allDoubles.add((double) obj);
+			}
+		}
+		
+		ind.x=new double[allDoubles.size()];
+		ind.g=new double[allDoubles.size()];
+		
+		for(int i=0;i<allDoubles.size();i++){
+			ind.x[i]=ind.g[i]=allDoubles.get(i);
+		}
+		
+		ind.v=this.value;
+		
+		return ind;
+		
+	}
 	
+	
+	
+	
+	public double getValue() {
+		return value;
+	}
+
+	public void setValue(double value) {
+	changes.firePropertyChange(FIELD_Value, this.value, this.value = value);}
+	
+
 	public LinkedList<Object> getGenome() {
 		return genome;
 	}
@@ -57,6 +104,9 @@ public class ResultEntity extends XmlParameterElement {
 
 	@Override
 	protected void initAttribute(Element rootElement) {
+		
+		this.setValue(Double.parseDouble(rootElement.getAttribute(FIELD_Value)));
+		
 		genome.clear();
 	}
 
@@ -80,7 +130,7 @@ public class ResultEntity extends XmlParameterElement {
 
 	@Override
 	protected void setAttribute(Element rootElement) {
-
+		rootElement.setAttribute(FIELD_Value,String.valueOf(this.getValue()));
 	}
 
 	@Override
@@ -107,6 +157,30 @@ public class ResultEntity extends XmlParameterElement {
 				rootElement.appendChild(element);
 		}
 
+	}
+
+	@Override
+	public int compareTo(ResultEntity b) {
+		 if (b.getValue() == Constants.WORST_FITNESS && this.getValue() == Constants.WORST_FITNESS) {
+		      return 0;
+		    }
+		    if (this.getValue() == Constants.WORST_FITNESS) {
+		      return 1;
+		    }
+		    if (b.getValue() ==  Constants.WORST_FITNESS) {
+		      return -1;
+		    }
+		    
+		    if(this.getValue() < b.getValue()){
+		    	return 1;
+		    }
+		    else if(this.getValue() == b.getValue()){
+		    	return 0;
+		    }
+		    else{
+		    	return -1;
+		    }
+		    
 	}
 
 }

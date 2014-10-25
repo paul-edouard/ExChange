@@ -238,7 +238,8 @@ public class EvolutionStrategy<X> extends
         // perform the genotype-phenotype mapping
         p.x = gpm.gpm(p.g, r);
         // compute the objective value
-        p.v = f.compute(p.x, r);
+        if(p.v!=Constants.WORST_FITNESS)
+        	p.v = f.compute(p.x, r);
         
 
         // is the current individual the best one so far?

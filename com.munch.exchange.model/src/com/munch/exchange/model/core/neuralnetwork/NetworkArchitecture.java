@@ -55,7 +55,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	private int maxNumberOfSavedNetworks=50;
 	private NeuralNetwork network=new NeuralNetwork();
 	
-	private OptimizationResults optResuts=new OptimizationResults();
+	private OptimizationResults optResults=new OptimizationResults();
 	
 	
 	public NetworkArchitecture(){}
@@ -398,12 +398,12 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return network;
 	}
 
-	public OptimizationResults getOptResuts() {
-		return optResuts;
+	public OptimizationResults getOptResults() {
+		return optResults;
 	}
 
 	public void setOptResuts(OptimizationResults optResuts) {
-		this.optResuts = optResuts;
+		this.optResults = optResuts;
 	}
 	
 
@@ -489,8 +489,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 			NeuralNetwork nnet=NeuralNetwork.createFromFile(NETWORK_SAVE_PATH+File.pathSeparator+networkLabel+".nnet");
 			this.network=nnet;
 		}
-		else if(childElement.getTagName().equals(optResuts.getTagName())){
-			optResuts.init(childElement);
+		else if(childElement.getTagName().equals(optResults.getTagName())){
+			optResults.init(childElement);
 		}
 	}
 
@@ -514,7 +514,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		//}
 			
 			
-			rootElement.appendChild(optResuts.toDomElement(doc));
+			rootElement.appendChild(optResults.toDomElement(doc));
 	}
 
 }

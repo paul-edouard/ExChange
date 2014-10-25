@@ -1,5 +1,7 @@
 package com.munch.exchange.model.core.optimization;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 
 import org.w3c.dom.Document;
@@ -37,12 +39,23 @@ public class OptimizationResults extends XmlParameterElement{
 	
 	public void addResult(ResultEntity result){
 		results.addFirst(result);
+		Collections.sort(results);
 		if(results.size()>maxResult)
 			results.removeLast();
 	}
 	
+	public ResultEntity getBestResult(){
+		if(results.isEmpty())return null;
+		return results.getFirst();
+	}
 	
 	
+	
+	public void setMaxResult(int maxResult) {
+	this.maxResult = maxResult;
+	}
+	
+
 	public int getMaxResult() {
 		return maxResult;
 	}
