@@ -2,10 +2,11 @@ package org.goataa.impl.termination;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Arrays;
 
 import org.goataa.impl.utils.Individual;
 
-public class StepLimitPropChange<X> extends StepLimit {
+public class StepLimitPropChange<G,X> extends StepLimit {
 	
 	public static final String FIELD_STEP = "STEP";
 	public static final String FIELD_BEST = "BEST";
@@ -17,7 +18,7 @@ public class StepLimitPropChange<X> extends StepLimit {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private Individual<double[], X> best;
+	private Individual<G, X> best;
 	
 	private boolean isCancel=false;
 	
@@ -30,13 +31,13 @@ public class StepLimitPropChange<X> extends StepLimit {
 	}
 	
 
-	public Individual<double[], X> getBest() {
+	public Individual<G, X> getBest() {
 		return best;
 	}
 
 
-	public void setBest(Individual<double[], X> best) {
-		Individual<double[], X> localBest=new Individual<double[], X>();
+	public void setBest(Individual<G, X> best) {
+		Individual<G, X> localBest=new Individual<G, X>();
 		localBest.assign(best);
 		
 	

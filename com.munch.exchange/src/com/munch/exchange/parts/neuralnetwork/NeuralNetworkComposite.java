@@ -142,6 +142,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		this.stock=(Stock) rate;
 		this.neuralNetworkProvider=nnProvider;
 		contentProvider=new NeuralNetworkContentProvider(this.stock);
+		
+		
 		setLayout(new GridLayout(1, false));
 		
 		SashForm sashForm = new SashForm(this, SWT.NONE);
@@ -356,8 +358,14 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnArchOptConf.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				
+				//TODO Delete
+				neuralNetworkProvider.createAllInputPoints(stock);
+				
+				Configuration conf=stock.getNeuralNetwork().getConfiguration();
+				
 				ArchitectureOptimizationWizard wizard=new ArchitectureOptimizationWizard(
-						stock.getNeuralNetwork().getConfiguration().getOptArchitectureParam().createCopy());
+						conf.getOptArchitectureParam().createCopy(),conf.getNumberOfInputNeurons());
 				WizardDialog dialog = new WizardDialog(shell, wizard);
 				if (dialog.open() == Window.OK){
 					stock.getNeuralNetwork().getConfiguration().setOptArchitectureParam(
@@ -415,7 +423,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				logger.info("Start Train click!");
 				
 				neuralNetworkProvider.createAllInputPoints(stock);
-				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().createTrainingDataSet();
+				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().getTrainingDataSet();
 				
 				
 				int dimension=5;

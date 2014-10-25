@@ -65,6 +65,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 		this.numberOfInnerNeurons=numberOfInnerNeurons;
 		
 		int activatedConnectionsSize=calculateActivatedConnectionsSize(numberOfInputNeurons, numberOfInnerNeurons);
+		//logger.info("Needed Size: "+activatedConnectionsSize);
+		//logger.info("Input Size: "+cons.length);
 		if(cons.length==activatedConnectionsSize){
 			this.actConsArray=cons;
 		}

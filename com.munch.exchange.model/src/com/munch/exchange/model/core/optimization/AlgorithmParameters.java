@@ -135,7 +135,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 			}
 			
 			
-			ES.setTerminationCriterion(new StepLimitPropChange<X>(steps));
+			ES.setTerminationCriterion(new StepLimitPropChange<double[],X>(steps));
 			
 			return ES;
 		}
@@ -179,7 +179,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 			}
 			
 			int steps=this.getIntegerParam(TERMINATION_Steps);;
-			EA.setTerminationCriterion(new StepLimitPropChange<X>(steps));
+			EA.setTerminationCriterion(new StepLimitPropChange<boolean[],X>(steps));
 			
 			return EA;
 		}

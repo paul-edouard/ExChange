@@ -52,6 +52,7 @@ public class Configuration extends XmlParameterElement {
 	private HashMap<Integer, OptimizationResults> netArchiOptResultMap=new HashMap<Integer, OptimizationResults>();
 	
 	private int numberOfInputNeurons;
+	private DataSet trainingSet=null;
 	
 	
 	
@@ -90,9 +91,9 @@ public class Configuration extends XmlParameterElement {
 			int numberOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(
 					actConsArray.length, numberOfInputNeurons);
 			
-			logger.info("Numer of numberOfInputNeurons"+numberOfInputNeurons);
-			logger.info("Numer of numberOfInnerNeurons"+numberOfInnerNeurons);
-			logger.info("actConsArray: "+actConsArray.length);
+			//logger.info("Numer of numberOfInputNeurons"+numberOfInputNeurons);
+			//logger.info("Numer of numberOfInnerNeurons"+numberOfInnerNeurons);
+			//logger.info("actConsArray: "+actConsArray.length);
 			searched=new NetworkArchitecture(numberOfInputNeurons,numberOfInnerNeurons,actConsArray);
 			
 			//Test the Network validity
@@ -134,7 +135,9 @@ public class Configuration extends XmlParameterElement {
 		return names;
 	}
 
-	public DataSet createTrainingDataSet(){
+	public DataSet getTrainingDataSet(){
+		
+		if(trainingSet!=null)return trainingSet;
 		
 		//Create the input arrays
 		LinkedList<double[]> doubleArrayList=new LinkedList<double[]>();
@@ -150,7 +153,7 @@ public class Configuration extends XmlParameterElement {
 		double[] outputArray=createOutputArray(doubleArrayList.get(0).length);
 		
 		//Create the Training set
-		DataSet trainingSet = new DataSet(doubleArrayList.size(), 1);
+		trainingSet = new DataSet(doubleArrayList.size(), 1);
 		
 		for(int i=0;i<doubleArrayList.get(0).length;i++){
 			
@@ -173,6 +176,15 @@ public class Configuration extends XmlParameterElement {
 		
 		return trainingSet;
 	}
+	
+	
+	public int getNumberOfInputNeurons(){
+		if(trainingSet==null)
+			getTrainingDataSet();
+		
+		return numberOfInputNeurons;
+	}
+	
 	
 	private void createDayOfWeekSeries(LinkedList<TimeSeries> sortedTimeSeries){
 		TimeSeries dayOfWeekSerie=new TimeSeries(FIELD_DayOfWeek, TimeSeriesCategory.RATE);

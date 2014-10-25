@@ -2,6 +2,7 @@ package com.munch.exchange.job.objectivefunc;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -59,7 +60,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	//Local Optimization algorithm
 	//private List<Individual<double[], double[]>>  solutions;
 	private ISOOptimizationAlgorithm<double[], double[], Individual<double[], double[]>> algorithm=null;
-	private StepLimitPropChange<Double> term=null;
+	private StepLimitPropChange<double[],double[]> term=null;
 	private int optLoops=1;
 	
 	private double minWeigth=Double.MAX_VALUE;
@@ -84,6 +85,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	@Override
 	public double compute(boolean[] x, Random r) {
 		
+		logger.info("Computing: "+Arrays.toString(x));
+		
 		NetworkArchitecture architecture=configuration.searchArchitecture(x);
 		if(architecture==null)return Constants.WORST_FITNESS;
 		
@@ -105,6 +108,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		//Start the Optimization
 		for(int i=0;i<optLoops;i++){
 			//Start the optimization algorithm
+			logger.info("Loop: "+i);
+			
 			List<Individual<double[], double[]>> individuals=algorithm.call();
 			
 			//Loop on all the individuals to try increase the result quality
@@ -181,7 +186,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	@SuppressWarnings("unchecked")
 	private void prepareLearningStrategy(NetworkArchitecture architecture){
 		learningRule=configuration.getLearnParam().createLearningRule();
-		learningRule.addListener(NetworkArchitectureObjFunc.this);
+		learningRule.addListener(this);
 		
 		architecture.getNetwork().setLearningRule(learningRule);
 	}
@@ -214,7 +219,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 
 		// Get the termination Criterion
 		if (algorithm.getTerminationCriterion() instanceof StepLimitPropChange) {
-			term = ((StepLimitPropChange<Double>) algorithm
+			term = ((StepLimitPropChange<double[],double[]>) algorithm
 					.getTerminationCriterion());
 		}
 
@@ -240,7 +245,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		public void propertyChange(PropertyChangeEvent evt) {
 			if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_BEST)){
 				Individual<double[], double[]> ind=(Individual<double[], double[]>) evt.getNewValue();
-				if(info.getResults().addResult(new ResultEntity(ind.x,ind.v))){
+				if(info.getResults().addResult(new ResultEntity(ind.g,ind.v))){
 					eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
 				}
 			}

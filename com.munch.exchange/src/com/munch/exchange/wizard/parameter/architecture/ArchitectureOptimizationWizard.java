@@ -11,16 +11,14 @@ public class ArchitectureOptimizationWizard extends Wizard {
 	
 	private SimpleGenerationalEAWizardPage sgEaPage;
 	private ArchitectureOptimizationAlgorithmWizardPage archOptAlPage;
-	
-	
 
-	public ArchitectureOptimizationWizard(AlgorithmParameters<boolean[]> optArchitectureParam) {
+	public ArchitectureOptimizationWizard(AlgorithmParameters<boolean[]> optArchitectureParam,int numberOfInputNeurons) {
 		setWindowTitle("Architecture Optimization Wizard");
 		
 		this.optArchitectureParam=optArchitectureParam;
 		
 		sgEaPage=new SimpleGenerationalEAWizardPage(this.optArchitectureParam);
-		archOptAlPage=new ArchitectureOptimizationAlgorithmWizardPage(this.optArchitectureParam);
+		archOptAlPage=new ArchitectureOptimizationAlgorithmWizardPage(this.optArchitectureParam,numberOfInputNeurons);
 		
 	}
 	

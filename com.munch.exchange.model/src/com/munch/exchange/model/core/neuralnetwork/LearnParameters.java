@@ -57,6 +57,8 @@ public class LearnParameters extends XmlParameterElement {
 	
 	
 	public LearningRule createLearningRule(){
+		//logger.info("Learning rule type: "+type);
+		
 		if(type.equals(MOMENTUM_BACK_PROPAGATION)){
 			MomentumBackpropagation bp=new MomentumBackpropagation();
 			bp.setMomentum(this.getDoubleParam(MBP_Momentum));
@@ -64,6 +66,7 @@ public class LearnParameters extends XmlParameterElement {
 			
 			bp.setMaxIterations(this.getIntegerParam(Max_Iterations));
 			bp.setBatchMode(this.getBooleanParam(BatchMode));
+			return bp;
 		}
 		
 		return null;

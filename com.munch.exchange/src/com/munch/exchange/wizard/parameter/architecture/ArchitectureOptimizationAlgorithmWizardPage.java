@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 
 public class ArchitectureOptimizationAlgorithmWizardPage extends WizardPage {
@@ -24,16 +25,18 @@ public class ArchitectureOptimizationAlgorithmWizardPage extends WizardPage {
 	private Spinner spinnerNumberOfSteps;
 	private Spinner spinnerMaxDimension;
 	private Spinner spinnerMinDimension;
+	
+	private int numberOfInputNeurons;
 
 	/**
 	 * Create the wizard.
 	 */
-	public ArchitectureOptimizationAlgorithmWizardPage(AlgorithmParameters<boolean[]> optArchitectureParam) {
+	public ArchitectureOptimizationAlgorithmWizardPage(AlgorithmParameters<boolean[]> optArchitectureParam,int numberOfInputNeurons) {
 		super("wizardPage");
 		setTitle("Algorithm Selection");
 		setDescription("Please select the optimization algorithm");
 		
-		
+		this.numberOfInputNeurons=numberOfInputNeurons;
 		this.optArchitectureParam=optArchitectureParam;
 	}
 
@@ -86,7 +89,9 @@ public class ArchitectureOptimizationAlgorithmWizardPage extends WizardPage {
 		spinnerMinDimension.setMaximum(1000);
 		spinnerMinDimension.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		if(optArchitectureParam.hasParamKey(AlgorithmParameters.MinDimension)){
-			spinnerMinDimension.setSelection(optArchitectureParam.getIntegerParam(AlgorithmParameters.MinDimension));
+			spinnerMinDimension.setSelection(NetworkArchitecture.calculateNbOfInnerNeurons(
+					optArchitectureParam.getIntegerParam(AlgorithmParameters.MinDimension),
+					numberOfInputNeurons));
 		}
 		
 		Label lblMax = new Label(container, SWT.NONE);
@@ -106,7 +111,9 @@ public class ArchitectureOptimizationAlgorithmWizardPage extends WizardPage {
 		spinnerMaxDimension.setMaximum(1000);
 		spinnerMaxDimension.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		if(optArchitectureParam.hasParamKey(AlgorithmParameters.MaxDimension)){
-			spinnerMaxDimension.setSelection(optArchitectureParam.getIntegerParam(AlgorithmParameters.MaxDimension));
+			spinnerMaxDimension.setSelection(NetworkArchitecture.calculateNbOfInnerNeurons(
+					optArchitectureParam.getIntegerParam(AlgorithmParameters.MaxDimension),
+					numberOfInputNeurons));
 		}
 		
 		Label lblTerminationCriterion = new Label(container, SWT.NONE);
@@ -139,8 +146,8 @@ public class ArchitectureOptimizationAlgorithmWizardPage extends WizardPage {
 	private void saveParameters(){
 		optArchitectureParam.setType(comboAlgorithmType.getText());
 		optArchitectureParam.setParam(AlgorithmParameters.TERMINATION_Steps, spinnerNumberOfSteps.getSelection());
-		optArchitectureParam.setParam(AlgorithmParameters.MaxDimension, spinnerMaxDimension.getSelection());
-		optArchitectureParam.setParam(AlgorithmParameters.MinDimension, spinnerMinDimension.getSelection());
+		optArchitectureParam.setParam(AlgorithmParameters.MaxDimension,NetworkArchitecture.calculateActivatedConnectionsSize(numberOfInputNeurons, spinnerMaxDimension.getSelection()) );
+		optArchitectureParam.setParam(AlgorithmParameters.MinDimension, NetworkArchitecture.calculateActivatedConnectionsSize(numberOfInputNeurons,spinnerMinDimension.getSelection()));
 		
 	}
 

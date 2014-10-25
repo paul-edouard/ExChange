@@ -24,7 +24,7 @@ public class OptimizationWizard<X> extends Wizard {
 	private ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> algorithm;
 	private IObjectiveFunction<X> f;
 	private IGPM<double[], X> gpm;
-	StepLimitPropChange<X> term;
+	StepLimitPropChange<double[],X> term;
 	
 	private int dimension;
 	private double min;
@@ -132,7 +132,7 @@ public class OptimizationWizard<X> extends Wizard {
 		//Set the objectiv function
 		algorithm.setObjectiveFunction(f);
 		//Termination
-		term = new StepLimitPropChange<X>(steps);
+		term = new StepLimitPropChange<double[],X>(steps);
 		algorithm.setTerminationCriterion(term);
 		
 		return finish;
@@ -164,7 +164,7 @@ public class OptimizationWizard<X> extends Wizard {
 		return algorithm;
 	}
 
-	public StepLimitPropChange<X> getTerm() {
+	public StepLimitPropChange<double[],X> getTerm() {
 		return term;
 	}
 	

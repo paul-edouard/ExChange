@@ -249,8 +249,9 @@ public class EvolutionStrategy<X> extends
         
         //Send the best value to the termination criterion
         if(term instanceof StepLimitPropChange){
-        	StepLimitPropChange<X> t=(StepLimitPropChange<X>) term;
-        	t.setBest(best);
+        	StepLimitPropChange<double[],X> t=(StepLimitPropChange<double[],X>) term;
+        	if(best.v<Constants.WORST_FITNESS)
+        		t.setBest(best);
         }
         // after each objective function evaluation, check if we should
         // stop

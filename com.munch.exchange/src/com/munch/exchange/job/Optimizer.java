@@ -31,7 +31,7 @@ public class Optimizer<X> extends Job {
 	
 	ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> algorithm;
 	
-	StepLimitPropChange<X> term;
+	StepLimitPropChange<double[],X> term;
 	
 	
 	public Optimizer() {
@@ -41,7 +41,7 @@ public class Optimizer<X> extends Job {
 		
 	}
 	
-	public void initOptimizationInfo(IEventBroker eventBroker,OptimizationResults.Type type,ExchangeRate rate,ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> algorithm, StepLimitPropChange<X> term ){
+	public void initOptimizationInfo(IEventBroker eventBroker,OptimizationResults.Type type,ExchangeRate rate,ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> algorithm, StepLimitPropChange<double[],X> term ){
 		
 		this.algorithm=algorithm;
 		this.term=term;

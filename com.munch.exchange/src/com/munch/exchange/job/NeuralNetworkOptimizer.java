@@ -42,7 +42,7 @@ public class NeuralNetworkOptimizer extends Job {
 	
 	ISOOptimizationAlgorithm<boolean[], boolean[], Individual<boolean[], boolean[]>> algorithm;
 	
-	StepLimitPropChange<Boolean> term;
+	StepLimitPropChange<boolean[],boolean[]> term;
 	
 	public NeuralNetworkOptimizer(ExchangeRate rate, Configuration configuration,DataSet testSet,
 			IEventBroker eventBroker, int dimension) {
@@ -130,7 +130,7 @@ public class NeuralNetworkOptimizer extends Job {
 		
 		// Get the termination Criterion
 		if (algorithm.getTerminationCriterion() instanceof StepLimitPropChange) {
-			term = ((StepLimitPropChange<Boolean>) algorithm
+			term = ((StepLimitPropChange<boolean[],boolean[]>) algorithm
 							.getTerminationCriterion());
 		}
 

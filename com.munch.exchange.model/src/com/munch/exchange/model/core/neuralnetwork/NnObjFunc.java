@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.neuralnetwork;
 
 
+import java.util.Arrays;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -29,6 +30,9 @@ public class NnObjFunc extends OptimizationModule implements
 	
 	@Override
 	public double compute(double[] x, Random r) {
+		
+		logger.info("Computing: "+Arrays.toString(x));
+		
 		network.setWeights(x);
 		
 		double[] output = new double[testSet.getRows().size()];
@@ -61,6 +65,8 @@ public class NnObjFunc extends OptimizationModule implements
         for (double error : outputError) {
             outputErrorSqrSum += (error * error) * 0.5; // a;so multiply with 1/trainingSetSize  1/2n * (...)
         }
+        
+        logger.info("Error: "+outputErrorSqrSum);
 		
 		return outputErrorSqrSum;
 	}
