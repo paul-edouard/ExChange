@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.neuralnetwork;
 
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
@@ -48,6 +49,7 @@ public class Configuration extends XmlParameterElement {
 	
 	private int maxNumberOfSavedAchitectures=200;
 	private LinkedList<NetworkArchitecture> networkArchitectures=new LinkedList<NetworkArchitecture>();
+	private HashMap<Integer, OptimizationResults> netArchiOptResultMap=new HashMap<Integer, OptimizationResults>();
 	
 	private int numberOfInputNeurons;
 	
@@ -61,6 +63,9 @@ public class Configuration extends XmlParameterElement {
 	 * @return
 	 */
 	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray){
+		
+		
+		//logger.info("Archi"+Array.actConsArray);
 		
 		NetworkArchitecture searched=null;
 		
@@ -85,6 +90,9 @@ public class Configuration extends XmlParameterElement {
 			int numberOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(
 					actConsArray.length, numberOfInputNeurons);
 			
+			logger.info("Numer of numberOfInputNeurons"+numberOfInputNeurons);
+			logger.info("Numer of numberOfInnerNeurons"+numberOfInnerNeurons);
+			logger.info("actConsArray: "+actConsArray.length);
 			searched=new NetworkArchitecture(numberOfInputNeurons,numberOfInnerNeurons,actConsArray);
 			
 			//Test the Network validity
@@ -103,6 +111,13 @@ public class Configuration extends XmlParameterElement {
 	
 	private synchronized void addNetworkArchitecture(NetworkArchitecture architecture){
 		networkArchitectures.add(architecture);
+	}
+	
+	public synchronized OptimizationResults getOptResults(int dimension){
+		if(!netArchiOptResultMap.containsKey(dimension)){
+			netArchiOptResultMap.put(dimension, new OptimizationResults() );
+		}
+		return netArchiOptResultMap.get(dimension);
 	}
 	
 	
@@ -329,13 +344,14 @@ public class Configuration extends XmlParameterElement {
 		
 		allTimeSeries.clear();
 		networkArchitectures.clear();
-		
+		netArchiOptResultMap.clear();
 	}
 
 	@Override
 	protected void initChild(Element childElement) {
 		TimeSeries ent=new TimeSeries();
 		NetworkArchitecture arch=new NetworkArchitecture();
+		OptimizationResults results=new OptimizationResults();
 		if(childElement.getTagName().equals(ent.getTagName())){
 			ent.init(childElement);
 			allTimeSeries.add(ent);
@@ -355,6 +371,10 @@ public class Configuration extends XmlParameterElement {
 		else if(childElement.getTagName().equals(arch.getTagName())){
 			arch.init(childElement);
 			networkArchitectures.add(arch);
+		}
+		else if(childElement.getTagName().equals(results.getTagName())){
+			results.init(childElement);
+			netArchiOptResultMap.put(results.getBestResult().getGenome().size(), results);
 		}
 		
 	}
@@ -382,6 +402,11 @@ public class Configuration extends XmlParameterElement {
 		for(NetworkArchitecture ent:networkArchitectures){
 			rootElement.appendChild(ent.toDomElement(doc));
 		}
+		
+		for(OptimizationResults results:this.netArchiOptResultMap.values()){
+			rootElement.appendChild(results.toDomElement(doc));
+		}
+		
 		
 	}
 

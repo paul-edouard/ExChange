@@ -18,6 +18,7 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 	private final String INTEGER="integer";
 	private final String FLOAT="float";
 	private final String DOUBLE="double";
+	private final String BOOLEAN="boolean";
 	
 	static final String FIELD_Genome="genome";
 	static final String FIELD_Value="Value";
@@ -41,6 +42,20 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 		this.value=value;
 	}
 	
+	public ResultEntity(boolean[] booleans,double value){
+		for(int i=0;i<booleans.length;i++){
+			genome.add(booleans[i]);
+		}
+		this.value=value;
+	}
+	
+	public ResultEntity(Double[] doubles,double value){
+		for(int i=0;i<doubles.length;i++){
+			genome.add(doubles[i]);
+		}
+		this.value=value;
+	}
+	
 	
 	public double[] getDoubleArray(){
 		LinkedList<Double> list=new LinkedList<Double>();
@@ -58,6 +73,25 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 		return array;
 		
 	}
+	
+	public boolean[] getBooleanArray(){
+		LinkedList<Boolean> list=new LinkedList<Boolean>();
+		for(Object obj:this.genome){
+			if(obj instanceof Boolean){
+				list.add((boolean)obj);
+			}
+		}
+		
+		boolean[] array=new boolean[list.size()];
+		for(int i=0;i<list.size();i++){
+			array[i]=list.get(i);
+		}
+		
+		return array;
+		
+	}
+	
+	
 	
 	public Individual<double[], double[]> toDoubleIndividual(){
 		Individual<double[], double[]> ind=new Individual<double[], double[]>();
@@ -105,7 +139,8 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 	@Override
 	protected void initAttribute(Element rootElement) {
 		
-		this.setValue(Double.parseDouble(rootElement.getAttribute(FIELD_Value)));
+		if(rootElement.hasAttribute(FIELD_Value))
+			this.setValue(Double.parseDouble(rootElement.getAttribute(FIELD_Value)));
 		
 		genome.clear();
 	}
@@ -124,6 +159,9 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 		}
 		else if(childElement.getTagName().equals(DOUBLE)){
 			genome.add(Double.valueOf(childElement.getTextContent()));
+		}
+		else if(childElement.getTagName().equals(BOOLEAN)){
+			genome.add(Boolean.valueOf(childElement.getTextContent()));
 		}
 
 	}
@@ -152,6 +190,10 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 			else if(obj instanceof Double){
 				element=doc.createElement(DOUBLE);
 				element.setTextContent(String.valueOf((Double) obj));
+			}
+			else if(obj instanceof Boolean){
+				element=doc.createElement(BOOLEAN);
+				element.setTextContent(String.valueOf((Boolean) obj));
 			}
 			if(element!=null)
 				rootElement.appendChild(element);

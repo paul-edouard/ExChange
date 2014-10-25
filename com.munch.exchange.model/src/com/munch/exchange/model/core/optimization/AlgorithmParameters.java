@@ -189,11 +189,25 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	}
 	
 	
-	public void addLastBestResults(SimpleGenerationalEA<boolean[],X> EA,LinkedList<boolean[]> oldResults){
+	public void addBooleanLastBestResults(ISOOptimizationAlgorithm<boolean[], X, Individual<boolean[], X>> algorithm,OptimizationResults oldBestResults){
+		
+		//SimpleGenerationalEA<boolean[],X> EA
+		if(!(algorithm instanceof SimpleGenerationalEA))return;
+		SimpleGenerationalEA<boolean[],X> EA=(SimpleGenerationalEA<boolean[],X>) algorithm;
+		
 		
 		if(!(EA.getNullarySearchOperation() instanceof BooleanArrayUniformCreation))return;
 		
 		BooleanArrayUniformCreation creation=(BooleanArrayUniformCreation) EA.getNullarySearchOperation();
+		
+		
+		LinkedList<boolean[]> oldResults =new LinkedList<boolean[]>();
+		if(oldBestResults!=null && oldBestResults.getResults()!=null){	
+			for(ResultEntity ent : oldBestResults.getResults()){
+				oldResults.add(ent.getBooleanArray());
+			}
+		}
+		
 		creation.setOldResults(oldResults);
 		
 	}

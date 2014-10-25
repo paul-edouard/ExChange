@@ -386,7 +386,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 	//***      GETTER AND SETTER          ****
 	//****************************************
 	
-	
+	public String getId(){
+		return network.getLabel();
+	}
 	
 	
 	

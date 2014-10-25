@@ -33,6 +33,7 @@ import org.neuroph.core.learning.LearningRule;
 import org.neuroph.nnet.MultiLayerPerceptron;
 
 import com.munch.exchange.IEventConstant;
+import com.munch.exchange.job.NeuralNetworkOptimizer.OptInfo;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.parts.composite.RateChart;
@@ -288,6 +289,25 @@ public class NeuralNetworkChart extends Composite {
 		
 		//logger.info("---->  Message recieved!!: ");
 	}
+    
+    
+    @Inject
+    private void newBestResult(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL) OptInfo info){
+    	
+    	
+    	if(info==null)return;
+    	
+    	if (!isCompositeAbleToReact(info.getRate().getUUID()))
+			return;
+    	
+    	boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
+    	
+    	this.neuralNetwork=info.getConfiguration().searchArchitecture(bestArchi).getNetwork();
+    	
+    	updateYXZDataSet();
+    	
+    }
+    
 	
 
 }

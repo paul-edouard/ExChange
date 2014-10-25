@@ -37,11 +37,14 @@ public class OptimizationResults extends XmlParameterElement{
 		
 	}
 	
-	public void addResult(ResultEntity result){
+	public boolean addResult(ResultEntity result){
 		results.addFirst(result);
 		Collections.sort(results);
 		if(results.size()>maxResult)
 			results.removeLast();
+		
+		return result==results.getFirst();
+		
 	}
 	
 	public ResultEntity getBestResult(){

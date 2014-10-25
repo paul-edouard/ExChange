@@ -52,6 +52,7 @@ import org.neuroph.nnet.learning.ResilientPropagation;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddTimeSeriesDialog;
 import com.munch.exchange.job.NeuralNetworkDataLoader;
+import com.munch.exchange.job.NeuralNetworkOptimizer;
 import com.munch.exchange.job.Optimizer;
 import com.munch.exchange.job.objectivefunc.NeuralNetworkOutputObjFunc;
 import com.munch.exchange.model.core.DatePoint;
@@ -61,6 +62,7 @@ import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
+import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -84,7 +86,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private NeuralNetworkContentProvider contentProvider;
 	
 	private NeuralNetworkOutputObjFunc objFunc;
-	private Optimizer<double[]> optimizer = new Optimizer<double[]>();
 	
 	private NeuralNetworkChart neuralNetworkChart;
 	
@@ -111,6 +112,9 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	@Inject
 	private IEventBroker eventBroker;
+	
+	
+	private NeuralNetworkOptimizer optimizer;
 	
 	private Text textMaxProfit;
 	private Text textPenaltyProfit;
@@ -408,9 +412,28 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
+				logger.info("Start Train click!");
+				
 				neuralNetworkProvider.createAllInputPoints(stock);
 				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().createTrainingDataSet();
 				
+				
+				int dimension=5;
+				
+				AlgorithmParameters<boolean[]> optArchitectureParam=stock.getNeuralNetwork().getConfiguration().getOptArchitectureParam();
+				
+				if(optArchitectureParam.hasParamKey(AlgorithmParameters.MinDimension)){
+					dimension=optArchitectureParam.getIntegerParam(AlgorithmParameters.MinDimension);
+				}
+				
+				NeuralNetworkOptimizer
+				optimizer=new NeuralNetworkOptimizer(stock, stock.getNeuralNetwork().getConfiguration(),
+						trainingSet, eventBroker, dimension);
+				
+				optimizer.schedule();
+				
+				
+				/*
 				int nbOfInput=trainingSet.getRowAt(0).getInput().length;
 				logger.info("Number of input: "+nbOfInput);
 				
@@ -422,6 +445,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				logger.info("Number of doubles: "+con.length);
 				
 				NetworkArchitecture arch=new NetworkArchitecture(nbOfInput,nbofInner,con);
+				
+				*/
 				/*
 				// create multi layer perceptron
 				List<Integer> neuronsInLayers=new LinkedList<Integer>();
