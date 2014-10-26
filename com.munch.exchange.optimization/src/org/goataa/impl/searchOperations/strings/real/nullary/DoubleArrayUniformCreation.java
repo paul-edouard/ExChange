@@ -3,6 +3,7 @@
 
 package org.goataa.impl.searchOperations.strings.real.nullary;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -61,7 +62,6 @@ public class DoubleArrayUniformCreation extends RealVectorCreation {
 		return oldResults.pollLast();
 	}
 	  
-	  
     double[] g;
     int i;
 
@@ -75,6 +75,7 @@ public class DoubleArrayUniformCreation extends RealVectorCreation {
       // [min,max] (i is the locus Definition D4.5)
       g[i] = (this.min + (r.nextDouble() * (this.max - this.min)));
     }
+    
 
     return g;
   }

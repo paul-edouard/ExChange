@@ -11,6 +11,8 @@ import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
 
+import com.munch.exchange.model.core.optimization.ResultEntity;
+
 public class NnObjFunc extends OptimizationModule implements
 		IObjectiveFunction<double[]> {
 		
@@ -20,18 +22,20 @@ public class NnObjFunc extends OptimizationModule implements
 	private static final long serialVersionUID = 8646250762543992809L;
 	private static Logger logger = Logger.getLogger(NnObjFunc.class);
 	
+	private NetworkArchitecture architecture;
 	private NeuralNetwork network;
 	private DataSet testSet;
 	
-	public NnObjFunc(NeuralNetwork network, DataSet testSet){
-		this.network=network;
+	public NnObjFunc(NetworkArchitecture architecture, DataSet testSet){
+		this.network=architecture.getNetwork();
 		this.testSet=testSet;
+		this.architecture=architecture;
 	}
 	
 	@Override
 	public double compute(double[] x, Random r) {
 		
-		logger.info("Computing: "+Arrays.toString(x));
+		//logger.info("Computing: "+Arrays.toString(x));
 		
 		network.setWeights(x);
 		
@@ -66,9 +70,16 @@ public class NnObjFunc extends OptimizationModule implements
             outputErrorSqrSum += (error * error) * 0.5; // a;so multiply with 1/trainingSetSize  1/2n * (...)
         }
         
-        logger.info("Error: "+outputErrorSqrSum);
+        double error=outputErrorSqrSum/testSet.size();
+        
+        //Save the results
+        ResultEntity ent=new ResultEntity(x,error);
+		architecture.getOptResults().addResult(ent);
+		//logger.info("Algorithm Best: "+ent);
 		
-		return outputErrorSqrSum;
+        //logger.info("Error: "+error);
+		
+		return error;
 	}
 
 }

@@ -98,7 +98,7 @@ public class NeuralNetworkOptimizer extends Job {
 		solutions=algorithm.call();
 		
 		//Remove the listener
-		//term.removePropertyChangeListener(listener);
+		term.removePropertyChangeListener(listener);
 		eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_FINISHED,info);
 		
 		
@@ -160,6 +160,7 @@ public class NeuralNetworkOptimizer extends Job {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_BEST)){
 				Individual<boolean[], boolean[]> ind=(Individual<boolean[], boolean[]>) evt.getNewValue();
+				logger.info("New Best Results: "+ind.v);
 				if(info.getResults().addResult(new ResultEntity(ind.x,ind.v))){
 					eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
 				}

@@ -40,6 +40,7 @@ public class OptimizationResults extends XmlParameterElement{
 	public boolean addResult(ResultEntity result){
 		results.addFirst(result);
 		Collections.sort(results);
+		//Collections.reverse(list);
 		if(results.size()>maxResult)
 			results.removeLast();
 		
@@ -149,6 +150,22 @@ public class OptimizationResults extends XmlParameterElement{
 		
 		return Type.NONE;
 		
+	}
+	
+	
+	
+
+	@Override
+	public String toString() {
+		String ret="OptimizationResults [ type=" + type
+				+ ", maxResult=" + maxResult + ", results=\n";
+		
+		for(ResultEntity ent:this.results){
+			ret+=String.valueOf(ent)+"\n";
+		}
+		
+		ret+="]";
+		return ret;
 	}
 
 	@Override

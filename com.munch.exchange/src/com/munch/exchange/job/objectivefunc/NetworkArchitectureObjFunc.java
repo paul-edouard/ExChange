@@ -49,7 +49,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	private ExchangeRate rate;
 	private Configuration configuration;
 	private DataSet trainingSet;
-	
+	private NetworkArchitecture architecture;
 	
 	//Event variables
 	private IEventBroker eventBroker;
@@ -85,19 +85,19 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	@Override
 	public double compute(boolean[] x, Random r) {
 		
-		logger.info("Computing: "+Arrays.toString(x));
+		//logger.info("Computing: "+Arrays.toString(x));
 		
-		NetworkArchitecture architecture=configuration.searchArchitecture(x);
+		architecture=configuration.searchArchitecture(x);
 		if(architecture==null)return Constants.WORST_FITNESS;
 		
 		
 		//Prepare the optimization of the network weights
-		prepareNetworkWeightsOptimization(architecture);
+		prepareNetworkWeightsOptimization();
 		if(algorithm==null || term == null)return Constants.WORST_FITNESS;
 		
 		
 		//Prepare the learning strategy
-		prepareLearningStrategy(architecture);
+		prepareLearningStrategy();
 		if(learningRule==null)return Constants.WORST_FITNESS;
 		
 		//Prepare the Optimization info
@@ -105,56 +105,30 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 		eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_STARTED,info);
 		
+		
+		//logger.info("Computing: "+Arrays.toString(x));
+		
 		//Start the Optimization
 		for(int i=0;i<optLoops;i++){
 			//Start the optimization algorithm
-			logger.info("Loop: "+i);
+			//logger.info("Loop: "+i);
 			
-			List<Individual<double[], double[]>> individuals=algorithm.call();
+			algorithm.call();
 			
 			//Loop on all the individuals to try increase the result quality
-			//TODO set the max number of results
-			OptimizationResults results=new OptimizationResults();
 			//results.setMaxResult(maxResult);
-			for(Individual<double[], double[]> individual:individuals){
-				
+			//TODO Learning of the best 10 Results
+			int numberOfLearning=10;
+			for(int j=0;j<numberOfLearning;j++){
 				//Start learning for each individuals
-				architecture.getNetwork().setWeights(individual.x);
-				architecture.getNetwork().learn(trainingSet);
-				
-				//Get the network error
-				if(learningRule instanceof BackPropagation){
-					BackPropagation bp = (BackPropagation)learningRule;
-					double error=bp.getTotalNetworkError();
-					
-					//Reset the individual values if a better error is found
-					if(error<individual.v){
-						Double[] weigths=architecture.getNetwork().getWeights();
-						for(int j=0;j<weigths.length;j++){
-							individual.x[j]=weigths[j];
-							individual.g[j]=weigths[j];
-							
-							if(weigths[j]>maxWeigth)
-								maxWeigth=weigths[j]+Math.abs(weigths[j])*0.1;
-							if(weigths[j]<minWeigth)
-								minWeigth=weigths[j]-Math.abs(weigths[j])*0.1;
-							
-						}
-						individual.v=error;
-					}
-				}
-				
-				//Add the individual to the results list
-				ResultEntity result=new ResultEntity(individual.g,individual.v);
-				results.addResult(result);
-				architecture.getOptResults().addResult(result);
+				ResultEntity ent=architecture.getOptResults().getResults().get(j);
+				architecture.getNetwork().setWeights(ent.getDoubleArray());
+				architecture.getNetwork().learn(trainingSet);	
 			}
 			
-			
-			resetMinMaxValuesOfAlgorithm();
-			
 			//Set the best results as starting point for the next loop
-			configuration.getOptLearnParam().addLastBestResults(algorithm,results);
+			resetMinMaxValuesOfAlgorithm();
+			configuration.getOptLearnParam().addLastBestResults(algorithm,architecture.getOptResults());
 		}
 		
 		eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_FINISHED,info);
@@ -163,15 +137,15 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		ResultEntity bestResult=architecture.getOptResults().getBestResult();
 		if(bestResult==null)return  Constants.WORST_FITNESS;
 		
-		logger.info("Archi: "+x);
-		logger.info("Best Results: "+bestResult.getValue());
+		//logger.info("Archi: "+x);
+		logger.info("Number of results: "+architecture.getOptResults().getResults().size()+", Best: "+bestResult);
 		
 		return bestResult.getValue();
 	}
 	
 	private void resetMinMaxValuesOfAlgorithm(){
-		configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Minimum, minWeigth);
-		configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Maximum, maxWeigth);
+		//configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Minimum, minWeigth);
+		//configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Maximum, maxWeigth);
 		
 		if(algorithm instanceof EvolutionStrategy){
 			EvolutionStrategy<double[]> ES=(EvolutionStrategy<double[]>) algorithm;
@@ -184,7 +158,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	
 	
 	@SuppressWarnings("unchecked")
-	private void prepareLearningStrategy(NetworkArchitecture architecture){
+	private void prepareLearningStrategy(){
 		learningRule=configuration.getLearnParam().createLearningRule();
 		learningRule.addListener(this);
 		
@@ -193,10 +167,13 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	
 	
 	@SuppressWarnings("unchecked")
-	private void prepareNetworkWeightsOptimization(NetworkArchitecture architecture) {
+	private void prepareNetworkWeightsOptimization() {
 		//Set the dimension
 		configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Dimension, architecture.getNetwork().getWeights().length);
 		configuration.getOptLearnParam().setParam(AlgorithmParameters.EA_Dimension, architecture.getNetwork().getWeights().length);
+		
+		minWeigth=configuration.getOptLearnParam().getDoubleParam(AlgorithmParameters.ES_Minimum);
+		maxWeigth=configuration.getOptLearnParam().getDoubleParam(AlgorithmParameters.ES_Maximum);
 		
 		// Create the algorithm
 		algorithm = configuration.getOptLearnParam().createDoubleAlgorithm();
@@ -211,7 +188,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		algorithm.setGPM(gpm);
 		
 		//Set the objective function
-		algorithm.setObjectiveFunction(new NnObjFunc(architecture.getNetwork(), trainingSet) );
+		algorithm.setObjectiveFunction(new NnObjFunc(architecture, trainingSet) );
 		
 		// Add the last best results
 		configuration.getOptLearnParam().addLastBestResults(algorithm,
@@ -245,7 +222,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		public void propertyChange(PropertyChangeEvent evt) {
 			if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_BEST)){
 				Individual<double[], double[]> ind=(Individual<double[], double[]>) evt.getNewValue();
-				if(info.getResults().addResult(new ResultEntity(ind.g,ind.v))){
+				ResultEntity ent=new ResultEntity(ind.g,ind.v);
+				if(info.getResults().addResult(ent)){
 					eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
 				}
 			}
@@ -274,13 +252,25 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		if(event.getSource() instanceof BackPropagation){
 			
 			BackPropagation bp = (BackPropagation)event.getSource();
+			
+			//logger.info("Learning Error: "+ bp.getTotalNetworkError()+", x Size:" +trainingSet.size()*bp.getTotalNetworkError());
+			
 			ResultEntity ent=new ResultEntity(bp.getNeuralNetwork().getWeights(), bp.getTotalNetworkError());
+			//Save the new results entity
+			Double[] weigths=bp.getNeuralNetwork().getWeights();
+			for(int j=0;j<weigths.length;j++){
+				if(weigths[j]>maxWeigth)
+					maxWeigth=weigths[j]+Math.abs(weigths[j])*0.1;
+				if(weigths[j]<minWeigth)
+					minWeigth=weigths[j]-Math.abs(weigths[j])*0.1;
+			}
+			architecture.getOptResults().addResult(ent);
+			
+			
 			if(info.getResults().addResult(ent)){
 				eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
 			}
-			//System.out.println(bp.getCurrentIteration() + ". iteration : "+ bp.getTotalNetworkError());
-			//eventBroker.send(IEventConstant.NEURAL_NETWORK_NEW_CURRENT,rate.getUUID());
-			//TODO test if a new best was found!!!
+			
 		}
         
         

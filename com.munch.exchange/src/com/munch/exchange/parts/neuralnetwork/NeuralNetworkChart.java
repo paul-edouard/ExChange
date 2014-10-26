@@ -3,6 +3,7 @@ package com.munch.exchange.parts.neuralnetwork;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -297,14 +298,17 @@ public class NeuralNetworkChart extends Composite {
     	
     	if(info==null)return;
     	
+    	logger.info("New best result reaction!");
+    	
     	if (!isCompositeAbleToReact(info.getRate().getUUID()))
 			return;
     	
     	boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
+    	logger.info("Best Archi:"+Arrays.toString(bestArchi));
+    	
     	
     	this.neuralNetwork=info.getConfiguration().searchArchitecture(bestArchi).getNetwork();
-    	
-    	updateYXZDataSet();
+    	//updateYXZDataSet();
     	
     }
     

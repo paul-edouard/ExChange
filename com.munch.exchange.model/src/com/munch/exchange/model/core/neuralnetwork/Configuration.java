@@ -386,7 +386,8 @@ public class Configuration extends XmlParameterElement {
 		}
 		else if(childElement.getTagName().equals(results.getTagName())){
 			results.init(childElement);
-			netArchiOptResultMap.put(results.getBestResult().getGenome().size(), results);
+			if(results.getBestResult()!=null)
+				netArchiOptResultMap.put(results.getBestResult().getGenome().size(), results);
 		}
 		
 	}

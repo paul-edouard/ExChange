@@ -100,8 +100,16 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 			//Creation
 			EvolutionStrategy<X> ES = new EvolutionStrategy<X>();
 			ES.setDimension(this.getIntegerParam(ES_Dimension));
-			ES.setMinimum(this.getDoubleParam(ES_Minimum));
-			ES.setMaximum(this.getDoubleParam(ES_Maximum));
+			
+			if(this.hasParamKey(ES_Minimum))
+				ES.setMinimum(this.getDoubleParam(ES_Minimum));
+			else
+				ES.setMinimum(-1.0);
+			
+			if(this.hasParamKey(ES_Maximum))
+				ES.setMaximum(this.getDoubleParam(ES_Maximum));
+			else
+				ES.setMaximum(1.0);
 			//Number of parents
 			ES.setMu(this.getIntegerParam(ES_Mu));
 			//Number of offspring
@@ -178,7 +186,11 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 				EA.setUnarySearchOperation(BooleanArraySingleBitFlipMutation.BOOLEAN_ARRAY_SINGLE_BIT_FLIP_MUTATION);
 			}
 			
-			int steps=this.getIntegerParam(TERMINATION_Steps);;
+			int steps=this.getIntegerParam(TERMINATION_Steps);
+			steps=steps*EA.getMatingPoolSize()+EA.getPopulationSize();
+			
+			logger.info("Numer of steps:"+steps);
+			
 			EA.setTerminationCriterion(new StepLimitPropChange<boolean[],X>(steps));
 			
 			return EA;

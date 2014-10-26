@@ -6,6 +6,7 @@ package org.goataa.impl.algorithms.ea;
 import java.util.List;
 import java.util.Random;
 
+import org.goataa.impl.termination.StepLimitPropChange;
 import org.goataa.impl.utils.Constants;
 import org.goataa.impl.utils.Individual;
 import org.goataa.spec.IBinarySearchOperation;
@@ -125,7 +126,18 @@ public final class SimpleGenerationalEA<G, X> extends EABase<G, X> {
         // is the current individual the best one so far?
         if (p.v < best.v) {
           best.assign(p);
+          
+          //Send the best value to the termination criterion
+          if(term instanceof StepLimitPropChange){
+          	StepLimitPropChange<G,X> t=(StepLimitPropChange<G,X>) term;
+          	if(best.v<Constants.WORST_FITNESS)
+          		t.setBest(best);
+          }
+          
+          
         }
+        
+       
 
         // after each objective function evaluation, check if we should
         // stop

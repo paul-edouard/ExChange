@@ -1,5 +1,6 @@
 package com.munch.exchange.model.core.optimization;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import org.goataa.impl.utils.Constants;
@@ -93,6 +94,11 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 	
 	
 	
+	@Override
+	public String toString() {
+		return "ResultEntity [value x 100=" + value*100 + ", genome=" + Arrays.toString(genome.toArray()) + "]";
+	}
+
 	public Individual<double[], double[]> toDoubleIndividual(){
 		Individual<double[], double[]> ind=new Individual<double[], double[]>();
 		
@@ -207,20 +213,20 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 		      return 0;
 		    }
 		    if (this.getValue() == Constants.WORST_FITNESS) {
-		      return 1;
+		      return -1;
 		    }
 		    if (b.getValue() ==  Constants.WORST_FITNESS) {
-		      return -1;
+		      return 1;
 		    }
 		    
 		    if(this.getValue() < b.getValue()){
-		    	return 1;
+		    	return -1;
 		    }
 		    else if(this.getValue() == b.getValue()){
 		    	return 0;
 		    }
 		    else{
-		    	return -1;
+		    	return 1;
 		    }
 		    
 	}
