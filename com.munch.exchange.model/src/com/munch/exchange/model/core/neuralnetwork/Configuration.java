@@ -56,6 +56,10 @@ public class Configuration extends XmlParameterElement {
 	
 	
 	
+	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray){
+		return searchArchitecture(actConsArray,false);
+	}
+	
 	/**
 	 * Knowing the connections array this method will search the corresponding architecture
 	 * if no architecture was found a new one will be build
@@ -63,12 +67,16 @@ public class Configuration extends XmlParameterElement {
 	 * @param actConsArray
 	 * @return
 	 */
-	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray){
+	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray,boolean loggerOn){
 		
 		
 		//logger.info("Archi"+Array.actConsArray);
 		
 		NetworkArchitecture searched=null;
+		
+		if(loggerOn)
+			logger.info("Number of archi: "+networkArchitectures.size());
+		
 		
 		//Search the architecture in the already created ones
 		for(NetworkArchitecture architecture :networkArchitectures){
@@ -80,7 +88,11 @@ public class Configuration extends XmlParameterElement {
 					}
 				}
 				if(isEqual){
-					searched=architecture;break;
+					//logger.info("Architecture found!");
+					if(loggerOn)
+						logger.info("Architecture found!");
+					searched=architecture;
+					return searched;
 				}
 				
 			}
@@ -99,8 +111,13 @@ public class Configuration extends XmlParameterElement {
 			//Test the Network validity
 			if(searched.isValid()){
 				//Add the architecture in the list
+				
 				addNetworkArchitecture(searched);
 				return searched;
+			}
+			else{
+				if(loggerOn)
+					logger.info("Archi no valid");
 			}
 		}
 		

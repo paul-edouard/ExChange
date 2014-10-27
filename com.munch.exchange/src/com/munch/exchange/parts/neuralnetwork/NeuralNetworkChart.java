@@ -37,6 +37,7 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.NeuralNetworkOptimizer.OptInfo;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.services.IExchangeRateProvider;
 
@@ -304,11 +305,16 @@ public class NeuralNetworkChart extends Composite {
 			return;
     	
     	boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
-    	//logger.info("Best Archi:"+Arrays.toString(bestArchi));
+    	logger.info("Best Archi:"+Arrays.toString(bestArchi));
     	
     	
-    	//this.neuralNetwork=info.getConfiguration().searchArchitecture(bestArchi).getNetwork();
-    	//updateYXZDataSet();
+    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi,true);
+    	
+    	if(archi==null)
+    		logger.info("Null:");
+    	
+    	this.neuralNetwork=info.getConfiguration().searchArchitecture(bestArchi).getNetwork();
+    	updateYXZDataSet();
     	
     }
     
