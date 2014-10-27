@@ -298,16 +298,16 @@ public class NeuralNetworkChart extends Composite {
     	
     	if(info==null)return;
     	
-    	logger.info("New best result reaction!");
+    	//logger.info("New best result reaction!");
     	
     	if (!isCompositeAbleToReact(info.getRate().getUUID()))
 			return;
     	
     	boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
-    	logger.info("Best Archi:"+Arrays.toString(bestArchi));
+    	//logger.info("Best Archi:"+Arrays.toString(bestArchi));
     	
     	
-    	this.neuralNetwork=info.getConfiguration().searchArchitecture(bestArchi).getNetwork();
+    	//this.neuralNetwork=info.getConfiguration().searchArchitecture(bestArchi).getNetwork();
     	//updateYXZDataSet();
     	
     }

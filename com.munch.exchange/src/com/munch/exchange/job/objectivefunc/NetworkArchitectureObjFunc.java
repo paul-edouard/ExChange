@@ -112,8 +112,12 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		for(int i=0;i<optLoops;i++){
 			//Start the optimization algorithm
 			//logger.info("Loop: "+i);
+			ResultEntity ref=architecture.getOptResults().getBestResult();
 			
 			algorithm.call();
+			
+			//logger.info("Increase from algorithm: "+architecture.getOptResults().compareBestResultWith(ref));
+			ref=architecture.getOptResults().getBestResult();
 			
 			//Loop on all the individuals to try increase the result quality
 			//results.setMaxResult(maxResult);
@@ -125,6 +129,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 				architecture.getNetwork().setWeights(ent.getDoubleArray());
 				architecture.getNetwork().learn(trainingSet);	
 			}
+			
+			//logger.info("Increase from learning: "+architecture.getOptResults().compareBestResultWith(ref));
 			
 			//Set the best results as starting point for the next loop
 			resetMinMaxValuesOfAlgorithm();
@@ -138,7 +144,10 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		if(bestResult==null)return  Constants.WORST_FITNESS;
 		
 		//logger.info("Archi: "+x);
-		logger.info("Number of results: "+architecture.getOptResults().getResults().size()+", Best: "+bestResult);
+		//logger.info("Number of results: "+architecture.getOptResults().getResults().size()+", Best: "+bestResult);
+		
+		//Save the Architecture results
+		configuration.getOptResults(x.length).addResult(new ResultEntity(x, bestResult.getValue()));
 		
 		return bestResult.getValue();
 	}
@@ -172,8 +181,29 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Dimension, architecture.getNetwork().getWeights().length);
 		configuration.getOptLearnParam().setParam(AlgorithmParameters.EA_Dimension, architecture.getNetwork().getWeights().length);
 		
-		minWeigth=configuration.getOptLearnParam().getDoubleParam(AlgorithmParameters.ES_Minimum);
-		maxWeigth=configuration.getOptLearnParam().getDoubleParam(AlgorithmParameters.ES_Maximum);
+		//minWeigth=configuration.getOptLearnParam().getDoubleParam(AlgorithmParameters.ES_Minimum);
+		//maxWeigth=configuration.getOptLearnParam().getDoubleParam(AlgorithmParameters.ES_Maximum);
+		
+		minWeigth=-1.0;
+		maxWeigth=1.0;
+		
+		// Reset Min Max According to the last best results weights
+		for (ResultEntity ent : architecture.getOptResults().getResults()) {
+
+			double[] weigths = ent.getDoubleArray();
+			if (weigths == null)
+				continue;
+
+			for (int i = 0; i < weigths.length; i++) {
+				if (weigths[i] > maxWeigth)
+					maxWeigth = 1.1 * weigths[i];
+				if (weigths[i] < minWeigth)
+					minWeigth = 1.1 * weigths[i];
+			}
+		}
+		
+		configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Minimum, minWeigth);
+		configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Maximum, maxWeigth);
 		
 		// Create the algorithm
 		algorithm = configuration.getOptLearnParam().createDoubleAlgorithm();
@@ -193,6 +223,9 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		// Add the last best results
 		configuration.getOptLearnParam().addLastBestResults(algorithm,
 				architecture.getOptResults());
+		
+		
+		
 
 		// Get the termination Criterion
 		if (algorithm.getTerminationCriterion() instanceof StepLimitPropChange) {

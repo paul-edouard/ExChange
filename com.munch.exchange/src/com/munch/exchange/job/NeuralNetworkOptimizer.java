@@ -102,7 +102,12 @@ public class NeuralNetworkOptimizer extends Job {
 		eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_FINISHED,info);
 		
 		
+		//Best Result:
 		logger.info("Optimization finished!!");
+		if(configuration.getOptResults(dimension).getResults().size()>0){
+			logger.info("Best Result so far x100: "+configuration.getOptResults(dimension).getBestResult().getValue()*100);
+		}
+		
 		return Status.OK_STATUS;
 	}
 	
@@ -127,6 +132,11 @@ public class NeuralNetworkOptimizer extends Job {
 		
 		//Reload last results
 		configuration.getOptArchitectureParam().addBooleanLastBestResults(algorithm, configuration.getOptResults(dimension));
+		
+		if(configuration.getOptResults(dimension).getResults().size()>0){
+			logger.info("Old result found! "+configuration.getOptResults(dimension).getResults().size());
+			logger.info("Old Best x100 "+(100*configuration.getOptResults(dimension).getBestResult().getValue()));
+		}
 		
 		// Get the termination Criterion
 		if (algorithm.getTerminationCriterion() instanceof StepLimitPropChange) {
@@ -160,7 +170,7 @@ public class NeuralNetworkOptimizer extends Job {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_BEST)){
 				Individual<boolean[], boolean[]> ind=(Individual<boolean[], boolean[]>) evt.getNewValue();
-				logger.info("New Best Results: "+ind.v);
+				//logger.info("New Best Results: "+ind.v);
 				if(info.getResults().addResult(new ResultEntity(ind.x,ind.v))){
 					eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
 				}

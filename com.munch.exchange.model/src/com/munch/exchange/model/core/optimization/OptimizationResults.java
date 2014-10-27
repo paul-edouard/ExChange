@@ -53,6 +53,20 @@ public class OptimizationResults extends XmlParameterElement{
 		return results.getFirst();
 	}
 	
+	public double compareBestResultWith(ResultEntity reference){
+		ResultEntity best=this.getBestResult();
+		
+		if(reference==null || best ==null)return Double.NaN;
+		
+		if(reference.getValue()==0)return Double.NaN;
+		
+		
+		double percent=100.0*(reference.getValue()-best.getValue())/reference.getValue();
+		
+		return percent;
+		
+	}
+	
 	
 	
 	public void setMaxResult(int maxResult) {

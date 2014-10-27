@@ -80,8 +80,8 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	static final String FIELD_Name="Name";
 	
 	
-	private String type;
-	private String name;
+	private String type="";
+	private String name="";
 	
 	public AlgorithmParameters(String name){
 		this.name=name;
