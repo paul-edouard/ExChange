@@ -1,5 +1,6 @@
 package com.munch.exchange.model.core.optimization;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
 
@@ -10,9 +11,14 @@ import org.w3c.dom.Element;
 
 import com.munch.exchange.model.xml.XmlParameterElement;
 
-public class ResultEntity extends XmlParameterElement implements Comparable<ResultEntity>{
+public class ResultEntity extends XmlParameterElement implements Comparable<ResultEntity>, Serializable{
 	
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -762487853243889950L;
+
 	private LinkedList<Object> genome=new LinkedList<Object>();
 	
 	private final String STRING="string";

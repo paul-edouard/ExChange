@@ -449,6 +449,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	public static void setNetworkSavePath(String networkSavePath) {
 		NETWORK_SAVE_PATH=networkSavePath;
+		logger.info("NETWORK_SAVE_PATH: "+NETWORK_SAVE_PATH);
 	}
 
 	private String actConsToString(){
@@ -490,12 +491,19 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		if(childElement.getTagName().equals(FIELD_Network)){
 			String networkLabel=childElement.getAttribute(FIELD_NetworkLabel);
-			NeuralNetwork nnet=NeuralNetwork.createFromFile(NETWORK_SAVE_PATH+File.pathSeparator+networkLabel+".nnet");
+			
+			NeuralNetwork nnet=NeuralNetwork.createFromFile(NETWORK_SAVE_PATH+File.separator+networkLabel+".nnet");
+			OptimizationResults res=OptimizationResults.createFromFile(NETWORK_SAVE_PATH+File.separator+networkLabel+".ores");
+			
+			
 			this.network=nnet;
+			this.optResults=res;
+			
 		}
+		/*
 		else if(childElement.getTagName().equals(optResults.getTagName())){
 			optResults.init(childElement);
-		}
+		}*/
 	}
 
 	@Override
@@ -513,12 +521,19 @@ public class NetworkArchitecture extends XmlParameterElement {
 			Element e=doc.createElement(FIELD_Network);
 			e.setAttribute(FIELD_NetworkLabel,String.valueOf(network.getLabel()));
 			//Save the network
-			network.save(NETWORK_SAVE_PATH+File.pathSeparator+network.getLabel()+".nnet");
+			//logger.info("Save the network: "+NETWORK_SAVE_PATH+File.separator+network.getLabel()+".nnet");
+			network.save(NETWORK_SAVE_PATH+File.separator+network.getLabel()+".nnet");
+			optResults.save(NETWORK_SAVE_PATH+File.separator+network.getLabel()+".ores");
+			
 			rootElement.appendChild(e);
+			
+			
+			
+			
 		//}
 			
 			
-			rootElement.appendChild(optResults.toDomElement(doc));
+			//rootElement.appendChild(optResults.toDomElement(doc));
 	}
 
 }

@@ -64,7 +64,7 @@ public class NeuralNetworkChart extends Composite {
 	private IExchangeRateProvider exchangeRateProvider;
 	
 	
-	
+	private double maxAbsWeight=0;
 	/**
 	 * Create the composite.
 	 * @param parent
@@ -172,6 +172,15 @@ public class NeuralNetworkChart extends Composite {
     		return;
     	}
     	
+    	maxAbsWeight=0;
+    	//Calculate the max Abs Weigth
+    	for(double w:neuralNetwork.getWeights()){
+    		double abs=Math.abs(w);
+    		if(abs>maxAbsWeight)
+    			maxAbsWeight=abs;
+    	}
+    	
+    	
     	LinkedList<Double> x=new LinkedList<Double>();
     	LinkedList<Double> y=new LinkedList<Double>();
     	LinkedList<Double> z=new LinkedList<Double>();
@@ -194,7 +203,7 @@ public class NeuralNetworkChart extends Composite {
     			neuronXYZPosMap.put(neuron, new double[]{x.getLast(),y.getLast(),z.getLast()});
     			
     			Connection[] inputConnections=neuron.getInputConnections();
-    			logger.info("Layer: "+i+", Number of input connections: "+inputConnections.length);
+    			//logger.info("Layer: "+i+", Number of input connections: "+inputConnections.length);
     			
     			for(int k=0;k<inputConnections.length;k++){
     				Connection connection=inputConnections[k];
@@ -241,7 +250,8 @@ public class NeuralNetworkChart extends Composite {
 		if(pos>=0){
 			lineAndShapeRenderer.setSeriesShapesVisible(pos, false);
 			lineAndShapeRenderer.setSeriesLinesVisible(pos, true);
-			lineAndShapeRenderer.setSeriesStroke(pos,new BasicStroke(10*(float)Math.abs(connection.getWeight().getValue())));
+			float width=(float ) (10/maxAbsWeight*Math.abs(connection.getWeight().getValue()));
+			lineAndShapeRenderer.setSeriesStroke(pos,new BasicStroke(width));
 			lineAndShapeRenderer.setSeriesPaint(pos, col);
 		}
     	
@@ -298,23 +308,18 @@ public class NeuralNetworkChart extends Composite {
     	
     	
     	if(info==null)return;
-    	
-    	//logger.info("New best result reaction!");
-    	
+    	 	
     	if (!isCompositeAbleToReact(info.getRate().getUUID()))
 			return;
     	
     	boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
-    	logger.info("Best Archi:"+Arrays.toString(bestArchi));
     	
+    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi);
     	
-    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi,true);
-    	
-    	if(archi==null)
-    		logger.info("Null:");
-    	
-    	this.neuralNetwork=info.getConfiguration().searchArchitecture(bestArchi).getNetwork();
-    	updateYXZDataSet();
+    	if(archi!=null){
+    		this.neuralNetwork=archi.getNetwork();
+    		updateYXZDataSet();
+    	}
     	
     }
     

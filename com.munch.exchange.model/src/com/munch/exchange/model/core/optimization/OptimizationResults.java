@@ -1,16 +1,34 @@
 package com.munch.exchange.model.core.optimization;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 
+import org.neuroph.core.NeuralNetwork;
+import org.neuroph.core.exceptions.NeurophException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 
-public class OptimizationResults extends XmlParameterElement{
+public class OptimizationResults extends XmlParameterElement implements Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6455797898639549819L;
+	
 	
 	static final String FIELD_Type="Type";
 	static final String FIELD_Results="Results";
@@ -165,6 +183,72 @@ public class OptimizationResults extends XmlParameterElement{
 		return Type.NONE;
 		
 	}
+	
+	
+	
+	/**
+     * Saves neural network into the specified file.
+     *
+     * @param filePath file path to save network into
+     */
+    public void save(String filePath) {
+        ObjectOutputStream out = null;
+        try {
+            File file = new File(filePath);
+            out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+            out.writeObject(this);
+            out.flush();
+        } catch (IOException ioe) {
+             throw new NeurophException("Could not write the optimization result to file!", ioe);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * Loads and return s neural network instance from specified file
+     * @param file neural network file
+     * @return neural network instance
+     */
+    public static OptimizationResults createFromFile(File file) {
+        ObjectInputStream oistream = null;
+
+        try {
+            if (!file.exists()) {
+                throw new FileNotFoundException("Cannot find file: " + file);
+            }
+
+            oistream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
+            OptimizationResults nnet = (OptimizationResults) oistream.readObject();
+            return nnet;
+
+        } catch (IOException ioe) {
+             throw new NeurophException("Could not read the optimization result file!", ioe);
+            //ioe.printStackTrace();
+        } catch (ClassNotFoundException cnfe) {
+             throw new NeurophException("Class not found while trying to read the optimization result from file!", cnfe);
+           // cnfe.printStackTrace();
+        } finally {
+            if (oistream != null) {
+                try {
+                    oistream.close();
+                } catch (IOException ioe) {
+                }
+            }
+        }
+    }    
+    
+    public static OptimizationResults createFromFile(String filePath) {
+        File file = new File(filePath);
+        return OptimizationResults.createFromFile(file);
+    }
 	
 	
 	

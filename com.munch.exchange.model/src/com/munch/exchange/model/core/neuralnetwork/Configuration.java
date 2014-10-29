@@ -175,7 +175,7 @@ public class Configuration extends XmlParameterElement {
 		for(int i=0;i<doubleArrayList.get(0).length;i++){
 			
 			//TODO delete
-			if(i>600)break;
+			//if(i>600)break;
 			double[] input=new double[doubleArrayList.size()];
 			double[] output=new double[]{outputArray[i]};
 			
