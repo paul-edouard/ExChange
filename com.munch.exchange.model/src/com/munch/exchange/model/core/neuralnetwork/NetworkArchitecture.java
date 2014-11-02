@@ -1,12 +1,16 @@
 package com.munch.exchange.model.core.neuralnetwork;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.neuroph.core.Connection;
 import org.neuroph.core.Layer;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.Neuron;
@@ -23,8 +27,12 @@ import org.neuroph.util.TransferFunctionType;
 import org.neuroph.util.random.NguyenWidrowRandomizer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
+import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class NetworkArchitecture extends XmlParameterElement {
@@ -42,6 +50,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	static final String FIELD_Networks="Networks";
 	static final String FIELD_Network="Network";
 	static final String FIELD_NetworkLabel="NetworkLabel";
+	static final String FIELD_NeuronLabels="NeuronLabels";
 	
 	private int numberOfInnerNeurons;
 	private int numberOfInputNeurons;
@@ -49,8 +58,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 	private boolean[][] actConsMatrix;
 	private boolean[] actConsArray;
 	
-	private HashMap<Integer, Neuron> neuronMap;
-	private List<Layer> layers;
+	private LinkedList<Neuron> neurons=new LinkedList< Neuron>();
+	private LinkedList<String> neuronsLabels=new LinkedList<String>();
+	
+	private List<Layer> layers=new LinkedList<Layer>();
 	
 	private int maxNumberOfSavedNetworks=50;
 	private NeuralNetwork network=new NeuralNetwork();
@@ -60,13 +71,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	public NetworkArchitecture(){}
 	
-	public NetworkArchitecture(int numberOfInputNeurons,int numberOfInnerNeurons,boolean[] cons ){
-		this.numberOfInputNeurons=numberOfInputNeurons;
+	public NetworkArchitecture(LinkedList<String> inputNeuronsLabels,int numberOfInnerNeurons,boolean[] cons ){
+		
+		this.numberOfInputNeurons=inputNeuronsLabels.size();
 		this.numberOfInnerNeurons=numberOfInnerNeurons;
+		this.neuronsLabels.addAll(inputNeuronsLabels);
 		
 		int activatedConnectionsSize=calculateActivatedConnectionsSize(numberOfInputNeurons, numberOfInnerNeurons);
-		//logger.info("Needed Size: "+activatedConnectionsSize);
-		//logger.info("Input Size: "+cons.length);
 		if(cons.length==activatedConnectionsSize){
 			this.actConsArray=cons;
 		}
@@ -76,29 +87,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 	}
 	
-	
-	public NetworkArchitecture(int numberOfInputNeurons,int numberOfInnerNeurons,double[] cons ){
-		
-		this.numberOfInputNeurons=numberOfInputNeurons;
-		this.numberOfInnerNeurons=numberOfInnerNeurons;
-		
-		int activatedConnectionsSize=calculateActivatedConnectionsSize(numberOfInputNeurons, numberOfInnerNeurons);
-		if(cons.length==activatedConnectionsSize){
-			actConsArray=new boolean[cons.length];
-			for(int i=0;i<cons.length;i++){
-				if(cons[i]>0.5){
-					actConsArray[i]=true;
-				}
-				else{
-					actConsArray[i]=false;
-				}
-			}
-		}
-		
-		addNewNeuralNetwork();
-		
-	}
-	
+	/**
+	 *  Create the neural network corresponding to the input data
+	 */
 	public void addNewNeuralNetwork(){
 		//Creation of the neurons
 		createNeuronMap();
@@ -116,17 +107,16 @@ public class NetworkArchitecture extends XmlParameterElement {
 		createNetwork();
 	}
 	
-	
 	private void createNeuronMap(){
-		neuronMap=new HashMap<Integer, Neuron>();
+		neurons=new LinkedList< Neuron>();
 		
 		// create input neurons
 		NeuronProperties inputNeuronProperties = new NeuronProperties(
 			InputNeuron.class, Linear.class);
 		for(int i=0;i<numberOfInputNeurons;i++){
 			Neuron neuron = NeuronFactory.createNeuron(inputNeuronProperties);
-			neuron.setLabel(UUID.randomUUID().toString());
-			neuronMap.put(i, neuron);
+			neuron.setLabel(neuronsLabels.get(i));
+			neurons.add( neuron);
 		}
 		
 		//Create the inner neurons
@@ -135,53 +125,16 @@ public class NetworkArchitecture extends XmlParameterElement {
         neuronProperties.setProperty("transferFunction", TransferFunctionType.SIGMOID);
         for(int i=numberOfInputNeurons;i<numberOfInnerNeurons+numberOfInputNeurons;i++){
         	Neuron neuron = NeuronFactory.createNeuron(neuronProperties);
-			neuronMap.put(i, neuron);
+        	neuron.setLabel(UUID.randomUUID().toString());
+        	neuronsLabels.add(neuron.getLabel());
+        	neurons.add( neuron);
 		}
         
         //Create the output neuron
         Neuron neuron = NeuronFactory.createNeuron(neuronProperties);
-        neuronMap.put(numberOfInnerNeurons+numberOfInputNeurons, neuron);
-		
-	}
-	
-	private void convertActConsArrayToMatrix(){
-		int numberOfNeurons=numberOfInputNeurons+numberOfInnerNeurons+1;
-		actConsMatrix=new boolean[numberOfNeurons][numberOfNeurons];
-		for(int i=0;i<numberOfNeurons;i++){
-			for(int j=0;j<numberOfNeurons;j++){
-				actConsMatrix[i][j]=false;
-			}
-		}
-		
-		int nbOfUsedValues=0;
-		
-		//Input / Inner neuron connections
-		for(int i=0;i<numberOfInputNeurons;i++){
-			for(int j=0;j<numberOfInnerNeurons;j++){
-				actConsMatrix[i][j+numberOfInputNeurons]=actConsArray[nbOfUsedValues];
-				nbOfUsedValues++;
-			}
-		}
-		
-		//Inner / Inner neurons connections
-		for(int i=0;i<numberOfInnerNeurons-1;i++){
-			for(int j=i+1;j<numberOfInnerNeurons;j++){
-				actConsMatrix[i+numberOfInputNeurons][j+numberOfInputNeurons]=actConsArray[nbOfUsedValues];
-				nbOfUsedValues++;
-			}
-		}
-		
-		//Input / Output neurons connections
-		for(int i=0;i<numberOfInputNeurons;i++){
-			actConsMatrix[i][numberOfInputNeurons+numberOfInnerNeurons]=actConsArray[nbOfUsedValues];
-			nbOfUsedValues++;
-		}
-		
-		//Inner / Output neurons connections
-		for(int i=0;i<numberOfInnerNeurons;i++){
-			actConsMatrix[i+numberOfInputNeurons][numberOfInputNeurons+numberOfInnerNeurons]=actConsArray[nbOfUsedValues];
-			nbOfUsedValues++;
-		}
+        neuron.setLabel(UUID.randomUUID().toString());
+    	neuronsLabels.add(neuron.getLabel());
+        neurons.add( neuron);
 		
 	}
 	
@@ -190,13 +143,12 @@ public class NetworkArchitecture extends XmlParameterElement {
 		for(int i=0;i<=numberOfInputNeurons+numberOfInnerNeurons;i++){
 			for(int j=i+1;j<=numberOfInputNeurons+numberOfInnerNeurons;j++){
 				if(actConsMatrix[i][j]){
-					ConnectionFactory.createConnection(neuronMap.get(i), neuronMap.get(j));
+					ConnectionFactory.createConnection(neurons.get(i), neurons.get(j));
 				}
 			}
 		}
 		
 	}
-	
 	
 	private void createLayers(){
 		
@@ -205,7 +157,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		//Create the input layer
 		Layer inputLayer=new Layer();
 		for(int i=0;i<numberOfInputNeurons;i++){
-			inputLayer.addNeuron(neuronMap.get(i));
+			inputLayer.addNeuron(neurons.get(i));
 		}
 		layers.add(inputLayer);
 		
@@ -228,7 +180,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 				}
 				
 				if(currentNumberOfFalse==numberOfFalseInLine){
-					layer.addNeuron(neuronMap.get(i));
+					layer.addNeuron(neurons.get(i));
 				}
 			}
 			
@@ -241,11 +193,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		//Create the output layer
 		Layer outputLayer=new Layer();
-		outputLayer.addNeuron(neuronMap.get(numberOfInputNeurons+numberOfInnerNeurons));
+		outputLayer.addNeuron(neurons.get(numberOfInputNeurons+numberOfInnerNeurons));
 		layers.add(outputLayer);
 		
 	}
-	
 	
 	private void createNetwork(){
 		
@@ -312,6 +263,46 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return true;
 	}
 	
+	private void convertActConsArrayToMatrix(){
+		int numberOfNeurons=numberOfInputNeurons+numberOfInnerNeurons+1;
+		actConsMatrix=new boolean[numberOfNeurons][numberOfNeurons];
+		for(int i=0;i<numberOfNeurons;i++){
+			for(int j=0;j<numberOfNeurons;j++){
+				actConsMatrix[i][j]=false;
+			}
+		}
+		
+		int nbOfUsedValues=0;
+		
+		//Input / Inner neuron connections
+		for(int i=0;i<numberOfInputNeurons;i++){
+			for(int j=0;j<numberOfInnerNeurons;j++){
+				actConsMatrix[i][j+numberOfInputNeurons]=actConsArray[nbOfUsedValues];
+				nbOfUsedValues++;
+			}
+		}
+		
+		//Inner / Inner neurons connections
+		for(int i=0;i<numberOfInnerNeurons-1;i++){
+			for(int j=i+1;j<numberOfInnerNeurons;j++){
+				actConsMatrix[i+numberOfInputNeurons][j+numberOfInputNeurons]=actConsArray[nbOfUsedValues];
+				nbOfUsedValues++;
+			}
+		}
+		
+		//Input / Output neurons connections
+		for(int i=0;i<numberOfInputNeurons;i++){
+			actConsMatrix[i][numberOfInputNeurons+numberOfInnerNeurons]=actConsArray[nbOfUsedValues];
+			nbOfUsedValues++;
+		}
+		
+		//Inner / Output neurons connections
+		for(int i=0;i<numberOfInnerNeurons;i++){
+			actConsMatrix[i+numberOfInputNeurons][numberOfInputNeurons+numberOfInnerNeurons]=actConsArray[nbOfUsedValues];
+			nbOfUsedValues++;
+		}
+		
+	}
 	
 	private void convertActConsMatrixToArray(){
 		
@@ -357,7 +348,157 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 	}
 	
+	/**
+	 * reset the activated connections according to the neuron/neuron connections
+	 */
+	private void resetActCons(){
+		// Recreate the connection matrix
+		int numberOfNeurons = numberOfInputNeurons + numberOfInnerNeurons + 1;
+		actConsMatrix = new boolean[numberOfNeurons][numberOfNeurons];
+		for (int i = 0; i < numberOfNeurons; i++) {
+			for (int j = 0; j < numberOfNeurons; j++) {
+				actConsMatrix[i][j] = neurons.get(i).hasOutputConnectionTo(
+						neurons.get(j));
+			}
+		}
+
+		// Reset the Connection Array
+		convertActConsMatrixToArray();
+	}
+
+	/**
+	 * Adapt the Network to the new inputs neurons without loosing the old best weights found so far
+	 * 
+	 * @param newInputNeuronsLabels
+	 */
+	public void adaptNetwork(LinkedList<String> newInputNeuronsLabels){
+		
+		//Find the input neurons to delete
+		Set<String> toDeleteLabels=new HashSet<String>();
+		for(String label:this.neuronsLabels){
+			if(!newInputNeuronsLabels.contains(label)){
+				toDeleteLabels.add(label);
+			}
+		}
+		removeInputNeurons(toDeleteLabels);
+		
+		//Find and Add the new neurons
+		for(int i=0;i<newInputNeuronsLabels.size();i++){
+			String label=newInputNeuronsLabels.get(i);
+			if(this.neuronsLabels.contains(label)){
+				addInputNeuron(label,i);
+			}
+		}
+		
+	}
 	
+	private void addInputNeuron(String label, int index){
+		
+		neuronsLabels.add(index, label);
+		numberOfInputNeurons++;
+		
+		//Create the new input neuron
+		NeuronProperties inputNeuronProperties = new NeuronProperties(
+					InputNeuron.class, Linear.class);
+		Neuron neuron = NeuronFactory.createNeuron(inputNeuronProperties);
+		neuron.setLabel(label);
+		neurons.add(index, neuron);
+		layers.get(0).addNeuron(index, neuron);
+		
+		//Add zero connections to all neurons of the next layers
+		for(Neuron in:layers.get(1).getNeurons()){
+			ConnectionFactory.createConnection(neuron, in, 0);
+		}
+		
+		
+		//Save the weight position to add
+		HashSet<Integer> weightIds = new HashSet<Integer>();
+		int id = 0;
+		for (Layer layer : layers) {
+			for (Neuron n : layer.getNeurons())
+				for (Connection conn : n.getInputConnections()) {
+					if (conn.getFromNeuron().getLabel().equals(label)) {
+						weightIds.add(id);
+					}
+					id++;
+				}
+		}
+		
+		// Reset all Old results
+		for (ResultEntity ent : optResults.getResults()) {
+			LinkedList<Object> r_genome = new LinkedList<Object>();
+			int oldId=0;
+			for (int k=0;k<id;k++) {
+				if (weightIds.contains(k)) {
+					r_genome.add(0);
+				}
+				else{
+					r_genome.add(ent.getGenome().get(oldId));
+					oldId++;
+				}
+			}
+			// Reset the reduce genome
+			ent.setGenome(r_genome);
+		}
+		
+		
+		//Recreate the connection Matrix and Array
+		resetActCons();
+		
+	}
+	
+	private void removeInputNeurons(Set<String> labels){
+		for(String label:labels)
+			removeInputNeuron(label);
+	}
+	
+	private void removeInputNeuron(String label){
+	
+		int pos=neuronsLabels.indexOf(label);
+		if(pos<0)return;
+		neuronsLabels.remove(label);
+		
+		
+		numberOfInputNeurons--;
+		
+		//Save the weight position to clean
+		HashSet<Integer> weightIds = new HashSet<Integer>();
+        int index=0;
+		for(Layer layer : layers) {
+            for(Neuron neuron : layer.getNeurons())
+                for(Connection conn : neuron.getInputConnections()) {
+                	if(conn.getFromNeuron().getLabel().equals(label)){
+                		weightIds.add(index);
+                	}
+                	index++;
+                }
+        }
+        
+		//Remove the neuron all neuron connection
+		Neuron neuronToDelete=neurons.remove(pos);
+		neuronToDelete.removeAllOutputConnections();
+		
+		//Remove the neuron
+		layers.get(0).removeNeuron(neuronToDelete);
+		
+		//Reset all Old results
+		for(ResultEntity ent:optResults.getResults()){
+			LinkedList<Object> r_genome=new LinkedList<Object>();
+			int i=0;
+			for(Object obj:ent.getGenome()){
+				if(!weightIds.contains(i)){
+					r_genome.add(obj);
+				}
+				i++;
+			}
+			//Reset the reduce genome
+			ent.setGenome(r_genome);
+		}
+		
+		//Recreate the connection Matrix and Array
+		resetActCons();
+		
+	}
 	
 	public static int calculateActivatedConnectionsSize(int numberOfInputNeurons,int numberOfInnerNeurons){
 		int a = numberOfInputNeurons;
@@ -392,8 +533,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return network.getLabel();
 	}
 	
-	
-	
 	public int getNumberOfInnerNeurons() {
 		return numberOfInnerNeurons;
 	}
@@ -410,7 +549,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 		this.optResults = optResuts;
 	}
 	
-
 	public void setNumberOfInnerNeurons(int numberOfInnerNeurons) {
 	changes.firePropertyChange(FIELD_NumberOfInnerNeurons, this.numberOfInnerNeurons, this.numberOfInnerNeurons = numberOfInnerNeurons);}
 	
@@ -422,7 +560,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 	public void setNumberOfInputNeurons(int numberOfInputNeurons) {
 	changes.firePropertyChange(FIELD_NumberOfInputNeurons, this.numberOfInputNeurons, this.numberOfInputNeurons = numberOfInputNeurons);}
 	
-
 	public int getMaxNumberOfSavedNetworks() {
 		return maxNumberOfSavedNetworks;
 	}
@@ -430,11 +567,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 	public void setMaxNumberOfSavedNetworks(int maxNumberOfSavedNetworks) {
 	changes.firePropertyChange(FIELD_MaxNumberOfSavedNetworks, this.maxNumberOfSavedNetworks, this.maxNumberOfSavedNetworks = maxNumberOfSavedNetworks);}
 	
-	
 	public boolean[] getActConsArray() {
 		return actConsArray;
 	}
-
 
 	public void setActConsArray(boolean[] actConsArray) {
 		this.actConsArray = actConsArray;
@@ -476,13 +611,15 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 	}
 	
-	
 	@Override
 	protected void initAttribute(Element rootElement) {
 		
 		this.setNumberOfInnerNeurons(Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfInnerNeurons)));
 		this.setNumberOfInputNeurons(Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfInputNeurons)));
 		actConsFromString(rootElement.getAttribute(FIELD_ActivatedConnections));
+		
+		this.neuronsLabels.clear();
+		
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -500,10 +637,25 @@ public class NetworkArchitecture extends XmlParameterElement {
 			this.optResults=res;
 			
 		}
-		/*
-		else if(childElement.getTagName().equals(optResults.getTagName())){
-			optResults.init(childElement);
-		}*/
+		
+		//Read the label list
+		else if(childElement.getTagName().equals(FIELD_NeuronLabels)){
+			NodeList Children=childElement.getChildNodes();
+
+			for(int i=0;i<Children.getLength();i++){
+				Node child = Children.item(i);
+				if(child instanceof Element){
+					Element el=(Element)child;
+					//Node Label
+					if(el.getTagName().equals("Neuron")){
+						if(el.hasAttribute("Label")){
+							this.neuronsLabels.add(el.getAttribute("Label"));
+						}
+					}
+				}
+			}
+			
+		}
 	}
 
 	@Override
@@ -516,24 +668,55 @@ public class NetworkArchitecture extends XmlParameterElement {
 	@SuppressWarnings("rawtypes")
 	@Override
 	protected void appendChild(Element rootElement, Document doc) {
+
+		Element e = doc.createElement(FIELD_Network);
+		e.setAttribute(FIELD_NetworkLabel, String.valueOf(network.getLabel()));
+		// Save the network
+		network.save(NETWORK_SAVE_PATH + File.separator + network.getLabel() + ".nnet");
+		optResults.save(NETWORK_SAVE_PATH + File.separator + network.getLabel() + ".ores");
+		rootElement.appendChild(e);
 		
-		//for(NeuralNetwork network:this.networks){
-			Element e=doc.createElement(FIELD_Network);
-			e.setAttribute(FIELD_NetworkLabel,String.valueOf(network.getLabel()));
-			//Save the network
-			//logger.info("Save the network: "+NETWORK_SAVE_PATH+File.separator+network.getLabel()+".nnet");
-			network.save(NETWORK_SAVE_PATH+File.separator+network.getLabel()+".nnet");
-			optResults.save(NETWORK_SAVE_PATH+File.separator+network.getLabel()+".ores");
-			
-			rootElement.appendChild(e);
-			
-			
-			
-			
-		//}
-			
-			
-			//rootElement.appendChild(optResults.toDomElement(doc));
+		
+		//Save the Label List
+		Element l = doc.createElement(FIELD_NeuronLabels);
+		for(String nlabel:this.neuronsLabels){
+			Element nl_el = doc.createElement("Neuron");
+			nl_el.setAttribute("Label", nlabel);
+			l.appendChild(nl_el);
+		}
+		rootElement.appendChild(l);
+		
+		
+
 	}
 
+	@Override
+	protected void finalizeInitalization() {
+		neurons.clear();
+		layers.clear();
+		
+		//Set the layers
+		for(Layer l:network.getLayers()){
+			layers.add(l);
+		}
+		
+		//Set the neuron Map
+		HashMap<String,Neuron> n_map=new HashMap<String,Neuron>();
+		for(Layer l:layers){
+			for(Neuron n:l.getNeurons()){
+				n_map.put(n.getLabel(), n);
+			}
+		}
+	
+		for(String label:this.neuronsLabels){
+			neurons.add(n_map.get(label));
+		}
+		
+		
+		convertActConsArrayToMatrix();
+		
+		
+	}
+	
+	
 }

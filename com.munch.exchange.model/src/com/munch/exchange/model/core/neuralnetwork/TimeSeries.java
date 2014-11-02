@@ -35,7 +35,7 @@ public class TimeSeries extends XmlParameterElement{
 		this.category=category;
 		id="";
 		timeRemainingActivated=false;
-		numberOfPastValues=12;
+		numberOfPastValues=6;
 	}
 	
 	public void adaptInputValuesToMasterValuePointList(ValuePointList masterValuePointList){

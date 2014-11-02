@@ -259,7 +259,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		tree.setLinesVisible(true);
 		
 		
-		
 		TreeViewerColumn treeViewerColumnInputSeries = new TreeViewerColumn(treeViewer, SWT.NONE);
 		treeViewerColumnInputSeries.setLabelProvider(new InputSeriesLabelProvider());
 		TreeColumn trclmnInputSeries = treeViewerColumnInputSeries.getColumn();
@@ -268,12 +267,14 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		TreeViewerColumn treeViewerColumnNbOfValues = new TreeViewerColumn(treeViewer, SWT.NONE);
 		treeViewerColumnNbOfValues.setLabelProvider(new NbOfValuesLabelProvider());
+		treeViewerColumnNbOfValues.setEditingSupport(new NumberOfValuesEditingSupport(treeViewer,neuralNetworkProvider,stock));
 		TreeColumn trclmnNbOfValues = treeViewerColumnNbOfValues.getColumn();
 		trclmnNbOfValues.setWidth(100);
 		trclmnNbOfValues.setText("Nb. of values");
 		
 		TreeViewerColumn treeViewerColumnTimeLeft = new TreeViewerColumn(treeViewer, SWT.NONE);
 		treeViewerColumnTimeLeft.setLabelProvider(new TimeLeftLabelProvider());
+		treeViewerColumnTimeLeft.setEditingSupport(new TimeLeftEditingSupport(treeViewer,neuralNetworkProvider,stock));
 		TreeColumn trclmnTimeLeft = treeViewerColumnTimeLeft.getColumn();
 		trclmnTimeLeft.setWidth(100);
 		trclmnTimeLeft.setText("Time left");
@@ -295,6 +296,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				if(dialog.open()==AddTimeSeriesDialog.OK){
 					//TODO
 					refreshTimeSeries();
+					neuralNetworkProvider.createAllInputPoints(stock);
+					stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
 					fireReadyToTrain();
 				}
 			}
@@ -312,7 +315,10 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				stock.getNeuralNetwork().getConfiguration().getAllTimeSeries().remove(series);
 				tree.removeAll();
 				
+				//TODO
 				refreshTimeSeries();
+				neuralNetworkProvider.createAllInputPoints(stock);
+				stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
 				fireReadyToTrain();
 				
 			}
@@ -359,9 +365,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
-				//TODO Delete
-				neuralNetworkProvider.createAllInputPoints(stock);
-				
 				Configuration conf=stock.getNeuralNetwork().getConfiguration();
 				
 				ArchitectureOptimizationWizard wizard=new ArchitectureOptimizationWizard(
@@ -379,8 +382,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnLearnOptConf.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//logger.info(stock.getNeuralNetwork().getConfiguration().getOptLearnParam());
-				//logger.info(stock.getNeuralNetwork().getConfiguration().getOptLearnParam().createCopy());
+				
 				OptimizationDoubleParamWizard wizard=new OptimizationDoubleParamWizard(
 						stock.getNeuralNetwork().getConfiguration().getOptLearnParam().createCopy());
 				WizardDialog dialog = new WizardDialog(shell, wizard);
@@ -396,15 +398,13 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnLearnAlg.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//logger.info(stock.getNeuralNetwork().getConfiguration().getLearnParam());
-				//logger.info(stock.getNeuralNetwork().getConfiguration().getLearnParam().createCopy());
+				
 				LearnParameterWizard wizard=new LearnParameterWizard(
 						stock.getNeuralNetwork().getConfiguration().getLearnParam().createCopy());
 				WizardDialog dialog = new WizardDialog(shell, wizard);
 				if (dialog.open() == Window.OK){
 					stock.getNeuralNetwork().getConfiguration().setLearnParam(wizard.getParam());
-					//logger.info("New Param: "+wizard.getParam());
-					//logger.info("New Param: "+stock.getNeuralNetwork().getConfiguration().getLearnParam());
+					
 				}
 				
 			}
@@ -422,7 +422,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				
 				logger.info("Start Train click!");
 				
-				neuralNetworkProvider.createAllInputPoints(stock);
 				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().getTrainingDataSet();
 				
 				
@@ -439,60 +438,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 						trainingSet, eventBroker, dimension);
 				
 				optimizer.schedule();
-				
-				
-				/*
-				int nbOfInput=trainingSet.getRowAt(0).getInput().length;
-				logger.info("Number of input: "+nbOfInput);
-				
-				int nbofInner=4;
-				double[] con=new double[NetworkArchitecture.calculateActivatedConnectionsSize(nbOfInput, nbofInner)];
-				for(int i=0;i<con.length;i++){
-					con[i]=1;
-				}
-				logger.info("Number of doubles: "+con.length);
-				
-				NetworkArchitecture arch=new NetworkArchitecture(nbOfInput,nbofInner,con);
-				
-				*/
-				/*
-				// create multi layer perceptron
-				List<Integer> neuronsInLayers=new LinkedList<Integer>();
-				neuronsInLayers.add(nbOfInput);
-				neuronsInLayers.add(nbOfInput/2);
-				neuronsInLayers.add(nbOfInput/4);
-				neuronsInLayers.add(1);
-				
-				NeuronProperties neuronProperties = new NeuronProperties();
-                neuronProperties.setProperty("useBias", false);
-                neuronProperties.setProperty("transferFunction", TransferFunctionType.SIGMOID);
-				
-		        MultiLayerPerceptron myMlPerceptron = new MultiLayerPerceptron(neuronsInLayers, neuronProperties);
-		        
-		        
-		        */
-				/*
-				org.neuroph.core.NeuralNetwork myMlPerceptron=arch.getNetworks().getFirst();
-		        stock.getNeuralNetwork().getConfiguration().setCurrentNetwork(arch.getNetworks().getFirst());
-		        
-		        ResilientPropagation resilientPropagation=new ResilientPropagation();
-		        resilientPropagation.setMaxIterations(3);
-		        
-		        myMlPerceptron.setLearningRule(resilientPropagation);
-		        
-		        LearningRule learningRule = myMlPerceptron.getLearningRule();
-		        learningRule.addListener(NeuralNetworkComposite.this);
-		        
-		        
-		        // learn the training set
-		        System.out.println("Training neural network...");
-		        myMlPerceptron.learn(trainingSet);
-
-		        // test perceptron
-		        System.out.println("Testing trained neural network");
-		        testNeuralNetwork(myMlPerceptron, trainingSet);
-				*/
-		       
 				
 			}
 		});
@@ -550,7 +495,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		neuralNetworkChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 	}
 	
-	
 	private void fireReadyToTrain(){
 		Configuration config=stock.getNeuralNetwork().getConfiguration();
 		boolean readyToTrain=config!=null && config.getAllTimeSeries()!=null && config.getOutputPointList()!=null &&
@@ -558,7 +502,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnStartTrain.setEnabled(readyToTrain);
 		
 	}
-	
 	
 	private void loadNeuralData(IEclipseContext context){
 		

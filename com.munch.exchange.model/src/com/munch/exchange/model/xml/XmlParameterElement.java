@@ -47,7 +47,15 @@ public abstract class XmlParameterElement extends ParameterElement implements
 			}
 			
 		}
+		
+		finalizeInitalization();
 	}
+	
+	
+	protected void finalizeInitalization(){
+		
+	}
+	
 	
 	/**
 	 * save the attributes data in a xml element

@@ -38,22 +38,23 @@ public class Configuration extends XmlParameterElement {
 	private String Name="New Neural Network Configuration";
 	private Calendar lastUpdate=Calendar.getInstance();
 	
+	//Training Data
+	//private int numberOfInputNeurons;
+	private DataSet trainingSet=null;
 	private LinkedList<TimeSeries> allTimeSeries=new LinkedList<TimeSeries>();
 	private ValuePointList outputPointList=new ValuePointList();
 	
 	private Calendar lastInputPointDate=null;
-		
+	
+	//Optimization Parameters
 	private AlgorithmParameters<double[]> optLearnParam=new AlgorithmParameters<double[]>("Optimization_learn_parameters");
 	private AlgorithmParameters<boolean[]> optArchitectureParam=new AlgorithmParameters<boolean[]>("Optimization_architecture_parameters");
 	private LearnParameters learnParam=new LearnParameters("Neural_Network_learn_parameters");
 	
+	//Architectures
 	private int maxNumberOfSavedAchitectures=200;
 	private LinkedList<NetworkArchitecture> networkArchitectures=new LinkedList<NetworkArchitecture>();
 	private HashMap<Integer, OptimizationResults> netArchiOptResultMap=new HashMap<Integer, OptimizationResults>();
-	
-	private int numberOfInputNeurons;
-	private DataSet trainingSet=null;
-	
 	
 	
 	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray){
@@ -68,9 +69,6 @@ public class Configuration extends XmlParameterElement {
 	 * @return
 	 */
 	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray,boolean loggerOn){
-		
-		
-		//logger.info("Archi"+Array.actConsArray);
 		
 		NetworkArchitecture searched=null;
 		
@@ -101,17 +99,13 @@ public class Configuration extends XmlParameterElement {
 		//Create the architecture
 		if(searched==null){
 			int numberOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(
-					actConsArray.length, numberOfInputNeurons);
+					actConsArray.length, this.getNumberOfInputNeurons());
 			
-			//logger.info("Numer of numberOfInputNeurons"+numberOfInputNeurons);
-			//logger.info("Numer of numberOfInnerNeurons"+numberOfInnerNeurons);
-			//logger.info("actConsArray: "+actConsArray.length);
-			searched=new NetworkArchitecture(numberOfInputNeurons,numberOfInnerNeurons,actConsArray);
+			searched=new NetworkArchitecture(getInputNeuronNames(),numberOfInnerNeurons,actConsArray);
 			
 			//Test the Network validity
 			if(searched.isValid()){
-				//Add the architecture in the list
-				
+				//Add the architecture in the list			
 				addNetworkArchitecture(searched);
 				return searched;
 			}
@@ -125,8 +119,6 @@ public class Configuration extends XmlParameterElement {
 		return null;
 	}
 	
-
-	
 	private synchronized void addNetworkArchitecture(NetworkArchitecture architecture){
 		networkArchitectures.add(architecture);
 	}
@@ -137,7 +129,6 @@ public class Configuration extends XmlParameterElement {
 		}
 		return netArchiOptResultMap.get(dimension);
 	}
-	
 	
 	public LinkedList<String> getInputNeuronNames(){
 		
@@ -189,19 +180,12 @@ public class Configuration extends XmlParameterElement {
 		//Normalize the training set
 		trainingSet.normalize();
 		
-		numberOfInputNeurons=trainingSet.getRowAt(0).getInput().length;
-		
 		return trainingSet;
 	}
 	
-	
 	public int getNumberOfInputNeurons(){
-		if(trainingSet==null)
-			getTrainingDataSet();
-		
-		return numberOfInputNeurons;
+		return getInputNeuronNames().size();
 	}
-	
 	
 	private void createDayOfWeekSeries(LinkedList<TimeSeries> sortedTimeSeries){
 		TimeSeries dayOfWeekSerie=new TimeSeries(FIELD_DayOfWeek, TimeSeriesCategory.RATE);
@@ -226,7 +210,17 @@ public class Configuration extends XmlParameterElement {
 		
 	}
 	
+	public void inputNeuronChanged(){
+		LinkedList<String> inputNeurons=getInputNeuronNames();
+		
+		for(NetworkArchitecture archi:networkArchitectures)
+			archi.adaptNetwork(inputNeurons);
+	}
 	
+	
+	//****************************************
+	//***      GETTER AND SETTER          ****
+	//****************************************
 	
 	public Type getOptimizationResultType(){
 		switch (period) {
@@ -243,7 +237,6 @@ public class Configuration extends XmlParameterElement {
 			return Type.NEURAL_NETWORK_OUTPUT_DAY;
 		}
 	}
-	
 	
 	public Calendar getLastInputPointDate() {
 		return lastInputPointDate;
@@ -268,21 +261,17 @@ public class Configuration extends XmlParameterElement {
 	public LearnParameters getLearnParam() {
 		return learnParam;
 	}
-	
-	
 
 	public void setOptArchitectureParam(AlgorithmParameters<boolean[]> optArchitectureParam) {
 	this.optArchitectureParam = optArchitectureParam;
 	}
 	
-
 	public void setLearnParam(LearnParameters learnParam) {
 		
 		this.learnParam = learnParam;
 		
 	}
 	
-
 	public AlgorithmParameters<double[]> getOptLearnParam() {
 		return optLearnParam;
 	}
@@ -329,7 +318,6 @@ public class Configuration extends XmlParameterElement {
 	public void setLastUpdate(Calendar lastUpdate) {
 	changes.firePropertyChange(FIELD_LastUpdate, this.lastUpdate, this.lastUpdate = lastUpdate);}
 	
-
 	public LinkedList<TimeSeries> getAllTimeSeries() {
 		return allTimeSeries;
 	}
@@ -345,8 +333,6 @@ public class Configuration extends XmlParameterElement {
 		return list;
 	}
 	
-	
-	
 	public LinkedList<TimeSeries> getTimeSeriesFromCategory(TimeSeriesCategory category){
 		LinkedList<TimeSeries> list=new LinkedList<TimeSeries>();
 		for(TimeSeries series:this.getAllTimeSeries()){
@@ -361,6 +347,9 @@ public class Configuration extends XmlParameterElement {
 	public void setAllTimeSeries(LinkedList<TimeSeries> allTimeSeries) {
 	changes.firePropertyChange(FIELD_AllTimeSeries, this.allTimeSeries, this.allTimeSeries = allTimeSeries);}
 	
+	//****************************************
+	//***             XML                 ****
+	//****************************************
 
 	@Override
 	protected void initAttribute(Element rootElement) {

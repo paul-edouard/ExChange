@@ -32,14 +32,9 @@ public class NeuralNetworkContentProvider implements
 		refreshCategories();
 	}
 	
-	
-	
-	
-	
 	public NeuralNetworkSerieCategory getRoot() {
 		return root;
 	}
-
 
 	@Override
 	public void dispose() {
