@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.util.Arrays;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -37,6 +38,8 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.NeuralNetworkOptimizer.OptInfo;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.neuralnetwork.NNetworkListener;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -56,6 +59,7 @@ public class NeuralNetworkChart extends Composite {
 	
 	private org.neuroph.core.NeuralNetwork neuralNetwork;
 	private Stock stock;
+	private Configuration config;
 	
 	private HashMap<Neuron, double[]> neuronXYZPosMap=new HashMap<Neuron, double[]>();
 	
@@ -79,7 +83,6 @@ public class NeuralNetworkChart extends Composite {
 		this.setLayout(new org.eclipse.swt.layout.GridLayout(1, false));
 		
 		this.stock=(Stock) rate;
-		//this.multiLayerPerceptron=multiLayerPerceptron;
 		
 		//==================================================
 		//==                 CHART                        ==    
@@ -88,6 +91,15 @@ public class NeuralNetworkChart extends Composite {
 		compositeChart = new ChartComposite(this, SWT.NONE,chart);
 		compositeChart.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
 		compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		//Add the listener
+		this.stock.getNeuralNetwork().addEventListener(new NNetworkListener() {
+			
+			@Override
+			public void currentConfigurationChanged(EventObject e) {
+				updateYXZDataSet();
+			}
+		});
 		
 	}
 	
@@ -122,7 +134,6 @@ public class NeuralNetworkChart extends Composite {
         return chart;
     	
     }
-    
     
     private NumberAxis createAxis(String name){
    	 //Axis
@@ -159,9 +170,13 @@ public class NeuralNetworkChart extends Composite {
     	return plot;
     }
     
-    private void updateYXZDataSet(){
+    public void updateYXZDataSet(){
     	
     	clearDataSet();
+    	
+    	config=stock.getNeuralNetwork().getConfiguration();
+    	if(config!=null)
+    		neuralNetwork=config.searchBestNetwork();
     	
     	if(neuralNetwork==null){
     		double[] x = {2.1, 2.3, 2.3, 2.2, 2.2, 1.8, 1.8, 1.9, 2.3, 3.8};
@@ -286,7 +301,6 @@ public class NeuralNetworkChart extends Composite {
 		return true;
 	}
     
-    
     @Inject
 	private void neuralNetworkChanged(
 			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_NEW_CURRENT) String rate_uuid) {
@@ -301,7 +315,6 @@ public class NeuralNetworkChart extends Composite {
 		
 		//logger.info("---->  Message recieved!!: ");
 	}
-    
     
     @Inject
     private void newBestResult(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL) OptInfo info){

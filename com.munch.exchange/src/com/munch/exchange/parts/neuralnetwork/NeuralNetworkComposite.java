@@ -257,6 +257,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		tree.setHeaderVisible(true);
 		tree.setLinesVisible(true);
+		tree.setEnabled(false);
 		
 		
 		TreeViewerColumn treeViewerColumnInputSeries = new TreeViewerColumn(treeViewer, SWT.NONE);
@@ -297,7 +298,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 					//TODO
 					refreshTimeSeries();
 					neuralNetworkProvider.createAllInputPoints(stock);
-					stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
+					//stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
 					fireReadyToTrain();
 				}
 			}
@@ -312,13 +313,13 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				TreeItem item=tree.getSelection()[0];
 				TimeSeries series=(TimeSeries) item.getData();
 				
-				stock.getNeuralNetwork().getConfiguration().getAllTimeSeries().remove(series);
+				stock.getNeuralNetwork().getConfiguration().removeTimeSeries(series);
 				tree.removeAll();
 				
 				//TODO
 				refreshTimeSeries();
 				neuralNetworkProvider.createAllInputPoints(stock);
-				stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
+				//stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
 				fireReadyToTrain();
 				
 			}
@@ -493,13 +494,20 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		//////////////////////////////////
 		neuralNetworkChart=ContextInjectionFactory.make( NeuralNetworkChart.class,localContact);
 		neuralNetworkChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		neuralNetworkChart.setEnabled(false);
 	}
 	
 	private void fireReadyToTrain(){
 		Configuration config=stock.getNeuralNetwork().getConfiguration();
-		boolean readyToTrain=config!=null && config.getAllTimeSeries()!=null && config.getOutputPointList()!=null &&
-				config.getAllTimeSeries().size()>0 && config.getOutputPointList().size()>0;
+		boolean readyToTrain=config!=null &&  config.getOutputPointList()!=null &&
+				config.getNumberOfTimeSeries()>0 && config.getOutputPointList().size()>0;
+				
 		btnStartTrain.setEnabled(readyToTrain);
+		if(readyToTrain){
+			neuralNetworkChart.updateYXZDataSet();
+			neuralNetworkChart.setEnabled(true);
+		}
+		
 		
 	}
 	
@@ -627,6 +635,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		}
 		
 		stock.getNeuralNetwork().getConfiguration().setOutputPointList(neuralNetworkProvider.calculateMaxProfitOutputList(stock,RateChart.PENALTY));
+		neuralNetworkProvider.createAllInputPoints(stock);
+		
 		maxPenaltyProfit=maxProfit-getObjFunc().compute(stock.getNeuralNetwork().getConfiguration().getOutputPointList().toDoubleArray(), null);	
 	
 		String maxPanaltyProfitStr = String.format("%,.2f%%",maxPenaltyProfit * 100);
@@ -635,6 +645,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		textMaxProfit.setText(maxProfitStr);
 		textPenaltyProfit.setText(maxPanaltyProfitStr);
 		
+		tree.setEnabled(true);
 		
 		fireReadyToTrain();
 		

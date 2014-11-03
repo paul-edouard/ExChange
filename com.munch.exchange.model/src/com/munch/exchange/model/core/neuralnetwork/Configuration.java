@@ -1,21 +1,26 @@
 package com.munch.exchange.model.core.neuralnetwork;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.EventObject;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
-import org.neuroph.core.learning.LearningRule;
-import org.neuroph.nnet.MultiLayerPerceptron;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
+import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
@@ -41,6 +46,7 @@ public class Configuration extends XmlParameterElement {
 	//Training Data
 	//private int numberOfInputNeurons;
 	private DataSet trainingSet=null;
+	private double[] lastInput;
 	private LinkedList<TimeSeries> allTimeSeries=new LinkedList<TimeSeries>();
 	private ValuePointList outputPointList=new ValuePointList();
 	
@@ -145,7 +151,7 @@ public class Configuration extends XmlParameterElement {
 
 	public DataSet getTrainingDataSet(){
 		
-		if(trainingSet!=null)return trainingSet;
+		//if(trainingSet!=null)return trainingSet;
 		
 		//Create the input arrays
 		LinkedList<double[]> doubleArrayList=new LinkedList<double[]>();
@@ -158,27 +164,40 @@ public class Configuration extends XmlParameterElement {
 		}
 		
 		//Create the output array
-		double[] outputArray=createOutputArray(doubleArrayList.get(0).length);
+		double[] outputArray=createOutputArray(doubleArrayList.get(0).length-1);
 		
 		//Create the Training set
 		trainingSet = new DataSet(doubleArrayList.size(), 1);
-		
-		for(int i=0;i<doubleArrayList.get(0).length;i++){
+		int len=doubleArrayList.get(0).length;
+		for(int i=0;i<len;i++){
 			
 			//TODO delete
 			//if(i>600)break;
 			double[] input=new double[doubleArrayList.size()];
-			double[] output=new double[]{outputArray[i]};
-			
 			for(int j=0;j<doubleArrayList.size();j++){
 				input[j]=doubleArrayList.get(j)[i];
 			}
 			
-			 trainingSet.addRow(new DataSetRow(input, output));
+			double[] output=null;
+			if(i==len-1){
+				output=new double[]{0};
+			}
+			else{
+				output=new double[]{outputArray[i]};
+			}
+			
+			trainingSet.addRow(new DataSetRow(input, output));
 		}
 		
 		//Normalize the training set
 		trainingSet.normalize();
+		
+		//Save the last input
+		DataSetRow raw=trainingSet.getRowAt(len-1);
+		lastInput=raw.getInput();
+		trainingSet.removeRowAt(len-1);
+		
+		fireTrainingDataSetChanged();
 		
 		return trainingSet;
 	}
@@ -210,17 +229,37 @@ public class Configuration extends XmlParameterElement {
 		
 	}
 	
+	/*
 	public void inputNeuronChanged(){
 		LinkedList<String> inputNeurons=getInputNeuronNames();
 		
 		for(NetworkArchitecture archi:networkArchitectures)
 			archi.adaptNetwork(inputNeurons);
 	}
+	*/
 	
+	@SuppressWarnings("rawtypes")
+	public NeuralNetwork searchBestNetwork(){
+		double error=Double.POSITIVE_INFINITY;
+		NeuralNetwork nn=null;
+		for(NetworkArchitecture archi:networkArchitectures){
+			ResultEntity ent=archi.getOptResults().getBestResult();
+			if(ent.getValue()<error){
+				nn=archi.getNetwork();nn.setWeights(ent.getDoubleArray());
+				error=ent.getValue();
+			}
+		}
+		
+		return nn;
+		
+	}
 	
 	//****************************************
 	//***      GETTER AND SETTER          ****
 	//****************************************
+	
+	
+	
 	
 	public Type getOptimizationResultType(){
 		switch (period) {
@@ -238,6 +277,10 @@ public class Configuration extends XmlParameterElement {
 		}
 	}
 	
+	public double[] getLastInput() {
+		return lastInput;
+	}
+
 	public Calendar getLastInputPointDate() {
 		return lastInputPointDate;
 	}
@@ -253,7 +296,6 @@ public class Configuration extends XmlParameterElement {
 	
 	}
 	
-
 	public AlgorithmParameters<boolean[]> getOptArchitectureParam() {
 		return optArchitectureParam;
 	}
@@ -318,6 +360,7 @@ public class Configuration extends XmlParameterElement {
 	public void setLastUpdate(Calendar lastUpdate) {
 	changes.firePropertyChange(FIELD_LastUpdate, this.lastUpdate, this.lastUpdate = lastUpdate);}
 	
+	
 	public LinkedList<TimeSeries> getAllTimeSeries() {
 		return allTimeSeries;
 	}
@@ -335,17 +378,45 @@ public class Configuration extends XmlParameterElement {
 	
 	public LinkedList<TimeSeries> getTimeSeriesFromCategory(TimeSeriesCategory category){
 		LinkedList<TimeSeries> list=new LinkedList<TimeSeries>();
-		for(TimeSeries series:this.getAllTimeSeries()){
+		for(TimeSeries series:allTimeSeries){
 			if(series.getCategory()!=category)continue;
 			list.add(series);
 		}
 		
 		return list;
-		
 	}
-
+	
+	public void addTimeSeries(TimeSeries series){
+		series.addPropertyChangeListener(new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent arg0) {
+				if(arg0.getPropertyName().equals(TimeSeries.FIELD_NumberOfPastValues)){
+					fireTimeSeriesChanged();
+				}
+				
+			}
+		});
+		allTimeSeries.add(series);
+		fireTimeSeriesChanged();
+	}
+	
+	public void removeTimeSeries(TimeSeries series){
+		//series.removePropertyChangeListener(l);
+		allTimeSeries.remove(series);
+		fireTimeSeriesChanged();
+	}
+	
+	public int getNumberOfTimeSeries(){
+		if(this.allTimeSeries==null)return 0;
+		return this.allTimeSeries.size();
+	}
+	
+	
+	/*
 	public void setAllTimeSeries(LinkedList<TimeSeries> allTimeSeries) {
 	changes.firePropertyChange(FIELD_AllTimeSeries, this.allTimeSeries, this.allTimeSeries = allTimeSeries);}
+	*/
 	
 	//****************************************
 	//***             XML                 ****
@@ -372,7 +443,7 @@ public class Configuration extends XmlParameterElement {
 		OptimizationResults results=new OptimizationResults();
 		if(childElement.getTagName().equals(ent.getTagName())){
 			ent.init(childElement);
-			allTimeSeries.add(ent);
+			addTimeSeries(ent);
 		}
 		else if(childElement.getTagName().equals(outputPointList.getTagName())){
 			outputPointList.init(childElement);
@@ -429,4 +500,63 @@ public class Configuration extends XmlParameterElement {
 		
 	}
 
+	
+	// ****************************************
+	// ***           LISTENER              ****
+	// ****************************************
+
+	public class ConfigurationEvent extends java.util.EventObject {
+		
+		private static final long serialVersionUID = -5656579093114367740L;
+
+		// here's the constructor
+		public ConfigurationEvent(Object source) {
+			super(source);
+		}
+	}
+
+	public interface ConfigurationListener {
+		public void trainingDataSetChanged(EventObject e);
+		public void timeSeriesChanged(EventObject e);
+	}
+
+	private List<ConfigurationListener> _listeners = new ArrayList<ConfigurationListener>();
+
+	public synchronized void addEventListener(ConfigurationListener listener) {
+		_listeners.add(listener);
+	}
+
+	public synchronized void removeEventListener(ConfigurationListener listener) {
+		_listeners.remove(listener);
+	}
+
+	// call this method whenever you want to notify
+	// the event listeners of the particular event
+	private synchronized void fireTrainingDataSetChanged() {
+		ConfigurationEvent event = new ConfigurationEvent(this);
+		Iterator<ConfigurationListener> i = _listeners.iterator();
+		while (i.hasNext()) {
+			((ConfigurationListener) i.next())
+					.trainingDataSetChanged(event);
+		}
+	}
+	
+	public synchronized void fireTimeSeriesChanged() {
+		ConfigurationEvent event = new ConfigurationEvent(this);
+		Iterator<ConfigurationListener> i = _listeners.iterator();
+		while (i.hasNext()) {
+			((ConfigurationListener) i.next())
+					.timeSeriesChanged(event);
+		}
+		
+		LinkedList<String> inputNeurons=getInputNeuronNames();
+		
+		for(NetworkArchitecture archi:networkArchitectures)
+			archi.adaptNetwork(inputNeurons);
+		
+		
+	}
+	
+	
+	
 }

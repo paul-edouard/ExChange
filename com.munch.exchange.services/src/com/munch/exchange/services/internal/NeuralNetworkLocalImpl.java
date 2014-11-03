@@ -11,7 +11,7 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
-import com.munch.exchange.model.core.neuralnetwork.NeuralNetwork;
+import com.munch.exchange.model.core.neuralnetwork.NNetwork;
 import com.munch.exchange.model.core.neuralnetwork.PeriodType;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeriesCategory;
@@ -56,7 +56,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		//if(!stock.getHistoricalData().isEmpty())return false;
 		
 		File localFile=new File(getFileName(stock,NeuronalNetworkFileStr));
-		NeuralNetwork network=new NeuralNetwork();
+		NNetwork network=new NNetwork();
 		if(localFile.exists()){
 			//Set the Network Save Path
 			NetworkArchitecture.setNetworkSavePath(this.getSavePath(stock));
@@ -139,7 +139,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			}
 		}
 		
-		
+		config.fireTimeSeriesChanged();
 	}
 
 	@Override

@@ -54,7 +54,7 @@ public class NumberOfValuesEditingSupport extends EditingSupport {
 		el.setNumberOfPastValues(nb+1);
 		
 		neuralNetworkProvider.createAllInputPoints(stock);
-		stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
+		//stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
 		
 	    viewer.update(element, null);
 	  }

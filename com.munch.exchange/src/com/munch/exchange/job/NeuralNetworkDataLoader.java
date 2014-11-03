@@ -46,7 +46,7 @@ public class NeuralNetworkDataLoader extends Job {
 		
 		if(r_loading){
 			//Create all input points
-			neuralNetworkProvider.createAllInputPoints(stock);
+			//neuralNetworkProvider.createAllInputPoints(stock);
 			
 			eventBroker.post(IEventConstant.NEURAL_NETWORK_DATA_LOADED,stock.getUUID());
 		}

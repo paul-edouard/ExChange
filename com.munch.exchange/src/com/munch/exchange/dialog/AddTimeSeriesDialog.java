@@ -99,7 +99,7 @@ public class AddTimeSeriesDialog extends TitleAreaDialog {
 		
 		if(comboTimeSeries.getItemCount()>0){
 			TimeSeries series=new TimeSeries(comboTimeSeries.getText(), this.category);
-			config.getAllTimeSeries().add(series);
+			config.addTimeSeries(series);
 		}
 		
 		super.okPressed();

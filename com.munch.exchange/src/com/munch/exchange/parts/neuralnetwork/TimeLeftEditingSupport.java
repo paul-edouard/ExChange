@@ -52,7 +52,7 @@ public class TimeLeftEditingSupport extends EditingSupport {
 		
 		
 		neuralNetworkProvider.createAllInputPoints(stock);
-		stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
+		//stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
 		
 	    viewer.update(element, null);
 

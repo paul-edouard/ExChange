@@ -100,7 +100,7 @@ public class TimeSeries extends XmlParameterElement{
 		}
 		
 		//Fill the lists
-		for(int i=0;i<inputValues.size()-1;i++){
+		for(int i=0;i<inputValues.size();i++){
 			ValuePoint point=inputValues.get(i);
 			if(point.getDate().getTimeInMillis()<lastInputPointDate.getTimeInMillis())continue;
 			

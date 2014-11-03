@@ -1,13 +1,17 @@
 package com.munch.exchange.model.core.neuralnetwork;
 
+import java.util.ArrayList;
+import java.util.EventObject;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.xml.XmlParameterElement;
 
-public class NeuralNetwork extends XmlParameterElement{
+public class NNetwork extends XmlParameterElement{
 	
 	
 	
@@ -32,9 +36,19 @@ public class NeuralNetwork extends XmlParameterElement{
 	}
 
 	public void setCurrentConfiguration(String currentConfiguration) {
-	changes.firePropertyChange(FIELD_CurrentConfiguration, this.currentConfiguration, this.currentConfiguration = currentConfiguration);}
+		if(this.currentConfiguration==null || !this.currentConfiguration.equals(currentConfiguration)){
+			this.currentConfiguration = currentConfiguration;
+			for(Configuration config:Configurations){
+				if(config.getName().equals(currentConfiguration)){
+					fireConfigurationChanged();
+					return;
+				}
+			}
+		}
+		
+		//changes.firePropertyChange(FIELD_CurrentConfiguration, this.currentConfiguration, this.currentConfiguration = currentConfiguration);
+	}
 	
-
 	public LinkedList<Configuration> getConfigurations() {
 		return Configurations;
 	}
@@ -73,6 +87,44 @@ public class NeuralNetwork extends XmlParameterElement{
 			rootElement.appendChild(ent.toDomElement(doc));
 		}
 		
+		fireConfigurationChanged();
+		
+	}
+	
+	//****************************************
+	//***            LISTENER             ****
+	//****************************************
+	
+	public class NeuralNetworkEvent extends java.util.EventObject {
+		
+		private static final long serialVersionUID = 5192635579775921912L;
+
+		// here's the constructor
+		public NeuralNetworkEvent(Object source) {
+			super(source);
+		}
 	}
 
+	private List<NNetworkListener> _listeners = new ArrayList<NNetworkListener>();
+
+	public synchronized void addEventListener(NNetworkListener listener) {
+		_listeners.add(listener);
+	}
+
+	public synchronized void removeEventListener(NNetworkListener listener) {
+		_listeners.remove(listener);
+	}
+
+	// call this method whenever you want to notify
+	// the event listeners of the particular event
+	private synchronized void fireConfigurationChanged() {
+		NeuralNetworkEvent event = new NeuralNetworkEvent(this);
+		Iterator<NNetworkListener> i = _listeners.iterator();
+		while (i.hasNext()) {
+			((NNetworkListener) i.next())
+					.currentConfigurationChanged(event);
+		}
+	}
+	
+	
 }
