@@ -244,8 +244,15 @@ public class Configuration extends XmlParameterElement {
 		NeuralNetwork nn=null;
 		for(NetworkArchitecture archi:networkArchitectures){
 			ResultEntity ent=archi.getOptResults().getBestResult();
+			//logger.info("Genome res: "+ent.getDoubleArray().length);
+			//for(Object obj:ent.getGenome()){
+			//	logger.info("Genome val: "+String.valueOf(obj));
+			//}
+			
 			if(ent.getValue()<error){
-				nn=archi.getNetwork();nn.setWeights(ent.getDoubleArray());
+				nn=archi.getNetwork();
+				//logger.info("Neuron size: "+nn.getWeights().length);
+				nn.setWeights(ent.getDoubleArray());
 				error=ent.getValue();
 			}
 		}

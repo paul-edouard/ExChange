@@ -316,8 +316,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		// Input / Inner neuron connections
 		for (int i = 0; i < numberOfInputNeurons; i++) {
 			for (int j = 0; j < numberOfInnerNeurons; j++) {
-				actConsArray[nbOfUsedValues] = actConsMatrix[i
-						+ numberOfInputNeurons][j];
+				actConsArray[nbOfUsedValues] = actConsMatrix[i][j+numberOfInputNeurons];
 				nbOfUsedValues++;
 			}
 		}
@@ -376,16 +375,19 @@ public class NetworkArchitecture extends XmlParameterElement {
 		//Find the input neurons to delete
 		Set<String> toDeleteLabels=new HashSet<String>();
 		for(String label:this.neuronsLabels){
-			if(!newInputNeuronsLabels.contains(label)){
+			if(label.matches("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[34][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+				continue;
+			if(!newInputNeuronsLabels.contains(label) && newInputNeuronsLabels.size()>0){
 				toDeleteLabels.add(label);
 			}
 		}
-		removeInputNeurons(toDeleteLabels);
+		if(toDeleteLabels.size()>0)
+			removeInputNeurons(toDeleteLabels);
 		
 		//Find and Add the new neurons
 		for(int i=0;i<newInputNeuronsLabels.size();i++){
 			String label=newInputNeuronsLabels.get(i);
-			if(this.neuronsLabels.contains(label)){
+			if(!this.neuronsLabels.contains(label)){
 				addInputNeuron(label,i);
 			}
 		}
@@ -403,7 +405,11 @@ public class NetworkArchitecture extends XmlParameterElement {
 		Neuron neuron = NeuronFactory.createNeuron(inputNeuronProperties);
 		neuron.setLabel(label);
 		neurons.add(index, neuron);
-		layers.get(0).addNeuron(index, neuron);
+		if(index==layers.get(0).getNeuronsCount())
+			layers.get(0).addNeuron(neuron);
+		else
+			layers.get(0).addNeuron(index, neuron);
+		
 		
 		//Add zero connections to all neurons of the next layers
 		for(Neuron in:layers.get(1).getNeurons()){
@@ -424,13 +430,15 @@ public class NetworkArchitecture extends XmlParameterElement {
 				}
 		}
 		
+		//logger.info("Number of weigths: "+network.getWeights().length);
+		
 		// Reset all Old results
 		for (ResultEntity ent : optResults.getResults()) {
 			LinkedList<Object> r_genome = new LinkedList<Object>();
 			int oldId=0;
 			for (int k=0;k<id;k++) {
 				if (weightIds.contains(k)) {
-					r_genome.add(0);
+					r_genome.add(0.0d);
 				}
 				else{
 					r_genome.add(ent.getGenome().get(oldId));
@@ -439,7 +447,11 @@ public class NetworkArchitecture extends XmlParameterElement {
 			}
 			// Reset the reduce genome
 			ent.setGenome(r_genome);
+			
+			//logger.info("Length of res genome: "+r_genome.size());
 		}
+		
+		
 		
 		
 		//Recreate the connection Matrix and Array

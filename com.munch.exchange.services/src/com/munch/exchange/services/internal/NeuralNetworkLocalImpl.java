@@ -110,7 +110,8 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			}
 		}
 		//Last output point
-		config.setLastInputPointDate(config.getOutputPointList().getFirst().getDate());
+		if(!config.getOutputPointList().isEmpty())
+			config.setLastInputPointDate(config.getOutputPointList().getFirst().getDate());
 		
 		
 		//===========================================
