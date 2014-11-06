@@ -54,6 +54,7 @@ import com.munch.exchange.dialog.AddTimeSeriesDialog;
 import com.munch.exchange.job.NeuralNetworkDataLoader;
 import com.munch.exchange.job.NeuralNetworkOptimizer;
 import com.munch.exchange.job.Optimizer;
+import com.munch.exchange.job.NeuralNetworkOptimizer.OptInfo;
 import com.munch.exchange.job.objectivefunc.NeuralNetworkOutputObjFunc;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
@@ -421,7 +422,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
-				logger.info("Start Train click!");
+				//logger.info("Start Train click!");
 				
 				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().getTrainingDataSet();
 				
@@ -437,6 +438,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				NeuralNetworkOptimizer
 				optimizer=new NeuralNetworkOptimizer(stock, stock.getNeuralNetwork().getConfiguration(),
 						trainingSet, eventBroker, dimension);
+				
+				setTrainingStatus(true);
 				
 				optimizer.schedule();
 				
@@ -509,6 +512,15 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		}
 		
 		
+	}
+	
+	private void setTrainingStatus(boolean status){
+		tree.setEnabled(!status);
+		btnSaveConfig.setEnabled(!status);
+		btnDeleteConfig.setEnabled(!status);
+		comboPeriod.setEnabled(!status);
+		btnActivateDayOf.setEnabled(!status);
+		btnStartTrain.setEnabled(!status);
 	}
 	
 	private void loadNeuralData(IEclipseContext context){
@@ -660,6 +672,21 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
         
         
     } 
+	
+	
+	@Inject
+    private void optimizationFinished(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_FINISHED) OptInfo info){
+    	
+    	
+    	if(info==null)return;
+    	 	
+    	if (!isCompositeAbleToReact(info.getRate().getUUID()))
+			return;
+    	
+    	setTrainingStatus(false);
+    }
+	
+	
 	
 	/**
      * Prints network output for the each element from the specified training set.

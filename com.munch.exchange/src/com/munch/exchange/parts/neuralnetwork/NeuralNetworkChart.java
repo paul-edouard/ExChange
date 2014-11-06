@@ -175,7 +175,7 @@ public class NeuralNetworkChart extends Composite {
     	clearDataSet();
     	
     	config=stock.getNeuralNetwork().getConfiguration();
-    	if(config!=null)
+    	if(config!=null && neuralNetwork==null)
     		neuralNetwork=config.searchBestNetwork();
     	
     	if(neuralNetwork==null){
@@ -326,6 +326,7 @@ public class NeuralNetworkChart extends Composite {
 			return;
     	
     	boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
+    	logger.info("Best Archi: "+Arrays.toString(bestArchi));
     	
     	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi);
     	
@@ -333,8 +334,31 @@ public class NeuralNetworkChart extends Composite {
     		this.neuralNetwork=archi.getNetwork();
     		updateYXZDataSet();
     	}
+    	else{
+    		logger.info("Best Archi null!!!");
+    	}
     	
     }
+    
+    
+    
+    @Inject
+    private void optimizationFinished(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_FINISHED) OptInfo info){
+    	
+    	
+    	if(info==null)return;
+    	 	
+    	if (!isCompositeAbleToReact(info.getRate().getUUID()))
+			return;
+    	
+    	config=stock.getNeuralNetwork().getConfiguration();
+    	if(config!=null)
+    		neuralNetwork=config.searchBestNetwork();
+    }
+	
+    
+    
+    
     
 	
 
