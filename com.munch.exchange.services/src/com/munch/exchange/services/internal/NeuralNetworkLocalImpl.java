@@ -140,7 +140,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			}
 		}
 		
-		config.fireTimeSeriesChanged();
+		//config.fireTimeSeriesChanged();
 	}
 
 	@Override

@@ -509,7 +509,10 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		if(readyToTrain){
 			neuralNetworkChart.updateYXZDataSet();
 			neuralNetworkChart.setEnabled(true);
+			
 		}
+		
+		tree.setEnabled(true);
 		
 		
 	}
@@ -656,8 +659,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		textMaxProfit.setText(maxProfitStr);
 		textPenaltyProfit.setText(maxPanaltyProfitStr);
-		
-		tree.setEnabled(true);
 		
 		fireReadyToTrain();
 		

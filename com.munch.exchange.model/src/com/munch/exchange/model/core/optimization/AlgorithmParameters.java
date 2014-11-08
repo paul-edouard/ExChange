@@ -152,7 +152,6 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	}
 	
 	
-	
 	public ISOOptimizationAlgorithm<boolean[], X, Individual<boolean[], X>> createBooleanAlgorithm(){
 		if(type.equals(ALGORITHM_Simple_Generational_EA)){
 			//Creation

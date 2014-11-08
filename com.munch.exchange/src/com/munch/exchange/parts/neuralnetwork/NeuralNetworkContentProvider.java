@@ -87,7 +87,6 @@ public class NeuralNetworkContentProvider implements
 		return null;
 	}
 	
-	
 	private void buildNeuralNetworkSerieCategories(){
 		rateCategory=new NeuralNetworkSerieCategory(this.root,TimeSeriesCategory.RATE);
 		financialCategory=new NeuralNetworkSerieCategory(this.root,TimeSeriesCategory.FINANCIAL);
@@ -116,7 +115,6 @@ public class NeuralNetworkContentProvider implements
 		//logger.info("******* Number of childs: "+rateCategory.childs.size());
 		
 	}
-	
 	
 	public class NeuralNetworkSerieCategory{
 		

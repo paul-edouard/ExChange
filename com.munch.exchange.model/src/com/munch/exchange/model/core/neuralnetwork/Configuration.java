@@ -393,7 +393,8 @@ public class Configuration extends XmlParameterElement {
 		return list;
 	}
 	
-	public void addTimeSeries(TimeSeries series){
+	
+	private void addTimeSeries(TimeSeries series, boolean fireTimeSeriesChanged){
 		series.addPropertyChangeListener(new PropertyChangeListener() {
 			
 			@Override
@@ -405,7 +406,13 @@ public class Configuration extends XmlParameterElement {
 			}
 		});
 		allTimeSeries.add(series);
-		fireTimeSeriesChanged();
+		if(fireTimeSeriesChanged){
+			fireTimeSeriesChanged();
+		}
+	}
+	
+	public void addTimeSeries(TimeSeries series){
+		addTimeSeries(series,true);
 	}
 	
 	public void removeTimeSeries(TimeSeries series){
@@ -450,7 +457,7 @@ public class Configuration extends XmlParameterElement {
 		OptimizationResults results=new OptimizationResults();
 		if(childElement.getTagName().equals(ent.getTagName())){
 			ent.init(childElement);
-			addTimeSeries(ent);
+			addTimeSeries(ent,false);
 		}
 		else if(childElement.getTagName().equals(outputPointList.getTagName())){
 			outputPointList.init(childElement);
@@ -558,9 +565,32 @@ public class Configuration extends XmlParameterElement {
 		
 		LinkedList<String> inputNeurons=getInputNeuronNames();
 		
-		for(NetworkArchitecture archi:networkArchitectures)
-			archi.adaptNetwork(inputNeurons);
 		
+		if(networkArchitectures.isEmpty())return;
+		
+		//logger.info("Time Series Changed!!!");
+		//Save the old Max Min Dimension
+		NetworkArchitecture f_a=networkArchitectures.getFirst();
+		int numberOfInputNeurons=f_a.getNumberOfInputNeurons();
+		int oldMax=NetworkArchitecture.calculateNbOfInnerNeurons(optArchitectureParam.getIntegerParam(AlgorithmParameters.MaxDimension), numberOfInputNeurons);
+		int oldMin=NetworkArchitecture.calculateNbOfInnerNeurons(optArchitectureParam.getIntegerParam(AlgorithmParameters.MinDimension), numberOfInputNeurons);
+		
+		for(NetworkArchitecture archi:networkArchitectures){
+			//logger.info("Adapt network for archi:"+archi.getId());
+			archi.adaptNetwork(inputNeurons);
+		}
+		
+		f_a=networkArchitectures.getFirst();
+		numberOfInputNeurons=f_a.getNumberOfInputNeurons();
+		
+		//Change the Opt Architecture Parameters
+		optArchitectureParam.setParam(AlgorithmParameters.MaxDimension,NetworkArchitecture.calculateActivatedConnectionsSize(numberOfInputNeurons, oldMax) );
+		optArchitectureParam.setParam(AlgorithmParameters.MinDimension, NetworkArchitecture.calculateActivatedConnectionsSize(numberOfInputNeurons,oldMin));
+		
+		
+		
+		
+		logger.info("All Archi adapted!!!");
 		
 	}
 	
