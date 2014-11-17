@@ -401,7 +401,6 @@ public class OptimizationErrorPart {
 		return  part;
 	}
 	
-	
 	private static MPart createRateEditorPart(ExchangeRate rate,Job optimizer,String optimizationType,EPartService partService,IEclipseContext context){
 		MPart part = partService.createPart(OptimizationErrorPart.OPTIMIZATION_ERROR_EDITOR_ID);
 		
@@ -423,14 +422,12 @@ public class OptimizationErrorPart {
 		return part;
 	}
 	
-	
 	private static void setOptimizationErrorEditorPartContext(MPart part,ExchangeRate rate,Job optimizer,IEclipseContext context){
 		part.setContext(context.createChild());
 		part.getContext().set(ExchangeRate.class, rate);
 		part.getContext().set(Job.class, optimizer);
 		part.getContext().set(MDirtyable.class, new MyMDirtyable(part));
 	}
-	
 	
 	private static MPart searchPart(String partId,String optimizationType,String tag,EModelService modelService,MApplication application){
 		

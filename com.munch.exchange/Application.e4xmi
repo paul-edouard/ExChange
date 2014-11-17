@@ -81,6 +81,7 @@
   </rootContext>
   <descriptors xmi:id="_AU-8AIjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partdescriptor.rateeditor" label="Rate Editor" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png" tooltip="Rate Editor" allowMultiple="true" closeable="true" dirtyable="true" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.RateEditorPart"/>
   <descriptors xmi:id="_ZVrfULcUEeOETL2SNlLcXQ" elementId="com.munch.exchange.partdescriptor.optimizationerroreditor" label="Optimization Error Editor" iconURI="platform:/plugin/com.munch.exchange/icons/24/stock-market-icon.png" tooltip="Optimization Error" allowMultiple="true" closeable="true" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.OptimizationErrorPart"/>
+  <descriptors xmi:id="_VF-AAG5jEeS4cN0O-mJEpg" elementId="com.munch.exchange.partdescriptor.neuralnetworkerroreditor" label="Neural Network Error" iconURI="platform:/plugin/com.munch.exchange/icons/24/network.png" tooltip="Neural Network Error" allowMultiple="true" closeable="true" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.NeuralNetworkErrorPart"/>
   <commands xmi:id="_hCNcM2TNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.file.exit" commandName="quitCommand"/>
   <commands xmi:id="_hCNcN2TNEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.open" commandName="openCommand"/>
   <commands xmi:id="_hCNcOmTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.file.save" commandName="saveCommand"/>

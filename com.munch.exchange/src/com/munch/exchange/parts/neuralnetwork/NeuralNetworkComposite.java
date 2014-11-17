@@ -64,6 +64,9 @@ import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
+import com.munch.exchange.model.core.optimization.OptimizationResults;
+import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
+import com.munch.exchange.parts.OptimizationErrorPart;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -440,6 +443,14 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 						trainingSet, eventBroker, dimension);
 				
 				setTrainingStatus(true);
+				
+				
+				//Open the Neural network error part
+				NeuralNetworkErrorPart.openNeuralNetworkErrorPart(
+						stock,
+						partService, modelService, application, context);
+				
+				
 				
 				optimizer.schedule();
 				
