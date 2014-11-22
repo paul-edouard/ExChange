@@ -66,7 +66,7 @@ public class NeuralNetworkOptimizer extends Job {
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		eventBroker.post(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED,info);
+		eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED,info);
 		
 		prepareNetworkArchitectureOptimization(monitor);
 		
@@ -148,9 +148,9 @@ public class NeuralNetworkOptimizer extends Job {
 			return;
 
 		// Create and add the listener
-		TerminationPropertyChangeListener listener = new TerminationPropertyChangeListener(
-						monitor);
-		term.addPropertyChangeListener(listener);
+		//TerminationPropertyChangeListener listener = new TerminationPropertyChangeListener(
+		//				monitor);
+		//term.addPropertyChangeListener(listener);
 		
 		info=new OptInfo(rate, configuration, term.getMaxSteps(), dimension);
 		
@@ -176,11 +176,11 @@ public class NeuralNetworkOptimizer extends Job {
 				}
 			}
 			else if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_STEP)){
-				int val=(int)evt.getNewValue();
-				if(val%10==0){
+				//int val=(int)evt.getNewValue();
+				//if(val%10==0){
 					info.setStep((int)evt.getNewValue());
 					eventBroker.post(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_STEP,info);
-				}
+				//}
 			}
 			// Cancel called
 			if (monitor.isCanceled()){

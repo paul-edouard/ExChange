@@ -164,8 +164,6 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 	}
 	
-	
-	
 	@SuppressWarnings("unchecked")
 	private void prepareLearningStrategy(){
 		learningRule=configuration.getLearnParam().createLearningRule();
@@ -173,7 +171,6 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 		architecture.getNetwork().setLearningRule(learningRule);
 	}
-	
 	
 	@SuppressWarnings("unchecked")
 	private void prepareNetworkWeightsOptimization() {
@@ -242,7 +239,6 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		term.addPropertyChangeListener(listener);
 	}
 	
-	
 	private class TerminationPropertyChangeListener implements PropertyChangeListener{
 		IProgressMonitor monitor;
 		
@@ -278,7 +274,6 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 	}
 	
-	
 	@Override
     public void handleLearningEvent(LearningEvent event) {
 		
@@ -309,13 +304,11 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
         
     }
 	
-	
 	private void iniOptInfo(boolean[] archiFingerPrint){
 		info = new NetworkArchitectureOptInfo(this.rate,
 				this.configuration,this.term.getMaxSteps(),archiFingerPrint);
 		
 	}
-	
 	
 	public class NetworkArchitectureOptInfo{
 		
