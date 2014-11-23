@@ -37,6 +37,7 @@ public class Configuration extends XmlParameterElement {
 	static final String FIELD_OutputPointList="OutputPointList";
 	static final String FIELD_LastInputPointDate="LastInputPointDate";
 	static final String FIELD_OptLearnParam="OptLearnParam";
+	public static final String FIELD_IsDirty="IsDirty";
 	
 	private PeriodType period=PeriodType.DAY;
 	private boolean dayOfWeekActivated=false;
@@ -61,6 +62,10 @@ public class Configuration extends XmlParameterElement {
 	private int maxNumberOfSavedAchitectures=200;
 	private LinkedList<NetworkArchitecture> networkArchitectures=new LinkedList<NetworkArchitecture>();
 	private HashMap<Integer, OptimizationResults> netArchiOptResultMap=new HashMap<Integer, OptimizationResults>();
+	
+	//Save the dirty
+	private boolean isDirty=false;
+	
 	
 	
 	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray){
@@ -111,7 +116,8 @@ public class Configuration extends XmlParameterElement {
 			
 			//Test the Network validity
 			if(searched.isValid()){
-				//Add the architecture in the list			
+				//Add the architecture in the list
+				this.setDirty(true);
 				addNetworkArchitecture(searched);
 				return searched;
 			}
@@ -303,6 +309,17 @@ public class Configuration extends XmlParameterElement {
 	
 	}
 	
+	
+	
+	
+	public boolean isDirty() {
+		return isDirty;
+	}
+
+	public void setDirty(boolean isDirty) {
+	changes.firePropertyChange(FIELD_IsDirty, this.isDirty, this.isDirty = isDirty);}
+	
+
 	public AlgorithmParameters<boolean[]> getOptArchitectureParam() {
 		return optArchitectureParam;
 	}
