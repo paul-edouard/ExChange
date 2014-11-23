@@ -24,6 +24,7 @@ import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.ResultEntity;
+import com.munch.exchange.parts.InfoPart;
 
 public class NeuralNetworkOptimizer extends Job {
 	
@@ -58,6 +59,24 @@ public class NeuralNetworkOptimizer extends Job {
 		
 	}
 	
+	
+	
+	
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
+	}
+
+	public void setTrainingSet(DataSet trainingSet) {
+		this.trainingSet = trainingSet;
+	}
+
+	public void setDimension(int dimension) {
+		this.dimension = dimension;
+	}
+
+
+
+
 	public List<Individual<boolean[], boolean[]>> getSolutions() {
 		return solutions;
 	}
@@ -66,9 +85,13 @@ public class NeuralNetworkOptimizer extends Job {
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED,info);
+		
+		
+		InfoPart.postInfoText(eventBroker, "Network Optimization Started");
 		
 		prepareNetworkArchitectureOptimization(monitor);
+		eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED,info);
+		
 		
 		if(term==null){
 			logger.error("Termination Criterion is not initialized!");
@@ -103,9 +126,11 @@ public class NeuralNetworkOptimizer extends Job {
 		
 		
 		//Best Result:
-		logger.info("Optimization finished!!");
+		//logger.info("Optimization finished!!");
+		InfoPart.postInfoText(eventBroker, "Network Optimization finished!!!");
 		if(configuration.getOptResults(dimension).getResults().size()>0){
 			logger.info("Best Result so far x100: "+configuration.getOptResults(dimension).getBestResult().getValue()*100);
+			InfoPart.postInfoText(eventBroker, "Best Result so far x100: "+configuration.getOptResults(dimension).getBestResult().getValue()*100);
 		}
 		
 		return Status.OK_STATUS;

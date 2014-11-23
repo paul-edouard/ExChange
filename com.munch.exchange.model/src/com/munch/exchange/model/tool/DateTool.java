@@ -8,6 +8,14 @@ import java.util.Date;
 public class DateTool {
 	
 	
+	public static String getCurrentDateString(){
+		
+		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss");
+		
+		return format.format(Calendar.getInstance().getTime());
+		
+	}
+	
 	public static String dateToString(Calendar date){
 		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		return format.format(date.getTime());

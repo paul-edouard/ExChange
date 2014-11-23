@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
@@ -45,15 +46,12 @@ import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
 import org.neuroph.core.events.LearningEvent;
 import org.neuroph.core.events.LearningEventListener;
-import org.neuroph.core.learning.LearningRule;
 import org.neuroph.nnet.learning.BackPropagation;
-import org.neuroph.nnet.learning.ResilientPropagation;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddTimeSeriesDialog;
 import com.munch.exchange.job.NeuralNetworkDataLoader;
 import com.munch.exchange.job.NeuralNetworkOptimizer;
-import com.munch.exchange.job.Optimizer;
 import com.munch.exchange.job.NeuralNetworkOptimizer.OptInfo;
 import com.munch.exchange.job.objectivefunc.NeuralNetworkOutputObjFunc;
 import com.munch.exchange.model.core.DatePoint;
@@ -61,12 +59,8 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
-import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
-import com.munch.exchange.model.core.optimization.OptimizationResults;
-import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
-import com.munch.exchange.parts.OptimizationErrorPart;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -74,8 +68,6 @@ import com.munch.exchange.services.INeuralNetworkProvider;
 import com.munch.exchange.wizard.parameter.architecture.ArchitectureOptimizationWizard;
 import com.munch.exchange.wizard.parameter.learning.LearnParameterWizard;
 import com.munch.exchange.wizard.parameter.optimization.OptimizationDoubleParamWizard;
-
-import org.eclipse.swt.widgets.Group;
 
 public class NeuralNetworkComposite extends Composite implements LearningEventListener{
 	
@@ -438,9 +430,15 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 					dimension=optArchitectureParam.getIntegerParam(AlgorithmParameters.MinDimension);
 				}
 				
-				NeuralNetworkOptimizer
-				optimizer=new NeuralNetworkOptimizer(stock, stock.getNeuralNetwork().getConfiguration(),
+				if(optimizer==null){
+					optimizer=new NeuralNetworkOptimizer(stock, stock.getNeuralNetwork().getConfiguration(),
 						trainingSet, eventBroker, dimension);
+				}
+				else{
+					optimizer.setConfiguration(stock.getNeuralNetwork().getConfiguration());
+					optimizer.setTrainingSet(trainingSet);
+					optimizer.setDimension(dimension);
+				}
 				
 				setTrainingStatus(true);
 				
@@ -448,7 +446,11 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				//Open the Neural network error part
 				NeuralNetworkErrorPart.openNeuralNetworkErrorPart(
 						stock,
-						partService, modelService, application, context);
+						partService,
+						modelService,
+						application,
+						optimizer,
+						context);
 				
 				
 				

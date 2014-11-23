@@ -5,14 +5,19 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
+import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+
+import com.munch.exchange.IEventConstant;
+import com.munch.exchange.model.tool.DateTool;
 
 public class InfoPart {
 	private StyledText styledText;
@@ -25,20 +30,12 @@ public class InfoPart {
 	public void postConstruct(Composite parent) {
 		parent.setLayout(new GridLayout(1, false));
 		
-		ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		GridData gd_scrolledComposite = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-		gd_scrolledComposite.heightHint = 132;
-		gd_scrolledComposite.widthHint = 428;
-		scrolledComposite.setLayoutData(gd_scrolledComposite);
-		scrolledComposite.setExpandHorizontal(true);
-		scrolledComposite.setExpandVertical(true);
+		styledText = new StyledText(parent, SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL);
+		styledText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		styledText.setAlwaysShowScrollBars(false);
+		styledText.setDoubleClickEnabled(false);
 		
-		styledText = new StyledText(scrolledComposite, SWT.NONE);
-		scrolledComposite.setContent(styledText);
-		scrolledComposite.setMinSize(styledText.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		//TODO Your code here
-		//styledText.append("Paul");
-		
+		//styledText.append("Paul");	
 	}
 	
 	
@@ -58,5 +55,39 @@ public class InfoPart {
 	public void save() {
 		//TODO Your code here
 	}
+	
+	//################################
+	//##  EVENT REACTIONS          ##
+	//################################
+	
+	private boolean isAbleToReact(String text){
+		
+		if (styledText == null || text == null)
+			return false;
+		
+		return true;
+	}
+	
+	
+	@Inject
+	private void catchInfoText(@Optional @UIEventTopic(IEventConstant.TEXT_INFO) String text){
+		
+		
+		if(!isAbleToReact(text))return;
+		if(styledText.getLineCount()==0)
+			styledText.append("- "+DateTool.getCurrentDateString()+" >> "+text);
+		else
+			styledText.append("\n- "+DateTool.getCurrentDateString()+" >> "+text);
+		styledText.setTopIndex(styledText.getTopIndex()+1);
+		
+	}
+	
+	
+	
+	public static void postInfoText(IEventBroker eventBroker, String text){
+		eventBroker.post(IEventConstant.TEXT_INFO,text);
+	}
+	
+	
 	
 }

@@ -72,4 +72,8 @@ public interface IEventConstant {
 	String PERIOD_CHANGED = "PERIOD/CHANGED";
 	
 	
+	//TEXT
+	String TEXT_INFO = "TEXT/INFO";
+	
+	
 }

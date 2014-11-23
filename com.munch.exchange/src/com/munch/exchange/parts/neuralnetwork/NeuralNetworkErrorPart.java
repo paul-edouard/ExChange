@@ -11,7 +11,6 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.ui.di.Focus;
@@ -23,30 +22,17 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
-import org.eclipse.swt.widgets.Composite;
-
-import com.munch.exchange.IEventConstant;
-import com.munch.exchange.job.NeuralNetworkOptimizer.OptInfo;
-import com.munch.exchange.job.Optimizer.OptimizationInfo;
-import com.munch.exchange.model.core.ExchangeRate;
-import com.munch.exchange.model.core.Stock;
-import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
-import com.munch.exchange.model.core.optimization.ResultEntity;
-import com.munch.exchange.parts.MyMDirtyable;
-import com.munch.exchange.parts.OptimizationErrorPart;
-import com.munch.exchange.services.IExchangeRateProvider;
-
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.wb.swt.ResourceManager;
-import org.goataa.impl.utils.Individual;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
@@ -57,6 +43,15 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
+
+import com.munch.exchange.IEventConstant;
+import com.munch.exchange.job.NeuralNetworkOptimizer;
+import com.munch.exchange.job.NeuralNetworkOptimizer.OptInfo;
+import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
+import com.munch.exchange.parts.MyMDirtyable;
+import com.munch.exchange.services.IExchangeRateProvider;
 
 public class NeuralNetworkErrorPart {
 	
@@ -69,6 +64,10 @@ public class NeuralNetworkErrorPart {
 	
 	@Inject
 	IExchangeRateProvider exchangeRateProvider;
+	
+	@Inject
+	NeuralNetworkOptimizer optimizer;
+	
 	
 	private Button btnStop;
 	private ProgressBar progressBarNetworkError;
@@ -107,9 +106,11 @@ public class NeuralNetworkErrorPart {
 		Composite compositeChart = new Composite(compositeGraph, SWT.NONE);
 		compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		*/
+		
 		createChart();
 		compositeChart = new ChartComposite(compositeGraph, SWT.NONE,chart);
 		compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
 		//====================
 		
 		
@@ -126,6 +127,13 @@ public class NeuralNetworkErrorPart {
 		progressBarNetworkError.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		
 		btnStop = new Button(compositeGraphBottom, SWT.NONE);
+		btnStop.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				optimizer.cancel();
+				
+			}
+		});
 		btnStop.setImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/delete.png"));
 		btnStop.setText("Stop");
 		
@@ -157,10 +165,9 @@ public class NeuralNetworkErrorPart {
         //=========================
     	//=== Create the Chart  ===
     	//=========================
-        chart = new JFreeChart("Error Graph",
+        chart = new JFreeChart("",
                 JFreeChart.DEFAULT_TITLE_FONT, plot1, false);
         chart.setBackgroundPaint(Color.white);
-        
       
         return chart;
     	
@@ -193,7 +200,7 @@ public class NeuralNetworkErrorPart {
         XYItemRenderer renderer1 = new XYLineAndShapeRenderer(true, false);
         renderer1.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
                 StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
-                new DecimalFormat("0.0"), new DecimalFormat("0.00")));
+                new DecimalFormat("0.0"), new DecimalFormat("0.0000")));
                 
         if (renderer1 instanceof XYLineAndShapeRenderer) {
             XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) renderer1;
@@ -207,7 +214,7 @@ public class NeuralNetworkErrorPart {
         
         NumberAxis rangeAxis1 = new NumberAxis("Error");
       //  rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
-        DecimalFormat format = new DecimalFormat("0.00");
+        DecimalFormat format = new DecimalFormat("0.00000");
         rangeAxis1.setNumberFormatOverride(format);
         rangeAxis1.setAutoRangeIncludesZero(false);
         
@@ -245,6 +252,10 @@ public class NeuralNetworkErrorPart {
 	}
 	
 	
+	public void setOptimizer(NeuralNetworkOptimizer optimizer) {
+		this.optimizer = optimizer;
+	}
+
 	//################################
 	//##  EVENT REACTIONS          ##
 	//################################
@@ -264,8 +275,13 @@ public class NeuralNetworkErrorPart {
 	
 	@Inject
 	private void networkArchitectureStarted(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED) OptInfo info){
+		
+		//logger.info("NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED catched: 1/2");
+		
 		if(info==null)return;
 		if(!isAbleToReact(info.getRate().getUUID()))return;
+		
+		//logger.info("NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED catched: 2/2");
 		
 		btnStop.setEnabled(true);
 		progressBarNetworkError.setEnabled(true);
@@ -328,9 +344,9 @@ public class NeuralNetworkErrorPart {
 		if(info==null)return;
 		if(!isAbleToReact(info.getRate().getUUID()))return;
 		
-		btnStop.setEnabled(true);
+		btnStop.setEnabled(false);
 		progressBarNetworkError.setSelection(0);
-		progressBarNetworkError.setEnabled(true);
+		progressBarNetworkError.setEnabled(false);
 		
 	}
 	
@@ -344,13 +360,20 @@ public class NeuralNetworkErrorPart {
 			EPartService partService,
 			EModelService modelService,
 			MApplication application,
+			NeuralNetworkOptimizer optimizer,
 			IEclipseContext context){
 		
 		MPart part=searchPart(NeuralNetworkErrorPart.NEURALNETWORK_ERROR_EDITOR_ID,stock.getUUID(),modelService, application);
 		if(part!=null &&  part.getContributionURI()!=null){
 			if(part.getContext()==null){
-				setPartContext(part,stock,context);
+				setPartContext(part,stock,optimizer,context);
 			}
+			/*
+				if(part instanceof NeuralNetworkErrorPart){
+					NeuralNetworkErrorPart nne_part=(NeuralNetworkErrorPart) part;
+					nne_part.setOptimizer(optimizer);
+				}
+				*/
 			
 				partService.bringToTop(part);
 				return  part;
@@ -358,7 +381,7 @@ public class NeuralNetworkErrorPart {
 		
 		
 		//Create the part
-		part=createPart(stock,partService,context);
+		part=createPart(stock,optimizer,partService,context);
 				
 		//add the part to the corresponding Stack
 		MPartStack myStack=(MPartStack)modelService.find("com.munch.exchange.partstack.rightdown", application);
@@ -368,7 +391,7 @@ public class NeuralNetworkErrorPart {
 		return  part;
 	}
 	
-	private static MPart createPart(Stock stock,EPartService partService,IEclipseContext context){
+	private static MPart createPart(Stock stock,NeuralNetworkOptimizer optimizer,EPartService partService,IEclipseContext context){
 		MPart part = partService.createPart(NeuralNetworkErrorPart.NEURALNETWORK_ERROR_EDITOR_ID);
 		
 		//MPart part =MBasicFactory.INSTANCE.createPartDescrip;
@@ -381,7 +404,7 @@ public class NeuralNetworkErrorPart {
 		//part.getTags().add(optimizationType);
 		part.getTags().add(EPartService.REMOVE_ON_HIDE_TAG);
 		
-		setPartContext(part,stock,context);
+		setPartContext(part,stock,optimizer,context);
 		
 		//OptimizationErrorPart p=(OptimizationErrorPart) part;
 		//p.setType(Optimizer.stringToOptimizationType(optimizationType));
@@ -389,9 +412,10 @@ public class NeuralNetworkErrorPart {
 		return part;
 	}
 	
-	private static void setPartContext(MPart part,Stock stock,IEclipseContext context){
+	private static void setPartContext(MPart part,Stock stock,NeuralNetworkOptimizer optimizer,IEclipseContext context){
 		part.setContext(context.createChild());
 		part.getContext().set(Stock.class, stock);
+		part.getContext().set(NeuralNetworkOptimizer.class, optimizer);
 		part.getContext().set(MDirtyable.class, new MyMDirtyable(part));
 	}
 	
