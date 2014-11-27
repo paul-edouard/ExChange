@@ -63,6 +63,7 @@ import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
+import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -70,6 +71,9 @@ import com.munch.exchange.services.INeuralNetworkProvider;
 import com.munch.exchange.wizard.parameter.architecture.ArchitectureOptimizationWizard;
 import com.munch.exchange.wizard.parameter.learning.LearnParameterWizard;
 import com.munch.exchange.wizard.parameter.optimization.OptimizationDoubleParamWizard;
+
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.ModifyEvent;
 
 public class NeuralNetworkComposite extends Composite implements LearningEventListener{
 	
@@ -89,6 +93,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	private double maxProfit=0;
 	private double maxPenaltyProfit=0;
+	private boolean isInitiated=false;
 	
 	@Inject
 	IEclipseContext context;
@@ -159,10 +164,38 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		lblConfig.setText("Config:");
 		
 		comboConfig = new Combo(compositeLeftHeader, SWT.NONE);
+		comboConfig.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				
+				if(!isInitiated || comboConfig.getText().isEmpty() || comboConfigListenerFreezed)return;
+				
+				InfoPart.postInfoText(eventBroker, "New Text: "+comboConfig.getText());
+				
+				Configuration config=stock.getNeuralNetwork().getConfiguration();
+				if(config==null)return;
+				
+				//InfoPart.postInfoText(eventBroker, "Config: "+config.getName());
+				//TODO
+				
+				if(!comboConfig.getText().equals(config.getName())){
+					config.setName(comboConfig.getText());
+					stock.getNeuralNetwork().setCurrentConfiguration(comboConfig.getText());
+					config.setDirty(true);
+					refreshComboConfig(false);
+				}
+				
+				
+			}
+		});
 		comboConfig.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				
+				if(!isInitiated || comboConfigListenerFreezed)return;
+				
+				InfoPart.postInfoText(eventBroker, "Selected: "+comboConfig.getText());
 				refreshGui();
+				
 			}
 		});
 		comboConfig.setEnabled(false);
@@ -517,10 +550,11 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		sashForm.setWeights(new int[] {254, 282});
 		
 		//TODO
-		//createNeuralNetworkChart(ctxt,compositeGraph);
+		createNeuralNetworkChart(ctxt,compositeGraph);
 		
 		
 		treeViewer.refresh();
+		isInitiated=true;
 		
 		loadNeuralData(ctxt);
 		
@@ -548,7 +582,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				config.getNumberOfTimeSeries()>0 && config.getOutputPointList().size()>0;
 				
 		btnStartTrain.setEnabled(readyToTrain);
-		if(readyToTrain){
+		if(readyToTrain && neuralNetworkChart!=null){
 			neuralNetworkChart.updateYXZDataSet();
 			neuralNetworkChart.setEnabled(true);
 			
@@ -601,7 +635,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	private void refreshGui(){
 		
-		refreshComboConfig();
+		refreshComboConfig(true);
 		changeLoadedState();
 		
 		treeViewer.refresh();
@@ -621,14 +655,15 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	};
 	
 	
-	private void refreshComboConfig(){
+	private boolean comboConfigListenerFreezed=false;
+	
+	private void refreshComboConfig(boolean setText){
+		
+		comboConfigListenerFreezed=true;
 		
 		Configuration oldConfig=stock.getNeuralNetwork().getConfiguration();
-		
 		LinkedList<Configuration> configList=stock.getNeuralNetwork().getConfigurations();
 		
-		
-		//logger.info("---->  1 Number of configs: "+configList.size());
 		
 		if(configList.size()==0){
 			Configuration conf=new Configuration();
@@ -640,22 +675,53 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		//logger.info("---->  1 Number of configs: "+configList.size());
 		
+		//comboConfig.removeAll();
 		for(Configuration conf:configList){
 			//logger.info("---->  Config name: "+conf.getName());
-			comboConfig.add(conf.getName());
+			boolean isFound=false;
+			for(int i=0;i<comboConfig.getItemCount();i++){
+				if(conf.getName().equals(comboConfig.getItem(i)))
+					isFound=true;
+			}
+			if(!isFound)
+				comboConfig.add(conf.getName());
 		}
 		
+		int pos=-1;
+		for(int i=0;i<comboConfig.getItemCount();i++){
+			for(Configuration conf:configList){
+				if(!conf.getName().equals(comboConfig.getItem(i)))
+					pos=i;
+			}
+		}
+		if(pos>=0)
+			comboConfig.remove(pos);
+		
+		
+		
+		
+		
+		
+		
+		
 		//logger.info("---->  Current Config name: "+stock.getNeuralNetwork().getCurrentConfiguration());
-		comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
+		if(setText)
+			comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
 		btnDeleteConfig.setVisible(stock.getNeuralNetwork().getConfigurations().size()>1);
+		
+		//logger.info("---->  Current Config: "+stock.getNeuralNetwork().getConfiguration()==null);
+		
 		
 		//Set the event listener
 		if(oldConfig!=stock.getNeuralNetwork().getConfiguration()  ){
-			
+					
 			stock.getNeuralNetwork().getConfiguration().addPropertyChangeListener(configChangedListener);
 			if(oldConfig!=null)
 				stock.getNeuralNetwork().getConfiguration().removePropertyChangeListener(configChangedListener);
 		}
+		
+		
+		comboConfigListenerFreezed=false;
 		
 	}
 	
