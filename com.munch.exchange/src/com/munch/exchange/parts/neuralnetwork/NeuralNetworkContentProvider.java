@@ -95,8 +95,8 @@ public class NeuralNetworkContentProvider implements
 	public void refreshCategories(){
 		if(this.stock.getNeuralNetwork().getConfiguration()==null)return;
 		
-		rateCategory.childs=new LinkedList<Object>();
-		financialCategory.childs=new LinkedList<Object>();
+		rateCategory.childs.clear();
+		financialCategory.childs.clear();
 		
 		for(TimeSeries series:this.stock.getNeuralNetwork().getConfiguration().getAllTimeSeries()){
 			switch (series.getCategory()) {

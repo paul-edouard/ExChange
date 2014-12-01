@@ -17,6 +17,8 @@ import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -52,6 +54,7 @@ import org.neuroph.nnet.learning.BackPropagation;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddTimeSeriesDialog;
+import com.munch.exchange.dialog.StringEditorDialog;
 import com.munch.exchange.job.NeuralNetworkDataLoader;
 import com.munch.exchange.job.NeuralNetworkOptimizer;
 import com.munch.exchange.job.NeuralNetworkOptimizer.OptInfo;
@@ -74,6 +77,8 @@ import com.munch.exchange.wizard.parameter.optimization.OptimizationDoubleParamW
 
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.MenuDetectListener;
+import org.eclipse.swt.events.MenuDetectEvent;
 
 public class NeuralNetworkComposite extends Composite implements LearningEventListener{
 	
@@ -94,6 +99,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private double maxProfit=0;
 	private double maxPenaltyProfit=0;
 	private boolean isInitiated=false;
+	private boolean enableComboConfigTextChangeReaction=true;
 	
 	@Inject
 	IEclipseContext context;
@@ -167,33 +173,17 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		comboConfig.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				
-				if(!isInitiated || comboConfig.getText().isEmpty() || comboConfigListenerFreezed)return;
+				if(!isInitiated || comboConfig.getText().isEmpty() || !enableComboConfigTextChangeReaction)return;
 				
-				InfoPart.postInfoText(eventBroker, "New Text: "+comboConfig.getText());
+				InfoPart.postInfoText(eventBroker, "Modify Text: "+comboConfig.getText());
 				
-				Configuration config=stock.getNeuralNetwork().getConfiguration();
-				if(config==null)return;
-				
-				//InfoPart.postInfoText(eventBroker, "Config: "+config.getName());
-				//TODO
-				
-				if(!comboConfig.getText().equals(config.getName())){
-					config.setName(comboConfig.getText());
+				if(!stock.getNeuralNetwork().getCurrentConfiguration().equals(comboConfig.getText())){
+					InfoPart.postInfoText(eventBroker, "Config Changed: "+comboConfig.getText());
+					
 					stock.getNeuralNetwork().setCurrentConfiguration(comboConfig.getText());
-					config.setDirty(true);
-					refreshComboConfig(false);
+					btnSaveConfig.setVisible(true);
 				}
 				
-				
-			}
-		});
-		comboConfig.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				
-				if(!isInitiated || comboConfigListenerFreezed)return;
-				
-				InfoPart.postInfoText(eventBroker, "Selected: "+comboConfig.getText());
 				refreshGui();
 				
 			}
@@ -202,7 +192,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		comboConfig.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Composite composite_2 = new Composite(compositeLeftHeader, SWT.NONE);
-		GridLayout gl_composite_2 = new GridLayout(3, false);
+		GridLayout gl_composite_2 = new GridLayout(4, false);
 		gl_composite_2.marginHeight = 0;
 		composite_2.setLayout(gl_composite_2);
 		composite_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
@@ -225,24 +215,95 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnSaveConfig.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
 		btnSaveConfig.setText("Load");
 		
-		
 		btnDeleteConfig = new Button(composite_2, SWT.NONE);
 		btnDeleteConfig.setEnabled(false);
 		btnDeleteConfig.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
+				Configuration config=stock.getNeuralNetwork().getConfiguration();
 				
+				if(!MessageDialog.openQuestion(shell, "Delete configuration", "Do you realy want to delete the configuration "+config.getName()+"?"))
+					return;
+				
+				if(stock.getNeuralNetwork().removeCurrentConfiguration()){
+					enableComboConfigTextChangeReaction=false;
+					
+					config.removePropertyChangeListener(configChangedListener);
+					comboConfig.remove(config.getName());
+					
+					//InfoPart.postInfoText(eventBroker, "New current: "+stock.getNeuralNetwork().getCurrentConfiguration());
+					
+					comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
+					
+					refreshGui();
+					
+					btnSaveConfig.setVisible(true);
+					
+					enableComboConfigTextChangeReaction=true;
+				}
+				
+				btnDeleteConfig.setVisible(stock.getNeuralNetwork().getConfigurations().size()>1);
 			}
 		});
 		btnDeleteConfig.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
 		btnDeleteConfig.setText("Delete");
+		
+		btnEditConfig = new Button(composite_2, SWT.NONE);
+		btnEditConfig.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				
+				if(!isInitiated || comboConfig.getText().isEmpty())return;
+				
+				//InfoPart.postInfoText(eventBroker, "Edit Text: "+comboConfig.getText());
+				
+				StringEditorDialog dialog=new StringEditorDialog(shell, "Configuration", comboConfig.getText());
+				if(dialog.open()==StringEditorDialog.OK && dialog.getNewString()!=null){
+					
+					enableComboConfigTextChangeReaction=false;
+					
+					Configuration config=stock.getNeuralNetwork().getConfiguration();
+					if(config==null)return;
+					
+					int index=comboConfig.indexOf(config.getName());
+					comboConfig.remove(index);
+					comboConfig.add(dialog.getNewString(), index);
+					comboConfig.setText(dialog.getNewString());
+					
+					config.setName(dialog.getNewString());
+					stock.getNeuralNetwork().setCurrentConfiguration(dialog.getNewString());
+					config.setDirty(true);
+					
+					//InfoPart.postInfoText(eventBroker, "New Config Name: "+stock.getNeuralNetwork().getCurrentConfiguration());
+					
+					enableComboConfigTextChangeReaction=true;
+				}
+				
+			}
+		});
+		btnEditConfig.setText("Edit");
 		
 		Button btnAddConfig = new Button(composite_2, SWT.NONE);
 		btnAddConfig.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
+				//stock.getNeuralNetwork().getConfiguration().removePropertyChangeListener(configChangedListener);
+				
+				int i=0;String configName="New Config";
+				while(!stock.getNeuralNetwork().addNewConfiguration(configName)){
+					configName="New Config_"+String.valueOf(i);
+					i++;
+				}
+				
+				comboConfig.add(stock.getNeuralNetwork().getCurrentConfiguration());
+				comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
+				
+				stock.getNeuralNetwork().getConfiguration().addPropertyChangeListener(configChangedListener);
+				
+				btnDeleteConfig.setVisible(stock.getNeuralNetwork().getConfigurations().size()>1);
+				btnSaveConfig.setVisible(true);
 				
 			}
 		});
@@ -634,29 +695,30 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	}
 	
 	private void refreshGui(){
-		
-		refreshComboConfig(true);
-		changeLoadedState();
-		
+		//refreshComboConfig(true);
+		//changeLoadedState();
+		contentProvider.refreshCategories();
+		treeViewer.setInput(contentProvider.getRoot());
 		treeViewer.refresh();
 	}
-	
-	
 	
 	private PropertyChangeListener configChangedListener=new PropertyChangeListener() {
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
-			//InfoPart.postInfoText(eventBroker, "Dirty listener");
+			InfoPart.postInfoText(eventBroker, "Dirty listener");
 			if(evt.getPropertyName().equals(Configuration.FIELD_IsDirty)){
+				InfoPart.postInfoText(eventBroker, "Dirty listener value "+String.valueOf(evt.getNewValue()));
 				if(((boolean)evt.getNewValue()))
 					btnSaveConfig.setVisible(true);
 			}
 		}
 	};
+	private Button btnEditConfig;
 	
 	
-	private boolean comboConfigListenerFreezed=false;
+	//private boolean comboConfigListenerFreezed=false;
 	
+	/*
 	private void refreshComboConfig(boolean setText){
 		
 		comboConfigListenerFreezed=true;
@@ -698,12 +760,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			comboConfig.remove(pos);
 		
 		
-		
-		
-		
-		
-		
-		
 		//logger.info("---->  Current Config name: "+stock.getNeuralNetwork().getCurrentConfiguration());
 		if(setText)
 			comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
@@ -722,6 +778,28 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		
 		comboConfigListenerFreezed=false;
+		
+	}
+	
+	*/
+	
+	private void initComboConfig(){
+		
+		LinkedList<Configuration> configList=stock.getNeuralNetwork().getConfigurations();
+		
+		if(configList.size()==0){
+			stock.getNeuralNetwork().addNewConfiguration("New Config");
+			configList.add(stock.getNeuralNetwork().getConfiguration());
+		}
+		
+		for(Configuration conf:configList){
+			comboConfig.add(conf.getName());
+			conf.addPropertyChangeListener(configChangedListener);
+		}
+		
+		comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
+		btnDeleteConfig.setVisible(stock.getNeuralNetwork().getConfigurations().size()>1);
+		
 		
 	}
 	
@@ -765,14 +843,23 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		if (!isCompositeAbleToReact(rate_uuid))
 			return;
 		
-		//logger.info("---->  Message recieved!!: ");
 		isLoaded=true;
 		
-		stock.getNeuralNetwork().getConfiguration().addPropertyChangeListener(configChangedListener);
+		//stock.getNeuralNetwork().getConfiguration().addPropertyChangeListener(configChangedListener);
+		
+		initComboConfig();
+		
+		
+		btnSaveConfig.setText("Save");
+		btnSaveConfig.setVisible(false);
+		btnDeleteConfig.setEnabled(true);
+		btnActivateDayOf.setEnabled(true);
+		comboConfig.setEnabled(true);
+		comboPeriod.setEnabled(true);
+		
 		
 		refreshGui();
 		refreshTimeSeries();
-		
 		fireReadyToTrain();
 	}
 	
@@ -813,7 +900,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
         
         
     } 
-	
 	
 	@Inject
     private void optimizationFinished(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_FINISHED) OptInfo info){

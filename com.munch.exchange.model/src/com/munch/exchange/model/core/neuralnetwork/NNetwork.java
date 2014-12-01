@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -34,19 +35,59 @@ public class NNetwork extends XmlParameterElement{
 	public String getCurrentConfiguration() {
 		return currentConfiguration;
 	}
-
-	public void setCurrentConfiguration(String currentConfiguration) {
+	
+	
+	public boolean removeCurrentConfiguration(){
+		
+		if(Configurations.size()<2)return false;
+		
+		for(int i=0;i<Configurations.size();i++){
+			Configuration config=Configurations.get(i);
+		//for(Configuration config:Configurations){
+			if(config.getName().equals(currentConfiguration)){
+				Configurations.remove(i);
+				currentConfiguration=Configurations.getFirst().getName();
+				fireConfigurationChanged();
+				return true;
+			}
+		}
+		
+		
+		return false;
+		
+	}
+	
+	
+	public boolean setCurrentConfiguration(String currentConfiguration) {
 		if(this.currentConfiguration==null || !this.currentConfiguration.equals(currentConfiguration)){
 			this.currentConfiguration = currentConfiguration;
 			for(Configuration config:Configurations){
 				if(config.getName().equals(currentConfiguration)){
 					fireConfigurationChanged();
-					return;
+					return true;
 				}
 			}
 		}
-		
+		return false;
 		//changes.firePropertyChange(FIELD_CurrentConfiguration, this.currentConfiguration, this.currentConfiguration = currentConfiguration);
+	}
+	
+	public boolean addNewConfiguration(String configName){
+		for(Configuration config:Configurations){
+			if(config.getName().equals(configName))
+				return false;
+		}
+		
+		Configuration conf=new Configuration();
+		conf.setName(configName);
+		conf.setDirty(true);
+		
+		Configurations.add(conf);
+		currentConfiguration=configName;
+		
+		fireConfigurationChanged();
+		
+		return true;
 	}
 	
 	public LinkedList<Configuration> getConfigurations() {
