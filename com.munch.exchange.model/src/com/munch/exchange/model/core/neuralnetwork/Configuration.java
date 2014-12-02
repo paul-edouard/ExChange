@@ -166,7 +166,10 @@ public class Configuration extends XmlParameterElement {
 			createDayOfWeekSeries(sortedTimeSeries);
 		}
 		for(TimeSeries series:sortedTimeSeries){
-			doubleArrayList.addAll(series.transformSeriesToDoubleArrayList(lastInputPointDate));
+			//logger.info("Serie "+series.getName()+", number of inputs: "+series.getInputValues().size());
+			//TODO Series zero
+			LinkedList<double[]> d_array_list=series.transformSeriesToDoubleArrayList(lastInputPointDate);
+			doubleArrayList.addAll(d_array_list);
 		}
 		
 		//Create the output array
@@ -234,6 +237,17 @@ public class Configuration extends XmlParameterElement {
 		return outputArray;
 		
 	}
+	
+	
+	public boolean areAllTimeSeriesAvailable(){
+		for(TimeSeries series:this.getAllTimeSeries()){
+			if(series.getInputValues().isEmpty())return false;
+		}
+		
+		return true;
+	}
+	
+	
 	
 	/*
 	public void inputNeuronChanged(){

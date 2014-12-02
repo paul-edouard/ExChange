@@ -79,6 +79,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.graphics.Cursor;
 
 public class NeuralNetworkComposite extends Composite implements LearningEventListener{
 	
@@ -142,6 +143,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private MenuItem mntmRemove;
 	private Button btnStartTrain;
 	private Group grpLearning;
+	private Button btnEditConfig;
 	
 	
 	@Inject
@@ -202,8 +204,15 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if(isLoaded){
+					
+					Cursor cursor_wait=new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+					Cursor cursor_old=shell.getCursor();
+					shell.setCursor(cursor_wait);
+					
 					neuralNetworkProvider.save(stock);
 					btnSaveConfig.setVisible(false);
+					
+					shell.setCursor(cursor_old);
 				}
 				else{
 					isLoaded=neuralNetworkProvider.load(stock);
@@ -284,7 +293,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		});
 		btnEditConfig.setText("Edit");
 		
-		Button btnAddConfig = new Button(composite_2, SWT.NONE);
+		btnAddConfig = new Button(composite_2, SWT.NONE);
 		btnAddConfig.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -475,7 +484,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		Label lblConfiguration = new Label(grpLearning, SWT.NONE);
 		lblConfiguration.setText("Configuration:");
 		
-		Button btnArchOptConf = new Button(grpLearning, SWT.NONE);
+		btnArchOptConf = new Button(grpLearning, SWT.NONE);
 		btnArchOptConf.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -494,7 +503,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		});
 		btnArchOptConf.setText("Arch. Opt.");
 		
-		Button btnLearnOptConf = new Button(grpLearning, SWT.NONE);
+		btnLearnOptConf = new Button(grpLearning, SWT.NONE);
 		btnLearnOptConf.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -511,7 +520,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		});
 		btnLearnOptConf.setText("Learn Opt.");
 		
-		Button btnLearnAlg = new Button(grpLearning, SWT.NONE);
+		btnLearnAlg = new Button(grpLearning, SWT.NONE);
 		btnLearnAlg.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -532,12 +541,17 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		btnStartTrain = new Button(grpLearning, SWT.NONE);
-		btnStartTrain.setEnabled(false);
 		btnStartTrain.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
 				//logger.info("Start Train click!");
+				
+				if(!stock.getNeuralNetwork().getConfiguration().areAllTimeSeriesAvailable()){
+					//MessageDialog.openError(shell, "Configuration Error", "At least one Time Series is not available!");
+					neuralNetworkProvider.createAllInputPoints(stock);
+					//return;
+				}
 				
 				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().getTrainingDataSet();
 				
@@ -642,15 +656,14 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		boolean readyToTrain=config!=null &&  config.getOutputPointList()!=null &&
 				config.getNumberOfTimeSeries()>0 && config.getOutputPointList().size()>0;
 				
-		btnStartTrain.setEnabled(readyToTrain);
+		//btnStartTrain.setEnabled(readyToTrain);
 		if(readyToTrain && neuralNetworkChart!=null){
 			neuralNetworkChart.updateYXZDataSet();
 			neuralNetworkChart.setEnabled(true);
-			
 		}
 		
 		tree.setEnabled(true);
-		
+		setTrainingStatus(false);
 		
 	}
 	
@@ -658,10 +671,16 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		tree.setEnabled(!status);
 		btnSaveConfig.setEnabled(!status);
 		btnDeleteConfig.setEnabled(!status);
+		btnEditConfig.setEnabled(!status);
+		btnAddConfig.setEnabled(!status);
 		comboPeriod.setEnabled(!status);
+		comboConfig.setEnabled(!status);
 		btnActivateDayOf.setEnabled(!status);
 		btnStartTrain.setEnabled(!status);
-		grpLearning.setEnabled(!status);
+		btnArchOptConf.setEnabled(!status);
+		btnLearnAlg.setEnabled(!status);
+		btnLearnOptConf.setEnabled(!status);
+		//grpLearning.setEnabled(!status);
 	}
 	
 	private void loadNeuralData(IEclipseContext context){
@@ -673,19 +692,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			nnd_loader=ContextInjectionFactory.make( NeuralNetworkDataLoader.class,localContact);
 		}
 		nnd_loader.schedule();
-	}
-	
-	private void changeLoadedState(){
-		if(!isLoaded)return;
-		
-		btnSaveConfig.setText("Save");
-		btnSaveConfig.setVisible(false);
-		btnDeleteConfig.setEnabled(true);
-		btnActivateDayOf.setEnabled(true);
-		comboConfig.setEnabled(true);
-		comboPeriod.setEnabled(true);
-		
-		
 	}
 	
 	private void refreshTimeSeries(){
@@ -713,75 +719,10 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			}
 		}
 	};
-	private Button btnEditConfig;
-	
-	
-	//private boolean comboConfigListenerFreezed=false;
-	
-	/*
-	private void refreshComboConfig(boolean setText){
-		
-		comboConfigListenerFreezed=true;
-		
-		Configuration oldConfig=stock.getNeuralNetwork().getConfiguration();
-		LinkedList<Configuration> configList=stock.getNeuralNetwork().getConfigurations();
-		
-		
-		if(configList.size()==0){
-			Configuration conf=new Configuration();
-			conf.setName("New Config");
-			configList.add(conf);
-			stock.getNeuralNetwork().setCurrentConfiguration(conf.getName());
-			stock.getNeuralNetwork().getConfiguration().setDirty(true);
-		}
-		
-		//logger.info("---->  1 Number of configs: "+configList.size());
-		
-		//comboConfig.removeAll();
-		for(Configuration conf:configList){
-			//logger.info("---->  Config name: "+conf.getName());
-			boolean isFound=false;
-			for(int i=0;i<comboConfig.getItemCount();i++){
-				if(conf.getName().equals(comboConfig.getItem(i)))
-					isFound=true;
-			}
-			if(!isFound)
-				comboConfig.add(conf.getName());
-		}
-		
-		int pos=-1;
-		for(int i=0;i<comboConfig.getItemCount();i++){
-			for(Configuration conf:configList){
-				if(!conf.getName().equals(comboConfig.getItem(i)))
-					pos=i;
-			}
-		}
-		if(pos>=0)
-			comboConfig.remove(pos);
-		
-		
-		//logger.info("---->  Current Config name: "+stock.getNeuralNetwork().getCurrentConfiguration());
-		if(setText)
-			comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
-		btnDeleteConfig.setVisible(stock.getNeuralNetwork().getConfigurations().size()>1);
-		
-		//logger.info("---->  Current Config: "+stock.getNeuralNetwork().getConfiguration()==null);
-		
-		
-		//Set the event listener
-		if(oldConfig!=stock.getNeuralNetwork().getConfiguration()  ){
-					
-			stock.getNeuralNetwork().getConfiguration().addPropertyChangeListener(configChangedListener);
-			if(oldConfig!=null)
-				stock.getNeuralNetwork().getConfiguration().removePropertyChangeListener(configChangedListener);
-		}
-		
-		
-		comboConfigListenerFreezed=false;
-		
-	}
-	
-	*/
+	private Button btnAddConfig;
+	private Button btnArchOptConf;
+	private Button btnLearnOptConf;
+	private Button btnLearnAlg;
 	
 	private void initComboConfig(){
 		
@@ -802,7 +743,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		
 	}
-	
 	
 	private NeuralNetworkOutputObjFunc getObjFunc(){
 		if(objFunc!=null)return objFunc;
@@ -852,11 +792,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		btnSaveConfig.setText("Save");
 		btnSaveConfig.setVisible(false);
-		btnDeleteConfig.setEnabled(true);
-		btnActivateDayOf.setEnabled(true);
-		comboConfig.setEnabled(true);
-		comboPeriod.setEnabled(true);
-		
 		
 		refreshGui();
 		refreshTimeSeries();
@@ -911,6 +846,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			return;
     	
     	setTrainingStatus(false);
+    	stock.getNeuralNetwork().getConfiguration().setDirty(true);
+    	btnSaveConfig.setVisible(true);
     }
 	
 	
