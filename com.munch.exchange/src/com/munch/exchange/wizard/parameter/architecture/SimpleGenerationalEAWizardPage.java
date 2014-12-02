@@ -73,6 +73,7 @@ public class SimpleGenerationalEAWizardPage extends WizardPage {
 		comboNullarySearchOperation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		comboNullarySearchOperation.setText(AlgorithmParameters.NSO_BooleanArrayUniformCreation);
 		comboNullarySearchOperation.add(AlgorithmParameters.NSO_BooleanArrayUniformCreation);
+		comboNullarySearchOperation.add(AlgorithmParameters.NSO_FullyStraigthFowardNetworkCreation);
 		if(optArchitectureParam.hasParamKey(AlgorithmParameters.NULLARY_SEARCH_OPERATION)){
 			comboNullarySearchOperation.setText(optArchitectureParam.getStringParam(AlgorithmParameters.NULLARY_SEARCH_OPERATION));
 		}

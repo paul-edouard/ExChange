@@ -14,7 +14,7 @@ import org.goataa.impl.searchOperations.strings.FixedLengthStringCreation;
  *
  * @author Thomas Weise
  */
-public final class BooleanArrayUniformCreation extends
+public class BooleanArrayUniformCreation extends
     FixedLengthStringCreation<boolean[]> {
 
   /** a constant required by Java serialization */
@@ -22,7 +22,7 @@ public final class BooleanArrayUniformCreation extends
   
   
   
-  private LinkedList<boolean[]> oldResults=null;
+  protected LinkedList<boolean[]> oldResults=null;
   
   
   /**

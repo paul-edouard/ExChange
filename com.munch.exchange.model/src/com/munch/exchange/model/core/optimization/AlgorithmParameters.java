@@ -18,6 +18,7 @@ import org.goataa.spec.ISOOptimizationAlgorithm;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.neuralnetwork.FullyStraigthFowardNetworkCreation;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
@@ -59,6 +60,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	public static final String NULLARY_SEARCH_OPERATION ="Nullary search operation";
 	public static final String NSO_Uniform_Creation="NSO Uniform Creation";
 	public static final String NSO_BooleanArrayUniformCreation="NSO Boolean Array Uniform Creation";
+	public static final String NSO_FullyStraigthFowardNetworkCreation="NSO Boolean Fully Straigth Foward Network Creation";
 	
 	
 	//Binary Search Operation
@@ -152,7 +154,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	}
 	
 	
-	public ISOOptimizationAlgorithm<boolean[], X, Individual<boolean[], X>> createBooleanAlgorithm(){
+	public ISOOptimizationAlgorithm<boolean[], X, Individual<boolean[], X>> createBooleanAlgorithm(int numberOfInputNeurons){
 		if(type.equals(ALGORITHM_Simple_Generational_EA)){
 			//Creation
 			SimpleGenerationalEA<boolean[],X> EA = new SimpleGenerationalEA<boolean[],X>();
@@ -172,6 +174,10 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 			// Nullary Search Operation
 			if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_BooleanArrayUniformCreation)){
 				INullarySearchOperation<boolean[]> create=new BooleanArrayUniformCreation(this.getIntegerParam(EA_Dimension));
+				EA.setNullarySearchOperation(create);
+			}
+			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_FullyStraigthFowardNetworkCreation)){
+				INullarySearchOperation<boolean[]> create=new FullyStraigthFowardNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
 				EA.setNullarySearchOperation(create);
 			}
 			

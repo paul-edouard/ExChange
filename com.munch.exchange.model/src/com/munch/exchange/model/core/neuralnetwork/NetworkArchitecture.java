@@ -309,6 +309,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	private void convertActConsMatrixToArray(){
 		
+		actConsArray=convertActConsMatrixToArray(actConsMatrix,numberOfInputNeurons, numberOfInnerNeurons);
+		
+		/*
 		actConsArray=new boolean[calculateActivatedConnectionsSize(numberOfInputNeurons,numberOfInnerNeurons)];
 		for(int i=0;i<actConsArray.length;i++){
 			actConsArray[i]=false;
@@ -347,6 +350,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 					+ numberOfInnerNeurons];
 			nbOfUsedValues++;
 		}
+		*/
+		
 		
 	}
 	
@@ -522,6 +527,118 @@ public class NetworkArchitecture extends XmlParameterElement {
 		//Recreate the connection Matrix and Array
 		resetActCons();
 		
+	}
+	
+	
+	
+	//****************************************
+	//***            STATIC               ****
+	//****************************************
+	
+	public static boolean[] convertActConsMatrixToArray(boolean[][] actConsMatrix,int numberOfInputNeurons,int numberOfInnerNeurons){
+		boolean[] actConsArray=new boolean[calculateActivatedConnectionsSize(numberOfInputNeurons,numberOfInnerNeurons)];
+		for(int i=0;i<actConsArray.length;i++){
+			actConsArray[i]=false;
+		}
+		
+		int nbOfUsedValues = 0;
+
+		// Input / Inner neuron connections
+		for (int i = 0; i < numberOfInputNeurons; i++) {
+			for (int j = 0; j < numberOfInnerNeurons; j++) {
+				actConsArray[nbOfUsedValues] = actConsMatrix[i][j+numberOfInputNeurons];
+				nbOfUsedValues++;
+			}
+		}
+
+		// Inner / Inner neurons connections
+		for (int i = 0; i < numberOfInnerNeurons - 1; i++) {
+			for (int j = i + 1; j < numberOfInnerNeurons; j++) {
+				actConsArray[nbOfUsedValues] = actConsMatrix[i
+						+ numberOfInputNeurons][j + numberOfInputNeurons];
+				nbOfUsedValues++;
+			}
+		}
+
+		// Input / Output neurons connections
+		for (int i = 0; i < numberOfInputNeurons; i++) {
+			actConsArray[nbOfUsedValues] = actConsMatrix[i][numberOfInputNeurons
+					+ numberOfInnerNeurons];
+			nbOfUsedValues++;
+		}
+
+		// Inner / Output neurons connections
+		for (int i = 0; i < numberOfInnerNeurons; i++) {
+			actConsArray[nbOfUsedValues] = actConsMatrix[i
+					+ numberOfInputNeurons][numberOfInputNeurons
+					+ numberOfInnerNeurons];
+			nbOfUsedValues++;
+		}
+		
+		return actConsArray;
+	}
+	
+	public static boolean[] createFullStraigthFowardNetwork(int numberOfInputNeurons,int numberOfInnerNeurons, double reduceFactor){
+		
+		
+		//TODO CreateStraigtFowardNetwork
+		//Set all to false
+		int numberOfNeurons=numberOfInputNeurons+numberOfInnerNeurons+1;
+		boolean[][] actConsMatrix=new boolean[numberOfNeurons][numberOfNeurons];
+		for(int i=0;i<numberOfNeurons;i++){
+			for(int j=0;j<numberOfNeurons;j++){
+				actConsMatrix[i][j]=false;
+			}
+		}
+		
+		//Create the fowards blocks
+		int layerStartId=0;
+		int layerSize=numberOfInputNeurons;
+		int nextLayerSize=Math.max(1,Math.min((int) (Math.pow(numberOfInnerNeurons, reduceFactor)), numberOfInnerNeurons));
+		int leftNeurons=numberOfInnerNeurons-nextLayerSize;
+		int nbOfUsedNeurons=numberOfInputNeurons+nextLayerSize;
+		
+		while(nbOfUsedNeurons<=numberOfInputNeurons+numberOfInnerNeurons){
+			for(int i=layerStartId;i<layerStartId+layerSize;i++){
+				for(int j=layerStartId+layerSize;j<layerStartId+layerSize+nextLayerSize;j++)
+					actConsMatrix[i][j]=true;
+			}
+			
+			layerStartId+=layerSize;
+			layerSize=nextLayerSize;
+			nextLayerSize=Math.max(1,Math.min((int) (Math.pow(leftNeurons, reduceFactor)), numberOfInnerNeurons));
+			leftNeurons-=nextLayerSize;
+			nbOfUsedNeurons+=nextLayerSize;
+		}
+		
+		//Create the last layer to output connection
+		int lastLayerSizes=layerSize;
+		for(int i=0;i<lastLayerSizes;i++){
+			actConsMatrix[numberOfNeurons-2-i][numberOfNeurons-1]=true;
+		}
+		
+		/*
+		System.out.println("Input neurons: "+numberOfInputNeurons);
+		System.out.println("Inner neurons: "+numberOfInnerNeurons);
+		System.out.println("Reduce Factor: "+reduceFactor);
+		
+		String outputStr="";
+		for(int i=0;i<numberOfNeurons;i++){
+			outputStr+="[";
+			for(int j=0;j<numberOfNeurons;j++){
+				if(j>0)outputStr+=", ";
+				if(actConsMatrix[i][j])
+					outputStr+="1";
+				else
+					outputStr+="0";
+			}
+			outputStr+="]\n";
+		}
+		outputStr+="\n";
+		System.out.println(outputStr);
+		*/
+		
+		return convertActConsMatrixToArray(actConsMatrix,numberOfInputNeurons, numberOfInnerNeurons);
 	}
 	
 	public static int calculateActivatedConnectionsSize(int numberOfInputNeurons,int numberOfInnerNeurons){

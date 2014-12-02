@@ -21,6 +21,7 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.objectivefunc.NetworkArchitectureObjFunc;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.ResultEntity;
@@ -145,7 +146,8 @@ public class NeuralNetworkOptimizer extends Job {
 		configuration.getOptArchitectureParam().setParam(AlgorithmParameters.EA_Dimension, dimension);
 				
 		// Create the algorithm
-		algorithm = configuration.getOptArchitectureParam().createBooleanAlgorithm();
+		int numberOfInputNeurons=configuration.getNumberOfInputNeurons();
+		algorithm = configuration.getOptArchitectureParam().createBooleanAlgorithm(numberOfInputNeurons);
 		
 		//set the gpm
 		final IGPM<boolean[], boolean[]> gpm = ((IGPM<boolean[], boolean[]>) (IdentityMapping.IDENTITY_MAPPING));
