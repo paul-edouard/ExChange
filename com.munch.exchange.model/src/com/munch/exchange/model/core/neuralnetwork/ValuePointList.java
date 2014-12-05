@@ -55,6 +55,14 @@ public class ValuePointList extends LinkedList<ValuePoint> implements
 		return array;
 	}
 	
+	public String[] toStringArray(){
+		String[] array=new String[this.size()];
+		for(int i=0;i<array.length;i++){
+			array[i]=this.get(i).getMetaData();
+		}
+		return array;
+	}
+	
 	public void sort(){
 		java.util.Collections.sort(this);
 	}

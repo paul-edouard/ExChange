@@ -14,11 +14,13 @@ public class ValuePoint extends XmlParameterElement implements Comparable<ValueP
 	static final String FIELD_Date="Date";
 	static final String FIELD_Value="Value";
 	static final String FIELD_NextValueDate="NextValueDate";
+	static final String FIELD_MetaData="MetaData";
 	
 	
 	private Calendar date=Calendar.getInstance();
 	private Calendar nextValueDate=null;
 	private double value=0;
+	private String metaData=null;
 	
 	public ValuePoint(Calendar date,double value){
 		this.date=date;
@@ -53,11 +55,24 @@ public class ValuePoint extends XmlParameterElement implements Comparable<ValueP
 	public void setValue(double value) {
 	changes.firePropertyChange(FIELD_Value, this.value, this.value = value);}
 	
+	
+	public String getMetaData() {
+		return metaData;
+	}
+
+	public void setMetaData(String metaData) {
+	changes.firePropertyChange(FIELD_MetaData, this.metaData, this.metaData = metaData);
+	}
+	
 
 	@Override
+	
 	protected void initAttribute(Element rootElement) {
 		this.setDate(DateTool.StringToDate(rootElement.getAttribute(FIELD_Date)));
 		this.setValue(Double.valueOf(rootElement.getAttribute(FIELD_Value)));
+		if(rootElement.hasAttribute(FIELD_MetaData)){
+			this.setMetaData(rootElement.getAttribute(FIELD_MetaData));
+		}
 	}
 
 	@Override
@@ -67,6 +82,8 @@ public class ValuePoint extends XmlParameterElement implements Comparable<ValueP
 	protected void setAttribute(Element rootElement) {
 		rootElement.setAttribute(FIELD_Date,DateTool.dateToString( this.getDate()));
 		rootElement.setAttribute(FIELD_Value,String.valueOf( this.getValue()));
+		rootElement.setAttribute(FIELD_MetaData,String.valueOf( this.getMetaData()));
+		
 	}
 
 	@Override

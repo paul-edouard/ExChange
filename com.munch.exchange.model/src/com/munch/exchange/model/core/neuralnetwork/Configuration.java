@@ -173,7 +173,7 @@ public class Configuration extends XmlParameterElement {
 		}
 		
 		//Create the output array
-		double[] outputArray=createOutputArray(doubleArrayList.get(0).length-1);
+		double[][] outputs=createOutputArrays(doubleArrayList.get(0).length-1);
 		
 		//Create the Training set
 		trainingSet = new DataSet(doubleArrayList.size(), 1);
@@ -188,14 +188,18 @@ public class Configuration extends XmlParameterElement {
 			}
 			
 			double[] output=null;
+			double[] diff=null;
+			
 			if(i==len-1){
 				output=new double[]{0};
+				diff=new double[]{0};
 			}
 			else{
-				output=new double[]{outputArray[i]};
+				output=new double[]{outputs[0][i]};
+				diff=new double[]{outputs[1][i]};
 			}
 			
-			trainingSet.addRow(new DataSetRow(input, output));
+			trainingSet.addRow(new NNDataSetRaw(input, output,diff));
 		}
 		
 		//Normalize the training set
@@ -225,16 +229,28 @@ public class Configuration extends XmlParameterElement {
 		sortedTimeSeries.addFirst(dayOfWeekSerie);
 	}
 	
-	private double[] createOutputArray(int maxNumberOfValues){
+	/*
+	 * create the boolean like output array and the output diff array 
+	 */
+	private double[][] createOutputArrays(int maxNumberOfValues){
 		double[] outputArray=new double[maxNumberOfValues];
+		double[] outputDiffArray=new double[maxNumberOfValues];
+		
+		double[][] output=new double[2][maxNumberOfValues];
+		
 		double[] tt=outputPointList.toDoubleArray();
+		String[] diffArray=outputPointList.toStringArray();
 		int diff=outputPointList.toDoubleArray().length-maxNumberOfValues;
 		for(int i=tt.length-1;i>=0;i--){
 			if(i-diff<0)break;
 			outputArray[i-diff]=tt[i];
+			outputDiffArray[i-diff]=Double.valueOf(diffArray[i]);
 		}
 		
-		return outputArray;
+		output[0]=outputArray;
+		output[1]=outputDiffArray;
+		
+		return output;
 		
 	}
 	
@@ -264,10 +280,6 @@ public class Configuration extends XmlParameterElement {
 		NeuralNetwork nn=null;
 		for(NetworkArchitecture archi:networkArchitectures){
 			ResultEntity ent=archi.getOptResults().getBestResult();
-			//logger.info("Genome res: "+ent.getDoubleArray().length);
-			//for(Object obj:ent.getGenome()){
-			//	logger.info("Genome val: "+String.valueOf(obj));
-			//}
 			
 			if(ent.getValue()<error){
 				nn=archi.getNetwork();
@@ -278,7 +290,6 @@ public class Configuration extends XmlParameterElement {
 		}
 		
 		return nn;
-		
 	}
 	
 	//****************************************
@@ -305,6 +316,8 @@ public class Configuration extends XmlParameterElement {
 	}
 	
 	public double[] getLastInput() {
+		if(lastInput==null || lastInput.length==0)
+			this.getTrainingDataSet();
 		return lastInput;
 	}
 

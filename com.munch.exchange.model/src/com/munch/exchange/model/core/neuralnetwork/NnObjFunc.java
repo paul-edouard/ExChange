@@ -25,11 +25,15 @@ public class NnObjFunc extends OptimizationModule implements
 	private NetworkArchitecture architecture;
 	private NeuralNetwork network;
 	private DataSet testSet;
+	private double maxProfit;
+	private double penalty;
 	
-	public NnObjFunc(NetworkArchitecture architecture, DataSet testSet){
+	public NnObjFunc(NetworkArchitecture architecture, DataSet testSet,double maxProfit, double penalty){
 		this.network=architecture.getNetwork();
 		this.testSet=testSet;
 		this.architecture=architecture;
+		this.maxProfit=maxProfit;
+		this.penalty=penalty;
 	}
 	
 	@Override
@@ -43,7 +47,7 @@ public class NnObjFunc extends OptimizationModule implements
 		double[] desiredOutput = new double[testSet.getRows().size()];
 		
 		double[] outputError = new double[testSet.getRows().size()];
-		
+		double[] outputdiff=new double[testSet.getRows().size()];
 		
 		//Calculate the output for all the test data
 		int pos=0;
@@ -55,13 +59,18 @@ public class NnObjFunc extends OptimizationModule implements
 	         output[pos]=networkOutput[0];
 	         desiredOutput[pos]=testSetRow.getDesiredOutput()[0];
 	         
+	         if(testSetRow instanceof NNDataSetRaw){
+	        	 NNDataSetRaw row=(NNDataSetRaw) testSetRow;
+	        	 outputdiff[pos]=row.getDiff()[0];
+	         }
+	         
 	         pos++;
 	          
 	       }
 		
 		//Calculate the error
         for (int i = 0; i < output.length; i++) {
-            outputError[i] = desiredOutput[i] - output[i];
+            outputError[i] = (desiredOutput[i] - output[i])*outputdiff[i];
         }
         
         //Calculate the output error Square Sum:

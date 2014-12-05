@@ -202,7 +202,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 					else{
 						vpoint=new ValuePoint(lastPoint.getDate(), 0.0);
 					}
-					
+					vpoint.setMetaData(String.valueOf(diff));
 					this.add(new BlockPoint(vpoint, startValue, endValue));
 					
 				}

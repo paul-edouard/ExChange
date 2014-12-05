@@ -32,7 +32,6 @@ public class FullyStraigthFowardNetworkCreation extends
 		
 		//if(r.nextDouble()>0.5){
 			double alpha=r.nextDouble();
-			//double reduceFactor=alpha+(1-alpha)*(1/numberOfInputNeurons);
 			
 			return NetworkArchitecture.createFullStraigthFowardNetwork(
 					numberOfInputNeurons, numberOfInnerNeurons, alpha);
