@@ -17,7 +17,6 @@ import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -26,10 +25,13 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -75,19 +77,13 @@ import com.munch.exchange.wizard.parameter.architecture.ArchitectureOptimization
 import com.munch.exchange.wizard.parameter.learning.LearnParameterWizard;
 import com.munch.exchange.wizard.parameter.optimization.OptimizationDoubleParamWizard;
 
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.MenuDetectListener;
-import org.eclipse.swt.events.MenuDetectEvent;
-import org.eclipse.swt.graphics.Cursor;
-
 public class NeuralNetworkComposite extends Composite implements LearningEventListener{
 	
 	private static Logger logger = Logger.getLogger(NeuralNetworkComposite.class);
 	
 	private Stock stock;
 	
-	private boolean isLoaded=false;
+	//private boolean isLoaded=false;
 	
 	private INeuralNetworkProvider neuralNetworkProvider;
 	
@@ -125,6 +121,22 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	
 	private NeuralNetworkOptimizer optimizer;
+	
+	private PropertyChangeListener configChangedListener=new PropertyChangeListener() {
+		@Override
+		public void propertyChange(PropertyChangeEvent evt) {
+			InfoPart.postInfoText(eventBroker, "Dirty listener");
+			if(evt.getPropertyName().equals(Configuration.FIELD_IsDirty)){
+				InfoPart.postInfoText(eventBroker, "Dirty listener value "+String.valueOf(evt.getNewValue()));
+				if(((boolean)evt.getNewValue()))
+					btnSaveConfig.setVisible(true);
+			}
+		}
+	};
+	private Button btnAddConfig;
+	private Button btnArchOptConf;
+	private Button btnLearnOptConf;
+	private Button btnLearnAlg;
 	
 	private Text textMaxProfit;
 	private Text textPenaltyProfit;
@@ -177,16 +189,14 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				
 				if(!isInitiated || comboConfig.getText().isEmpty() || !enableComboConfigTextChangeReaction)return;
 				
-				InfoPart.postInfoText(eventBroker, "Modify Text: "+comboConfig.getText());
-				
 				if(!stock.getNeuralNetwork().getCurrentConfiguration().equals(comboConfig.getText())){
-					InfoPart.postInfoText(eventBroker, "Config Changed: "+comboConfig.getText());
 					
 					stock.getNeuralNetwork().setCurrentConfiguration(comboConfig.getText());
 					btnSaveConfig.setVisible(true);
 				}
 				
 				refreshGui();
+				fireReadyToTrain();
 				
 			}
 		});
@@ -203,7 +213,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnSaveConfig.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if(isLoaded){
+				//if(isLoaded){
 					
 					Cursor cursor_wait=new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
 					Cursor cursor_old=shell.getCursor();
@@ -213,16 +223,17 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 					btnSaveConfig.setVisible(false);
 					
 					shell.setCursor(cursor_old);
-				}
+				/*}
 				else{
 					isLoaded=neuralNetworkProvider.load(stock);
 					refreshGui();
-				}
+				}*/
 				
 			}
 		});
 		btnSaveConfig.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
-		btnSaveConfig.setText("Load");
+		btnSaveConfig.setText("Save");
+		btnSaveConfig.setVisible(false);
 		
 		btnDeleteConfig = new Button(composite_2, SWT.NONE);
 		btnDeleteConfig.setEnabled(false);
@@ -246,6 +257,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 					comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
 					
 					refreshGui();
+					fireReadyToTrain();
 					
 					btnSaveConfig.setVisible(true);
 					
@@ -283,7 +295,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 					config.setName(dialog.getNewString());
 					stock.getNeuralNetwork().setCurrentConfiguration(dialog.getNewString());
 					config.setDirty(true);
-					
+					btnSaveConfig.setVisible(true);
 					//InfoPart.postInfoText(eventBroker, "New Config Name: "+stock.getNeuralNetwork().getCurrentConfiguration());
 					
 					enableComboConfigTextChangeReaction=true;
@@ -313,6 +325,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				
 				btnDeleteConfig.setVisible(stock.getNeuralNetwork().getConfigurations().size()>1);
 				btnSaveConfig.setVisible(true);
+				
+				fireReadyToTrain();
 				
 			}
 		});
@@ -555,7 +569,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().createTrainingDataSet();
 				
 				
-				int dimension=5;
+				int dimension=stock.getNeuralNetwork().getConfiguration().getNumberOfInputNeurons();
 				
 				AlgorithmParameters<boolean[]> optArchitectureParam=stock.getNeuralNetwork().getConfiguration().getOptArchitectureParam();
 				
@@ -631,9 +645,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		isInitiated=true;
 		
 		loadNeuralData(ctxt);
-		
 		fireReadyToTrain();
-		
 	}
 	
 	private void createNeuralNetworkChart(IEclipseContext context, Composite parentComposite){
@@ -652,6 +664,12 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	private void fireReadyToTrain(){
 		Configuration config=stock.getNeuralNetwork().getConfiguration();
+		
+		if(config!=null &&( config.getOutputPointList()==null || config.getOutputPointList().isEmpty())){
+			prepareOutputPointList();
+		}
+		
+		
 		boolean readyToTrain=config!=null &&  config.getOutputPointList()!=null &&
 				config.getNumberOfTimeSeries()>0 && config.getOutputPointList().size()>0;
 				
@@ -662,7 +680,20 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		}
 		
 		tree.setEnabled(true);
-		setTrainingStatus(false);
+		btnSaveConfig.setEnabled(true);
+		btnDeleteConfig.setEnabled(true);
+		btnEditConfig.setEnabled(true);
+		btnAddConfig.setEnabled(true);
+		comboPeriod.setEnabled(true);
+		comboConfig.setEnabled(true);
+		btnActivateDayOf.setEnabled(true);
+		
+		
+		btnStartTrain.setEnabled(readyToTrain);
+		btnArchOptConf.setEnabled(readyToTrain);
+		btnLearnAlg.setEnabled(readyToTrain);
+		btnLearnOptConf.setEnabled(readyToTrain);
+		
 		
 	}
 	
@@ -684,12 +715,17 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	private void loadNeuralData(IEclipseContext context){
 		
-		IEclipseContext localContact=EclipseContextFactory.create();
-		localContact.setParent(context);
+		if(stock==null)return;
+		if(stock.getUUID()==null)return;
 		
-		if(nnd_loader==null){
+		
+		if(nnd_loader==null ){
+			IEclipseContext localContact=EclipseContextFactory.create();
+			localContact.setParent(context);
 			nnd_loader=ContextInjectionFactory.make( NeuralNetworkDataLoader.class,localContact);
 		}
+		
+		
 		nnd_loader.schedule();
 	}
 	
@@ -707,30 +743,20 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		treeViewer.refresh();
 	}
 	
-	private PropertyChangeListener configChangedListener=new PropertyChangeListener() {
-		@Override
-		public void propertyChange(PropertyChangeEvent evt) {
-			InfoPart.postInfoText(eventBroker, "Dirty listener");
-			if(evt.getPropertyName().equals(Configuration.FIELD_IsDirty)){
-				InfoPart.postInfoText(eventBroker, "Dirty listener value "+String.valueOf(evt.getNewValue()));
-				if(((boolean)evt.getNewValue()))
-					btnSaveConfig.setVisible(true);
-			}
-		}
-	};
-	private Button btnAddConfig;
-	private Button btnArchOptConf;
-	private Button btnLearnOptConf;
-	private Button btnLearnAlg;
-	
-	private void initComboConfig(){
-		
+	private void initConfigurations(){
 		LinkedList<Configuration> configList=stock.getNeuralNetwork().getConfigurations();
 		
 		if(configList.size()==0){
 			stock.getNeuralNetwork().addNewConfiguration("New Config");
-			configList.add(stock.getNeuralNetwork().getConfiguration());
+			stock.getNeuralNetwork().getConfiguration().addPropertyChangeListener(configChangedListener);
+			
+			btnSaveConfig.setVisible(true);
 		}
+	}
+	
+	private void initComboConfig(){
+		
+		LinkedList<Configuration> configList=stock.getNeuralNetwork().getConfigurations();
 		
 		for(Configuration conf:configList){
 			comboConfig.add(conf.getName());
@@ -739,8 +765,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
 		btnDeleteConfig.setVisible(stock.getNeuralNetwork().getConfigurations().size()>1);
-		
-		
 	}
 	
 	private NeuralNetworkOutputObjFunc getObjFunc(){
@@ -755,6 +779,24 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		return objFunc;
 	}
 	
+	private void prepareOutputPointList(){
+		if(stock.getNeuralNetwork().getConfiguration()==null){
+			return;
+		}
+		
+		stock.getNeuralNetwork().getConfiguration().setOutputPointList(neuralNetworkProvider.calculateMaxProfitOutputList(stock,RateChart.PENALTY));
+		neuralNetworkProvider.createAllInputPoints(stock);
+		
+		maxPenaltyProfit=maxProfit-getObjFunc().compute(stock.getNeuralNetwork().getConfiguration().getOutputPointList().toDoubleArray(), null);	
+	
+		String maxPanaltyProfitStr = String.format("%,.2f%%",maxPenaltyProfit * 100);
+		String maxProfitStr = String.format("%,.2f%%",maxProfit * 100);
+		
+		textMaxProfit.setText(maxProfitStr);
+		textPenaltyProfit.setText(maxPanaltyProfitStr);
+		
+		fireReadyToTrain();
+	}
 	
 	//################################
 	//##       Event Reaction       ##
@@ -778,18 +820,17 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	@Inject
 	private void neuralNetworkDataLoaded(
 			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_DATA_LOADED) String rate_uuid) {
-
+		
+		
 		if (!isCompositeAbleToReact(rate_uuid))
 			return;
 		
-		isLoaded=true;
+		InfoPart.postInfoText(eventBroker, "NEURAL_NETWORK_DATA_LOADED 02: "+rate_uuid);
 		
-		//stock.getNeuralNetwork().getConfiguration().addPropertyChangeListener(configChangedListener);
+		initConfigurations();
+		prepareOutputPointList();
 		
 		initComboConfig();
-		
-		btnSaveConfig.setText("Save");
-		btnSaveConfig.setVisible(false);
 		
 		refreshGui();
 		refreshTimeSeries();
@@ -805,23 +846,10 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 
 		maxProfit=this.stock.getHistoricalData().calculateMaxProfit(DatePoint.FIELD_Close);
 		
-		if(stock.getNeuralNetwork().getConfiguration()==null){
-			return;
-		}
+		//InfoPart.postInfoText(eventBroker, "HISTORICAL_DATA_LOADED: "+rate_uuid);
 		
-		stock.getNeuralNetwork().getConfiguration().setOutputPointList(neuralNetworkProvider.calculateMaxProfitOutputList(stock,RateChart.PENALTY));
-		neuralNetworkProvider.createAllInputPoints(stock);
-		
-		maxPenaltyProfit=maxProfit-getObjFunc().compute(stock.getNeuralNetwork().getConfiguration().getOutputPointList().toDoubleArray(), null);	
-	
-		String maxPanaltyProfitStr = String.format("%,.2f%%",maxPenaltyProfit * 100);
-		String maxProfitStr = String.format("%,.2f%%",maxProfit * 100);
-		
-		textMaxProfit.setText(maxProfitStr);
-		textPenaltyProfit.setText(maxPanaltyProfitStr);
-		
-		fireReadyToTrain();
-		
+		//Load the Neural Data
+		loadNeuralData(context);
 	}
 	
 	@Override

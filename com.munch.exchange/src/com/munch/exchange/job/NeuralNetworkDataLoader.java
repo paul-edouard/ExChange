@@ -33,6 +33,7 @@ public class NeuralNetworkDataLoader extends Job {
 		super("Financials Provider");
 		if(rate instanceof Stock)
 			this.stock=(Stock)rate;
+		
 	}
 
 	@Override
@@ -42,14 +43,15 @@ public class NeuralNetworkDataLoader extends Job {
 		
 		if(stock==null)return Status.CANCEL_STATUS;
 		
-		boolean r_loading=neuralNetworkProvider.load(stock);
 		
-		if(r_loading){
+		/*boolean r_loading=*/neuralNetworkProvider.load(stock);
+		
+		//if(r_loading){
 			//Create all input points
 			//neuralNetworkProvider.createAllInputPoints(stock);
 			
 			eventBroker.post(IEventConstant.NEURAL_NETWORK_DATA_LOADED,stock.getUUID());
-		}
+		//}
 		
 		return Status.OK_STATUS;
 	}

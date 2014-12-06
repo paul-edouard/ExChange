@@ -10,8 +10,8 @@ import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
-import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.NNetwork;
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.PeriodType;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeriesCategory;
@@ -224,7 +224,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		
 		public BlockList split(){
 			BlockList bl=new BlockList();
-			
+			if(this.isEmpty())return bl;
 			double currentValue=this.getFirst().val_point.getValue();
 			bl.add(new Block(this.penalty));
 			for(BlockPoint point:this){
@@ -275,7 +275,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			for(Block b:this){
 				for(BlockPoint bp:b){
 					list.add(bp.val_point);
-					logger.info("Val Point: "+bp.val_point.toString());
+					//logger.info("Val Point: "+bp.val_point.toString());
 				}
 			}
 			return list;
@@ -285,6 +285,8 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		void isolateNoFixedBlocks(){
 			
 			//boolean isolatedEnd=false;
+			if(this.isEmpty())return;
+			
 			boolean isolatedStart=!this.getFirst().isFixed;
 			BlockList noneFixedBlockList=new BlockList();
 			for(Block b:this){

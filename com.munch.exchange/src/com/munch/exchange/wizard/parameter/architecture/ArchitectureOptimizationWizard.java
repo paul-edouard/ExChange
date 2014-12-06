@@ -23,11 +23,9 @@ public class ArchitectureOptimizationWizard extends Wizard {
 	}
 	
 	
-
 	public AlgorithmParameters<boolean[]> getOptArchitectureParam() {
 		return optArchitectureParam;
 	}
-
 
 	@Override
 	public void addPages() {
@@ -41,4 +39,5 @@ public class ArchitectureOptimizationWizard extends Wizard {
 		return true;
 	}
 
+	
 }

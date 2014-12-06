@@ -68,6 +68,12 @@ public class Configuration extends XmlParameterElement {
 	private boolean isDirty=false;
 	
 	
+	public Configuration(){
+		AlgorithmParameters.setDefaultBooleansParameters(optArchitectureParam);
+		AlgorithmParameters.setDefaultDoublesParameters(optLearnParam);
+		LearnParameters.setDefaultLearnParameters(learnParam);
+	}
+	
 	
 	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray){
 		return searchArchitecture(actConsArray,false);
@@ -250,8 +256,8 @@ public class Configuration extends XmlParameterElement {
 		double[] tt=outputPointList.toDoubleArray();
 		String[] diffArray=outputPointList.toStringArray();
 		
-		logger.info("Output double: "+Arrays.toString(tt));
-		logger.info("Output diff: "+Arrays.toString(diffArray));
+		//logger.info("Output double: "+Arrays.toString(tt));
+		//logger.info("Output diff: "+Arrays.toString(diffArray));
 		
 		int diff=outputPointList.toDoubleArray().length-maxNumberOfValues;
 		for(int i=tt.length-1;i>=0;i--){
@@ -629,8 +635,20 @@ public class Configuration extends XmlParameterElement {
 		//Save the old Max Min Dimension
 		NetworkArchitecture f_a=networkArchitectures.getFirst();
 		int numberOfInputNeurons=f_a.getNumberOfInputNeurons();
-		int oldMax=NetworkArchitecture.calculateNbOfInnerNeurons(optArchitectureParam.getIntegerParam(AlgorithmParameters.MaxDimension), numberOfInputNeurons);
-		int oldMin=NetworkArchitecture.calculateNbOfInnerNeurons(optArchitectureParam.getIntegerParam(AlgorithmParameters.MinDimension), numberOfInputNeurons);
+		
+		int maxDim=numberOfInputNeurons;
+		int minDim=numberOfInputNeurons;
+		
+		if(optArchitectureParam.hasParamKey(AlgorithmParameters.MaxDimension)){
+			maxDim=optArchitectureParam.getIntegerParam(AlgorithmParameters.MaxDimension);
+		}
+		if(optArchitectureParam.hasParamKey(AlgorithmParameters.MinDimension)){
+			minDim=optArchitectureParam.getIntegerParam(AlgorithmParameters.MinDimension);
+		}
+		
+		
+		int oldMax=NetworkArchitecture.calculateNbOfInnerNeurons(maxDim, numberOfInputNeurons);
+		int oldMin=NetworkArchitecture.calculateNbOfInnerNeurons(minDim, numberOfInputNeurons);
 		
 		for(NetworkArchitecture archi:networkArchitectures){
 			//logger.info("Adapt network for archi:"+archi.getId());

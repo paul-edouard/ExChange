@@ -2,14 +2,11 @@ package com.munch.exchange.model.core.neuralnetwork;
 
 import org.apache.log4j.Logger;
 import org.neuroph.core.learning.LearningRule;
-import org.neuroph.nnet.learning.BackPropagation;
-import org.neuroph.nnet.learning.MomentumBackpropagation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.neuralnetwork.learning.FinancialLearning;
 import com.munch.exchange.model.core.neuralnetwork.learning.FinancialMomentumBackpropagation;
-import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class LearnParameters extends XmlParameterElement implements FinancialLearning {
@@ -94,7 +91,9 @@ public class LearnParameters extends XmlParameterElement implements FinancialLea
 	changes.firePropertyChange(FIELD_Name, this.name, this.name = name);}
 	
 	
-	
+	//****************************************
+	//***             XML                 ****
+	//****************************************	
 
 	@Override
 	protected void initAttribute(Element rootElement) {
@@ -126,5 +125,20 @@ public class LearnParameters extends XmlParameterElement implements FinancialLea
 	}
 	
 	
-
+	//****************************************
+	//***           STATIC                ****
+	//****************************************
+	
+	public static  void setDefaultLearnParameters(LearnParameters param){
+		
+		param.setType(LearnParameters.MOMENTUM_BACK_PROPAGATION);
+		param.setParam(LearnParameters.Max_Iterations, 3);
+		param.setParam(LearnParameters.BatchMode, true);
+		
+		param.setParam(LearnParameters.IL_LearningRate, 0.1d);
+		param.setParam(LearnParameters.MBP_Momentum, 0.25d);
+		
+		
+	}
+	
 }

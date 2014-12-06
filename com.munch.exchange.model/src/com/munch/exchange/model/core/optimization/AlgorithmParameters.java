@@ -19,7 +19,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.neuralnetwork.FullyStraigthFowardNetworkCreation;
-import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class AlgorithmParameters<X> extends XmlParameterElement {
@@ -266,6 +265,10 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	public void setName(String name) {
 	changes.firePropertyChange(FIELD_Name, this.name, this.name = name);}
 	
+	//****************************************
+	//***             XML                 ****
+	//****************************************
+	
 	
 	@Override
 	public String getTagName() {
@@ -295,5 +298,54 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 		// TODO Auto-generated method stub
 
 	}
-
+	
+	
+	//****************************************
+	//***           STATIC                ****
+	//****************************************
+	
+	public static  void setDefaultBooleansParameters(AlgorithmParameters<boolean[]> optArchitectureParam){
+		
+		//ArchitectureOptimizationAlgorithmWizardPage
+		optArchitectureParam.setType(AlgorithmParameters.ALGORITHM_Simple_Generational_EA);
+		optArchitectureParam.setParam(AlgorithmParameters.TERMINATION_Steps,5);
+		//optArchitectureParam.setParam(AlgorithmParameters.MaxDimension, 0);
+		//optArchitectureParam.setParam(AlgorithmParameters.MinDimension, 0);
+		
+		
+		//SimpleGenerationalEAWizardPage
+		optArchitectureParam.setParam(AlgorithmParameters.SELECTION_ALGORITHM, AlgorithmParameters.SELECTION_ALGORITHM_Tournament);
+		optArchitectureParam.setParam(AlgorithmParameters.Tournament_Size, 3);
+		optArchitectureParam.setParam(AlgorithmParameters.EA_MatingPoolSize, 10);
+		optArchitectureParam.setParam(AlgorithmParameters.EA_PopulationSize, 30);
+		optArchitectureParam.setParam(AlgorithmParameters.NULLARY_SEARCH_OPERATION, AlgorithmParameters.NSO_BooleanArrayUniformCreation);
+		optArchitectureParam.setParam(AlgorithmParameters.BINARY_SEARCH_OPERATION, AlgorithmParameters.BSO_BooleanArrayUniformCrossover);
+		optArchitectureParam.setParam(AlgorithmParameters.UNARY_SEARCH_OPERATION,AlgorithmParameters.USO_BooleanArraySingleBitFlipMutation);
+		optArchitectureParam.setParam(AlgorithmParameters.EA_MutationRate, 0.5d);
+		optArchitectureParam.setParam(AlgorithmParameters.EA_CrossoverRate, 0.5d);
+	}
+	
+	public static  void setDefaultDoublesParameters(AlgorithmParameters<double[]> optLearnParam){
+		
+		optLearnParam.setType(AlgorithmParameters.ALGORITHM_Evolution_Strategy);
+		optLearnParam.setParam(AlgorithmParameters.TERMINATION_Steps, 5);
+		optLearnParam.setParam(AlgorithmParameters.OPTIMIZATION_Loops, 3);
+		
+		
+		
+		
+		optLearnParam.setParam(AlgorithmParameters.SELECTION_ALGORITHM, AlgorithmParameters.SELECTION_ALGORITHM_Tournament);
+		optLearnParam.setParam(AlgorithmParameters.Tournament_Size, 3);
+		
+		optLearnParam.setParam(AlgorithmParameters.ES_Plus,true);
+		optLearnParam.setParam(AlgorithmParameters.ES_Rho, 10);
+		
+		optLearnParam.setParam(AlgorithmParameters.ES_Lambda, 10);
+		optLearnParam.setParam(AlgorithmParameters.ES_Mu, 30);
+		optLearnParam.setParam(AlgorithmParameters.NULLARY_SEARCH_OPERATION, AlgorithmParameters.NSO_Uniform_Creation);
+		
+		
+		
+	}
+	
 }
