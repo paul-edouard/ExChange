@@ -1,4 +1,4 @@
-package com.munch.exchange.job;
+package com.munch.exchange.job.neuralnetwork;
 
 import java.util.Calendar;
 

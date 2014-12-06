@@ -1,4 +1,4 @@
-package com.munch.exchange.job;
+package com.munch.exchange.job.neuralnetwork;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -76,14 +76,11 @@ public class NeuralNetworkOptimizer extends Job {
 	}
 
 
-
-
 	public List<Individual<boolean[], boolean[]>> getSolutions() {
 		return solutions;
 	}
 	
 	
-
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		

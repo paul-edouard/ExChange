@@ -57,9 +57,10 @@ import org.neuroph.nnet.learning.BackPropagation;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddTimeSeriesDialog;
 import com.munch.exchange.dialog.StringEditorDialog;
-import com.munch.exchange.job.NeuralNetworkDataLoader;
-import com.munch.exchange.job.NeuralNetworkOptimizer;
-import com.munch.exchange.job.NeuralNetworkOptimizer.OptInfo;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkDataLoader;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager;
 import com.munch.exchange.job.objectivefunc.NeuralNetworkOutputObjFunc;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
@@ -121,7 +122,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private IEventBroker eventBroker;
 	
 	
-	private NeuralNetworkOptimizer optimizer;
+	//private NeuralNetworkOptimizer optimizer;
+	private NeuralNetworkOptimizerManager optimizerManager;
 	
 	private PropertyChangeListener configChangedListener=new PropertyChangeListener() {
 		@Override
@@ -570,14 +572,37 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().createTrainingDataSet();
 				
 				
-				int dimension=stock.getNeuralNetwork().getConfiguration().getNumberOfInputNeurons();
+				int minDim=stock.getNeuralNetwork().getConfiguration().getNumberOfInputNeurons();
+				int maxDim=minDim;
 				
 				AlgorithmParameters<boolean[]> optArchitectureParam=stock.getNeuralNetwork().getConfiguration().getOptArchitectureParam();
 				
 				if(optArchitectureParam.hasParamKey(AlgorithmParameters.MinDimension)){
-					dimension=optArchitectureParam.getIntegerParam(AlgorithmParameters.MinDimension);
+					minDim=optArchitectureParam.getIntegerParam(AlgorithmParameters.MinDimension);
+				}
+				if(optArchitectureParam.hasParamKey(AlgorithmParameters.MaxDimension)){
+					maxDim=optArchitectureParam.getIntegerParam(AlgorithmParameters.MaxDimension);
 				}
 				
+				
+				
+				if(optimizerManager==null){
+					optimizerManager=new NeuralNetworkOptimizerManager(
+							eventBroker,
+							stock,
+							stock.getNeuralNetwork().getConfiguration(),
+							trainingSet,
+							minDim,
+							maxDim);
+				}
+				else{
+					optimizerManager.setConfiguration(stock.getNeuralNetwork().getConfiguration());
+					optimizerManager.setTrainingSet(trainingSet);
+					optimizerManager.setMinMax(minDim, maxDim);
+				}
+				
+				
+				/*
 				if(optimizer==null){
 					optimizer=new NeuralNetworkOptimizer(stock, stock.getNeuralNetwork().getConfiguration(),
 						trainingSet, eventBroker, dimension);
@@ -587,6 +612,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 					optimizer.setTrainingSet(trainingSet);
 					optimizer.setDimension(dimension);
 				}
+				*/
 				
 				setTrainingStatus(true);
 				
@@ -597,12 +623,12 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 						partService,
 						modelService,
 						application,
-						optimizer,
+						optimizerManager,
 						context);
 				
 				
 				
-				optimizer.schedule();
+				optimizerManager.schedule();
 				
 				
 				stock.getNeuralNetwork().getConfiguration().setDirty(true);
@@ -757,13 +783,13 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	private void initComboConfig(){
 		
-		InfoPart.postInfoText(eventBroker, "Init Combo Configuration  01: ");
+	//	InfoPart.postInfoText(eventBroker, "Init Combo Configuration  01: ");
 		
 		LinkedList<Configuration> configList=stock.getNeuralNetwork().getConfigurations();
 		comboConfig.removeAll();
 		
 		for(Configuration conf:configList){
-			InfoPart.postInfoText(eventBroker, "Init Combo Configuration  02: "+conf.getName());
+	//		InfoPart.postInfoText(eventBroker, "Init Combo Configuration  02: "+conf.getName());
 			comboConfig.add(conf.getName());
 			conf.addPropertyChangeListener(configChangedListener);
 		}
@@ -830,19 +856,13 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		if (!isCompositeAbleToReact(rate_uuid) || neuralNetworkLoaded)
 			return;
 		
-		InfoPart.postInfoText(eventBroker, "NEURAL_NETWORK_DATA_LOADED 02: "+rate_uuid);
+		//InfoPart.postInfoText(eventBroker, "NEURAL_NETWORK_DATA_LOADED 02: "+rate_uuid);
 		
 		initConfigurations();
 		
-		InfoPart.postInfoText(eventBroker, "NEURAL_NETWORK_DATA_LOADED 03: "+rate_uuid);
-		
 		prepareOutputPointList();
 		
-		InfoPart.postInfoText(eventBroker, "NEURAL_NETWORK_DATA_LOADED 04: "+rate_uuid);
-		
 		initComboConfig();
-		
-		InfoPart.postInfoText(eventBroker, "NEURAL_NETWORK_DATA_LOADED 05: "+rate_uuid);
 		
 		refreshGui();
 		refreshTimeSeries();
@@ -860,7 +880,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			return;
 
 		maxProfit=this.stock.getHistoricalData().calculateMaxProfit(DatePoint.FIELD_Close);
-		InfoPart.postInfoText(eventBroker, "HISTORICAL_DATA_LOADED: "+rate_uuid);
+		//InfoPart.postInfoText(eventBroker, "HISTORICAL_DATA_LOADED: "+rate_uuid);
 		
 		//Load the Neural Data
 		loadNeuralData(context);

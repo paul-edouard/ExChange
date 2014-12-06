@@ -45,8 +45,9 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 import com.munch.exchange.IEventConstant;
-import com.munch.exchange.job.NeuralNetworkOptimizer;
-import com.munch.exchange.job.NeuralNetworkOptimizer.OptInfo;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
@@ -65,9 +66,11 @@ public class NeuralNetworkErrorPart {
 	@Inject
 	IExchangeRateProvider exchangeRateProvider;
 	
-	@Inject
-	NeuralNetworkOptimizer optimizer;
+	//@Inject
+	//NeuralNetworkOptimizer optimizer;
 	
+	@Inject
+	NeuralNetworkOptimizerManager optimizerManager;
 	
 	private Button btnStop;
 	private ProgressBar progressBarNetworkError;
@@ -130,8 +133,8 @@ public class NeuralNetworkErrorPart {
 		btnStop.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				optimizer.cancel();
-				
+				//optimizer.cancel();
+				optimizerManager.cancel();
 			}
 		});
 		btnStop.setImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/delete.png"));
@@ -252,9 +255,11 @@ public class NeuralNetworkErrorPart {
 	}
 	
 	
+	/*
 	public void setOptimizer(NeuralNetworkOptimizer optimizer) {
 		this.optimizer = optimizer;
 	}
+	*/
 
 	//################################
 	//##  EVENT REACTIONS          ##
@@ -360,13 +365,14 @@ public class NeuralNetworkErrorPart {
 			EPartService partService,
 			EModelService modelService,
 			MApplication application,
-			NeuralNetworkOptimizer optimizer,
+			//NeuralNetworkOptimizer optimizer,
+			NeuralNetworkOptimizerManager optimizerManager,
 			IEclipseContext context){
 		
 		MPart part=searchPart(NeuralNetworkErrorPart.NEURALNETWORK_ERROR_EDITOR_ID,stock.getUUID(),modelService, application);
 		if(part!=null &&  part.getContributionURI()!=null){
 			if(part.getContext()==null){
-				setPartContext(part,stock,optimizer,context);
+				setPartContext(part,stock,optimizerManager,context);
 			}
 			/*
 				if(part instanceof NeuralNetworkErrorPart){
@@ -381,7 +387,7 @@ public class NeuralNetworkErrorPart {
 		
 		
 		//Create the part
-		part=createPart(stock,optimizer,partService,context);
+		part=createPart(stock,optimizerManager,partService,context);
 				
 		//add the part to the corresponding Stack
 		MPartStack myStack=(MPartStack)modelService.find("com.munch.exchange.partstack.rightdown", application);
@@ -391,7 +397,12 @@ public class NeuralNetworkErrorPart {
 		return  part;
 	}
 	
-	private static MPart createPart(Stock stock,NeuralNetworkOptimizer optimizer,EPartService partService,IEclipseContext context){
+	private static MPart createPart(
+			Stock stock,
+			//NeuralNetworkOptimizer optimizer,
+			NeuralNetworkOptimizerManager optimizerManager,
+			EPartService partService,
+			IEclipseContext context){
 		MPart part = partService.createPart(NeuralNetworkErrorPart.NEURALNETWORK_ERROR_EDITOR_ID);
 		
 		//MPart part =MBasicFactory.INSTANCE.createPartDescrip;
@@ -404,7 +415,7 @@ public class NeuralNetworkErrorPart {
 		//part.getTags().add(optimizationType);
 		part.getTags().add(EPartService.REMOVE_ON_HIDE_TAG);
 		
-		setPartContext(part,stock,optimizer,context);
+		setPartContext(part,stock,optimizerManager,context);
 		
 		//OptimizationErrorPart p=(OptimizationErrorPart) part;
 		//p.setType(Optimizer.stringToOptimizationType(optimizationType));
@@ -412,10 +423,16 @@ public class NeuralNetworkErrorPart {
 		return part;
 	}
 	
-	private static void setPartContext(MPart part,Stock stock,NeuralNetworkOptimizer optimizer,IEclipseContext context){
+	private static void setPartContext(
+			MPart part,
+			Stock stock,
+			//NeuralNetworkOptimizer optimizer,
+			NeuralNetworkOptimizerManager optimizerManager,
+			IEclipseContext context){
 		part.setContext(context.createChild());
 		part.getContext().set(Stock.class, stock);
-		part.getContext().set(NeuralNetworkOptimizer.class, optimizer);
+		//part.getContext().set(NeuralNetworkOptimizer.class, optimizer);
+		part.getContext().set(NeuralNetworkOptimizerManager.class, optimizerManager);
 		part.getContext().set(MDirtyable.class, new MyMDirtyable(part));
 	}
 	

@@ -35,7 +35,7 @@ import org.neuroph.core.learning.LearningRule;
 import org.neuroph.nnet.MultiLayerPerceptron;
 
 import com.munch.exchange.IEventConstant;
-import com.munch.exchange.job.NeuralNetworkOptimizer.OptInfo;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
