@@ -885,6 +885,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	//##     ColumnLabelProvider    ##
 	//################################
 	
+    
 	class InputSeriesLabelProvider extends ColumnLabelProvider{
 
 		@Override
