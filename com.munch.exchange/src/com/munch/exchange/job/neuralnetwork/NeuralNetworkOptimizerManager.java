@@ -101,7 +101,7 @@ public class NeuralNetworkOptimizerManager extends Job{
 					continue;
 				}
 				
-				InfoPart.postInfoText(eventBroker, "New Optimizer started for dimension "+currentInnerNeurons+ "on position "+pos);
+				InfoPart.postInfoText(eventBroker, "New Optimizer started for dimension "+currentInnerNeurons+ " on position "+pos);
 				
 				optimizer.setDimension(
 						NetworkArchitecture.calculateActivatedConnectionsSize(
@@ -128,6 +128,8 @@ public class NeuralNetworkOptimizerManager extends Job{
 		}
 		
 		
+		InfoPart.postInfoText(eventBroker, "Optimizer manager is finished!");
+		
 		return Status.OK_STATUS;
 	}
 	
@@ -144,7 +146,7 @@ public class NeuralNetworkOptimizerManager extends Job{
 			return false;
 		}
 		//this.wait(RESTART);
-		InfoPart.postInfoText(eventBroker, "Optimizer manager is sleeping!");
+		//InfoPart.postInfoText(eventBroker, "Optimizer manager is sleeping!");
 		Thread.sleep(RESTART);
 		return true;
 		
