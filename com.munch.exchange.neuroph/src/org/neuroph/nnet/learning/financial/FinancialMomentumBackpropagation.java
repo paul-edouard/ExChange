@@ -1,4 +1,4 @@
-package com.munch.exchange.model.core.neuralnetwork.learning;
+package org.neuroph.nnet.learning.financial;
 
 import org.neuroph.nnet.learning.MomentumBackpropagation;
 

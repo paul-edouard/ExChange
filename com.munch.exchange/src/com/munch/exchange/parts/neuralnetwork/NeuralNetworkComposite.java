@@ -97,6 +97,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private double maxPenaltyProfit=0;
 	private boolean isInitiated=false;
 	private boolean enableComboConfigTextChangeReaction=true;
+	private boolean neuralNetworkLoaded=false;
 	
 	@Inject
 	IEclipseContext context;
@@ -756,9 +757,13 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	private void initComboConfig(){
 		
+		InfoPart.postInfoText(eventBroker, "Init Combo Configuration  01: ");
+		
 		LinkedList<Configuration> configList=stock.getNeuralNetwork().getConfigurations();
+		comboConfig.removeAll();
 		
 		for(Configuration conf:configList){
+			InfoPart.postInfoText(eventBroker, "Init Combo Configuration  02: "+conf.getName());
 			comboConfig.add(conf.getName());
 			conf.addPropertyChangeListener(configChangedListener);
 		}
@@ -822,19 +827,29 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_DATA_LOADED) String rate_uuid) {
 		
 		
-		if (!isCompositeAbleToReact(rate_uuid))
+		if (!isCompositeAbleToReact(rate_uuid) || neuralNetworkLoaded)
 			return;
 		
 		InfoPart.postInfoText(eventBroker, "NEURAL_NETWORK_DATA_LOADED 02: "+rate_uuid);
 		
 		initConfigurations();
+		
+		InfoPart.postInfoText(eventBroker, "NEURAL_NETWORK_DATA_LOADED 03: "+rate_uuid);
+		
 		prepareOutputPointList();
 		
+		InfoPart.postInfoText(eventBroker, "NEURAL_NETWORK_DATA_LOADED 04: "+rate_uuid);
+		
 		initComboConfig();
+		
+		InfoPart.postInfoText(eventBroker, "NEURAL_NETWORK_DATA_LOADED 05: "+rate_uuid);
 		
 		refreshGui();
 		refreshTimeSeries();
 		fireReadyToTrain();
+		
+		neuralNetworkLoaded=true;
+		
 	}
 	
 	@Inject
@@ -845,8 +860,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			return;
 
 		maxProfit=this.stock.getHistoricalData().calculateMaxProfit(DatePoint.FIELD_Close);
-		
-		//InfoPart.postInfoText(eventBroker, "HISTORICAL_DATA_LOADED: "+rate_uuid);
+		InfoPart.postInfoText(eventBroker, "HISTORICAL_DATA_LOADED: "+rate_uuid);
 		
 		//Load the Neural Data
 		loadNeuralData(context);

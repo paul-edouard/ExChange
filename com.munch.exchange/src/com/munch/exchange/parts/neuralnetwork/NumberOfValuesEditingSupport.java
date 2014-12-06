@@ -1,13 +1,11 @@
 package com.munch.exchange.parts.neuralnetwork;
 
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TreeViewer;
 
 import com.munch.exchange.model.core.Stock;
-import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.services.INeuralNetworkProvider;
 
@@ -53,10 +51,11 @@ public class NumberOfValuesEditingSupport extends EditingSupport {
 		Integer nb=(Integer) value;
 		el.setNumberOfPastValues(nb+1);
 		
-		neuralNetworkProvider.createAllInputPoints(stock);
+		//neuralNetworkProvider.createAllInputPoints(stock);
 		//stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
 		
-	    viewer.update(element, null);
+	    //viewer.update(element, null);
+	    viewer.refresh();
 	  }
 
 	
