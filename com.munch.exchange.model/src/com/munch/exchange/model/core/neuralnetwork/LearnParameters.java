@@ -7,10 +7,12 @@ import org.neuroph.nnet.learning.MomentumBackpropagation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.neuralnetwork.learning.FinancialLearning;
+import com.munch.exchange.model.core.neuralnetwork.learning.FinancialMomentumBackpropagation;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
-public class LearnParameters extends XmlParameterElement {
+public class LearnParameters extends XmlParameterElement implements FinancialLearning {
 	
 	static final String FIELD_Type="Type";
 	static final String FIELD_Name="Name";
@@ -38,6 +40,7 @@ public class LearnParameters extends XmlParameterElement {
 	private String type="";
 	private String name;
 	
+	private double[] diffFactorArray=null;
 	
 	private static Logger logger = Logger.getLogger(LearnParameters.class);
 	
@@ -60,7 +63,8 @@ public class LearnParameters extends XmlParameterElement {
 		//logger.info("Learning rule type: "+type);
 		
 		if(type.equals(MOMENTUM_BACK_PROPAGATION)){
-			MomentumBackpropagation bp=new MomentumBackpropagation();
+			FinancialMomentumBackpropagation bp=new FinancialMomentumBackpropagation();
+			bp.setDiffFactorArray(diffFactorArray);
 			bp.setMomentum(this.getDoubleParam(MBP_Momentum));
 			bp.setLearningRate(this.getDoubleParam(IL_LearningRate));
 			
@@ -114,6 +118,11 @@ public class LearnParameters extends XmlParameterElement {
 	protected void appendChild(Element rootElement, Document doc) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void setDiffFactorArray(double[] diffFactorArray) {
+		this.diffFactorArray=diffFactorArray;
 	}
 	
 	

@@ -3,6 +3,7 @@ package com.munch.exchange.model.core.neuralnetwork;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.EventObject;
 import java.util.HashMap;
@@ -155,7 +156,7 @@ public class Configuration extends XmlParameterElement {
 		return names;
 	}
 
-	public DataSet getTrainingDataSet(){
+	public DataSet createTrainingDataSet(){
 		
 		//if(trainingSet!=null)return trainingSet;
 		
@@ -178,10 +179,9 @@ public class Configuration extends XmlParameterElement {
 		//Create the Training set
 		trainingSet = new DataSet(doubleArrayList.size(), 1);
 		int len=doubleArrayList.get(0).length;
+		double[] outputdiffFactor=new double[len-1];
 		for(int i=0;i<len;i++){
-			
-			//TODO delete
-			//if(i>600)break;
+	
 			double[] input=new double[doubleArrayList.size()];
 			for(int j=0;j<doubleArrayList.size();j++){
 				input[j]=doubleArrayList.get(j)[i];
@@ -199,8 +199,13 @@ public class Configuration extends XmlParameterElement {
 				diff=new double[]{outputs[1][i]};
 			}
 			
+			if(i<len-1)
+				outputdiffFactor[i]=outputs[1][i];
+			
 			trainingSet.addRow(new NNDataSetRaw(input, output,diff));
 		}
+		
+		logger.info("Diff: "+Arrays.toString(outputdiffFactor));
 		
 		//Normalize the training set
 		trainingSet.normalize();
@@ -209,6 +214,10 @@ public class Configuration extends XmlParameterElement {
 		DataSetRow raw=trainingSet.getRowAt(len-1);
 		lastInput=raw.getInput();
 		trainingSet.removeRowAt(len-1);
+		
+		//Set the DiffFactor of the
+		this.learnParam.setDiffFactorArray(outputdiffFactor);
+		
 		
 		fireTrainingDataSetChanged();
 		
@@ -240,6 +249,10 @@ public class Configuration extends XmlParameterElement {
 		
 		double[] tt=outputPointList.toDoubleArray();
 		String[] diffArray=outputPointList.toStringArray();
+		
+		logger.info("Output double: "+Arrays.toString(tt));
+		logger.info("Output diff: "+Arrays.toString(diffArray));
+		
 		int diff=outputPointList.toDoubleArray().length-maxNumberOfValues;
 		for(int i=tt.length-1;i>=0;i--){
 			if(i-diff<0)break;
@@ -317,7 +330,7 @@ public class Configuration extends XmlParameterElement {
 	
 	public double[] getLastInput() {
 		if(lastInput==null || lastInput.length==0)
-			this.getTrainingDataSet();
+			this.createTrainingDataSet();
 		return lastInput;
 	}
 

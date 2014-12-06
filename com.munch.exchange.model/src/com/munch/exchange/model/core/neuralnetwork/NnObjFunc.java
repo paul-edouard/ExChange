@@ -28,7 +28,7 @@ public class NnObjFunc extends OptimizationModule implements
 	private double maxProfit;
 	private double penalty;
 	
-	public NnObjFunc(NetworkArchitecture architecture, DataSet testSet,double maxProfit, double penalty){
+	public NnObjFunc(NetworkArchitecture architecture, DataSet testSet/*,double maxProfit, double penalty*/){
 		this.network=architecture.getNetwork();
 		this.testSet=testSet;
 		this.architecture=architecture;
@@ -67,6 +67,8 @@ public class NnObjFunc extends OptimizationModule implements
 	         pos++;
 	          
 	       }
+		
+		//logger.info("Diff: "+Arrays.toString(outputdiff));
 		
 		//Calculate the error
         for (int i = 0; i < output.length; i++) {

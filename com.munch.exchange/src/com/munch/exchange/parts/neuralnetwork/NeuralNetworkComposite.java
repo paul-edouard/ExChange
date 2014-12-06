@@ -548,12 +548,11 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				//logger.info("Start Train click!");
 				
 				if(!stock.getNeuralNetwork().getConfiguration().areAllTimeSeriesAvailable()){
-					//MessageDialog.openError(shell, "Configuration Error", "At least one Time Series is not available!");
 					neuralNetworkProvider.createAllInputPoints(stock);
-					//return;
 				}
 				
-				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().getTrainingDataSet();
+				
+				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().createTrainingDataSet();
 				
 				
 				int dimension=5;
@@ -789,7 +788,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		initComboConfig();
 		
-		
 		btnSaveConfig.setText("Save");
 		btnSaveConfig.setVisible(false);
 		
@@ -849,7 +847,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
     	stock.getNeuralNetwork().getConfiguration().setDirty(true);
     	btnSaveConfig.setVisible(true);
     }
-	
 	
 	
 	/**

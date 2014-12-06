@@ -64,6 +64,15 @@ public class ValuePoint extends XmlParameterElement implements Comparable<ValueP
 	changes.firePropertyChange(FIELD_MetaData, this.metaData, this.metaData = metaData);
 	}
 	
+	
+	
+	
+
+	@Override
+	public String toString() {
+		return "ValuePoint [date=" + date + ", nextValueDate=" + nextValueDate
+				+ ", value=" + value + ", metaData=" + metaData + "]";
+	}
 
 	@Override
 	

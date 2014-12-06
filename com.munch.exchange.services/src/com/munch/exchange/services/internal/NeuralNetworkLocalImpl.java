@@ -275,6 +275,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			for(Block b:this){
 				for(BlockPoint bp:b){
 					list.add(bp.val_point);
+					logger.info("Val Point: "+bp.val_point.toString());
 				}
 			}
 			return list;
