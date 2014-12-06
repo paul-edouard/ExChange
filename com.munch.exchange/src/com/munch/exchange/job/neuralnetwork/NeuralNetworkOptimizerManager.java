@@ -88,20 +88,20 @@ public class NeuralNetworkOptimizerManager extends Job{
 	protected IStatus run(IProgressMonitor monitor) {
 		
 		InfoPart.postInfoText(eventBroker, "Network Manager Started"
-		+"\nMin InnerNeurons: "+currentInnerNeurons+"\nMax InnerNeurons: "+maxInnerNeurons);
+		+"\tMin InnerNeurons: "+currentInnerNeurons+"\tMax InnerNeurons: "+maxInnerNeurons);
 		
-		try {
+		
 		
 		while(currentInnerNeurons<=maxInnerNeurons){
 			int pos=-1;
 			for(NeuralNetworkOptimizer optimizer:optimizers){
 				pos++;
 				if(optimizer.getState()==Job.RUNNING){
-					InfoPart.postInfoText(eventBroker, "Job "+pos+" is running");
+					//InfoPart.postInfoText(eventBroker, "Job "+pos+" is running");
 					continue;
 				}
 				
-				InfoPart.postInfoText(eventBroker, "New Optimizer started for Dimension: "+currentInnerNeurons);
+				InfoPart.postInfoText(eventBroker, "New Optimizer started for dimension "+currentInnerNeurons+ "on position "+pos);
 				
 				optimizer.setDimension(
 						NetworkArchitecture.calculateActivatedConnectionsSize(
@@ -110,27 +110,49 @@ public class NeuralNetworkOptimizerManager extends Job{
 				currentInnerNeurons++;break;
 			}
 			
-			if (monitor.isCanceled()){
-				for(NeuralNetworkOptimizer optimizer:optimizers){
-					optimizer.cancel();
-					optimizer.join();
-				}
-				return Status.CANCEL_STATUS;
-			}
-			//this.wait(RESTART);
-			InfoPart.postInfoText(eventBroker, "Optimizer manager is sleeping!");
-			Thread.sleep(RESTART);
+			if(!makeItSleep(monitor))return Status.CANCEL_STATUS;
 			
 		}
 		
+		boolean areAllFinished=false;
+		while(!areAllFinished){
+			areAllFinished=true;
+			for(NeuralNetworkOptimizer optimizer:optimizers){
+				if(optimizer.getState()==Job.RUNNING)areAllFinished=false;
+			}
 			
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			if(areAllFinished)break;
+			
+			if(!makeItSleep(monitor))return Status.CANCEL_STATUS;
+		
 		}
+		
 		
 		return Status.OK_STATUS;
 	}
 	
+	
+	private boolean makeItSleep(IProgressMonitor monitor){
+		
+		try {
+		
+		if (monitor.isCanceled()){
+			for(NeuralNetworkOptimizer optimizer:optimizers){
+				optimizer.cancel();
+				optimizer.join();
+			}
+			return false;
+		}
+		//this.wait(RESTART);
+		InfoPart.postInfoText(eventBroker, "Optimizer manager is sleeping!");
+		Thread.sleep(RESTART);
+		return true;
+		
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 	
 	public static void main(String[] args){
 		System.out.println(Runtime.getRuntime().availableProcessors());
