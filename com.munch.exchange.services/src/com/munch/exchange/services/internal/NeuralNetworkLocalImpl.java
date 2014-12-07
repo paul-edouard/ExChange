@@ -96,6 +96,8 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 	@Override
 	public void createAllInputPoints(Stock stock) {
 		LinkedList<HistoricalPoint> hisPointList=stock.getHistoricalData().getNoneEmptyPoints();
+		if(hisPointList.isEmpty())return;
+		
 		Configuration config=stock.getNeuralNetwork().getConfiguration();
 		//TODO
 		

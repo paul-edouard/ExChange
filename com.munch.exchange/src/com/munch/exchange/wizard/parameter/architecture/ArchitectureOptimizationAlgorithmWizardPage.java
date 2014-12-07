@@ -62,6 +62,7 @@ public class ArchitectureOptimizationAlgorithmWizardPage extends WizardPage {
 		});
 		comboAlgorithmType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		comboAlgorithmType.add(AlgorithmParameters.ALGORITHM_Simple_Generational_EA);
+		comboAlgorithmType.add(AlgorithmParameters.ALGORITHM_Keep_Best_SGEA);
 		comboAlgorithmType.setText(AlgorithmParameters.ALGORITHM_Simple_Generational_EA);
 		if(!optArchitectureParam.getType().isEmpty()){
 			comboAlgorithmType.setText(optArchitectureParam.getType());

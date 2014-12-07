@@ -3,6 +3,7 @@ package com.munch.exchange.model.core.optimization;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
+import org.goataa.impl.algorithms.ea.KeepBestSGEA;
 import org.goataa.impl.algorithms.ea.SimpleGenerationalEA;
 import org.goataa.impl.algorithms.ea.selection.RandomSelection;
 import org.goataa.impl.algorithms.ea.selection.TournamentSelection;
@@ -41,6 +42,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	
 	//Evolutionary Algorithm
 	public static final String ALGORITHM_Simple_Generational_EA="Simple Generational EA";
+	public static final String ALGORITHM_Keep_Best_SGEA="Keep Best Simple Generational EA";
 	public static final String EA_MutationRate="EA Mutation Rate";
 	public static final String EA_CrossoverRate="EA Crossover Rate";
 	public static final String EA_PopulationSize="EA Population Size";
@@ -193,7 +195,52 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 			int steps=this.getIntegerParam(TERMINATION_Steps);
 			steps=steps*EA.getMatingPoolSize()+EA.getPopulationSize();
 			
-			logger.info("Numer of steps:"+steps);
+			//logger.info("Numer of steps:"+steps);
+			
+			EA.setTerminationCriterion(new StepLimitPropChange<boolean[],X>(steps));
+			
+			return EA;
+		}
+		else if(type.equals(ALGORITHM_Keep_Best_SGEA)){
+			//Creation
+			KeepBestSGEA<boolean[],X> EA = new KeepBestSGEA<boolean[],X>();
+			EA.setMutationRate(this.getDoubleParam(EA_MutationRate));
+			EA.setCrossoverRate(this.getDoubleParam(EA_CrossoverRate));
+			EA.setPopulationSize(this.getIntegerParam(EA_PopulationSize));
+			EA.setMatingPoolSize(this.getIntegerParam(EA_MatingPoolSize));
+			
+			//Selection Algorithm
+			if(this.getStringParam(SELECTION_ALGORITHM).equals(SELECTION_ALGORITHM_Tournament)){
+				EA.setSelectionAlgorithm(new TournamentSelection(this.getIntegerParam(Tournament_Size)));
+			}
+			else if(this.getStringParam(SELECTION_ALGORITHM).equals(SELECTION_ALGORITHM_Random)){
+				EA.setSelectionAlgorithm(RandomSelection.RANDOM_SELECTION);
+			}
+			
+			// Nullary Search Operation
+			if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_BooleanArrayUniformCreation)){
+				INullarySearchOperation<boolean[]> create=new BooleanArrayUniformCreation(this.getIntegerParam(EA_Dimension));
+				EA.setNullarySearchOperation(create);
+			}
+			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_FullyStraigthFowardNetworkCreation)){
+				INullarySearchOperation<boolean[]> create=new FullyStraigthFowardNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				EA.setNullarySearchOperation(create);
+			}
+			
+			//Binary Search Operation
+			if(this.getStringParam(BINARY_SEARCH_OPERATION).equals(BSO_BooleanArrayUniformCrossover)){
+				EA.setBinarySearchOperation(BooleanArrayUniformCrossover.BOOLEAN_ARRAY_UNIFORM_CROSSOVER);
+			}
+			
+			//Unary Search Operation
+			if(this.getStringParam(UNARY_SEARCH_OPERATION).equals(USO_BooleanArraySingleBitFlipMutation)){
+				EA.setUnarySearchOperation(BooleanArraySingleBitFlipMutation.BOOLEAN_ARRAY_SINGLE_BIT_FLIP_MUTATION);
+			}
+			
+			int steps=this.getIntegerParam(TERMINATION_Steps);
+			steps=steps*EA.getMatingPoolSize()+EA.getPopulationSize();
+			
+			//logger.info("Numer of steps:"+steps);
 			
 			EA.setTerminationCriterion(new StepLimitPropChange<boolean[],X>(steps));
 			

@@ -21,6 +21,7 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.objectivefunc.NetworkArchitectureObjFunc;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.ResultEntity;
@@ -226,8 +227,9 @@ public class NeuralNetworkOptimizer extends Job {
 		private int maximum;
 		private OptimizationResults results=new OptimizationResults();
 		private int dimension;
+		private int nbOfInnerNeurons;
 		
-		public OptInfo(ExchangeRate rate,
+ 		public OptInfo(ExchangeRate rate,
 				Configuration configuration ,int maximum,int dimension) {
 			super();
 			this.rate = rate;
@@ -235,7 +237,15 @@ public class NeuralNetworkOptimizer extends Job {
 			this.step=maximum;
 			this.maximum=maximum;
 			this.dimension=dimension;
+			nbOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(dimension, configuration.getNumberOfInputNeurons());
 		}
+		
+		
+		public int getNumberOfInnerNeurons(){
+			return nbOfInnerNeurons;
+		}
+		
+		
 		
 		public int getStep() {
 			return step;

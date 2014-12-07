@@ -6,6 +6,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.goataa.impl.OptimizationModule;
+import org.goataa.impl.utils.Constants;
 import org.goataa.spec.IObjectiveFunction;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
@@ -87,8 +88,10 @@ public class NnObjFunc extends OptimizationModule implements
         ResultEntity ent=new ResultEntity(x,error);
 		architecture.getOptResults().addResult(ent);
 		//logger.info("Algorithm Best: "+ent);
-		
-        //logger.info("Error: "+error);
+		if(Double.isNaN(error) || Double.isInfinite(error)){
+			logger.info("Error: "+error);
+			return Constants.WORST_FITNESS;
+		}
 		
 		return error;
 	}

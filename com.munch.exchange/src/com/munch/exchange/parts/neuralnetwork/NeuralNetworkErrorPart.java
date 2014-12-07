@@ -6,6 +6,7 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -14,6 +15,7 @@ import javax.inject.Inject;
 import org.apache.log4j.Logger;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
@@ -52,6 +54,7 @@ import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptM
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
+import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.MyMDirtyable;
 import com.munch.exchange.services.IExchangeRateProvider;
 
@@ -63,6 +66,10 @@ public class NeuralNetworkErrorPart {
 	
 	@Inject
 	private Stock stock;
+	
+	@Inject
+	private IEventBroker eventBroker;
+	
 	
 	@Inject
 	IExchangeRateProvider exchangeRateProvider;
@@ -78,13 +85,12 @@ public class NeuralNetworkErrorPart {
 	
 	private Composite compositeChart;
 	private JFreeChart chart;
-	private XYDataset errorData;
+	private XYSeriesCollection errorData;
 	private XYSeries lastSeries;
 	
-	private int minDim=0;
-	private int maxDim=0;
-	
 	private HashMap<Integer, XYSeries> dimSerieMap=new HashMap<Integer, XYSeries>();
+	private HashMap<Integer, Integer> dimSerieSteps=new HashMap<Integer, Integer>();
+	private int nbOfOptSteps=0;
 	
 	public NeuralNetworkErrorPart() {
 	}
@@ -173,7 +179,7 @@ public class NeuralNetworkErrorPart {
     	//=== Create the Chart  ===
     	//=========================
         chart = new JFreeChart("",
-                JFreeChart.DEFAULT_TITLE_FONT, plot1, false);
+                JFreeChart.DEFAULT_TITLE_FONT, plot1, true);
         chart.setBackgroundPaint(Color.white);
       
         return chart;
@@ -201,7 +207,7 @@ public class NeuralNetworkErrorPart {
     	//====================
     	//Creation of data Set
         //XYDataset priceData = createDataset(HistoricalPoint.FIELD_Close);
-    	errorData = new XYSeriesCollection(this.getLastSerie());
+    	errorData = new XYSeriesCollection();
     	
     	
         //Renderer
@@ -251,8 +257,67 @@ public class NeuralNetworkErrorPart {
     
 	private void initDimSerieMap(NNOptManagerInfo info){
 		
+		dimSerieSteps.clear();
+		
+		//Delete old series
+		Set<Integer> keySet=dimSerieMap.keySet();
+		for(int i:keySet){
+			if(i<info.getMinDim() || i>info.getMaxDim()){
+				errorData.removeSeries(dimSerieMap.get(i));
+				dimSerieMap.remove(i);
+			}
+		}
+		
+		//Add or clear the new series
+		for(int i=info.getMinDim();i<=info.getMaxDim();i++){
+			if(dimSerieMap.containsKey(i)){
+				dimSerieMap.get(i).clear();
+			}
+			else{
+				XYSeries series = new XYSeries("Dim "+i);
+				dimSerieMap.put(i, series);
+				errorData.addSeries(series);
+			}
+				
+		}
+		
+		keySet=dimSerieMap.keySet();
+		for(int i:keySet){
+			dimSerieSteps.put(i, 0);
+		}
+		
+	}
+	
+	private void updateProgressBar(OptInfo info){
+		
+		int step=info.getMaximum()-info.getStep()-1;
+		if(nbOfOptSteps==0)
+			nbOfOptSteps=info.getMaximum();
 		
 		
+		dimSerieSteps.put(info.getNumberOfInnerNeurons(), step);
+		int totalNbOfSteps=0;
+		for(int i:dimSerieSteps.keySet()){
+			totalNbOfSteps+=dimSerieSteps.get(i);
+		}
+		
+		int total=nbOfOptSteps*dimSerieSteps.size();
+		progressBarNetworkError.setSelection(totalNbOfSteps);
+		progressBarNetworkError.setToolTipText(String.valueOf(100*totalNbOfSteps/total)+"%");
+		progressBarNetworkError.setMaximum(total);
+		
+	}
+	
+	private void updateChart(OptInfo info){
+		if(info.getResults().getResults().isEmpty())return;
+		//Search the best results
+		boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
+    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi);
+    	double error=archi.getOptResults().getBestResult().getValue();
+		
+    	XYSeries series = dimSerieMap.get(info.getNumberOfInnerNeurons());
+    	if(series==null)return;
+    	series.add(info.getMaximum()-info.getStep(), error);
 	}
 	
 	
@@ -290,33 +355,20 @@ public class NeuralNetworkErrorPart {
 	}
 	
 	@Inject
-	private void networkOptManagerStarted(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED) NNOptManagerInfo info){
+	private void networkOptManagerStarted(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_STARTED) NNOptManagerInfo info){
 		if(info==null)return;
 		if(!isAbleToReact(info.getRate().getUUID()))return;
 		
-		//TODO
-		
-		
-	}
-	
-	
-	@Inject
-	private void networkArchitectureStarted(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED) OptInfo info){
-		
-		//logger.info("NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED catched: 1/2");
-		
-		if(info==null)return;
-		if(!isAbleToReact(info.getRate().getUUID()))return;
-		
-		//logger.info("NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED catched: 2/2");
 		
 		btnStop.setEnabled(true);
 		progressBarNetworkError.setEnabled(true);
-		progressBarNetworkError.setMaximum(info.getMaximum());
 		progressBarNetworkError.setSelection(0);
-		this.getLastSerie().clear();
+		
+		initDimSerieMap(info);
+		//chart.fireChartChanged();
 		
 	}
+	
 	
 	@Inject
 	private void networkArchitectureNewStep(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_STEP) OptInfo info){
@@ -328,22 +380,12 @@ public class NeuralNetworkErrorPart {
 		if(progressBarNetworkError !=null && !progressBarNetworkError.isDisposed()){
 			if(progressBarNetworkError.isEnabled()){
 				
-				int val=info.getMaximum()-info.getStep()-1;
+				//Update progress Bar
+				updateProgressBar(info);
 				
-				//progressBarNetworkError.setMaximum(info.getMaximum());
-				progressBarNetworkError.setSelection(val);
-				progressBarNetworkError.setToolTipText(String.valueOf(100*val/info.getMaximum())+"%");
-				
-				if(info.getResults().getResults().isEmpty())return;
-				//Search the best results
-				boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
-		    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi);
-		    	double error=archi.getOptResults().getBestResult().getValue();
-				
-				this.getLastSerie().add(info.getMaximum()-info.getStep(), error);
-				
-				//info.getConfiguration().getOptResults(0).getBestResult()
-				
+				//Update the chart
+				updateChart(info);
+		    	
 			}
 		}
 	}
@@ -357,20 +399,18 @@ public class NeuralNetworkErrorPart {
 		if(progressBarNetworkError !=null && !progressBarNetworkError.isDisposed()){
 			if(progressBarNetworkError.isEnabled()){
 			
-				progressBarNetworkError.setSelection(info.getMaximum()-info.getStep()-1);
+				//Update progress Bar
+				updateProgressBar(info);
 				
-				boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
-		    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi);
-		    	double error=archi.getOptResults().getBestResult().getValue();
-				
-				this.getLastSerie().addOrUpdate(info.getMaximum()-info.getStep(), error);
+				//Update the chart
+				updateChart(info);
 			}
 		}
 	}
 	
 	@Inject
-	private void networkArchitectureFinished(
-			@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_FINISHED) OptInfo info) {
+	private void networkOptManagerFinished(
+			@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_FINISHED) NNOptManagerInfo info) {
 		if(info==null)return;
 		if(!isAbleToReact(info.getRate().getUUID()))return;
 		

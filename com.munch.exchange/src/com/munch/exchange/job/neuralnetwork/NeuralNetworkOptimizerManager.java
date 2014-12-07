@@ -72,10 +72,15 @@ public class NeuralNetworkOptimizerManager extends Job{
 	}
 	
 	public void setMinMax(int minDim, int maxDim){
-		this.currentInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(minDim,
+		currentInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(minDim,
 				this.configuration.getNumberOfInputNeurons());
-		this.maxInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(maxDim,
+		maxInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(maxDim,
 				this.configuration.getNumberOfInputNeurons());
+		
+		if(info!=null){
+			info.setMinDim(currentInnerNeurons);
+			info.setMaxDim(maxInnerNeurons);
+		}
 		
 	}
 
