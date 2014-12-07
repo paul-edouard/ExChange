@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.neuroph.core.data.DataSet;
 
+import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
@@ -27,13 +28,10 @@ public class NeuralNetworkOptimizerManager extends Job{
 	private Configuration configuration;
 	private DataSet trainingSet;
 	
-	//private int minDim;
-	//private int maxDim;
-	//private int minDim;
-	
 	private int currentInnerNeurons;
 	private int maxInnerNeurons;
 	
+	private NNOptManagerInfo info;
 	
 	private LinkedList<NeuralNetworkOptimizer> optimizers=new LinkedList<NeuralNetworkOptimizer>();
 	
@@ -53,15 +51,21 @@ public class NeuralNetworkOptimizerManager extends Job{
 			optimizers.add(new NeuralNetworkOptimizer(this.rate, this.configuration,
 						this.trainingSet, this.eventBroker, 0));
 		}
+		
+		
+		info=new NNOptManagerInfo(currentInnerNeurons, maxInnerNeurons, this.rate, this.configuration);
+		
 	}
 	
 	
-	
+	//################################
+	//##          SETTER            ##
+	//################################
 	
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
+		info.setConfiguration(configuration);
 	}
-
 
 	public void setTrainingSet(DataSet trainingSet) {
 		this.trainingSet = trainingSet;
@@ -72,10 +76,8 @@ public class NeuralNetworkOptimizerManager extends Job{
 				this.configuration.getNumberOfInputNeurons());
 		this.maxInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(maxDim,
 				this.configuration.getNumberOfInputNeurons());
+		
 	}
-
-	
-
 
 	private int getNumberOfProcessors(){
 		int nbOfProc=Runtime.getRuntime().availableProcessors();
@@ -84,13 +86,17 @@ public class NeuralNetworkOptimizerManager extends Job{
 		
 	}
 
+	//################################
+	//##            RUN             ##
+	//################################
+	
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		
 		InfoPart.postInfoText(eventBroker, "Network Manager Started"
 		+"\tMin InnerNeurons: "+currentInnerNeurons+"\tMax InnerNeurons: "+maxInnerNeurons);
 		
-		
+		eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_STARTED,info);
 		
 		while(currentInnerNeurons<=maxInnerNeurons){
 			int pos=-1;
@@ -129,10 +135,10 @@ public class NeuralNetworkOptimizerManager extends Job{
 		
 		
 		InfoPart.postInfoText(eventBroker, "Optimizer manager is finished!");
+		eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_FINISHED,info);
 		
 		return Status.OK_STATUS;
 	}
-	
 	
 	private boolean makeItSleep(IProgressMonitor monitor){
 		
@@ -155,6 +161,62 @@ public class NeuralNetworkOptimizerManager extends Job{
 			return false;
 		}
 	}
+	
+	
+	//################################
+	//##        INFOCLASS           ##
+	//################################	
+	public class NNOptManagerInfo{
+		
+		private int minDim;
+		private int maxDim;
+		
+		private ExchangeRate rate;
+		private Configuration configuration;
+		
+		
+		public NNOptManagerInfo(int minDim, int maxDim, ExchangeRate rate,
+				Configuration configuration) {
+			super();
+			this.minDim = minDim;
+			this.maxDim = maxDim;
+			this.rate = rate;
+			this.configuration = configuration;
+		}
+		public int getMinDim() {
+			return minDim;
+		}
+		public void setMinDim(int minDim) {
+			this.minDim = minDim;
+		}
+		public int getMaxDim() {
+			return maxDim;
+		}
+		public void setMaxDim(int maxDim) {
+			this.maxDim = maxDim;
+		}
+		public ExchangeRate getRate() {
+			return rate;
+		}
+		public void setRate(ExchangeRate rate) {
+			this.rate = rate;
+		}
+		public Configuration getConfiguration() {
+			return configuration;
+		}
+		public void setConfiguration(Configuration configuration) {
+			this.configuration = configuration;
+		}
+		
+		
+		
+		
+	}
+	
+	
+	//################################
+	//##           MAIN             ##
+	//################################	
 	
 	public static void main(String[] args){
 		System.out.println(Runtime.getRuntime().availableProcessors());

@@ -3,6 +3,7 @@ package com.munch.exchange.parts.neuralnetwork;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,9 +46,9 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 import com.munch.exchange.IEventConstant;
-import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptManagerInfo;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
@@ -80,7 +81,10 @@ public class NeuralNetworkErrorPart {
 	private XYDataset errorData;
 	private XYSeries lastSeries;
 	
+	private int minDim=0;
+	private int maxDim=0;
 	
+	private HashMap<Integer, XYSeries> dimSerieMap=new HashMap<Integer, XYSeries>();
 	
 	public NeuralNetworkErrorPart() {
 	}
@@ -199,6 +203,7 @@ public class NeuralNetworkErrorPart {
         //XYDataset priceData = createDataset(HistoricalPoint.FIELD_Close);
     	errorData = new XYSeriesCollection(this.getLastSerie());
     	
+    	
         //Renderer
         XYItemRenderer renderer1 = new XYLineAndShapeRenderer(true, false);
         renderer1.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
@@ -279,6 +284,17 @@ public class NeuralNetworkErrorPart {
 	}
 	
 	@Inject
+	private void networkOptManagerStarted(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED) NNOptManagerInfo info){
+		if(info==null)return;
+		if(!isAbleToReact(info.getRate().getUUID()))return;
+		
+		//TODO
+		
+		
+	}
+	
+	
+	@Inject
 	private void networkArchitectureStarted(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED) OptInfo info){
 		
 		//logger.info("NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED catched: 1/2");
@@ -319,6 +335,9 @@ public class NeuralNetworkErrorPart {
 		    	double error=archi.getOptResults().getBestResult().getValue();
 				
 				this.getLastSerie().add(info.getMaximum()-info.getStep(), error);
+				
+				//info.getConfiguration().getOptResults(0).getBestResult()
+				
 			}
 		}
 	}

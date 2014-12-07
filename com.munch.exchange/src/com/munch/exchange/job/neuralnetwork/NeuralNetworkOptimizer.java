@@ -21,7 +21,6 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.objectivefunc.NetworkArchitectureObjFunc;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
-import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.ResultEntity;
@@ -85,7 +84,7 @@ public class NeuralNetworkOptimizer extends Job {
 	protected IStatus run(IProgressMonitor monitor) {
 		
 		
-		InfoPart.postInfoText(eventBroker, "Network Optimization Started");
+		//InfoPart.postInfoText(eventBroker, "Network Optimization Started");
 		
 		prepareNetworkArchitectureOptimization(monitor);
 		eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED,info);
@@ -125,7 +124,7 @@ public class NeuralNetworkOptimizer extends Job {
 		
 		//Best Result:
 		//logger.info("Optimization finished!!");
-		InfoPart.postInfoText(eventBroker, "Network Optimization finished!!!");
+		//InfoPart.postInfoText(eventBroker, "Network Optimization finished!!!");
 		if(configuration.getOptResults(dimension).getResults().size()>0){
 			logger.info("Best Result so far x100: "+configuration.getOptResults(dimension).getBestResult().getValue()*100);
 			InfoPart.postInfoText(eventBroker, "Best Result so far x100: "+configuration.getOptResults(dimension).getBestResult().getValue()*100);

@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeries;
@@ -34,7 +33,6 @@ import org.jfree.data.xy.YIntervalSeriesCollection;
 
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.parts.composite.CollectionRemovedListener;
-import com.munch.exchange.parts.composite.RateChartEMAComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
 
 public abstract class IndicatorComposite extends Composite {
