@@ -69,8 +69,6 @@ public class NnObjFunc extends OptimizationModule implements
 	          
 	       }
 		
-		//logger.info("Diff: "+Arrays.toString(outputdiff));
-		
 		//Calculate the error
         for (int i = 0; i < output.length; i++) {
             outputError[i] = (desiredOutput[i] - output[i])*outputdiff[i];

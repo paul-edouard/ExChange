@@ -141,7 +141,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 		
 		ResultEntity bestResult=architecture.getOptResults().getBestResult();
-		if(bestResult==null)return  Constants.WORST_FITNESS;
+		if(bestResult==null || Double.isNaN(bestResult.getValue()))
+			return  Constants.WORST_FITNESS;
 		
 		//logger.info("Archi: "+x);
 		//logger.info("Number of results: "+architecture.getOptResults().getResults().size()+", Best: "+bestResult);

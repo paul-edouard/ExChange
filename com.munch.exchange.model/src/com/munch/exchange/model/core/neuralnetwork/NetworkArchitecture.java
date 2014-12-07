@@ -71,6 +71,24 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	public NetworkArchitecture(){}
 	
+	public NetworkArchitecture(int numberOfInputNeurons,int numberOfInnerNeurons,boolean[] cons  ){
+		LinkedList<String> inputNeuronsLabels=new LinkedList<String>();
+		for(int i=0;i<numberOfInputNeurons;i++){
+			inputNeuronsLabels.add(String.valueOf(i));
+		}
+		
+		this.numberOfInputNeurons=inputNeuronsLabels.size();
+		this.numberOfInnerNeurons=numberOfInnerNeurons;
+		//this.neuronsLabels.addAll(inputNeuronsLabels);
+		
+		int activatedConnectionsSize=calculateActivatedConnectionsSize(numberOfInputNeurons, numberOfInnerNeurons);
+		if(cons.length==activatedConnectionsSize){
+			this.actConsArray=cons;
+		}
+			
+	}
+	
+	
 	public NetworkArchitecture(LinkedList<String> inputNeuronsLabels,int numberOfInnerNeurons,boolean[] cons ){
 		
 		this.numberOfInputNeurons=inputNeuronsLabels.size();
@@ -234,10 +252,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 	public boolean isValid(){
 		
 		Layer[] layers=  this.network.getLayers();
-		for(int i=1;i<layers.length;i++){
+		for(int i=1;i<layers.length-1;i++){
 			Layer layer=layers[i];
 			
-			//No neuron
+			//less than one neuron
 			if(layer.getNeuronsCount()==0)
 				return false;
 			

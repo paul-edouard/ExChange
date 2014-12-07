@@ -31,28 +31,23 @@ public class FullyStraigthFowardNetworkCreation extends
 		} 
 		
 		//if(r.nextDouble()>0.5){
+		//while(true){
 			double alpha=r.nextDouble();
 			
-			return NetworkArchitecture.createFullStraigthFowardNetwork(
+			boolean[] cons=NetworkArchitecture.createFullStraigthFowardNetwork(
 					numberOfInputNeurons, numberOfInnerNeurons, alpha);
-		/*
-		}
-		else{
-			boolean[] bs;
-		    int i;
-
-		    i = this.n;
-		    bs = new boolean[i];
-
-		    for (; (--i) >= 0;) {
-		      bs[i] = r.nextBoolean();
-		    }
-
-		    return bs;
-		}
-		*/
+		
+		
+			NetworkArchitecture arch=new NetworkArchitecture(numberOfInputNeurons, numberOfInnerNeurons, cons);
+			
+			//arch.get
+			
+			//if(arch.isValid())
+			return cons;
+		//}
+		
+		
 	}
-	
 	
 	
 	

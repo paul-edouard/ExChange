@@ -199,7 +199,7 @@ public class KeepBestSGEA<G, X> extends  EABase<G, X> {
     			  insetPos++;
     		  }
     		  
-    		  bestInd.add(insetPos, pop[j]);
+    		  bestInd.add(insetPos, c);
     		  if(bestInd.size()>ps)bestInd.removeLast();
 	      }
 	      
