@@ -249,6 +249,12 @@ public class NeuralNetworkErrorPart {
 		lastSeries = new XYSeries("Error");
 	}
     
+	private void initDimSerieMap(NNOptManagerInfo info){
+		
+		
+		
+	}
+	
 	
 	@PreDestroy
 	public void dispose() {
