@@ -2,6 +2,7 @@ package com.munch.exchange.model.core.neuralnetwork;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -553,6 +554,35 @@ public class NetworkArchitecture extends XmlParameterElement {
 	//***            STATIC               ****
 	//****************************************
 	
+	@Override
+	public String toString() {
+		/*
+		return "NetworkArchitecture [actConsMatrix="
+				+ Arrays.toString(actConsMatrix) + "]";
+		*/
+		String outputStr="Input neurons: "+numberOfInputNeurons;
+		outputStr+="\nInput neurons: "+numberOfInputNeurons;
+		outputStr+="\nInput neurons: "+numberOfInnerNeurons;
+		
+		
+		int numberOfNeurons=numberOfInputNeurons+numberOfInnerNeurons+1;
+		outputStr="\nMatrix:\n";
+		for(int i=0;i<numberOfNeurons;i++){
+			outputStr+="[";
+			for(int j=0;j<numberOfNeurons;j++){
+				if(j>0)outputStr+=", ";
+				if(actConsMatrix[i][j])
+					outputStr+="1";
+				else
+					outputStr+="0";
+			}
+			outputStr+="]\n";
+		}
+		outputStr+="\n";
+		
+		return outputStr;
+	}
+
 	public static boolean[] convertActConsMatrixToArray(boolean[][] actConsMatrix,int numberOfInputNeurons,int numberOfInnerNeurons){
 		boolean[] actConsArray=new boolean[calculateActivatedConnectionsSize(numberOfInputNeurons,numberOfInnerNeurons)];
 		for(int i=0;i<actConsArray.length;i++){

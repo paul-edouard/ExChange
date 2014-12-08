@@ -87,6 +87,7 @@ public class NnObjFunc extends OptimizationModule implements
 		architecture.getOptResults().addResult(ent);
 		//logger.info("Algorithm Best: "+ent);
 		if(Double.isNaN(error) || Double.isInfinite(error)){
+			logger.info("Archi: "+architecture);
 			logger.info("Error: "+error);
 			return Constants.WORST_FITNESS;
 		}

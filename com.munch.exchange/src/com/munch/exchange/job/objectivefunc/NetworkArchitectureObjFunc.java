@@ -70,6 +70,9 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	//Local learning Strategy
 	private LearningRule learningRule=null;
 	
+	public static double MAX_WEIGTH_FACTOR=100d;
+	public static int NB_OF_ARCHI_TO_LEARN=10;
+	
 	public NetworkArchitectureObjFunc(ExchangeRate rate, Configuration configuration,DataSet testSet,
 			IEventBroker eventBroker,IProgressMonitor monitor){
 		
@@ -113,8 +116,19 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			//Start the optimization algorithm
 			//logger.info("Loop: "+i);
 			ResultEntity ref=architecture.getOptResults().getBestResult();
+			/*
+			if(ref!=null && Double.isNaN(ref.getDoubleArray()[0])){
+				logger.info("Archi matrix: "+architecture.toString());
+			}
+			*/
 			
 			algorithm.call();
+			
+			/*
+			if(ref!=null && Double.isNaN(ref.getDoubleArray()[0])){
+				logger.info("Archi matrix: "+architecture.toString());
+			}
+			*/
 			
 			//logger.info("Increase from algorithm: "+architecture.getOptResults().compareBestResultWith(ref));
 			ref=architecture.getOptResults().getBestResult();
@@ -122,12 +136,17 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			//Loop on all the individuals to try increase the result quality
 			//results.setMaxResult(maxResult);
 			//TODO Learning of the best 10 Results
-			int numberOfLearning=10;
-			for(int j=0;j<numberOfLearning;j++){
+			//int numberOfLearning=10;
+			for(int j=0;j<NB_OF_ARCHI_TO_LEARN;j++){
 				//Start learning for each individuals
 				ResultEntity ent=architecture.getOptResults().getResults().get(j);
+				if(ent!=null && Double.isNaN(ent.getDoubleArray()[0])){
+					logger.info("Ent: "+Arrays.toString(ent.getDoubleArray()));
+					continue;
+				}
 				architecture.getNetwork().setWeights(ent.getDoubleArray());
-				architecture.getNetwork().learn(trainingSet);	
+				architecture.getNetwork().learn(trainingSet);
+				
 			}
 			
 			//logger.info("Increase from learning: "+architecture.getOptResults().compareBestResultWith(ref));
@@ -288,10 +307,15 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			//Save the new results entity
 			Double[] weigths=bp.getNeuralNetwork().getWeights();
 			for(int j=0;j<weigths.length;j++){
+				if(Double.isNaN(weigths[j]) || Double.isInfinite(weigths[j])){
+					logger.info("Weigth is NaA or Infinite after learning!");
+					return;
+				}
+				
 				if(weigths[j]>maxWeigth)
-					maxWeigth=weigths[j]+Math.abs(weigths[j])*0.1;
+					maxWeigth=Math.min(weigths[j]+Math.abs(weigths[j])*0.1,MAX_WEIGTH_FACTOR);
 				if(weigths[j]<minWeigth)
-					minWeigth=weigths[j]-Math.abs(weigths[j])*0.1;
+					minWeigth=Math.max(weigths[j]-Math.abs(weigths[j])*0.1,-MAX_WEIGTH_FACTOR);
 			}
 			architecture.getOptResults().addResult(ent);
 			
