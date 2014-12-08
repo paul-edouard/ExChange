@@ -168,6 +168,7 @@ public class KeepBestSGEA<G, X> extends  EABase<G, X> {
 	      }
 	      
 	      //Compute the childrens
+	      System.out.println("Compute Children");
 	      for(Individual<G, X> c:children){
 	    	  // perform the genotype-phenotype mapping
 		        c.x = gpm.gpm(c.g, r);
@@ -176,6 +177,7 @@ public class KeepBestSGEA<G, X> extends  EABase<G, X> {
 	      }
 
 	      //Replace the worst individuals
+	      System.out.println("Replace the worst individuals");
 	      LinkedList<Individual<G, X>> bestInd=new LinkedList<Individual<G, X>>();
 	      for( j=0;j<ps;j++){
 	    	  if(bestInd.isEmpty()){

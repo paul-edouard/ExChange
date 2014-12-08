@@ -19,7 +19,8 @@ import org.goataa.spec.ISOOptimizationAlgorithm;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.munch.exchange.model.core.neuralnetwork.FullyStraigthFowardNetworkCreation;
+import com.munch.exchange.model.core.neuralnetwork.creation.PyramidNetworkCreation;
+import com.munch.exchange.model.core.neuralnetwork.creation.ValidRandomNetworkCreation;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class AlgorithmParameters<X> extends XmlParameterElement {
@@ -61,7 +62,8 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	public static final String NULLARY_SEARCH_OPERATION ="Nullary search operation";
 	public static final String NSO_Uniform_Creation="NSO Uniform Creation";
 	public static final String NSO_BooleanArrayUniformCreation="NSO Boolean Array Uniform Creation";
-	public static final String NSO_FullyStraigthFowardNetworkCreation="NSO Boolean Fully Straigth Foward Network Creation";
+	public static final String NSO_PyramidNetworkCreation="NSO Pyramid Network Creation";
+	public static final String NSO_ValidRandomNetworkCreation="NSO Valid Random Network Creation";
 	
 	
 	//Binary Search Operation
@@ -177,8 +179,12 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 				INullarySearchOperation<boolean[]> create=new BooleanArrayUniformCreation(this.getIntegerParam(EA_Dimension));
 				EA.setNullarySearchOperation(create);
 			}
-			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_FullyStraigthFowardNetworkCreation)){
-				INullarySearchOperation<boolean[]> create=new FullyStraigthFowardNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_PyramidNetworkCreation)){
+				INullarySearchOperation<boolean[]> create=new PyramidNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				EA.setNullarySearchOperation(create);
+			}
+			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_ValidRandomNetworkCreation)){
+				INullarySearchOperation<boolean[]> create=new ValidRandomNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
 				EA.setNullarySearchOperation(create);
 			}
 			
@@ -222,8 +228,12 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 				INullarySearchOperation<boolean[]> create=new BooleanArrayUniformCreation(this.getIntegerParam(EA_Dimension));
 				EA.setNullarySearchOperation(create);
 			}
-			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_FullyStraigthFowardNetworkCreation)){
-				INullarySearchOperation<boolean[]> create=new FullyStraigthFowardNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_PyramidNetworkCreation)){
+				INullarySearchOperation<boolean[]> create=new PyramidNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				EA.setNullarySearchOperation(create);
+			}
+			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_ValidRandomNetworkCreation)){
+				INullarySearchOperation<boolean[]> create=new ValidRandomNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
 				EA.setNullarySearchOperation(create);
 			}
 			

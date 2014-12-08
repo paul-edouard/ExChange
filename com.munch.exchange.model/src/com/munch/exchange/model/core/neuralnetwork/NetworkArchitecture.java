@@ -86,6 +86,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 		if(cons.length==activatedConnectionsSize){
 			this.actConsArray=cons;
 		}
+		
+		addNewNeuralNetwork(inputNeuronsLabels);
 			
 	}
 	
@@ -644,9 +646,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 		int layerSize=numberOfInputNeurons;
 		int nextLayerSize=Math.max(1,Math.min((int) (Math.pow(numberOfInnerNeurons, reduceFactor)), numberOfInnerNeurons));
 		int leftNeurons=numberOfInnerNeurons-nextLayerSize;
-		int nbOfUsedNeurons=numberOfInputNeurons+nextLayerSize;
+		//int nbOfUsedNeurons=numberOfInputNeurons+nextLayerSize;
 		
-		while(nbOfUsedNeurons<=numberOfInputNeurons+numberOfInnerNeurons){
+		
+		while(true){
 			for(int i=layerStartId;i<layerStartId+layerSize;i++){
 				for(int j=layerStartId+layerSize;j<layerStartId+layerSize+nextLayerSize;j++)
 					actConsMatrix[i][j]=true;
@@ -654,15 +657,24 @@ public class NetworkArchitecture extends XmlParameterElement {
 			
 			layerStartId+=layerSize;
 			layerSize=nextLayerSize;
-			nextLayerSize=Math.max(1,Math.min((int) (Math.pow(leftNeurons, reduceFactor)), numberOfInnerNeurons));
+			if(leftNeurons==0)break;
+			
+			nextLayerSize=Math.max(1,Math.min((int) (0.5+Math.pow(leftNeurons, reduceFactor)), numberOfInnerNeurons));
+			if(nextLayerSize>leftNeurons)
+				nextLayerSize=leftNeurons;
+			
 			leftNeurons-=nextLayerSize;
-			nbOfUsedNeurons+=nextLayerSize;
+			//nbOfUsedNeurons+=nextLayerSize;
 		}
 		
 		//Create the last layer to output connection
 		int lastLayerSizes=layerSize;
 		for(int i=0;i<lastLayerSizes;i++){
 			actConsMatrix[numberOfNeurons-2-i][numberOfNeurons-1]=true;
+		}
+		
+		if(lastLayerSizes==1){
+			System.out.println("Last layer is one: ");
 		}
 		
 		/*
