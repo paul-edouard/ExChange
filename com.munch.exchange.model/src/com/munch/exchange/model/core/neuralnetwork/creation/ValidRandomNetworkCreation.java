@@ -34,10 +34,14 @@ public class ValidRandomNetworkCreation extends BooleanArrayUniformCreation {
 		
 	}
 	
+	
+	public static int MAX_LOOPS=400;
+	
 	public static boolean[] createValidRandomNetwork(int dim, int numberOfInputNeurons, Random r){
 		int numberOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(dim, numberOfInputNeurons);
 		
 		boolean[] cons=null;
+		int loop=0;
 		while(true){
 			cons=createRandomBooleanArray(dim,r);
 			NetworkArchitecture arch = new NetworkArchitecture(
@@ -46,6 +50,9 @@ public class ValidRandomNetworkCreation extends BooleanArrayUniformCreation {
 				//System.out.println(arch);
 				break;
 			}
+			
+			loop++;
+			if(loop>MAX_LOOPS)break;
 		}
 		
 		return cons;

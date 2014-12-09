@@ -145,6 +145,8 @@ public class NeuralNetworkErrorPart {
 			public void widgetSelected(SelectionEvent e) {
 				//optimizer.cancel();
 				optimizerManager.cancel();
+				btnStop.setEnabled(false);
+				progressBarNetworkError.setEnabled(false);
 			}
 		});
 		btnStop.setImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/delete.png"));

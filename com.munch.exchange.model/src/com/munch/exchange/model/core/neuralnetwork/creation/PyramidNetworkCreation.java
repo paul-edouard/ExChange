@@ -36,16 +36,16 @@ public class PyramidNetworkCreation extends
 		return createPyramidNetwork(numberOfInnerNeurons,numberOfInputNeurons, r);
 		
 	}
-	
+	public static int MAX_LOOPS=200;
 	public static boolean[] createPyramidNetwork(int numberOfInnerNeurons,int numberOfInputNeurons,Random r){
 		
-		boolean hasOneNeuron=true;
 		boolean[] cons=null;
-		
-		while (hasOneNeuron) {
-			hasOneNeuron = false;
+		int loop=0;
+		while (true) {
+			boolean hasOneNeuron = false;
+			
 			double alpha = r.nextDouble();
-
+			//alpha=0.5*alpha+0.5;
 			cons = NetworkArchitecture.createFullStraigthFowardNetwork(
 					numberOfInputNeurons, numberOfInnerNeurons, alpha);
 
@@ -57,6 +57,11 @@ public class PyramidNetworkCreation extends
 					hasOneNeuron = true;
 				}
 			}
+			if(!hasOneNeuron && arch.isValid())break;
+			
+			loop++;
+			if(loop>MAX_LOOPS)break;
+			
 		}
 		
 		return cons;
@@ -72,14 +77,14 @@ public class PyramidNetworkCreation extends
 		while(hasOneNeuron){
 			hasOneNeuron=false;
 		double alpha=r.nextDouble();
-		
+		alpha=0.5*alpha+0.5;
 		System.out.println("alpha"+alpha);
 		
 		boolean[] cons=NetworkArchitecture.createFullStraigthFowardNetwork(
-				10, 8, alpha);
+				9, 7, alpha);
 	
 	
-		arch=new NetworkArchitecture(10, 8, cons);
+		arch=new NetworkArchitecture(9, 7, cons);
 		
 		
 		Layer[] layers=arch.getNetwork().getLayers();

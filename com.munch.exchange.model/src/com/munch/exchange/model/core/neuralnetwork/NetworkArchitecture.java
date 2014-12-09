@@ -648,7 +648,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		int leftNeurons=numberOfInnerNeurons-nextLayerSize;
 		//int nbOfUsedNeurons=numberOfInputNeurons+nextLayerSize;
 		
-		
+		int loop=0;
 		while(true){
 			for(int i=layerStartId;i<layerStartId+layerSize;i++){
 				for(int j=layerStartId+layerSize;j<layerStartId+layerSize+nextLayerSize;j++)
@@ -657,13 +657,21 @@ public class NetworkArchitecture extends XmlParameterElement {
 			
 			layerStartId+=layerSize;
 			layerSize=nextLayerSize;
-			if(leftNeurons==0)break;
+			if(leftNeurons<=0)break;
 			
 			nextLayerSize=Math.max(1,Math.min((int) (0.5+Math.pow(leftNeurons, reduceFactor)), numberOfInnerNeurons));
 			if(nextLayerSize>leftNeurons)
 				nextLayerSize=leftNeurons;
 			
 			leftNeurons-=nextLayerSize;
+			if(leftNeurons==1){
+				nextLayerSize++;
+				leftNeurons--;
+			}
+			
+			loop++;
+			if(loop>100)break;
+			
 			//nbOfUsedNeurons+=nextLayerSize;
 		}
 		
@@ -673,9 +681,11 @@ public class NetworkArchitecture extends XmlParameterElement {
 			actConsMatrix[numberOfNeurons-2-i][numberOfNeurons-1]=true;
 		}
 		
+		/*
 		if(lastLayerSizes==1){
 			System.out.println("Last layer is one: ");
 		}
+		*/
 		
 		/*
 		System.out.println("Input neurons: "+numberOfInputNeurons);

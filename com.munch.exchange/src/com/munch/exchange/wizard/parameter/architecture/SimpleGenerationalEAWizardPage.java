@@ -75,6 +75,7 @@ public class SimpleGenerationalEAWizardPage extends WizardPage {
 		comboNullarySearchOperation.add(AlgorithmParameters.NSO_BooleanArrayUniformCreation);
 		comboNullarySearchOperation.add(AlgorithmParameters.NSO_PyramidNetworkCreation);
 		comboNullarySearchOperation.add(AlgorithmParameters.NSO_ValidRandomNetworkCreation);
+		comboNullarySearchOperation.add(AlgorithmParameters.NSO_DecreaseNetworkCreation);
 		if(optArchitectureParam.hasParamKey(AlgorithmParameters.NULLARY_SEARCH_OPERATION)){
 			comboNullarySearchOperation.setText(optArchitectureParam.getStringParam(AlgorithmParameters.NULLARY_SEARCH_OPERATION));
 		}
