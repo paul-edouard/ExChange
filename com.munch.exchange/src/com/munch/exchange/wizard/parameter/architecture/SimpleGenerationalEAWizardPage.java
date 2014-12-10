@@ -71,11 +71,12 @@ public class SimpleGenerationalEAWizardPage extends WizardPage {
 			}
 		});
 		comboNullarySearchOperation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		comboNullarySearchOperation.setText(AlgorithmParameters.NSO_ValidRandomNetworkCreation);
+		comboNullarySearchOperation.setText(AlgorithmParameters.NSO_MixNetworkCreation);
 		comboNullarySearchOperation.add(AlgorithmParameters.NSO_BooleanArrayUniformCreation);
 		comboNullarySearchOperation.add(AlgorithmParameters.NSO_PyramidNetworkCreation);
 		comboNullarySearchOperation.add(AlgorithmParameters.NSO_ValidRandomNetworkCreation);
 		comboNullarySearchOperation.add(AlgorithmParameters.NSO_DecreaseNetworkCreation);
+		comboNullarySearchOperation.add(AlgorithmParameters.NSO_MixNetworkCreation);
 		if(optArchitectureParam.hasParamKey(AlgorithmParameters.NULLARY_SEARCH_OPERATION)){
 			comboNullarySearchOperation.setText(optArchitectureParam.getStringParam(AlgorithmParameters.NULLARY_SEARCH_OPERATION));
 		}

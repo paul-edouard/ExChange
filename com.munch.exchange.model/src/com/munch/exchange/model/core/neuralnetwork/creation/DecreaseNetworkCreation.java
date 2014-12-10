@@ -33,25 +33,36 @@ public class DecreaseNetworkCreation extends BooleanArrayUniformCreation {
 			return oldResults.pollLast();
 		} 
 		
+		
+		return searchNoneNullDecreaseNetwork(numberOfInnerNeurons,numberOfInputNeurons, r);
+		
+	}
+	public static int MAX_LOOPS=200;
+	
+	public static boolean[] searchNoneNullDecreaseNetwork(int numberOfInnerNeurons,int numberOfInputNeurons,Random r){
 		boolean[] cons=null;
 		int loop=0;
 		while(true){
+			
+			boolean hasOneNeuron = false;
+			
 			cons=createDecreaseNetwork(numberOfInnerNeurons,numberOfInputNeurons,r);
 			NetworkArchitecture arch = new NetworkArchitecture(
 					numberOfInputNeurons, numberOfInnerNeurons, cons);
-			if(arch.isValid()){
-				//System.out.println(arch);
-				break;
+			Layer[] layers = arch.getNetwork().getLayers();
+			for (int i = 0; i < layers.length - 1; i++) {
+				if (layers[i].getNeuronsCount() == 1) {
+					hasOneNeuron = true;
+				}
 			}
+			if(!hasOneNeuron && arch.isValid())break;
 			
 			loop++;
 			if(loop>MAX_LOOPS)break;
 		}
 		
 		return cons;
-		
 	}
-	public static int MAX_LOOPS=200;
 	
 	public static boolean[] createDecreaseNetwork(int numberOfInnerNeurons,int numberOfInputNeurons,Random r){
 	

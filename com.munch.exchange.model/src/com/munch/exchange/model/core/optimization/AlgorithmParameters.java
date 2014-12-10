@@ -20,6 +20,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.neuralnetwork.creation.DecreaseNetworkCreation;
+import com.munch.exchange.model.core.neuralnetwork.creation.MixNetworkCreation;
 import com.munch.exchange.model.core.neuralnetwork.creation.PyramidNetworkCreation;
 import com.munch.exchange.model.core.neuralnetwork.creation.ValidRandomNetworkCreation;
 import com.munch.exchange.model.xml.XmlParameterElement;
@@ -66,6 +67,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	public static final String NSO_PyramidNetworkCreation="NSO Pyramid Network Creation";
 	public static final String NSO_ValidRandomNetworkCreation="NSO Valid Random Network Creation";
 	public static final String NSO_DecreaseNetworkCreation="NSO Decrease Network Creation";
+	public static final String NSO_MixNetworkCreation="NSO Mix Network Creation";
 	
 	
 	//Binary Search Operation
@@ -193,6 +195,10 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 				INullarySearchOperation<boolean[]> create=new DecreaseNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
 				EA.setNullarySearchOperation(create);
 			}
+			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_MixNetworkCreation)){
+				INullarySearchOperation<boolean[]> create=new MixNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				EA.setNullarySearchOperation(create);
+			}
 			
 			//Binary Search Operation
 			if(this.getStringParam(BINARY_SEARCH_OPERATION).equals(BSO_BooleanArrayUniformCrossover)){
@@ -244,6 +250,10 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 			}
 			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_DecreaseNetworkCreation)){
 				INullarySearchOperation<boolean[]> create=new DecreaseNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				EA.setNullarySearchOperation(create);
+			}
+			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_MixNetworkCreation)){
+				INullarySearchOperation<boolean[]> create=new MixNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
 				EA.setNullarySearchOperation(create);
 			}
 			
