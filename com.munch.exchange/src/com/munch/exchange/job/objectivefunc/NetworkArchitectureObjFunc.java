@@ -71,7 +71,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	private LearningRule learningRule=null;
 	
 	public static double MAX_WEIGTH_FACTOR=100d;
-	public static int NB_OF_ARCHI_TO_LEARN=10;
+	public static int NB_OF_RESULTS_TO_TRAIN=10;
 	
 	public NetworkArchitectureObjFunc(ExchangeRate rate, Configuration configuration,DataSet testSet,
 			IEventBroker eventBroker,IProgressMonitor monitor){
@@ -108,36 +108,22 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 		eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_STARTED,info);
 		
-		
-		//logger.info("Computing: "+Arrays.toString(x));
-		
 		//Start the Optimization
 		for(int i=0;i<optLoops;i++){
-			//Start the optimization algorithm
-			//logger.info("Loop: "+i);
-			ResultEntity ref=architecture.getOptResults().getBestResult();
-			/*
-			if(ref!=null && Double.isNaN(ref.getDoubleArray()[0])){
-				logger.info("Archi matrix: "+architecture.toString());
-			}
-			*/
 			
+			if(monitor.isCanceled())break;
+			
+			info.setLoop(i);
+			eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_STARTED,info);
+			
+			//Start the optimization algorithm
 			algorithm.call();
 			
-			/*
-			if(ref!=null && Double.isNaN(ref.getDoubleArray()[0])){
-				logger.info("Archi matrix: "+architecture.toString());
-			}
-			*/
-			
-			//logger.info("Increase from algorithm: "+architecture.getOptResults().compareBestResultWith(ref));
-			ref=architecture.getOptResults().getBestResult();
+			//ResultEntity ref=architecture.getOptResults().getBestResult();
 			
 			//Loop on all the individuals to try increase the result quality
-			//results.setMaxResult(maxResult);
-			//TODO Learning of the best 10 Results
-			//int numberOfLearning=10;
-			for(int j=0;j<NB_OF_ARCHI_TO_LEARN;j++){
+			for(int j=0;j<NB_OF_RESULTS_TO_TRAIN;j++){
+				if(monitor.isCanceled())break;
 				//Start learning for each individuals
 				ResultEntity ent=architecture.getOptResults().getResults().get(j);
 				if(ent!=null && Double.isNaN(ent.getDoubleArray()[0])){
@@ -149,7 +135,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 				
 			}
 			
-			//logger.info("Increase from learning: "+architecture.getOptResults().compareBestResultWith(ref));
+			if(monitor.isCanceled())break;
 			
 			//Set the best results as starting point for the next loop
 			resetMinMaxValuesOfAlgorithm();
@@ -301,7 +287,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			
 			BackPropagation bp = (BackPropagation)event.getSource();
 			
-			//logger.info("Learning Error: "+ bp.getTotalNetworkError()+", x Size:" +trainingSet.size()*bp.getTotalNetworkError());
+			logger.info("Learning Error: "+ bp.getTotalNetworkError()+", x Size:" +trainingSet.size()*bp.getTotalNetworkError());
 			
 			ResultEntity ent=new ResultEntity(bp.getNeuralNetwork().getWeights(), bp.getTotalNetworkError());
 			//Save the new results entity
@@ -340,6 +326,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		private ExchangeRate rate;
 		private Configuration configuration;
 		private int step;
+		private int loop=0;
 		private int maximum;
 		private OptimizationResults results=new OptimizationResults();
 		private boolean[] archiFingerPrint;
@@ -385,8 +372,15 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			return archiFingerPrint;
 		}
 		
-		
 
+		public int getLoop() {
+			return loop;
+		}
+		public void setLoop(int loop) {
+			this.loop = loop;
+		}
+
+		
 		
 	}
 	
