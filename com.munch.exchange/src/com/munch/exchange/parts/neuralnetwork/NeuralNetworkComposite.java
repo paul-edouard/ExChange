@@ -60,6 +60,7 @@ import com.munch.exchange.dialog.StringEditorDialog;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkDataLoader;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptManagerInfo;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager;
 import com.munch.exchange.job.objectivefunc.NeuralNetworkOutputObjFunc;
 import com.munch.exchange.model.core.DatePoint;
@@ -897,7 +898,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
     } 
 	
 	@Inject
-    private void optimizationFinished(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_FINISHED) OptInfo info){
+    private void optimizationFinished(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_FINISHED) NNOptManagerInfo info){
     	
     	
     	if(info==null)return;

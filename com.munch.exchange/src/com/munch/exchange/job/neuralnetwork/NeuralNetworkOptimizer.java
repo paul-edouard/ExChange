@@ -41,6 +41,7 @@ public class NeuralNetworkOptimizer extends Job {
 	
 	private OptInfo info;
 	private List<Individual<boolean[], boolean[]>>  solutions;
+	private boolean isCancel=false;
 	
 	ISOOptimizationAlgorithm<boolean[], boolean[], Individual<boolean[], boolean[]>> algorithm;
 	
@@ -60,9 +61,6 @@ public class NeuralNetworkOptimizer extends Job {
 		
 	}
 	
-	
-	
-	
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
 	}
@@ -75,15 +73,18 @@ public class NeuralNetworkOptimizer extends Job {
 		this.dimension = dimension;
 	}
 
-
 	public List<Individual<boolean[], boolean[]>> getSolutions() {
 		return solutions;
 	}
 	
+	//################################
+	//##            RUN             ##
+	//################################
+	
 	
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		
+		isCancel=false;
 		
 		//InfoPart.postInfoText(eventBroker, "Network Optimization Started");
 		
@@ -134,7 +135,13 @@ public class NeuralNetworkOptimizer extends Job {
 		return Status.OK_STATUS;
 	}
 	
+	@Override
+	protected void canceling() {
+		isCancel=true;
+		super.canceling();
+	}
 	
+
 	@SuppressWarnings("unchecked")
 	private void prepareNetworkArchitectureOptimization(IProgressMonitor monitor){
 		
@@ -180,8 +187,6 @@ public class NeuralNetworkOptimizer extends Job {
 		
 	}
 	
-	
-	
 	private class TerminationPropertyChangeListener implements PropertyChangeListener{
 		IProgressMonitor monitor;
 		
@@ -207,7 +212,7 @@ public class NeuralNetworkOptimizer extends Job {
 				//}
 			}
 			// Cancel called
-			if (monitor.isCanceled()){
+			if (monitor.isCanceled() || isCancel){
 				term.cancel();
 				eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_FINISHED,info);
 			}
@@ -218,6 +223,12 @@ public class NeuralNetworkOptimizer extends Job {
 	}
 	
 	
+	
+	
+	
+	//################################
+	//##        INFOCLASS           ##
+	//################################	
 	
 	public class OptInfo{
 		

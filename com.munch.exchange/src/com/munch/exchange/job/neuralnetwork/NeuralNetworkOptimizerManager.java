@@ -103,6 +103,8 @@ public class NeuralNetworkOptimizerManager extends Job{
 		
 		eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_STARTED,info);
 		
+		IStatus returnStatus=Status.OK_STATUS;
+		
 		while(currentInnerNeurons<=maxInnerNeurons){
 			int pos=-1;
 			for(NeuralNetworkOptimizer optimizer:optimizers){
@@ -121,20 +123,30 @@ public class NeuralNetworkOptimizerManager extends Job{
 				currentInnerNeurons++;break;
 			}
 			
-			if(!makeItSleep(monitor))return Status.CANCEL_STATUS;
+			if(!makeItSleep(monitor)){
+				returnStatus=Status.CANCEL_STATUS;
+				break;
+			}
 			
 		}
 		
 		boolean areAllFinished=false;
 		while(!areAllFinished){
 			areAllFinished=true;
+			int pos=-1;
 			for(NeuralNetworkOptimizer optimizer:optimizers){
-				if(optimizer.getState()==Job.RUNNING)areAllFinished=false;
+				pos++;
+				if(optimizer.getState()==Job.RUNNING){
+					InfoPart.postInfoText(eventBroker, "Job "+pos+" is running");
+					areAllFinished=false;
+				}
 			}
 			
 			if(areAllFinished)break;
 			
-			if(!makeItSleep(monitor))return Status.CANCEL_STATUS;
+			if(!makeItSleep(monitor)){
+				returnStatus=Status.CANCEL_STATUS;
+			}
 		
 		}
 		
@@ -142,23 +154,30 @@ public class NeuralNetworkOptimizerManager extends Job{
 		InfoPart.postInfoText(eventBroker, "Optimizer manager is finished!");
 		eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_FINISHED,info);
 		
-		return Status.OK_STATUS;
+		return returnStatus;
 	}
 	
 	private boolean makeItSleep(IProgressMonitor monitor){
 		
 		try {
 		
+		Thread.sleep(RESTART);
 		if (monitor.isCanceled()){
+			int pos=-1;
 			for(NeuralNetworkOptimizer optimizer:optimizers){
-				optimizer.cancel();
-				optimizer.join();
+				pos++;
+				if(optimizer.getState()==Job.RUNNING){
+					InfoPart.postInfoText(eventBroker, "Try to cancel job "+pos+"!!");
+					optimizer.cancel();
+				}
+				//optimizer.join();
+				//optimizer.getJobManager().
 			}
 			return false;
 		}
 		//this.wait(RESTART);
 		//InfoPart.postInfoText(eventBroker, "Optimizer manager is sleeping!");
-		Thread.sleep(RESTART);
+		
 		return true;
 		
 		} catch (InterruptedException e) {

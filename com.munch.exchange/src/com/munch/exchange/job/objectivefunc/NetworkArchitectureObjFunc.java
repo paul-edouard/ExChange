@@ -287,7 +287,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			
 			BackPropagation bp = (BackPropagation)event.getSource();
 			
-			logger.info("Learning Error: "+ bp.getTotalNetworkError()+", x Size:" +trainingSet.size()*bp.getTotalNetworkError());
+			//logger.info("Learning Error: "+ bp.getTotalNetworkError()+", x Size:" +trainingSet.size()*bp.getTotalNetworkError());
 			
 			ResultEntity ent=new ResultEntity(bp.getNeuralNetwork().getWeights(), bp.getTotalNetworkError());
 			//Save the new results entity
