@@ -320,10 +320,10 @@ public class EvolutionStrategy<X> extends
 
         // usually done via normally distributed mutation as specified in
         // Algorithm 30.5.
-        System.out.println("Pos"+i+"Before Mutation: "+p);
+        //System.out.println("Pos"+i+"Before Mutation: "+p);
         //System.out.println("mutateGenotype: "+i);
         p.g = mutateGenotype.mutate(p.g, r);
-        System.out.println("Pos"+i+"After Mutation: "+p);
+        //System.out.println("Pos"+i+"After Mutation: "+p);
       }
       
       //System.out.println("End Population: "+pop.length);

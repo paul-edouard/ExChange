@@ -26,7 +26,9 @@ public final class DoubleArrayStdDevNormalMutation extends
 
   /** the standard deviation to use */
   private final double[] stddev;
-
+  
+  public static int MAX_NB_OF_LOOPS=100;
+  
   /**
    * Create a new real-vector mutation operation
    *
@@ -84,15 +86,18 @@ public final class DoubleArrayStdDevNormalMutation extends
     	if(g[i]<this.min){
     		g[i]=this.min*0.99;
     	}
+    	int loop=0;
       do {
+    	  loop++;
         // Use a normally distributed random number with a standard
         // deviation as specified in the array stddev.
         d = (g[i] + (r.nextGaussian() * stddevs[i]));
+        if(loop>MAX_NB_OF_LOOPS)break;
       } while ((d < this.min) || (d > this.max));
       gnew[i] = d;
     }
     
-    //System.out.println("gnew: "+Arrays.toString(gnew));
+   // System.out.println("gnew: "+Arrays.toString(gnew));
 
     return gnew;
   }

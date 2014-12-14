@@ -335,6 +335,7 @@ public class NeuralNetworkErrorPart {
 		
 		//Delete old series
 		Set<Integer> keySet=dimSerieMap.keySet();
+		if(keySet==null)return;
 		for(int i:keySet){
 			if(i<info.getMinDim() || i>info.getMaxDim()){
 				errorData.removeSeries(dimSerieMap.get(i));
@@ -460,6 +461,7 @@ public class NeuralNetworkErrorPart {
 				worker =provider.new Worker(i, info.getOptimizerDimensionMap().get(i));
 				provider.getWorkers().addChild(worker);
 			}
+			worker.dimension=info.getOptimizerDimensionMap().get(i);
 			worker.statusManager=info.getOptimizerStatusMap().get(i);
 			
 		}
