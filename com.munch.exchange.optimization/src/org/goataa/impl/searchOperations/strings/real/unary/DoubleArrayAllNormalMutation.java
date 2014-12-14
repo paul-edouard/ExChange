@@ -60,6 +60,7 @@ public final class DoubleArrayAllNormalMutation extends RealVectorMutation {
    */
   @Override
   public final double[] mutate(final double[] g, final Random r) {
+	//  System.out.println("MUTATION: DoubleArrayAllNormalMutation");
     final double[] gnew;
     final double strength;
     int i;

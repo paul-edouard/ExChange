@@ -45,6 +45,7 @@ public final class DoubleArrayStrategyLogNormalMutation extends
    */
   @Override
   public final double[] mutate(final double[] g, final Random r) {
+	//  System.out.println("MUTATION: DoubleArrayStrategyLogNormalMutation");
     final double[] gnew;
     final double t0, t, c, nu;
     int i;

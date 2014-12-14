@@ -1,5 +1,6 @@
 package com.munch.exchange.parts.neuralnetwork.error;
 
+import java.util.Calendar;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
@@ -122,18 +123,27 @@ public class TreeWorkerContentProvider implements IStructuredContentProvider,
 		
 		public int id;
 		public int dimension;
-		public int secondsOfInactivity;
-		public String status;
+		//public int secondsOfInactivity;
+		public String statusManager;
+		public String statusArchitecture;
+		public String statusOptimization;
+		public String statusLearning;
 		public Workers parent;
+		public Calendar lastReaction;
 		
 		public Worker(int id, int dimension) {
 			super();
 			this.id = id;
 			this.dimension = dimension;
-			status="No Status";
+			statusManager="No Status";
+			statusArchitecture="No Status";
+			statusOptimization="No Status";
+			resetLastReaction();
 		}
 		
-		
+		public void resetLastReaction(){
+			lastReaction=Calendar.getInstance();
+		}
 		
 		
 	}

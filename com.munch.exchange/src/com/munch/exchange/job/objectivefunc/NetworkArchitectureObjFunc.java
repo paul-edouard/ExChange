@@ -118,7 +118,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			if(monitor.isCanceled() || isCancel)break;
 			
 			info.setLoop(i);
-			eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_STARTED,info);
+			eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_LOOP,info);
 			
 			//Start the optimization algorithm
 			algorithm.call();
@@ -126,7 +126,11 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			//ResultEntity ref=architecture.getOptResults().getBestResult();
 			
 			//Loop on all the individuals to try increase the result quality
+			info.setLearningMax(NB_OF_RESULTS_TO_TRAIN);
 			for(int j=0;j<NB_OF_RESULTS_TO_TRAIN;j++){
+				info.setLearningId(j);
+				eventBroker.post(IEventConstant.NETWORK_LEARNING_STARTED,info);
+				
 				if(monitor.isCanceled() || isCancel)break;
 				//Start learning for each individuals
 				ResultEntity ent=architecture.getOptResults().getResults().get(j);
@@ -268,7 +272,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			}
 			else if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_STEP)){
 				int val=(int)evt.getNewValue();
-				if(val%10==0){
+				if(val%20==0){
 					info.setStep((int)evt.getNewValue());
 					eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_NEW_STEP,info);
 				}
@@ -331,6 +335,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		private Configuration configuration;
 		private int step;
 		private int loop=0;
+		private int learningId=0;
+		private int learningMax=0;
 		private int maximum;
 		private OptimizationResults results=new OptimizationResults();
 		private boolean[] archiFingerPrint;
@@ -384,6 +390,26 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			this.loop = loop;
 		}
 
+		public int getDimension(){
+			return archiFingerPrint.length;
+		}
+
+		public int getLearningId() {
+			return learningId;
+		}
+
+		public void setLearningId(int learningId) {
+			this.learningId = learningId;
+		}
+
+		public int getLearningMax() {
+			return learningMax;
+		}
+
+		public void setLearningMax(int learningMax) {
+			this.learningMax = learningMax;
+		}
+		
 		
 		
 	}

@@ -60,6 +60,7 @@ public final class DoubleArrayStdDevNormalMutation extends
    */
   @Override
   public final double[] mutate(final double[] g, final Random r) {
+	//  System.out.println("MUTATION: DoubleArrayStdDevNormalMutation");
     final double[] gnew, stddevs;
     double d;
     int i;
@@ -69,9 +70,20 @@ public final class DoubleArrayStdDevNormalMutation extends
     // create a new real vector of dimension n
     gnew = new double[i];
     stddevs = this.stddev;
-
+    
+    
+    //System.out.println("Min: "+this.min+ "Max: "+this.max);
+    //System.out.println("stddevs: "+Arrays.toString(stddevs));
+    //System.out.println("g: "+Arrays.toString(g));
+    
     // set each gene Definition D4.3 of gnew to ...
     for (; (--i) >= 0;) {
+    	if(g[i]>this.max){
+    		g[i]=this.max*0.99;
+    	}
+    	if(g[i]<this.min){
+    		g[i]=this.min*0.99;
+    	}
       do {
         // Use a normally distributed random number with a standard
         // deviation as specified in the array stddev.
@@ -79,6 +91,8 @@ public final class DoubleArrayStdDevNormalMutation extends
       } while ((d < this.min) || (d > this.max));
       gnew[i] = d;
     }
+    
+    //System.out.println("gnew: "+Arrays.toString(gnew));
 
     return gnew;
   }

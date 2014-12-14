@@ -299,7 +299,7 @@ public class Configuration extends XmlParameterElement {
 		NeuralNetwork nn=null;
 		for(NetworkArchitecture archi:networkArchitectures){
 			ResultEntity ent=archi.getOptResults().getBestResult();
-			
+			if(ent==null)continue;
 			if(ent.getValue()<error){
 				nn=archi.getNetwork();
 				//logger.info("Neuron size: "+nn.getWeights().length);

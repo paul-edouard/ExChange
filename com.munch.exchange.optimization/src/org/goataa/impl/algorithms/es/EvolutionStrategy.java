@@ -280,10 +280,11 @@ public class EvolutionStrategy<X> extends
       }
       
       
-     // System.out.println("Population: "+pop.length);
+      //System.out.println("Population: "+pop.length);
       // fill the new population with new offspring
       for (i = pop.length; (--i) >= 0;) {
         // select the parents for the new individual, which usually is done
+    	// System.out.println("Selection: "+i);
         // randomly with Algorithm 28.15
         parentalSel.select(selected, 0, selected.length, parents, 0,
             parents.length, r);
@@ -299,6 +300,7 @@ public class EvolutionStrategy<X> extends
 
         // usually done via dominate recombination, see
         // Algorithm 30.2
+        //System.out.println("recombineGenotype: "+i);
         p.g = recombineGenotype.combine(parents2, r);
 
         // We only use the strategy parameters if the mutator actually uses
@@ -306,20 +308,26 @@ public class EvolutionStrategy<X> extends
         if (mut != null) {
           // usually done via intermediate recombination, see
           // Algorithm 30.3
+        	// System.out.println("recombineStrategy: "+i);
           p.w = recombineStrategy.combine(parents3, r);
 
           // usually done via log-normal mutation, see
           // Algorithm 30.8
+          //System.out.println("mutateStrategy: "+i);
           p.w = mutateStrategy.mutate(p.w, r);
           mut.setStdDevs(p.w);
         }
 
         // usually done via normally distributed mutation as specified in
         // Algorithm 30.5.
-       // System.out.println("Before Mutation: "+p);
+        System.out.println("Pos"+i+"Before Mutation: "+p);
+        //System.out.println("mutateGenotype: "+i);
         p.g = mutateGenotype.mutate(p.g, r);
-       // System.out.println("After Mutation: "+p);
+        System.out.println("Pos"+i+"After Mutation: "+p);
       }
+      
+      //System.out.println("End Population: "+pop.length);
+      
     }
   }
 

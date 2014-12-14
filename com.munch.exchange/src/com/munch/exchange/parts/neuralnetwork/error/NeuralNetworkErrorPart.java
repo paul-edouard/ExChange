@@ -3,6 +3,7 @@ package com.munch.exchange.parts.neuralnetwork.error;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.text.DecimalFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,6 +52,7 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptManagerInfo;
+import com.munch.exchange.job.objectivefunc.NetworkArchitectureObjFunc.NetworkArchitectureOptInfo;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
@@ -192,6 +194,12 @@ public class NeuralNetworkErrorPart {
 		trclmnId.setWidth(100);
 		trclmnId.setText("Id");
 		
+		TreeViewerColumn treeViewerColumn_0 = new TreeViewerColumn(treeViewer, SWT.NONE);
+		treeViewerColumn_0.setLabelProvider(new DimensionLabelProvider());
+		TreeColumn trclmnDimension = treeViewerColumn_0.getColumn();
+		trclmnDimension.setWidth(100);
+		trclmnDimension.setText("Dimension");
+		
 		TreeViewerColumn treeViewerColumn_1 = new TreeViewerColumn(treeViewer, SWT.NONE);
 		treeViewerColumn_1.setLabelProvider(new LastReactionLabelProvider());
 		TreeColumn trclmnLastReaction = treeViewerColumn_1.getColumn();
@@ -200,9 +208,28 @@ public class NeuralNetworkErrorPart {
 		
 		TreeViewerColumn treeViewerColumn_2 = new TreeViewerColumn(treeViewer, SWT.NONE);
 		treeViewerColumn_2.setLabelProvider(new StatusLabelProvider());
-		TreeColumn trclmnStatus = treeViewerColumn_2.getColumn();
-		trclmnStatus.setWidth(100);
-		trclmnStatus.setText("Status");
+		TreeColumn trclmnStatusManager = treeViewerColumn_2.getColumn();
+		trclmnStatusManager.setWidth(100);
+		trclmnStatusManager.setText("Manager Status");
+		
+		TreeViewerColumn treeViewerColumn_3 = new TreeViewerColumn(treeViewer, SWT.NONE);
+		treeViewerColumn_3.setLabelProvider(new StatusArchiLabelProvider());
+		TreeColumn trclmnStatusArchitecture = treeViewerColumn_3.getColumn();
+		trclmnStatusArchitecture.setWidth(100);
+		trclmnStatusArchitecture.setText("Architecture Status");
+		
+		TreeViewerColumn treeViewerColumn_4 = new TreeViewerColumn(treeViewer, SWT.NONE);
+		treeViewerColumn_4.setLabelProvider(new StatusOptLabelProvider());
+		TreeColumn trclmnStatusOpt = treeViewerColumn_4.getColumn();
+		trclmnStatusOpt.setWidth(100);
+		trclmnStatusOpt.setText("Optimization Status");
+		
+		TreeViewerColumn treeViewerColumn_5 = new TreeViewerColumn(treeViewer, SWT.NONE);
+		treeViewerColumn_5.setLabelProvider(new StatusLeaningLabelProvider());
+		TreeColumn trclmnStatusLearning = treeViewerColumn_5.getColumn();
+		trclmnStatusLearning.setWidth(100);
+		trclmnStatusLearning.setText("Learning Status");
+		
 	}
 	
 	
@@ -401,7 +428,7 @@ public class NeuralNetworkErrorPart {
 		return true;
 	}
 	
-	
+	//MANAGER
 	@Inject
 	private void networkOptManagerStarted(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_STARTED) NNOptManagerInfo info){
 		if(info==null)return;
@@ -416,7 +443,7 @@ public class NeuralNetworkErrorPart {
 		
 		initDimSerieMap(info);
 		//chart.fireChartChanged();
-		
+		treeViewer.refresh();
 	}
 	
 	@Inject
@@ -424,23 +451,36 @@ public class NeuralNetworkErrorPart {
 		if(info==null)return;
 		if(!isAbleToReact(info.getRate().getUUID()))return;
 		
-		logger.info("WORKER_STATE_CHANGED: ");
+		//logger.info("WORKER_STATE_CHANGED: ");
 		
 		for(Integer i:info.getOptimizerStatusMap().keySet()){
 			Worker worker = provider.getWorkers().getWorkerFromId(i);
 			if(worker==null){
+				if(!info.getOptimizerDimensionMap().containsKey(i))return;
 				worker =provider.new Worker(i, info.getOptimizerDimensionMap().get(i));
 				provider.getWorkers().addChild(worker);
 			}
-			worker.status=info.getOptimizerStatusMap().get(i);
+			worker.statusManager=info.getOptimizerStatusMap().get(i);
 			
 		}
 		
-		treeViewer.setInput(provider.getWorkers());
+		//treeViewer.setInput(provider.getWorkers());
 		treeViewer.refresh();
 		
 	}
 	
+	@Inject
+	private void networkOptManagerFinished(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_FINISHED) NNOptManagerInfo info) {
+		if(info==null)return;
+		if(!isAbleToReact(info.getRate().getUUID()))return;
+		
+		btnStop.setEnabled(false);
+		progressBarNetworkError.setSelection(0);
+		progressBarNetworkError.setEnabled(false);
+		
+	}
+	
+	//ARCHITECTURE
 	@Inject
 	private void networkArchitectureNewStep(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_STEP) OptInfo info){
 		if(info==null)return;
@@ -459,11 +499,19 @@ public class NeuralNetworkErrorPart {
 		    	
 			}
 		}
+		
+		Worker worker = provider.getWorkers().getWorkerFromDimension(info.getDimension());
+		if(worker==null)return;
+		
+		worker.resetLastReaction();
+		worker.statusArchitecture="New Step: "+info.getStep()+"/"+info.getMaximum();
+		
+		treeViewer.refresh();
+		
 	}
 	
 	@Inject
-	private void networkArchitectureNewBest(
-			@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL) OptInfo info) {
+	private void networkArchitectureNewBest(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL) OptInfo info) {
 		if(info==null)return;
 		if(!isAbleToReact(info.getRate().getUUID()))return;
 		
@@ -477,19 +525,90 @@ public class NeuralNetworkErrorPart {
 				updateChart(info);
 			}
 		}
+		
+		Worker worker = provider.getWorkers().getWorkerFromDimension(info.getDimension());
+		if(worker==null)return;
+		
+		worker.resetLastReaction();
+		worker.statusArchitecture="New Best at Step: "+info.getStep();
+		
+		treeViewer.refresh();
 	}
 	
+	//OPTIMIZATION
 	@Inject
-	private void networkOptManagerFinished(
-			@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_FINISHED) NNOptManagerInfo info) {
+	private void networkOptimizationStarted(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_STARTED) NetworkArchitectureOptInfo info){
 		if(info==null)return;
 		if(!isAbleToReact(info.getRate().getUUID()))return;
 		
-		btnStop.setEnabled(false);
-		progressBarNetworkError.setSelection(0);
-		progressBarNetworkError.setEnabled(false);
+		
+		Worker worker = provider.getWorkers().getWorkerFromDimension(info.getDimension());
+		if(worker==null)return;
+		
+		worker.resetLastReaction();
+		worker.statusOptimization="Started, Step: "+info.getStep()+"/"+info.getMaximum();
+		
+		treeViewer.refresh();
 		
 	}
+	
+	@Inject
+	private void networkOptimizationLoop(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_LOOP) NetworkArchitectureOptInfo info){
+		if(info==null)return;
+		if(!isAbleToReact(info.getRate().getUUID()))return;
+		
+		reactOnNetworkOptimizationEvent(info,"LOOP");
+	}
+	
+	@Inject
+	private void networkOptimizationStep(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_NEW_STEP) NetworkArchitectureOptInfo info){
+		if(info==null)return;
+		if(!isAbleToReact(info.getRate().getUUID()))return;
+		
+		reactOnNetworkOptimizationEvent(info, "STEP");
+	}
+	
+	@Inject
+	private void networkOptimizationFinished(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_FINISHED) NetworkArchitectureOptInfo info){
+		if(info==null)return;
+		if(!isAbleToReact(info.getRate().getUUID()))return;
+		
+		reactOnNetworkOptimizationEvent(info, "FINISHED");
+	}
+	
+	@Inject
+	private void networkOptimizationNewBest(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_NEW_BEST_INDIVIDUAL) NetworkArchitectureOptInfo info){
+		if(info==null)return;
+		if(!isAbleToReact(info.getRate().getUUID()))return;
+		
+		reactOnNetworkOptimizationEvent(info,"BEST");
+	}
+	
+	private void reactOnNetworkOptimizationEvent(NetworkArchitectureOptInfo info, String suffix){
+		Worker worker = provider.getWorkers().getWorkerFromDimension(info.getDimension());
+		if(worker==null)return;
+		
+		worker.resetLastReaction();
+		worker.statusOptimization="Loop"+info.getLoop()+", Step: "+info.getStep()+"/"+info.getMaximum()+ " ["+suffix+"]";
+		
+		treeViewer.refresh();
+	}
+	
+	//LEARNING
+	@Inject
+	private void networkOptimizationLeaning(@Optional @UIEventTopic(IEventConstant.NETWORK_LEARNING_STARTED) NetworkArchitectureOptInfo info){
+		if(info==null)return;
+		if(!isAbleToReact(info.getRate().getUUID()))return;
+		
+		Worker worker = provider.getWorkers().getWorkerFromDimension(info.getDimension());
+		if(worker==null)return;
+		
+		worker.resetLastReaction();
+		worker.statusLearning="Id: "+info.getLearningId()+"/"+info.getLearningMax();
+		
+		treeViewer.refresh();
+	}
+	
 	
 	//################################
 	//##     ColumnLabelProvider    ##
@@ -512,13 +631,28 @@ public class NeuralNetworkErrorPart {
 		
 	}
 	
+	class DimensionLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof Worker){
+				Worker el=(Worker) element;
+				return String.valueOf(el.dimension);
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
 	class LastReactionLabelProvider extends ColumnLabelProvider{
 
 		@Override
 		public String getText(Object element) {
 			if(element instanceof Worker){
 				Worker el=(Worker) element;
-				return String.valueOf(el.secondsOfInactivity)+"s";
+				Calendar diff=Calendar.getInstance();
+				long secondes=(diff.getTimeInMillis()-el.lastReaction.getTimeInMillis())/1000;
+				return String.valueOf(secondes)+"s";
 			}
 			return "";
 		}
@@ -531,7 +665,46 @@ public class NeuralNetworkErrorPart {
 		public String getText(Object element) {
 			if(element instanceof Worker){
 				Worker el=(Worker) element;
-				return String.valueOf(el.status);
+				return String.valueOf(el.statusManager);
+			}
+			return "";
+		}
+		
+	}
+	
+	class StatusArchiLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof Worker){
+				Worker el=(Worker) element;
+				return String.valueOf(el.statusArchitecture);
+			}
+			return "";
+		}
+		
+	}
+	
+	class StatusOptLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof Worker){
+				Worker el=(Worker) element;
+				return String.valueOf(el.statusOptimization);
+			}
+			return "";
+		}
+		
+	}
+	
+	class StatusLeaningLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof Worker){
+				Worker el=(Worker) element;
+				return String.valueOf(el.statusLearning);
 			}
 			return "";
 		}

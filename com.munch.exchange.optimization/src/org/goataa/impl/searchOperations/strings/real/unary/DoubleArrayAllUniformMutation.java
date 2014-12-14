@@ -53,6 +53,7 @@ public final class DoubleArrayAllUniformMutation extends
    */
   @Override
   public final double[] mutate(final double[] g, final Random r) {
+	//  System.out.println("MUTATION: DoubleArrayAllUniformMutation");
     final double[] gnew;
     final double strength;
     int i;
