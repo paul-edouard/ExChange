@@ -63,6 +63,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	private StepLimitPropChange<double[],double[]> term=null;
 	private int optLoops=1;
 	
+	private boolean isCancel=false;
+	
 	private double minWeigth=Double.MAX_VALUE;
 	private double maxWeigth=Double.MIN_VALUE;
 	
@@ -81,6 +83,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		this.trainingSet=testSet;
 		this.eventBroker=eventBroker;
 		this.monitor=monitor;
+		
+		isCancel=false;
 		
 	}
 	
@@ -111,7 +115,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		//Start the Optimization
 		for(int i=0;i<optLoops;i++){
 			
-			if(monitor.isCanceled())break;
+			if(monitor.isCanceled() || isCancel)break;
 			
 			info.setLoop(i);
 			eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_STARTED,info);
@@ -123,7 +127,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			
 			//Loop on all the individuals to try increase the result quality
 			for(int j=0;j<NB_OF_RESULTS_TO_TRAIN;j++){
-				if(monitor.isCanceled())break;
+				if(monitor.isCanceled() || isCancel)break;
 				//Start learning for each individuals
 				ResultEntity ent=architecture.getOptResults().getResults().get(j);
 				if(ent!=null && Double.isNaN(ent.getDoubleArray()[0])){
@@ -135,7 +139,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 				
 			}
 			
-			if(monitor.isCanceled())break;
+			if(monitor.isCanceled() || isCancel)break;
 			
 			//Set the best results as starting point for the next loop
 			resetMinMaxValuesOfAlgorithm();
@@ -383,5 +387,19 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 		
 	}
+	
+
+	public boolean isCancel() {
+		return isCancel;
+	}
+
+
+	public void setCancel(boolean isCancel) {
+		this.isCancel = isCancel;
+	}
+	
+	
+	
+	
 	
 }

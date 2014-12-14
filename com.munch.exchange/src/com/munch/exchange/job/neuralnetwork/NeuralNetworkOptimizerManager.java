@@ -1,5 +1,6 @@
 package com.munch.exchange.job.neuralnetwork;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
@@ -21,6 +22,11 @@ public class NeuralNetworkOptimizerManager extends Job{
 	private static Logger logger = Logger.getLogger(NeuralNetworkOptimizerManager.class);
 	
 	public static final int RESTART=4000;
+	
+	private static final String OPTIMIZER_STATUS_STARTED="Started";
+	private static final String OPTIMIZER_STATUS_RUNNING="Running";
+	private static final String OPTIMIZER_STATUS_CANCEL="Cancel";
+	private static final String OPTIMIZER_STATUS_FINISHED="Finished";
 	
 	private IEventBroker eventBroker;
 	
@@ -48,8 +54,10 @@ public class NeuralNetworkOptimizerManager extends Job{
 		
 		
 		for(int i=0;i<getNumberOfProcessors();i++){
-			optimizers.add(new NeuralNetworkOptimizer(this.rate, this.configuration,
-						this.trainingSet, this.eventBroker, 0));
+			NeuralNetworkOptimizer optimizer=new NeuralNetworkOptimizer(this.rate, this.configuration,
+					this.trainingSet, this.eventBroker, 0);
+			optimizer.getInfo().setWorkerPos(i);
+			optimizers.add(optimizer);
 		}
 		
 		
@@ -101,6 +109,7 @@ public class NeuralNetworkOptimizerManager extends Job{
 		InfoPart.postInfoText(eventBroker, "Network Manager Started"
 		+"\tMin InnerNeurons: "+currentInnerNeurons+"\tMax InnerNeurons: "+maxInnerNeurons);
 		
+		info.clearOptimizerMap();
 		eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_STARTED,info);
 		
 		IStatus returnStatus=Status.OK_STATUS;
@@ -111,15 +120,23 @@ public class NeuralNetworkOptimizerManager extends Job{
 				pos++;
 				if(optimizer.getState()==Job.RUNNING){
 					//InfoPart.postInfoText(eventBroker, "Job "+pos+" is running");
+					info.getOptimizerStatusMap().put(pos, OPTIMIZER_STATUS_RUNNING);
+					eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_WORKER_STATE_CHANGED,info);
 					continue;
 				}
 				
 				InfoPart.postInfoText(eventBroker, "New Optimizer started for dimension "+currentInnerNeurons+ " on position "+pos);
 				
-				optimizer.setDimension(
-						NetworkArchitecture.calculateActivatedConnectionsSize(
-								configuration.getNumberOfInputNeurons(), currentInnerNeurons));
+				int dimension=NetworkArchitecture.calculateActivatedConnectionsSize(
+						configuration.getNumberOfInputNeurons(), currentInnerNeurons);
+				
+				optimizer.setDimension(dimension);
 				optimizer.schedule();
+				
+				info.getOptimizerStatusMap().put(pos, OPTIMIZER_STATUS_STARTED);
+				info.getOptimizerDimensionMap().put(pos,dimension);
+				eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_WORKER_STATE_CHANGED,info);
+				
 				currentInnerNeurons++;break;
 			}
 			
@@ -138,7 +155,13 @@ public class NeuralNetworkOptimizerManager extends Job{
 				pos++;
 				if(optimizer.getState()==Job.RUNNING){
 					InfoPart.postInfoText(eventBroker, "Job "+pos+" is running");
+					info.getOptimizerStatusMap().put(pos, OPTIMIZER_STATUS_RUNNING);
+					eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_WORKER_STATE_CHANGED,info);
 					areAllFinished=false;
+				}
+				else{
+					info.getOptimizerStatusMap().put(pos, OPTIMIZER_STATUS_FINISHED);
+					eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_WORKER_STATE_CHANGED,info);
 				}
 			}
 			
@@ -169,6 +192,10 @@ public class NeuralNetworkOptimizerManager extends Job{
 				if(optimizer.getState()==Job.RUNNING){
 					InfoPart.postInfoText(eventBroker, "Try to cancel job "+pos+"!!");
 					optimizer.cancel();
+					
+					info.getOptimizerStatusMap().put(pos, OPTIMIZER_STATUS_CANCEL);
+					eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_WORKER_STATE_CHANGED,info);
+					
 				}
 				//optimizer.join();
 				//optimizer.getJobManager().
@@ -197,6 +224,9 @@ public class NeuralNetworkOptimizerManager extends Job{
 		
 		private ExchangeRate rate;
 		private Configuration configuration;
+		
+		private HashMap<Integer, String> optimizerStatusMap=new HashMap<Integer, String>();
+		private HashMap<Integer, Integer> optimizerDimensionMap=new HashMap<Integer, Integer>();
 		
 		
 		public NNOptManagerInfo(int minDim, int maxDim, ExchangeRate rate,
@@ -231,8 +261,17 @@ public class NeuralNetworkOptimizerManager extends Job{
 		public void setConfiguration(Configuration configuration) {
 			this.configuration = configuration;
 		}
+		public HashMap<Integer, String> getOptimizerStatusMap() {
+			return optimizerStatusMap;
+		}
 		
-		
+		public HashMap<Integer, Integer> getOptimizerDimensionMap() {
+			return optimizerDimensionMap;
+		}
+		public void clearOptimizerMap(){
+			optimizerStatusMap.clear();
+			optimizerDimensionMap.clear();
+		}
 		
 		
 	}

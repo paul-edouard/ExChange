@@ -73,6 +73,7 @@ import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
+import com.munch.exchange.parts.neuralnetwork.error.NeuralNetworkErrorPart;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
 import com.munch.exchange.wizard.parameter.architecture.ArchitectureOptimizationWizard;

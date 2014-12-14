@@ -1,4 +1,4 @@
-package com.munch.exchange.parts.neuralnetwork;
+package com.munch.exchange.parts.neuralnetwork.error;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -56,7 +56,18 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.MyMDirtyable;
+import com.munch.exchange.parts.neuralnetwork.error.TreeWorkerContentProvider.Worker;
+import com.munch.exchange.parts.neuralnetwork.error.TreeWorkerContentProvider.Workers;
 import com.munch.exchange.services.IExchangeRateProvider;
+
+import org.eclipse.swt.custom.TableTree;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TableTreeViewer;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 
 public class NeuralNetworkErrorPart {
 	
@@ -80,6 +91,9 @@ public class NeuralNetworkErrorPart {
 	@Inject
 	NeuralNetworkOptimizerManager optimizerManager;
 	
+	
+	private TreeWorkerContentProvider provider=new TreeWorkerContentProvider("Workers");
+	
 	private Button btnStop;
 	private ProgressBar progressBarNetworkError;
 	
@@ -91,6 +105,8 @@ public class NeuralNetworkErrorPart {
 	private HashMap<Integer, XYSeries> dimSerieMap=new HashMap<Integer, XYSeries>();
 	private HashMap<Integer, Integer> dimSerieSteps=new HashMap<Integer, Integer>();
 	private int nbOfOptSteps=0;
+	private Tree tree;
+	private TreeViewer treeViewer;
 	
 	public NeuralNetworkErrorPart() {
 	}
@@ -152,12 +168,41 @@ public class NeuralNetworkErrorPart {
 		btnStop.setImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/delete.png"));
 		btnStop.setText("Stop");
 		
-		TabItem tbtmTable = new TabItem(tabFolder, SWT.NONE);
-		tbtmTable.setText("Table");
+		TabItem tbtmWorkers = new TabItem(tabFolder, SWT.NONE);
+		tbtmWorkers.setText("Workers");
 		
 		Composite compositeTable = new Composite(tabFolder, SWT.NONE);
-		tbtmTable.setControl(compositeTable);
+		tbtmWorkers.setControl(compositeTable);
 		compositeTable.setLayout(new GridLayout(1, false));
+		
+		treeViewer = new TreeViewer(compositeTable, SWT.BORDER| SWT.MULTI
+				| SWT.V_SCROLL);
+		treeViewer.setAutoExpandLevel(1);
+		treeViewer.setContentProvider(provider);
+		treeViewer.setInput(provider.getWorkers());
+		
+		tree = treeViewer.getTree();
+		tree.setHeaderVisible(true);
+		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		
+		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
+		treeViewerColumn.setLabelProvider(new IdLabelProvider());
+		TreeColumn trclmnId = treeViewerColumn.getColumn();
+		trclmnId.setWidth(100);
+		trclmnId.setText("Id");
+		
+		TreeViewerColumn treeViewerColumn_1 = new TreeViewerColumn(treeViewer, SWT.NONE);
+		treeViewerColumn_1.setLabelProvider(new LastReactionLabelProvider());
+		TreeColumn trclmnLastReaction = treeViewerColumn_1.getColumn();
+		trclmnLastReaction.setWidth(100);
+		trclmnLastReaction.setText("Last Reaction");
+		
+		TreeViewerColumn treeViewerColumn_2 = new TreeViewerColumn(treeViewer, SWT.NONE);
+		treeViewerColumn_2.setLabelProvider(new StatusLabelProvider());
+		TreeColumn trclmnStatus = treeViewerColumn_2.getColumn();
+		trclmnStatus.setWidth(100);
+		trclmnStatus.setText("Status");
 	}
 	
 	
@@ -356,11 +401,14 @@ public class NeuralNetworkErrorPart {
 		return true;
 	}
 	
+	
 	@Inject
 	private void networkOptManagerStarted(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_STARTED) NNOptManagerInfo info){
 		if(info==null)return;
 		if(!isAbleToReact(info.getRate().getUUID()))return;
 		
+		
+		provider.getWorkers().clear();
 		
 		btnStop.setEnabled(true);
 		progressBarNetworkError.setEnabled(true);
@@ -371,6 +419,27 @@ public class NeuralNetworkErrorPart {
 		
 	}
 	
+	@Inject
+	private void networkOptManagerNewWorkerState(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_WORKER_STATE_CHANGED) NNOptManagerInfo info){
+		if(info==null)return;
+		if(!isAbleToReact(info.getRate().getUUID()))return;
+		
+		logger.info("WORKER_STATE_CHANGED: ");
+		
+		for(Integer i:info.getOptimizerStatusMap().keySet()){
+			Worker worker = provider.getWorkers().getWorkerFromId(i);
+			if(worker==null){
+				worker =provider.new Worker(i, info.getOptimizerDimensionMap().get(i));
+				provider.getWorkers().addChild(worker);
+			}
+			worker.status=info.getOptimizerStatusMap().get(i);
+			
+		}
+		
+		treeViewer.setInput(provider.getWorkers());
+		treeViewer.refresh();
+		
+	}
 	
 	@Inject
 	private void networkArchitectureNewStep(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_STEP) OptInfo info){
@@ -419,6 +488,53 @@ public class NeuralNetworkErrorPart {
 		btnStop.setEnabled(false);
 		progressBarNetworkError.setSelection(0);
 		progressBarNetworkError.setEnabled(false);
+		
+	}
+	
+	//################################
+	//##     ColumnLabelProvider    ##
+	//################################
+	
+	class IdLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof Workers){
+				Workers el=(Workers) element;
+				return el.groupName;
+			}
+			else if(element instanceof Worker){
+				Worker el=(Worker) element;
+				return String.valueOf(el.id);
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
+	class LastReactionLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof Worker){
+				Worker el=(Worker) element;
+				return String.valueOf(el.secondsOfInactivity)+"s";
+			}
+			return "";
+		}
+		
+	}
+	
+	class StatusLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof Worker){
+				Worker el=(Worker) element;
+				return String.valueOf(el.status);
+			}
+			return "";
+		}
 		
 	}
 	

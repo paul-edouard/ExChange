@@ -2,6 +2,7 @@ package com.munch.exchange.job.neuralnetwork;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Calendar;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -41,6 +42,8 @@ public class NeuralNetworkOptimizer extends Job {
 	
 	private OptInfo info;
 	private List<Individual<boolean[], boolean[]>>  solutions;
+	private NetworkArchitectureObjFunc func;
+	
 	private boolean isCancel=false;
 	
 	ISOOptimizationAlgorithm<boolean[], boolean[], Individual<boolean[], boolean[]>> algorithm;
@@ -58,6 +61,8 @@ public class NeuralNetworkOptimizer extends Job {
 		this.trainingSet=testSet;
 		this.eventBroker=eventBroker;
 		this.dimension=dimension;
+		
+		this.info=new OptInfo(rate, configuration);
 		
 	}
 	
@@ -121,6 +126,7 @@ public class NeuralNetworkOptimizer extends Job {
 		
 		//Remove the listener
 		term.removePropertyChangeListener(listener);
+		info.resetLastReaction();
 		eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_FINISHED,info);
 		
 		
@@ -158,8 +164,9 @@ public class NeuralNetworkOptimizer extends Job {
 		algorithm.setGPM(gpm);
 				
 		//Set the objective function
-		algorithm.setObjectiveFunction(new NetworkArchitectureObjFunc(rate, configuration,trainingSet,
-				 eventBroker, monitor));
+		func=new NetworkArchitectureObjFunc(rate, configuration,trainingSet,
+				 eventBroker, monitor);
+		algorithm.setObjectiveFunction(func);
 		
 		//Reload last results
 		configuration.getOptArchitectureParam().addBooleanLastBestResults(algorithm, configuration.getOptResults(dimension));
@@ -183,7 +190,9 @@ public class NeuralNetworkOptimizer extends Job {
 		//				monitor);
 		//term.addPropertyChangeListener(listener);
 		
-		info=new OptInfo(rate, configuration, term.getMaxSteps(), dimension);
+		
+		info.setMaximum(term.getMaxSteps());
+		info.setDimension(dimension);
 		
 	}
 	
@@ -201,6 +210,7 @@ public class NeuralNetworkOptimizer extends Job {
 				Individual<boolean[], boolean[]> ind=(Individual<boolean[], boolean[]>) evt.getNewValue();
 				//logger.info("New Best Results: "+ind.v);
 				if(info.getResults().addResult(new ResultEntity(ind.x,ind.v))){
+					info.resetLastReaction();
 					eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
 				}
 			}
@@ -208,12 +218,15 @@ public class NeuralNetworkOptimizer extends Job {
 				//int val=(int)evt.getNewValue();
 				//if(val%10==0){
 					info.setStep((int)evt.getNewValue());
+					info.resetLastReaction();
 					eventBroker.post(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_STEP,info);
 				//}
 			}
 			// Cancel called
 			if (monitor.isCanceled() || isCancel){
+				func.setCancel(true);
 				term.cancel();
+				info.resetLastReaction();
 				eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_FINISHED,info);
 			}
 			
@@ -224,12 +237,14 @@ public class NeuralNetworkOptimizer extends Job {
 	
 	
 	
-	
-	
 	//################################
 	//##        INFOCLASS           ##
 	//################################	
 	
+	public OptInfo getInfo() {
+		return info;
+	}
+
 	public class OptInfo{
 		
 		private ExchangeRate rate;
@@ -239,7 +254,10 @@ public class NeuralNetworkOptimizer extends Job {
 		private OptimizationResults results=new OptimizationResults();
 		private int dimension;
 		private int nbOfInnerNeurons;
+		private int workerPos;
+		private Calendar lastReaction=Calendar.getInstance();
 		
+		/*
  		public OptInfo(ExchangeRate rate,
 				Configuration configuration ,int maximum,int dimension) {
 			super();
@@ -249,6 +267,17 @@ public class NeuralNetworkOptimizer extends Job {
 			this.maximum=maximum;
 			this.dimension=dimension;
 			nbOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(dimension, configuration.getNumberOfInputNeurons());
+		}*/
+ 		
+ 		public OptInfo(ExchangeRate rate,
+				Configuration configuration ) {
+			super();
+			this.rate = rate;
+			this.configuration = configuration;
+			this.step=maximum;
+			//this.maximum=maximum;
+			//this.dimension=dimension;
+			//nbOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(dimension, configuration.getNumberOfInputNeurons());
 		}
 		
 		
@@ -257,6 +286,19 @@ public class NeuralNetworkOptimizer extends Job {
 		}
 		
 		
+		public synchronized void resetLastReaction(){
+			lastReaction=Calendar.getInstance();
+		}
+		
+		public synchronized int getElapsedSecondSinceLastReaction(){
+			Calendar diff=Calendar.getInstance();
+			long elapseTime=diff.getTimeInMillis()-lastReaction.getTimeInMillis();
+			return (int) elapseTime/1000;
+		}
+		
+		//################################
+		//##   GETTER AND SETTER        ##
+		//################################
 		
 		public int getStep() {
 			return step;
@@ -271,7 +313,22 @@ public class NeuralNetworkOptimizer extends Job {
 		public void setMaximum(int maximum) {
 			this.maximum = maximum;
 		}
+	
+		
+		public void setDimension(int dimension) {
+			this.dimension=dimension;
+			nbOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(dimension, configuration.getNumberOfInputNeurons());
+		
+		}
 
+		public int getWorkerPos() {
+			return workerPos;
+		}
+		public void setWorkerPos(int workerPos) {
+			this.workerPos = workerPos;
+		}
+		
+		
 		public ExchangeRate getRate() {
 			return rate;
 		}
@@ -287,6 +344,13 @@ public class NeuralNetworkOptimizer extends Job {
 		public OptimizationResults getResults() {
 			return results;
 		}
+		
+
+
+		
+		
+		
+		
 		
 	}
 	
