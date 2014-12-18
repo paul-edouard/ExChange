@@ -17,6 +17,9 @@
                 <children xsi:type="menu:HandledToolItem" xmi:id="_tSYvsIXPEeOHHYCHtnBtIA" elementId="com.munch.exchange.handledtoolitem.rates.add" label="add" iconURI="platform:/plugin/com.munch.exchange/icons/add.png" tooltip="Add a new rate" command="_EztE8IXQEeOHHYCHtnBtIA"/>
               </toolbar>
             </children>
+            <children xsi:type="basic:Part" xmi:id="_F6RdoIboEeSK6OWfylybxw" elementId="com.munch.exchange.part.networkresults" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsPart" label="Network Results" iconURI="platform:/plugin/com.munch.exchange/icons/package.gif" tooltip="Liste the network result of the selected configuration">
+              <toolbar xmi:id="_fu1n4IboEeSK6OWfylybxw" elementId="com.munch.exchange.toolbar.0"/>
+            </children>
           </children>
           <children xsi:type="basic:PartSashContainer" xmi:id="_jXbLEIjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partsashcontainer.rigth" containerData="75">
             <children xsi:type="basic:PartStack" xmi:id="_l_ZS4IjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partstack.rightup" containerData="80">

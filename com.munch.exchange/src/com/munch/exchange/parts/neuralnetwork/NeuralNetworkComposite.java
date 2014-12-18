@@ -197,6 +197,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				if(!stock.getNeuralNetwork().getCurrentConfiguration().equals(comboConfig.getText())){
 					
 					stock.getNeuralNetwork().setCurrentConfiguration(comboConfig.getText());
+					eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock);
 					btnSaveConfig.setVisible(true);
 				}
 				
@@ -797,6 +798,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		}
 		
 		comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
+		eventBroker.post(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock);
 		btnDeleteConfig.setVisible(stock.getNeuralNetwork().getConfigurations().size()>1);
 	}
 	
@@ -911,7 +913,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
     	stock.getNeuralNetwork().getConfiguration().setDirty(true);
     	btnSaveConfig.setVisible(true);
     }
-	
 	
 	/**
      * Prints network output for the each element from the specified training set.
