@@ -369,7 +369,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 		treeViewer = new TreeViewer(composite, SWT.BORDER| SWT.MULTI
-				| SWT.V_SCROLL);
+				| SWT.V_SCROLL | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(contentProvider);
 		treeViewer.setInput(contentProvider.getRoot());
 		

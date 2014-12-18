@@ -69,6 +69,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	private OptimizationResults optResults=new OptimizationResults();
 	
+	private Configuration parent=null;
 	
 	public NetworkArchitecture(){}
 	
@@ -740,6 +741,14 @@ public class NetworkArchitecture extends XmlParameterElement {
 	//***      GETTER AND SETTER          ****
 	//****************************************
 	
+	
+	public Configuration getParent() {
+		return parent;
+	}
+
+	public void setParent(Configuration parent) {
+	this.parent = parent;
+	}
 	
 	private LinkedList<Neuron> getNeuronsList(){
 		LinkedList<Neuron> neurons=new LinkedList< Neuron>();

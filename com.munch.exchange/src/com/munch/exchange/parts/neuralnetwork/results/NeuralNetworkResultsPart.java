@@ -18,16 +18,24 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
+
+import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 
 public class NeuralNetworkResultsPart {
 	
 	private Configuration config=null;
 	private Label lblSelectedConfig;
+	private Tree tree;
+	private TreeViewer treeViewer;
 	@Inject
 	public NeuralNetworkResultsPart() {
 		//TODO Your code here
@@ -46,11 +54,32 @@ public class NeuralNetworkResultsPart {
 		lblSelectedConfig.setBounds(0, 0, 81, 25);
 		lblSelectedConfig.setText("Selected Config:");
 		
-		TreeViewer treeViewer = new TreeViewer(parent, SWT.BORDER);
-		Tree tree = treeViewer.getTree();
+		treeViewer = new TreeViewer(parent, SWT.BORDER| SWT.MULTI
+				| SWT.V_SCROLL | SWT.FULL_SELECTION );
+		treeViewer.setAutoExpandLevel(1);
+		treeViewer.setContentProvider(new TreeNNResultsContentProvider());
+		
+		tree = treeViewer.getTree();
+		tree.setHeaderVisible(true);
 		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		//TODO Your code here
+		
+		
+		addColumn("Id",100,new IdLabelProvider());
+		addColumn("Inner Neurons",100,new InnerNeuronsLabelProvider());
+		addColumn("Best Result",100,new BestResultsLabelProvider());
+		
 	}
+	
+	private TreeViewerColumn addColumn(String columnName, int width, CellLabelProvider cellLabelProvider ){
+		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
+		treeViewerColumn.setLabelProvider(cellLabelProvider);
+		TreeColumn trclmnId = treeViewerColumn.getColumn();
+		trclmnId.setWidth(width);
+		trclmnId.setText(columnName);
+		
+		return treeViewerColumn;
+	}
+	
 	
 	
 	@PreDestroy
@@ -70,7 +99,53 @@ public class NeuralNetworkResultsPart {
 		//TODO Your code here
 	}
 	
+
+	//################################
+	//##     ColumnLabelProvider    ##
+	//################################	
 	
+	class IdLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				return String.valueOf(el.getId());
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
+	class InnerNeuronsLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				return String.valueOf(el.getNumberOfInnerNeurons());
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
+	class BestResultsLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				if(el.getOptResults()==null)return "No Results";
+				if(el.getOptResults().getBestResult()==null)return "No Best Result";
+				
+				double val=el.getOptResults().getBestResult().getValue();
+				return String.valueOf(val);
+			}
+			return super.getText(element);
+		}
+		
+	}
 	
 	//################################
 	//##       Event Reaction       ##
@@ -94,6 +169,10 @@ public class NeuralNetworkResultsPart {
 		
 		config=stock.getNeuralNetwork().getConfiguration();
 		lblSelectedConfig.setText(stock.getFullName()+": "+config.getName());
+		
+		
+		treeViewer.setInput(config);
+		treeViewer.refresh();
 		
 	}
 	

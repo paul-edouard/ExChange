@@ -125,6 +125,7 @@ public class Configuration extends XmlParameterElement {
 			if(searched.isValid()){
 				//Add the architecture in the list
 				this.setDirty(true);
+				searched.setParent(this);
 				addNetworkArchitecture(searched);
 				return searched;
 			}
@@ -495,6 +496,11 @@ public class Configuration extends XmlParameterElement {
 	changes.firePropertyChange(FIELD_AllTimeSeries, this.allTimeSeries, this.allTimeSeries = allTimeSeries);}
 	*/
 	
+	public LinkedList<NetworkArchitecture> getNetworkArchitectures() {
+		return networkArchitectures;
+	}
+	
+	
 	//****************************************
 	//***             XML                 ****
 	//****************************************
@@ -512,6 +518,8 @@ public class Configuration extends XmlParameterElement {
 		networkArchitectures.clear();
 		netArchiOptResultMap.clear();
 	}
+
+
 
 	@Override
 	protected void initChild(Element childElement) {
@@ -536,6 +544,7 @@ public class Configuration extends XmlParameterElement {
 		}
 		else if(childElement.getTagName().equals(arch.getTagName())){
 			arch.init(childElement);
+			arch.setParent(this);
 			networkArchitectures.add(arch);
 		}
 		else if(childElement.getTagName().equals(results.getTagName())){
