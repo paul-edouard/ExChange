@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.optimization;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.goataa.impl.algorithms.ea.KeepBestSGEA;
@@ -307,6 +308,13 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	
 	public void addLastBestResults(ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> algorithm,OptimizationResults oldBestResults){
 		
+		if(oldBestResults==null)return;
+		
+		addLastBestResults(algorithm,oldBestResults.getResults());
+		
+	}
+	
+	public  void addLastBestResults(ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> algorithm,List<ResultEntity> results){
 		if(!(algorithm instanceof EvolutionStrategy))return;
 		EvolutionStrategy<X> ES=(EvolutionStrategy<X>) algorithm;
 		
@@ -315,14 +323,13 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 		DoubleArrayUniformCreation creation=(DoubleArrayUniformCreation) ES.getNullarySearchOperation();
 		
 		LinkedList<double[]> oldResults =new LinkedList<double[]>();
-		if(oldBestResults!=null && oldBestResults.getResults()!=null){	
-			for(ResultEntity ent : oldBestResults.getResults()){
+		if(results!=null){	
+			for(ResultEntity ent : results){
 				oldResults.add(ent.getDoubleArray());
 			}
 		}
 		
 		creation.setOldResults(oldResults);
-		
 	}
 	
 

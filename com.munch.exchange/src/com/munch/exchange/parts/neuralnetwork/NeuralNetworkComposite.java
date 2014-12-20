@@ -123,6 +123,9 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	@Inject
 	private IEventBroker eventBroker;
 	
+	@Inject
+	private INeuralNetworkProvider nnprovider;
+	
 	
 	//private NeuralNetworkOptimizer optimizer;
 	private NeuralNetworkOptimizerManager optimizerManager;
@@ -591,7 +594,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				
 				if(optimizerManager==null){
 					optimizerManager=new NeuralNetworkOptimizerManager(
-							eventBroker,
+							eventBroker,nnprovider,
 							stock,
 							stock.getNeuralNetwork().getConfiguration(),
 							trainingSet,
@@ -603,19 +606,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 					optimizerManager.setTrainingSet(trainingSet);
 					optimizerManager.setMinMax(minDim, maxDim);
 				}
-				
-				
-				/*
-				if(optimizer==null){
-					optimizer=new NeuralNetworkOptimizer(stock, stock.getNeuralNetwork().getConfiguration(),
-						trainingSet, eventBroker, dimension);
-				}
-				else{
-					optimizer.setConfiguration(stock.getNeuralNetwork().getConfiguration());
-					optimizer.setTrainingSet(trainingSet);
-					optimizer.setDimension(dimension);
-				}
-				*/
 				
 				setTrainingStatus(true);
 				

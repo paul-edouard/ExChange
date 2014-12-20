@@ -3,6 +3,7 @@ package com.munch.exchange.model.core.neuralnetwork;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -11,6 +12,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.goataa.impl.searchSpaces.trees.math.real.basic.Constant;
+import org.goataa.impl.utils.Constants;
 import org.neuroph.core.Connection;
 import org.neuroph.core.Layer;
 import org.neuroph.core.NeuralNetwork;
@@ -65,6 +68,22 @@ public class NetworkArchitecture extends XmlParameterElement {
 	//private List<Layer> layers=new LinkedList<Layer>();
 	
 	private int maxNumberOfSavedNetworks=50;
+	
+	//Optimization & Training
+	private int numberOfTraining=0;
+	private Calendar lastTraining=Calendar.getInstance();
+	private double bestTrainingRate=0;
+	private double middleTrainingRate=0;
+	private double beforeTrainingBestValue=Constants.WORST_FITNESS;
+	
+	private int numberOfOptimization=0;
+	private Calendar lastOptimization=Calendar.getInstance();
+	private double bestOptimizationRate=0;
+	private double middleOptimzationRate=0;
+	private double beforeOptimizationBestValue=Constants.WORST_FITNESS;
+	
+	private double bestValue=Constants.WORST_FITNESS;
+	
 	private NeuralNetwork network=new NeuralNetwork();
 	
 	private OptimizationResults optResults=new OptimizationResults();
@@ -552,6 +571,72 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	
+	public boolean hasResults(){
+		if(this.optResults==null)return false;
+		if(this.optResults.getResults()==null)return false;
+		return !this.optResults.getResults().isEmpty();
+	}
+	
+	
+	/**
+	 * prepare the Architecture before a optimization by saving the current best value
+	 */
+	public void prepareOptimizationStatistic(){
+		if(!hasResults())return;
+		this.beforeOptimizationBestValue=this.optResults.getBestResult().getValue();
+	}
+	
+	public void saveOptimizationStatistic(){
+		if(!hasResults())return;
+		
+		lastOptimization=Calendar.getInstance();
+		
+		double newBest=this.optResults.getBestResult().getValue();
+		double optRate=0;
+		if(beforeOptimizationBestValue!=Constants.WORST_FITNESS){
+			optRate=(beforeOptimizationBestValue-newBest)/beforeOptimizationBestValue;
+		}
+		bestOptimizationRate=Math.max(bestOptimizationRate, optRate);
+		middleOptimzationRate=(middleOptimzationRate*numberOfOptimization+optRate)/(numberOfOptimization+1);
+		numberOfOptimization++;		
+				
+	}
+	
+	public void prepareTrainingStatistic(ResultEntity ent){
+		if(!hasResults())return;
+		this.beforeTrainingBestValue=ent.getValue();
+	}
+	
+	public void saveTrainingStatistic(ResultEntity ent){
+		if(!hasResults())return;
+		
+		lastTraining=Calendar.getInstance();
+		
+		double newBest=ent.getValue();
+		double optRate=0;
+		if(beforeTrainingBestValue!=Constants.WORST_FITNESS){
+			optRate=(beforeTrainingBestValue-newBest)/beforeTrainingBestValue;
+		}
+		bestTrainingRate=Math.max(bestTrainingRate, optRate);
+		middleTrainingRate=(middleTrainingRate*numberOfTraining+optRate)/(numberOfTraining+1);
+		numberOfTraining++;
+		
+	}
+	
+	
+	/**
+	 * Add a result untity to the current list and save the best value
+	 * @param ent
+	 */
+	public void addResultEntity(ResultEntity ent){
+		if(ent.getValue()<this.bestValue)
+			this.bestValue=ent.getValue();
+		this.optResults.addResult(ent);
+	}
+	
+	public ResultEntity getBestResultEntity(){
+		return this.optResults.getBestResult();
+	}
 	
 	//****************************************
 	//***            STATIC               ****
@@ -783,12 +868,18 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return network;
 	}
 
-	public OptimizationResults getOptResults() {
+	/*public OptimizationResults getOptResults() {
 		return optResults;
+	}
+	*/
+	public List<ResultEntity> getResultsEntities(){
+		return optResults.getResults();
 	}
 
 	public void setOptResuts(OptimizationResults optResuts) {
 		this.optResults = optResuts;
+		if(this.optResults!=null && this.optResults.getBestResult()!=null)
+			this.bestValue=this.optResults.getBestResult().getValue();
 	}
 	
 	public void setNumberOfInnerNeurons(int numberOfInnerNeurons) {
@@ -872,7 +963,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 			
 			
 			this.network=nnet;
-			this.optResults=res;
+			
+			setOptResuts(res);
 			
 		}
 		

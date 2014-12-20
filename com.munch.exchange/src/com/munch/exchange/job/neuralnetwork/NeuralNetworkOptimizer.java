@@ -27,6 +27,7 @@ import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.parts.InfoPart;
+import com.munch.exchange.services.INeuralNetworkProvider;
 
 public class NeuralNetworkOptimizer extends Job {
 	
@@ -34,6 +35,7 @@ public class NeuralNetworkOptimizer extends Job {
 	private static Logger logger = Logger.getLogger(NeuralNetworkOptimizer.class);
 
 	private IEventBroker eventBroker;
+	private INeuralNetworkProvider nnprovider;
 	
 	private ExchangeRate rate;
 	private Configuration configuration;
@@ -51,7 +53,7 @@ public class NeuralNetworkOptimizer extends Job {
 	StepLimitPropChange<boolean[],boolean[]> term;
 	
 	public NeuralNetworkOptimizer(ExchangeRate rate, Configuration configuration,DataSet testSet,
-			IEventBroker eventBroker, int dimension) {
+			IEventBroker eventBroker, INeuralNetworkProvider nnprovider, int dimension) {
 		super("Neural Network Optimizer");
 		setSystem(true);
 		setPriority(SHORT);
@@ -61,6 +63,7 @@ public class NeuralNetworkOptimizer extends Job {
 		this.trainingSet=testSet;
 		this.eventBroker=eventBroker;
 		this.dimension=dimension;
+		this.nnprovider=nnprovider;
 		
 		this.info=new OptInfo(rate, configuration);
 		
@@ -165,7 +168,7 @@ public class NeuralNetworkOptimizer extends Job {
 				
 		//Set the objective function
 		func=new NetworkArchitectureObjFunc(rate, configuration,trainingSet,
-				 eventBroker, monitor);
+				 eventBroker, monitor,nnprovider);
 		algorithm.setObjectiveFunction(func);
 		
 		//Reload last results

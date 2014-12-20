@@ -16,6 +16,7 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.parts.InfoPart;
+import com.munch.exchange.services.INeuralNetworkProvider;
 
 public class NeuralNetworkOptimizerManager extends Job{
 	
@@ -29,6 +30,7 @@ public class NeuralNetworkOptimizerManager extends Job{
 	private static final String OPTIMIZER_STATUS_FINISHED="Finished";
 	
 	private IEventBroker eventBroker;
+	private INeuralNetworkProvider nnprovider;
 	
 	private ExchangeRate rate;
 	private Configuration configuration;
@@ -42,20 +44,21 @@ public class NeuralNetworkOptimizerManager extends Job{
 	private LinkedList<NeuralNetworkOptimizer> optimizers=new LinkedList<NeuralNetworkOptimizer>();
 	
 
-	public NeuralNetworkOptimizerManager( IEventBroker eventBroker,
+	public NeuralNetworkOptimizerManager( IEventBroker eventBroker, INeuralNetworkProvider nnprovider,
 			ExchangeRate rate, Configuration configuration, DataSet trainingSet, int minDim, int maxDim) {
 		super("Neural Network Optimizer Manager");
 		this.eventBroker = eventBroker;
 		this.rate = rate;
 		this.configuration = configuration;
 		this.trainingSet = trainingSet;
+		this.nnprovider = nnprovider;
 		
 		setMinMax(minDim, maxDim);
 		
 		
 		for(int i=0;i<getNumberOfProcessors();i++){
 			NeuralNetworkOptimizer optimizer=new NeuralNetworkOptimizer(this.rate, this.configuration,
-					this.trainingSet, this.eventBroker, 0);
+					this.trainingSet, this.eventBroker,this.nnprovider, 0);
 			optimizer.getInfo().setWorkerPos(i);
 			optimizers.add(optimizer);
 		}

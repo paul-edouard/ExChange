@@ -32,6 +32,7 @@ import com.munch.exchange.model.core.neuralnetwork.NnObjFunc;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.ResultEntity;
+import com.munch.exchange.services.INeuralNetworkProvider;
 
 public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		IObjectiveFunction<boolean[]> , LearningEventListener{
@@ -53,6 +54,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	
 	//Event variables
 	private IEventBroker eventBroker;
+	private INeuralNetworkProvider nnprovider;
 	private IProgressMonitor monitor;
 	
 	private NetworkArchitectureOptInfo info;
@@ -76,13 +78,14 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	public static int NB_OF_RESULTS_TO_TRAIN=10;
 	
 	public NetworkArchitectureObjFunc(ExchangeRate rate, Configuration configuration,DataSet testSet,
-			IEventBroker eventBroker,IProgressMonitor monitor){
+			IEventBroker eventBroker,IProgressMonitor monitor,INeuralNetworkProvider nnprovider ){
 		
 		this.rate=rate;
 		this.configuration=configuration;
 		this.trainingSet=testSet;
 		this.eventBroker=eventBroker;
 		this.monitor=monitor;
+		this.nnprovider=nnprovider;
 		
 		isCancel=false;
 		
@@ -121,7 +124,9 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_LOOP,info);
 			
 			//Start the optimization algorithm
+			architecture.prepareOptimizationStatistic();
 			algorithm.call();
+			architecture.saveOptimizationStatistic();
 			
 			//ResultEntity ref=architecture.getOptResults().getBestResult();
 			
@@ -132,14 +137,24 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 				eventBroker.post(IEventConstant.NETWORK_LEARNING_STARTED,info);
 				
 				if(monitor.isCanceled() || isCancel)break;
+				if(architecture.getResultsEntities().size()<=j)break;
+
 				//Start learning for each individuals
-				ResultEntity ent=architecture.getOptResults().getResults().get(j);
+				ResultEntity ent=architecture.getResultsEntities().get(j);
 				if(ent!=null && Double.isNaN(ent.getDoubleArray()[0])){
 					logger.info("Ent: "+Arrays.toString(ent.getDoubleArray()));
 					continue;
 				}
+				architecture.prepareTrainingStatistic(ent);
 				architecture.getNetwork().setWeights(ent.getDoubleArray());
 				architecture.getNetwork().learn(trainingSet);
+				
+				if(architecture.getNetwork().getLearningRule() instanceof BackPropagation){	
+					BackPropagation bp = (BackPropagation)architecture.getNetwork().getLearningRule();
+					
+					ent.setValue(bp.getTotalNetworkError());
+					architecture.saveTrainingStatistic(ent);
+				}
 				
 			}
 			
@@ -147,13 +162,13 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			
 			//Set the best results as starting point for the next loop
 			resetMinMaxValuesOfAlgorithm();
-			configuration.getOptLearnParam().addLastBestResults(algorithm,architecture.getOptResults());
+			configuration.getOptLearnParam().addLastBestResults(algorithm,architecture.getResultsEntities());
 		}
 		
 		eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_FINISHED,info);
 		
 		
-		ResultEntity bestResult=architecture.getOptResults().getBestResult();
+		ResultEntity bestResult=architecture.getBestResultEntity();
 		if(bestResult==null || Double.isNaN(bestResult.getValue()))
 			return  Constants.WORST_FITNESS;
 		
@@ -199,7 +214,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		maxWeigth=1.0;
 		
 		// Reset Min Max According to the last best results weights
-		for (ResultEntity ent : architecture.getOptResults().getResults()) {
+		for (ResultEntity ent : architecture.getResultsEntities()) {
 
 			double[] weigths = ent.getDoubleArray();
 			if (weigths == null)
@@ -233,11 +248,10 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 		// Add the last best results
 		configuration.getOptLearnParam().addLastBestResults(algorithm,
-				architecture.getOptResults());
+				architecture.getResultsEntities());
 		
 		
-		
-
+	
 		// Get the termination Criterion
 		if (algorithm.getTerminationCriterion() instanceof StepLimitPropChange) {
 			term = ((StepLimitPropChange<double[],double[]>) algorithm
@@ -311,7 +325,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 				if(weigths[j]<minWeigth)
 					minWeigth=Math.max(weigths[j]-Math.abs(weigths[j])*0.1,-MAX_WEIGTH_FACTOR);
 			}
-			architecture.getOptResults().addResult(ent);
+			architecture.addResultEntity(ent);
 			
 			
 			if(info.getResults().addResult(ent)){
