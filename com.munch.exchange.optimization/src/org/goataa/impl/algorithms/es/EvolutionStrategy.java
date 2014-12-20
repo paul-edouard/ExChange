@@ -3,6 +3,7 @@
 
 package org.goataa.impl.algorithms.es;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -235,6 +236,7 @@ public class EvolutionStrategy<X> extends
        // if(p.v!=Constants.WORST_FITNESS)continue;
         
         // perform the genotype-phenotype mapping
+       // System.out.println("Pop: "+pop.length+", Pos"+i+"Befor mapping: "+p);
         p.x = gpm.gpm(p.g, r);
         // compute the objective value
         //if(p.v==Constants.WORST_FITNESS)

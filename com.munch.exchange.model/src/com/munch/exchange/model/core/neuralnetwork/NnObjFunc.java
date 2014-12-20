@@ -43,6 +43,7 @@ public class NnObjFunc extends OptimizationModule implements
 		//logger.info("Computing: "+Arrays.toString(x));
 		
 		network.setWeights(x);
+		//logger.info("X input:" + Arrays.toString(x));
 		
 		double[] output = new double[testSet.getRows().size()];
 		double[] desiredOutput = new double[testSet.getRows().size()];
@@ -84,7 +85,11 @@ public class NnObjFunc extends OptimizationModule implements
         
         //Save the results
         ResultEntity ent=new ResultEntity(x,error);
-		architecture.getOptResults().addResult(ent);
+        if( ent.getDoubleArray().length==0){
+        	logger.info("X input:" + Arrays.toString(x));
+        }
+        
+		architecture.addResultEntity(ent);
 		//logger.info("Algorithm Best: "+ent);
 		if(Double.isNaN(error) || Double.isInfinite(error)){
 			logger.info("Archi: "+architecture);

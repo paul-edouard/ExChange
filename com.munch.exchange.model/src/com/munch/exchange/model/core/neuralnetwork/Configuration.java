@@ -295,21 +295,23 @@ public class Configuration extends XmlParameterElement {
 	*/
 	
 	@SuppressWarnings("rawtypes")
-	public NeuralNetwork searchBestNetwork(){
+	public NetworkArchitecture searchBestNetworkArchitecture(){
 		double error=Double.POSITIVE_INFINITY;
-		NeuralNetwork nn=null;
+		//NeuralNetwork nn=null;
+		NetworkArchitecture best=null;
 		for(NetworkArchitecture archi:networkArchitectures){
-			ResultEntity ent=archi.getOptResults().getBestResult();
+			ResultEntity ent=archi.getBestResultEntity();
 			if(ent==null)continue;
 			if(ent.getValue()<error){
-				nn=archi.getNetwork();
+				
+				best=archi;
 				//logger.info("Neuron size: "+nn.getWeights().length);
-				nn.setWeights(ent.getDoubleArray());
+				//nn.setWeights(ent.getDoubleArray());
 				error=ent.getValue();
 			}
 		}
 		
-		return nn;
+		return best;
 	}
 	
 	//****************************************

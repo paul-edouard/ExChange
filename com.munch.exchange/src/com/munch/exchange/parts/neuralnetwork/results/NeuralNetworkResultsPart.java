@@ -29,6 +29,7 @@ import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.goataa.impl.utils.Constants;
 
 public class NeuralNetworkResultsPart {
 	
@@ -136,10 +137,8 @@ public class NeuralNetworkResultsPart {
 		public String getText(Object element) {
 			if(element instanceof NetworkArchitecture){
 				NetworkArchitecture el=(NetworkArchitecture) element;
-				if(el.getOptResults()==null)return "No Results";
-				if(el.getOptResults().getBestResult()==null)return "No Best Result";
-				
-				double val=el.getOptResults().getBestResult().getValue();
+				double val=el.getBestValue();
+				if(val==Constants.WORST_FITNESS)return "No Results";
 				return String.valueOf(val);
 			}
 			return super.getText(element);

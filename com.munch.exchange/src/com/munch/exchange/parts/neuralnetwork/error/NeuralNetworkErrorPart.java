@@ -388,7 +388,7 @@ public class NeuralNetworkErrorPart {
 		//Search the best results
 		boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
     	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi);
-    	double error=archi.getOptResults().getBestResult().getValue();
+    	double error=archi.getBestValue();
 		
     	XYSeries series = dimSerieMap.get(info.getNumberOfInnerNeurons());
     	if(series==null)return;

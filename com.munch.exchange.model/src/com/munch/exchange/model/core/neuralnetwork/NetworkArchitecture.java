@@ -54,7 +54,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 	static final String FIELD_Networks="Networks";
 	static final String FIELD_Network="Network";
 	static final String FIELD_NetworkLabel="NetworkLabel";
-	//static final String FIELD_NeuronLabels="NeuronLabels";
+	static final String FIELD_BestValue="BestValue";
+	
+	private String networkLabel;
 	
 	private int numberOfInnerNeurons;
 	private int numberOfInputNeurons;
@@ -62,19 +64,29 @@ public class NetworkArchitecture extends XmlParameterElement {
 	private boolean[][] actConsMatrix;
 	private boolean[] actConsArray;
 	
-	//private LinkedList<Neuron> neurons=new LinkedList< Neuron>();
-	//private LinkedList<String> neuronsLabels=new LinkedList<String>();
-	
-	//private List<Layer> layers=new LinkedList<Layer>();
 	
 	private int maxNumberOfSavedNetworks=50;
+	private boolean resultLoaded=false;
 	
-	//Optimization & Training
+	//#########################################
+	//##     Optimization & Training         ##
+	//#########################################
+	
+	static final String FIELD_NumberOfTraining="NumberOfTraining";
+	static final String FIELD_LastTraining="LastTraining";
+	static final String FIELD_BestTrainingRate="BestTrainingRate";
+	static final String FIELD_MiddleTrainingRate="MiddleTrainingRate";
+	
 	private int numberOfTraining=0;
 	private Calendar lastTraining=Calendar.getInstance();
 	private double bestTrainingRate=0;
 	private double middleTrainingRate=0;
 	private double beforeTrainingBestValue=Constants.WORST_FITNESS;
+	
+	static final String FIELD_NumberOfOptimization="NumberOfOptimization";
+	static final String FIELD_LastOptimization="LastOptimization";
+	static final String FIELD_BestOptimizationRate="BestOptimizationRate";
+	static final String FIELD_MiddleOptimizationRate="MiddleOptimizationRate";
 	
 	private int numberOfOptimization=0;
 	private Calendar lastOptimization=Calendar.getInstance();
@@ -82,14 +94,23 @@ public class NetworkArchitecture extends XmlParameterElement {
 	private double middleOptimzationRate=0;
 	private double beforeOptimizationBestValue=Constants.WORST_FITNESS;
 	
-	private double bestValue=Constants.WORST_FITNESS;
+	//private double bestValue=Constants.WORST_FITNESS;
+	
+	static final String FIELD_BestResultEntity="BestResultEntity";
+	private ResultEntity bestResultEntity=null;
+	
 	
 	private NeuralNetwork network=new NeuralNetwork();
-	
 	private OptimizationResults optResults=new OptimizationResults();
 	
 	private Configuration parent=null;
 	
+	
+	
+	
+	/**
+	 * Default constructor
+	 */
 	public NetworkArchitecture(){}
 	
 	public NetworkArchitecture(int numberOfInputNeurons,int numberOfInnerNeurons,boolean[] cons  ){
@@ -108,6 +129,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 		}
 		
 		addNewNeuralNetwork(inputNeuronsLabels);
+		networkLabel=this.network.getLabel();
+		resultLoaded=true;
 			
 	}
 	
@@ -125,6 +148,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		
 		addNewNeuralNetwork(inputNeuronsLabels);
+		networkLabel=this.network.getLabel();
+		resultLoaded=true;
 		
 	}
 	
@@ -273,6 +298,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 	 * @return
 	 */
 	public boolean isValid(){
+		
+		if(this.network.getWeights().length==0)return false;
 		
 		Layer[] layers=  this.network.getLayers();
 		for(int i=1;i<layers.length-1;i++){
@@ -570,7 +597,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 	}
 	
-	
 	public boolean hasResults(){
 		if(this.optResults==null)return false;
 		if(this.optResults.getResults()==null)return false;
@@ -599,7 +625,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 		bestOptimizationRate=Math.max(bestOptimizationRate, optRate);
 		middleOptimzationRate=(middleOptimzationRate*numberOfOptimization+optRate)/(numberOfOptimization+1);
 		numberOfOptimization++;		
-				
+		
+		
+		//logger.info("Statistics:\n"+
+		//			"Before: "+beforeOptimizationBestValue+", After: "+newBest);
 	}
 	
 	public void prepareTrainingStatistic(ResultEntity ent){
@@ -629,13 +658,24 @@ public class NetworkArchitecture extends XmlParameterElement {
 	 * @param ent
 	 */
 	public void addResultEntity(ResultEntity ent){
-		if(ent.getValue()<this.bestValue)
-			this.bestValue=ent.getValue();
+		
+		
+		if(bestResultEntity==null || ent.getValue()<bestResultEntity.getValue())
+			setBestResultEntity(ent);
 		this.optResults.addResult(ent);
 	}
 	
 	public ResultEntity getBestResultEntity(){
+		if(bestResultEntity!=null)return bestResultEntity;
+		
 		return this.optResults.getBestResult();
+	}
+	
+	
+	public void clearResultsAndNetwork(){
+		this.network=null;
+		this.optResults.getResults().clear();
+		resultLoaded=false;
 	}
 	
 	//****************************************
@@ -879,7 +919,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	public void setOptResuts(OptimizationResults optResuts) {
 		this.optResults = optResuts;
 		if(this.optResults!=null && this.optResults.getBestResult()!=null)
-			this.bestValue=this.optResults.getBestResult().getValue();
+			setBestResultEntity(this.optResults.getBestResult());
 	}
 	
 	public void setNumberOfInnerNeurons(int numberOfInnerNeurons) {
@@ -903,6 +943,51 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return actConsArray;
 	}
 
+	public double getBestValue() {
+		if(bestResultEntity==null)return Constants.WORST_FITNESS;
+		return bestResultEntity.getValue();
+	}
+	
+	private void setBestResultEntity(ResultEntity bestResultEntity) {
+		changes.firePropertyChange(FIELD_BestResultEntity, this.bestResultEntity, this.bestResultEntity = bestResultEntity);
+	}
+	
+	public int getNumberOfTraining() {
+		return numberOfTraining;
+	}
+
+	public Calendar getLastTraining() {
+		return lastTraining;
+	}
+
+	public double getBestTrainingRate() {
+		return bestTrainingRate;
+	}
+
+	public double getMiddleTrainingRate() {
+		return middleTrainingRate;
+	}
+
+	public int getNumberOfOptimization() {
+		return numberOfOptimization;
+	}
+
+	public Calendar getLastOptimization() {
+		return lastOptimization;
+	}
+
+	public double getBestOptimizationRate() {
+		return bestOptimizationRate;
+	}
+
+	public double getMiddleOptimzationRate() {
+		return middleOptimzationRate;
+	}
+
+	public boolean isResultLoaded() {
+		return resultLoaded;
+	}
+
 	public void setActConsArray(boolean[] actConsArray) {
 		this.actConsArray = actConsArray;
 	}
@@ -911,10 +996,12 @@ public class NetworkArchitecture extends XmlParameterElement {
 	//***             XML                 ****
 	//****************************************
 	
+	/*
 	public static void setNetworkSavePath(String networkSavePath) {
 		NETWORK_SAVE_PATH=networkSavePath;
 		logger.info("NETWORK_SAVE_PATH: "+NETWORK_SAVE_PATH);
 	}
+	*/
 
 	private String actConsToString(){
 		String ret="";
@@ -947,7 +1034,18 @@ public class NetworkArchitecture extends XmlParameterElement {
 		this.setNumberOfInputNeurons(Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfInputNeurons)));
 		actConsFromString(rootElement.getAttribute(FIELD_ActivatedConnections));
 		
-		//this.neuronsLabels.clear();
+		this.numberOfTraining=Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfTraining));
+		this.lastTraining.setTimeInMillis(Long.parseLong(rootElement.getAttribute(FIELD_LastTraining)));
+		this.bestTrainingRate=(Double.parseDouble(rootElement.getAttribute(FIELD_BestTrainingRate)));
+		this.middleTrainingRate=(Double.parseDouble(rootElement.getAttribute(FIELD_MiddleTrainingRate)));
+		
+		this.numberOfOptimization=Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfOptimization));
+		this.lastOptimization.setTimeInMillis(Long.parseLong(rootElement.getAttribute(FIELD_LastOptimization)));
+		this.bestOptimizationRate=(Double.parseDouble(rootElement.getAttribute(FIELD_BestOptimizationRate)));
+		this.middleOptimzationRate=(Double.parseDouble(rootElement.getAttribute(FIELD_MiddleOptimizationRate)));
+		
+		this.networkLabel=rootElement.getAttribute(FIELD_NetworkLabel);
+		this.setMaxNumberOfSavedNetworks(Integer.parseInt(rootElement.getAttribute(FIELD_MaxNumberOfSavedNetworks)));
 		
 	}
 
@@ -955,6 +1053,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	@Override
 	protected void initChild(Element childElement) {
 		
+		/*
 		if(childElement.getTagName().equals(FIELD_Network)){
 			String networkLabel=childElement.getAttribute(FIELD_NetworkLabel);
 			
@@ -966,95 +1065,74 @@ public class NetworkArchitecture extends XmlParameterElement {
 			
 			setOptResuts(res);
 			
+		}*/
+		ResultEntity ent=new ResultEntity();
+		if(childElement.getTagName().equals(ent.getTagName())){
+			ent.init(childElement);
+			this.bestResultEntity=ent;
 		}
-		
-		//Read the label list
-		/*
-		else if(childElement.getTagName().equals(FIELD_NeuronLabels)){
-			NodeList Children=childElement.getChildNodes();
-
-			for(int i=0;i<Children.getLength();i++){
-				Node child = Children.item(i);
-				if(child instanceof Element){
-					Element el=(Element)child;
-					//Node Label
-					if(el.getTagName().equals("Neuron")){
-						if(el.hasAttribute("Label")){
-							this.neuronsLabels.add(el.getAttribute("Label"));
-						}
-					}
-				}
-			}
-			
-		}
-		*/
 	}
+	
+	
+	public void loadResultsFromPath(String path){
+		//logger.info("File: "+path+File.separator+networkLabel+".nnet");
+		this.network=NeuralNetwork.createFromFile(path+File.separator+networkLabel+".nnet");
+		setOptResuts(OptimizationResults.createFromFile(path+File.separator+networkLabel+".ores"));
+		resultLoaded=true;
+	}
+	
+	public void saveResultsToPath(String path){
+		network.save(path + File.separator + network.getLabel() + ".nnet");
+		optResults.save(path + File.separator + network.getLabel() + ".ores");
+	}
+	
 
 	@Override
 	protected void setAttribute(Element rootElement) {
 		rootElement.setAttribute(FIELD_NumberOfInnerNeurons,String.valueOf(this.getNumberOfInnerNeurons()));
 		rootElement.setAttribute(FIELD_NumberOfInputNeurons,String.valueOf(this.getNumberOfInputNeurons()));
 		rootElement.setAttribute(FIELD_ActivatedConnections,actConsToString());
+		
+		rootElement.setAttribute(FIELD_NetworkLabel,networkLabel);
+		rootElement.setAttribute(FIELD_MaxNumberOfSavedNetworks,String.valueOf(maxNumberOfSavedNetworks));
+		
+		rootElement.setAttribute(FIELD_NumberOfTraining,String.valueOf(numberOfTraining));
+		rootElement.setAttribute(FIELD_LastTraining,String.valueOf(lastTraining.getTimeInMillis()));
+		rootElement.setAttribute(FIELD_BestTrainingRate,String.valueOf(bestTrainingRate));
+		rootElement.setAttribute(FIELD_MiddleTrainingRate,String.valueOf(middleTrainingRate));
+		
+		rootElement.setAttribute(FIELD_NumberOfOptimization,String.valueOf(numberOfOptimization));
+		rootElement.setAttribute(FIELD_LastOptimization,String.valueOf(lastOptimization.getTimeInMillis()));
+		rootElement.setAttribute(FIELD_BestOptimizationRate,String.valueOf(bestOptimizationRate));
+		rootElement.setAttribute(FIELD_MiddleOptimizationRate,String.valueOf(middleOptimzationRate));
+		
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	protected void appendChild(Element rootElement, Document doc) {
-
+		
+		/*
 		Element e = doc.createElement(FIELD_Network);
 		e.setAttribute(FIELD_NetworkLabel, String.valueOf(network.getLabel()));
 		// Save the network
 		network.save(NETWORK_SAVE_PATH + File.separator + network.getLabel() + ".nnet");
 		optResults.save(NETWORK_SAVE_PATH + File.separator + network.getLabel() + ".ores");
 		rootElement.appendChild(e);
-		
-		
-		//Save the Label List
-		/*
-		Element l = doc.createElement(FIELD_NeuronLabels);
-		for(String nlabel:this.neuronsLabels){
-			Element nl_el = doc.createElement("Neuron");
-			nl_el.setAttribute("Label", nlabel);
-			l.appendChild(nl_el);
-		}
-		rootElement.appendChild(l);
 		*/
 		
+		if(this.bestResultEntity!=null){
+			rootElement.appendChild(this.bestResultEntity.toDomElement(doc));
+		}
 		
 
 	}
 	
-	
-	
-	
-	
 	@Override
 	protected void finalizeInitalization() {
-		/*
-		neurons.clear();
-		layers.clear();
-		
-		//Set the layers
-		for(Layer l:network.getLayers()){
-			layers.add(l);
-		}
-		
-		//Set the neuron Map
-		HashMap<String,Neuron> n_map=new HashMap<String,Neuron>();
-		for(Layer l:layers){
-			for(Neuron n:l.getNeurons()){
-				n_map.put(n.getLabel(), n);
-			}
-		}
-	
-		for(String label:this.neuronsLabels){
-			neurons.add(n_map.get(label));
-		}
-		*/
 		
 		convertActConsArrayToMatrix();
-		
-		
+	
 	}
 	
 	

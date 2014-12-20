@@ -26,6 +26,7 @@ import org.neuroph.nnet.learning.BackPropagation;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.NnObjFunc;
@@ -99,7 +100,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 		architecture=configuration.searchArchitecture(x);
 		if(architecture==null)return Constants.WORST_FITNESS;
-		
+		if(!(rate instanceof Stock))return Constants.WORST_FITNESS;
+		if(!nnprovider.loadArchitectureResults((Stock) rate, architecture))return  Constants.WORST_FITNESS;
 		
 		//Prepare the optimization of the network weights
 		prepareNetworkWeightsOptimization();
@@ -141,7 +143,15 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 
 				//Start learning for each individuals
 				ResultEntity ent=architecture.getResultsEntities().get(j);
-				if(ent!=null && Double.isNaN(ent.getDoubleArray()[0])){
+				if(ent==null){
+					logger.info("Result entity is null??: ");
+					continue;
+				}
+				if(ent.getDoubleArray()==null || ent.getDoubleArray().length==0){
+					logger.info("Results entity has not double array");
+					continue;
+				}
+				if( Double.isNaN(ent.getDoubleArray()[0])){
 					logger.info("Ent: "+Arrays.toString(ent.getDoubleArray()));
 					continue;
 				}
@@ -177,6 +187,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 		//Save the Architecture results
 		configuration.getOptResults(x.length).addResult(new ResultEntity(x, bestResult.getValue()));
+		nnprovider.saveArchitectureResults((Stock) rate, architecture);
+		architecture.clearResultsAndNetwork();
 		
 		return bestResult.getValue();
 	}

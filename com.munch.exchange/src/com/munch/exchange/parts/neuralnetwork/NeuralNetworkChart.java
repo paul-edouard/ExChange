@@ -43,6 +43,7 @@ import com.munch.exchange.model.core.neuralnetwork.NNetworkListener;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.services.INeuralNetworkProvider;
 
 public class NeuralNetworkChart extends Composite {
 	
@@ -60,6 +61,7 @@ public class NeuralNetworkChart extends Composite {
 	private org.neuroph.core.NeuralNetwork neuralNetwork;
 	private Stock stock;
 	private Configuration config;
+	private NetworkArchitecture bestArchi;
 	
 	private HashMap<Neuron, double[]> neuronXYZPosMap=new HashMap<Neuron, double[]>();
 	
@@ -67,6 +69,8 @@ public class NeuralNetworkChart extends Composite {
 	@Inject
 	private IExchangeRateProvider exchangeRateProvider;
 	
+	@Inject
+	private INeuralNetworkProvider nnprovider;
 	
 	private double maxAbsWeight=0;
 	/**
@@ -77,12 +81,13 @@ public class NeuralNetworkChart extends Composite {
 	@SuppressWarnings("unchecked")
 	@Inject
 	public NeuralNetworkChart(Composite parent,ExchangeRate rate
-			,/*MultiLayerPerceptron multiLayerPerceptron, */IEclipseContext p_context) {
+			,/*MultiLayerPerceptron multiLayerPerceptron, */IEclipseContext p_context,INeuralNetworkProvider nnprovider ) {
 		super(parent, SWT.NONE);
 		
 		this.setLayout(new org.eclipse.swt.layout.GridLayout(1, false));
 		
 		this.stock=(Stock) rate;
+		this.nnprovider=nnprovider;
 		
 		//==================================================
 		//==                 CHART                        ==    
@@ -170,13 +175,28 @@ public class NeuralNetworkChart extends Composite {
     	return plot;
     }
     
+    
+    private void searchBestNetwork(){
+    	if(bestArchi!=null)
+    		bestArchi.clearResultsAndNetwork();
+    	
+    	bestArchi=config.searchBestNetworkArchitecture();
+    	if(bestArchi==null)return;
+		nnprovider.loadArchitectureResults(stock, bestArchi);
+		neuralNetwork=bestArchi.getNetwork();
+		if(bestArchi.getBestResultEntity()!=null){
+			neuralNetwork.setWeights(bestArchi.getBestResultEntity().getDoubleArray());
+		}
+    }
+    
     public void updateYXZDataSet(){
     	
     	clearDataSet();
     	
     	config=stock.getNeuralNetwork().getConfiguration();
-    	if(config!=null && neuralNetwork==null)
-    		neuralNetwork=config.searchBestNetwork();
+    	if(config!=null && neuralNetwork==null){
+    		searchBestNetwork();
+    	}
     	
     	if(neuralNetwork==null){
     		double[] x = {2.1, 2.3, 2.3, 2.2, 2.2, 1.8, 1.8, 1.9, 2.3, 3.8};
@@ -353,7 +373,7 @@ public class NeuralNetworkChart extends Composite {
     	
     	config=stock.getNeuralNetwork().getConfiguration();
     	if(config!=null)
-    		neuralNetwork=config.searchBestNetwork();
+    		searchBestNetwork();
     }
 	
     

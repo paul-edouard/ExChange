@@ -59,7 +59,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		NNetwork network=new NNetwork();
 		if(localFile.exists()){
 			//Set the Network Save Path
-			NetworkArchitecture.setNetworkSavePath(this.getSavePath(stock));
+			//NetworkArchitecture.setNetworkSavePath(this.getSavePath(stock));
 			
 			if( Xml.load(network, localFile.getAbsolutePath())){
 				stock.setNeuralNetwork(network);
@@ -77,6 +77,23 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		logger.info("No neuronal network saved for "+stock.getFullName());
 		return false;
 	}
+	
+	public synchronized boolean loadArchitectureResults(Stock stock, NetworkArchitecture archi){
+		if(stock==null)return false;
+		if(stock.getDataPath()==null)return false;
+		if(stock.getDataPath().isEmpty())return false;
+		
+		if(archi==null)return false;
+		
+		if(archi.isResultLoaded())return true;
+		
+		File dirPath=new File(this.getSavePath(stock));
+		if(!dirPath.isDirectory())return false;
+		
+		archi.loadResultsFromPath(this.getSavePath(stock));
+		return true;
+		
+	}
 
 	@Override
 	public synchronized boolean save(Stock stock) {
@@ -85,12 +102,26 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		String fileStr=getFileName(stock,NeuronalNetworkFileStr);
 		
 		//Set the Network Save Path
-		NetworkArchitecture.setNetworkSavePath(this.getSavePath(stock));
+		//NetworkArchitecture.setNetworkSavePath(this.getSavePath(stock));
 		
 		
 		logger.info("Writing file: "+fileStr);
 		return Xml.save(stock.getNeuralNetwork(), fileStr);
 	}
+	
+	
+	public synchronized boolean saveArchitectureResults(Stock stock, NetworkArchitecture archi){
+		if(stock==null)return false;
+		if(archi==null)return false;
+		
+		String savePath=this.getSavePath(stock);
+		if(savePath.isEmpty())return false;
+		
+		archi.saveResultsToPath(savePath);
+		return true;
+		
+	}
+	
 
 	
 	@Override
