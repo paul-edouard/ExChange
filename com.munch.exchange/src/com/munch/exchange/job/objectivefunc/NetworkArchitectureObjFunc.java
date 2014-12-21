@@ -97,11 +97,12 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	public double compute(boolean[] x, Random r) {
 		
 		//logger.info("Computing: "+Arrays.toString(x));
-		
-		architecture=configuration.searchArchitecture(x);
-		if(architecture==null)return Constants.WORST_FITNESS;
 		if(!(rate instanceof Stock))return Constants.WORST_FITNESS;
-		if(!nnprovider.loadArchitectureResults((Stock) rate, architecture))return  Constants.WORST_FITNESS;
+		architecture=configuration.searchArchitecture(x,
+				nnprovider.getNetworkArchitecturesLocalSavePath((Stock)rate));
+		if(architecture==null)return Constants.WORST_FITNESS;
+		
+		//if(!nnprovider.loadArchitectureResults((Stock) rate, architecture))return  Constants.WORST_FITNESS;
 		
 		//Prepare the optimization of the network weights
 		prepareNetworkWeightsOptimization();
@@ -187,8 +188,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 		//Save the Architecture results
 		configuration.getOptResults(x.length).addResult(new ResultEntity(x, bestResult.getValue()));
-		nnprovider.saveArchitectureResults((Stock) rate, architecture);
-		architecture.clearResultsAndNetwork();
+		//nnprovider.saveArchitectureResults((Stock) rate, architecture);
+		//architecture.clearResultsAndNetwork();
 		
 		return bestResult.getValue();
 	}

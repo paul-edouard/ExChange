@@ -17,13 +17,15 @@ public class DecreaseNetworkCreation extends BooleanArrayUniformCreation {
 	
 	private int numberOfInnerNeurons;
 	private int numberOfInputNeurons;
+	private String localSavePath;
 	
 	
-	public DecreaseNetworkCreation(int dim, int numberOfInputNeurons ) {
+	public DecreaseNetworkCreation(int dim, int numberOfInputNeurons , String localSavePath) {
 		super(dim);
 		
 		this.numberOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(dim, numberOfInputNeurons);
 		this.numberOfInputNeurons=numberOfInputNeurons;
+		this.localSavePath=localSavePath;
 	}
 	
 
@@ -34,12 +36,12 @@ public class DecreaseNetworkCreation extends BooleanArrayUniformCreation {
 		} 
 		
 		
-		return searchNoneNullDecreaseNetwork(numberOfInnerNeurons,numberOfInputNeurons, r);
+		return searchNoneNullDecreaseNetwork(numberOfInnerNeurons,numberOfInputNeurons, r, localSavePath);
 		
 	}
 	public static int MAX_LOOPS=200;
 	
-	public static boolean[] searchNoneNullDecreaseNetwork(int numberOfInnerNeurons,int numberOfInputNeurons,Random r){
+	public static boolean[] searchNoneNullDecreaseNetwork(int numberOfInnerNeurons,int numberOfInputNeurons,Random r, String localSavePath){
 		boolean[] cons=null;
 		int loop=0;
 		while(true){
@@ -48,7 +50,7 @@ public class DecreaseNetworkCreation extends BooleanArrayUniformCreation {
 			
 			cons=createDecreaseNetwork(numberOfInnerNeurons,numberOfInputNeurons,r);
 			NetworkArchitecture arch = new NetworkArchitecture(
-					numberOfInputNeurons, numberOfInnerNeurons, cons);
+					numberOfInputNeurons, numberOfInnerNeurons, cons,localSavePath);
 			Layer[] layers = arch.getNetwork().getLayers();
 			for (int i = 0; i < layers.length - 1; i++) {
 				if (layers[i].getNeuronsCount() == 1) {
@@ -140,7 +142,7 @@ public class DecreaseNetworkCreation extends BooleanArrayUniformCreation {
 				9, 7, alpha);
 	
 	
-		arch=new NetworkArchitecture(9, 7, cons);
+		arch=new NetworkArchitecture(9, 7, cons,"");
 		
 		
 		Layer[] layers=arch.getNetwork().getLayers();

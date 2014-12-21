@@ -15,13 +15,14 @@ public class ValidRandomNetworkCreation extends BooleanArrayUniformCreation {
 	
 	//private int numberOfInnerNeurons;
 	private int numberOfInputNeurons;
+	private String localSavePath;
 	
-	
-	public ValidRandomNetworkCreation(int dim, int numberOfInputNeurons) {
+	public ValidRandomNetworkCreation(int dim, int numberOfInputNeurons, String localSavePath) {
 		super(dim);
 		
 		//this.numberOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(dim, numberOfInputNeurons);
 		this.numberOfInputNeurons=numberOfInputNeurons;
+		this.localSavePath=localSavePath;
 	}
 	
 	@Override
@@ -30,14 +31,14 @@ public class ValidRandomNetworkCreation extends BooleanArrayUniformCreation {
 			return oldResults.pollLast();
 		} 
 		
-		return createValidRandomNetwork(this.n,numberOfInputNeurons, r);
+		return createValidRandomNetwork(this.n,numberOfInputNeurons, r,localSavePath);
 		
 	}
 	
 	
 	public static int MAX_LOOPS=400;
 	
-	public static boolean[] createValidRandomNetwork(int dim, int numberOfInputNeurons, Random r){
+	public static boolean[] createValidRandomNetwork(int dim, int numberOfInputNeurons, Random r, String localSavePath){
 		int numberOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(dim, numberOfInputNeurons);
 		
 		boolean[] cons=null;
@@ -45,7 +46,7 @@ public class ValidRandomNetworkCreation extends BooleanArrayUniformCreation {
 		while(true){
 			cons=createRandomBooleanArray(dim,r);
 			NetworkArchitecture arch = new NetworkArchitecture(
-					numberOfInputNeurons, numberOfInnerNeurons, cons);
+					numberOfInputNeurons, numberOfInnerNeurons, cons,localSavePath);
 			if(arch.isValid()){
 				//System.out.println(arch);
 				break;
@@ -79,7 +80,7 @@ public class ValidRandomNetworkCreation extends BooleanArrayUniformCreation {
 		int numberOfInnerNeurons=15;
 		int dim=NetworkArchitecture.calculateActivatedConnectionsSize(numberOfInputNeurons, numberOfInnerNeurons);
 		
-		createValidRandomNetwork(dim,numberOfInputNeurons,r);
+		createValidRandomNetwork(dim,numberOfInputNeurons,r,"");
 	}
 
 }

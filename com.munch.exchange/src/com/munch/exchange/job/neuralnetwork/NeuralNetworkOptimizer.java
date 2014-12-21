@@ -21,6 +21,7 @@ import org.neuroph.core.data.DataSet;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.objectivefunc.NetworkArchitectureObjFunc;
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
@@ -79,6 +80,10 @@ public class NeuralNetworkOptimizer extends Job {
 
 	public void setDimension(int dimension) {
 		this.dimension = dimension;
+	}
+	
+	public int getDimension() {
+		return dimension;
 	}
 
 	public List<Individual<boolean[], boolean[]>> getSolutions() {
@@ -160,7 +165,8 @@ public class NeuralNetworkOptimizer extends Job {
 				
 		// Create the algorithm
 		int numberOfInputNeurons=configuration.getNumberOfInputNeurons();
-		algorithm = configuration.getOptArchitectureParam().createBooleanAlgorithm(numberOfInputNeurons);
+		algorithm = configuration.getOptArchitectureParam().createBooleanAlgorithm(
+				numberOfInputNeurons,nnprovider.getNetworkArchitecturesLocalSavePath((Stock)rate));
 		
 		//set the gpm
 		final IGPM<boolean[], boolean[]> gpm = ((IGPM<boolean[], boolean[]>) (IdentityMapping.IDENTITY_MAPPING));

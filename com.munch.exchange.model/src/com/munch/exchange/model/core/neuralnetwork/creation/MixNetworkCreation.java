@@ -17,13 +17,15 @@ public class MixNetworkCreation extends BooleanArrayUniformCreation {
 
 	private int numberOfInnerNeurons;
 	private int numberOfInputNeurons;
+	private String localSavePath;
 	
 	
-	public MixNetworkCreation(int dim, int numberOfInputNeurons ) {
+	public MixNetworkCreation(int dim, int numberOfInputNeurons, String localSavePath ) {
 		super(dim);
 		
 		this.numberOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(dim, numberOfInputNeurons);
 		this.numberOfInputNeurons=numberOfInputNeurons;
+		this.localSavePath=localSavePath;
 	}
 	
 
@@ -37,15 +39,15 @@ public class MixNetworkCreation extends BooleanArrayUniformCreation {
 		
 		if(alpha<1d/3d){
 			return DecreaseNetworkCreation.searchNoneNullDecreaseNetwork(
-					numberOfInnerNeurons, numberOfInputNeurons, r);
+					numberOfInnerNeurons, numberOfInputNeurons, r, localSavePath);
 		}
 		else if(alpha<2d/3d){
 			return ValidRandomNetworkCreation.createValidRandomNetwork(
-					this.n,numberOfInputNeurons, r);
+					this.n,numberOfInputNeurons, r, localSavePath);
 		}
 		else{
 			return PyramidNetworkCreation.createPyramidNetwork(
-					numberOfInnerNeurons, numberOfInputNeurons, r);
+					numberOfInnerNeurons, numberOfInputNeurons, r, localSavePath);
 		}
 		
 	}

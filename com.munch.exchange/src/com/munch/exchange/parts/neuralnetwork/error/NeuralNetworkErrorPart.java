@@ -61,6 +61,7 @@ import com.munch.exchange.parts.MyMDirtyable;
 import com.munch.exchange.parts.neuralnetwork.error.TreeWorkerContentProvider.Worker;
 import com.munch.exchange.parts.neuralnetwork.error.TreeWorkerContentProvider.Workers;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.services.INeuralNetworkProvider;
 
 import org.eclipse.swt.custom.TableTree;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -86,6 +87,9 @@ public class NeuralNetworkErrorPart {
 	
 	@Inject
 	IExchangeRateProvider exchangeRateProvider;
+	
+	@Inject
+	INeuralNetworkProvider nnprovider;
 	
 	//@Inject
 	//NeuralNetworkOptimizer optimizer;
@@ -387,7 +391,8 @@ public class NeuralNetworkErrorPart {
 		if(info.getResults().getResults().isEmpty())return;
 		//Search the best results
 		boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
-    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi);
+    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi,
+    			nnprovider.getNetworkArchitecturesLocalSavePath(stock));
     	double error=archi.getBestValue();
 		
     	XYSeries series = dimSerieMap.get(info.getNumberOfInnerNeurons());

@@ -62,6 +62,13 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			//NetworkArchitecture.setNetworkSavePath(this.getSavePath(stock));
 			
 			if( Xml.load(network, localFile.getAbsolutePath())){
+				
+				String localPath=this.getNetworkArchitecturesLocalSavePath(stock);
+				//Set the local path of all NetworkArchitectures
+				for(Configuration config:network.getConfigurations()){
+					for(NetworkArchitecture archi:config.getNetworkArchitectures())
+						archi.setLocalSavePath(localPath);
+				}
 				stock.setNeuralNetwork(network);
 				logger.info("Neural Network localy found for "+stock.getFullName());
 				return true;
@@ -78,6 +85,21 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		return false;
 	}
 	
+	
+	public String getNetworkArchitecturesLocalSavePath(Stock stock){
+		if(stock==null)return "";
+		if(stock.getDataPath()==null)return "";
+		if(stock.getDataPath().isEmpty())return "";
+		
+		String path=this.getSavePath(stock);
+		File dirPath=new File(path);
+		if(!dirPath.isDirectory())return "";
+		
+		return path;
+	}
+	
+	
+	/*
 	public synchronized boolean loadArchitectureResults(Stock stock, NetworkArchitecture archi){
 		if(stock==null)return false;
 		if(stock.getDataPath()==null)return false;
@@ -93,7 +115,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		archi.loadResultsFromPath(this.getSavePath(stock));
 		return true;
 		
-	}
+	}*/
 
 	@Override
 	public synchronized boolean save(Stock stock) {
@@ -109,7 +131,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		return Xml.save(stock.getNeuralNetwork(), fileStr);
 	}
 	
-	
+	/*
 	public synchronized boolean saveArchitectureResults(Stock stock, NetworkArchitecture archi){
 		if(stock==null)return false;
 		if(archi==null)return false;
@@ -121,7 +143,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		return true;
 		
 	}
-	
+	*/
 
 	
 	@Override

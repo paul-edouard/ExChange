@@ -13,6 +13,7 @@ import org.neuroph.core.data.DataSet;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.parts.InfoPart;
@@ -102,6 +103,18 @@ public class NeuralNetworkOptimizerManager extends Job{
 		
 	}
 
+	
+	private void saveAndClearAllArchitectures(NeuralNetworkOptimizer optimizer){
+		if(optimizer.getDimension()==0)return;
+		
+		InfoPart.postInfoText(eventBroker, "Clear Architecture Started for dimension: "+optimizer.getDimension());
+		
+		LinkedList<NetworkArchitecture> list=configuration.searchNetworkArchitectures(optimizer.getDimension());
+		for(NetworkArchitecture archi: list){
+			archi.clearResultsAndNetwork();
+		}
+	}
+	
 	//################################
 	//##            RUN             ##
 	//################################
@@ -128,6 +141,7 @@ public class NeuralNetworkOptimizerManager extends Job{
 					continue;
 				}
 				
+				saveAndClearAllArchitectures(optimizer);
 				InfoPart.postInfoText(eventBroker, "New Optimizer started for dimension "+currentInnerNeurons+ " on position "+pos);
 				
 				int dimension=NetworkArchitecture.calculateActivatedConnectionsSize(
@@ -164,6 +178,7 @@ public class NeuralNetworkOptimizerManager extends Job{
 				}
 				else{
 					info.getOptimizerStatusMap().put(pos, OPTIMIZER_STATUS_FINISHED);
+					saveAndClearAllArchitectures(optimizer);
 					eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_WORKER_STATE_CHANGED,info);
 				}
 			}

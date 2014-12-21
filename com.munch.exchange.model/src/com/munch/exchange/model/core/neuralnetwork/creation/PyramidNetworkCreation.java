@@ -17,13 +17,15 @@ public class PyramidNetworkCreation extends
 	
 	private int numberOfInnerNeurons;
 	private int numberOfInputNeurons;
+	private String localSavePath;
 	
 	
-	public PyramidNetworkCreation(int dim, int numberOfInputNeurons ) {
+	public PyramidNetworkCreation(int dim, int numberOfInputNeurons , String localSavePath) {
 		super(dim);
 		
 		this.numberOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(dim, numberOfInputNeurons);
 		this.numberOfInputNeurons=numberOfInputNeurons;
+		this.localSavePath=localSavePath;
 	}
 	
 
@@ -33,11 +35,11 @@ public class PyramidNetworkCreation extends
 			return oldResults.pollLast();
 		} 
 		
-		return createPyramidNetwork(numberOfInnerNeurons,numberOfInputNeurons, r);
+		return createPyramidNetwork(numberOfInnerNeurons,numberOfInputNeurons, r,localSavePath);
 		
 	}
 	public static int MAX_LOOPS=200;
-	public static boolean[] createPyramidNetwork(int numberOfInnerNeurons,int numberOfInputNeurons,Random r){
+	public static boolean[] createPyramidNetwork(int numberOfInnerNeurons,int numberOfInputNeurons,Random r,String localSavePath ){
 		
 		boolean[] cons=null;
 		int loop=0;
@@ -50,7 +52,7 @@ public class PyramidNetworkCreation extends
 					numberOfInputNeurons, numberOfInnerNeurons, alpha);
 
 			NetworkArchitecture arch = new NetworkArchitecture(
-					numberOfInputNeurons, numberOfInnerNeurons, cons);
+					numberOfInputNeurons, numberOfInnerNeurons, cons,localSavePath);
 			Layer[] layers = arch.getNetwork().getLayers();
 			for (int i = 0; i < layers.length - 1; i++) {
 				if (layers[i].getNeuronsCount() == 1) {
@@ -84,7 +86,7 @@ public class PyramidNetworkCreation extends
 				9, 7, alpha);
 	
 	
-		arch=new NetworkArchitecture(9, 7, cons);
+		arch=new NetworkArchitecture(9, 7, cons,"");
 		
 		
 		Layer[] layers=arch.getNetwork().getLayers();

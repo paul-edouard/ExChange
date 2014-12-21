@@ -162,7 +162,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	}
 	
 	
-	public ISOOptimizationAlgorithm<boolean[], X, Individual<boolean[], X>> createBooleanAlgorithm(int numberOfInputNeurons){
+	public ISOOptimizationAlgorithm<boolean[], X, Individual<boolean[], X>> createBooleanAlgorithm(int numberOfInputNeurons, String localSavePath){
 		if(type.equals(ALGORITHM_Simple_Generational_EA)){
 			//Creation
 			SimpleGenerationalEA<boolean[],X> EA = new SimpleGenerationalEA<boolean[],X>();
@@ -185,19 +185,19 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 				EA.setNullarySearchOperation(create);
 			}
 			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_PyramidNetworkCreation)){
-				INullarySearchOperation<boolean[]> create=new PyramidNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				INullarySearchOperation<boolean[]> create=new PyramidNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons,localSavePath);
 				EA.setNullarySearchOperation(create);
 			}
 			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_ValidRandomNetworkCreation)){
-				INullarySearchOperation<boolean[]> create=new ValidRandomNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				INullarySearchOperation<boolean[]> create=new ValidRandomNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons,localSavePath);
 				EA.setNullarySearchOperation(create);
 			}
 			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_DecreaseNetworkCreation)){
-				INullarySearchOperation<boolean[]> create=new DecreaseNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				INullarySearchOperation<boolean[]> create=new DecreaseNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons,localSavePath);
 				EA.setNullarySearchOperation(create);
 			}
 			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_MixNetworkCreation)){
-				INullarySearchOperation<boolean[]> create=new MixNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				INullarySearchOperation<boolean[]> create=new MixNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons,localSavePath);
 				EA.setNullarySearchOperation(create);
 			}
 			
@@ -242,19 +242,19 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 				EA.setNullarySearchOperation(create);
 			}
 			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_PyramidNetworkCreation)){
-				INullarySearchOperation<boolean[]> create=new PyramidNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				INullarySearchOperation<boolean[]> create=new PyramidNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons,localSavePath);
 				EA.setNullarySearchOperation(create);
 			}
 			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_ValidRandomNetworkCreation)){
-				INullarySearchOperation<boolean[]> create=new ValidRandomNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				INullarySearchOperation<boolean[]> create=new ValidRandomNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons,localSavePath);
 				EA.setNullarySearchOperation(create);
 			}
 			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_DecreaseNetworkCreation)){
-				INullarySearchOperation<boolean[]> create=new DecreaseNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				INullarySearchOperation<boolean[]> create=new DecreaseNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons,localSavePath);
 				EA.setNullarySearchOperation(create);
 			}
 			else if(this.getStringParam(NULLARY_SEARCH_OPERATION).equals(NSO_MixNetworkCreation)){
-				INullarySearchOperation<boolean[]> create=new MixNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons);
+				INullarySearchOperation<boolean[]> create=new MixNetworkCreation(this.getIntegerParam(EA_Dimension),numberOfInputNeurons,localSavePath);
 				EA.setNullarySearchOperation(create);
 			}
 			

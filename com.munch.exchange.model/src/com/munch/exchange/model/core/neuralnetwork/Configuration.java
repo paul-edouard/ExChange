@@ -75,8 +75,8 @@ public class Configuration extends XmlParameterElement {
 	}
 	
 	
-	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray){
-		return searchArchitecture(actConsArray,false);
+	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray, String localSavePath){
+		return searchArchitecture(actConsArray,false,localSavePath);
 	}
 	
 	/**
@@ -86,7 +86,7 @@ public class Configuration extends XmlParameterElement {
 	 * @param actConsArray
 	 * @return
 	 */
-	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray,boolean loggerOn){
+	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray,boolean loggerOn, String localSavePath){
 		
 		NetworkArchitecture searched=null;
 		
@@ -119,7 +119,7 @@ public class Configuration extends XmlParameterElement {
 			int numberOfInnerNeurons=NetworkArchitecture.calculateNbOfInnerNeurons(
 					actConsArray.length, this.getNumberOfInputNeurons());
 			
-			searched=new NetworkArchitecture(getInputNeuronNames(),numberOfInnerNeurons,actConsArray);
+			searched=new NetworkArchitecture(getInputNeuronNames(),numberOfInnerNeurons,actConsArray,localSavePath);
 			
 			//Test the Network validity
 			if(searched.isValid()){
@@ -149,6 +149,8 @@ public class Configuration extends XmlParameterElement {
 		}
 		return netArchiOptResultMap.get(dimension);
 	}
+	
+	
 	
 	public LinkedList<String> getInputNeuronNames(){
 		
@@ -313,6 +315,18 @@ public class Configuration extends XmlParameterElement {
 		
 		return best;
 	}
+	
+	
+	public LinkedList<NetworkArchitecture> searchNetworkArchitectures(int dimension){
+		LinkedList<NetworkArchitecture> l=new LinkedList<NetworkArchitecture>();
+		for(NetworkArchitecture archi:this.networkArchitectures){
+			if(archi.getDimension()==dimension)
+				l.add(archi);
+		}
+		
+		return l;
+	}
+	
 	
 	//****************************************
 	//***      GETTER AND SETTER          ****
@@ -521,8 +535,6 @@ public class Configuration extends XmlParameterElement {
 		netArchiOptResultMap.clear();
 	}
 
-
-
 	@Override
 	protected void initChild(Element childElement) {
 		TimeSeries ent=new TimeSeries();
@@ -672,8 +684,6 @@ public class Configuration extends XmlParameterElement {
 		//Change the Opt Architecture Parameters
 		optArchitectureParam.setParam(AlgorithmParameters.MaxDimension,NetworkArchitecture.calculateActivatedConnectionsSize(numberOfInputNeurons, oldMax) );
 		optArchitectureParam.setParam(AlgorithmParameters.MinDimension, NetworkArchitecture.calculateActivatedConnectionsSize(numberOfInputNeurons,oldMin));
-		
-		
 		
 		
 		logger.info("All Archi adapted!!!");

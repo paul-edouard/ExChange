@@ -44,7 +44,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	private static Logger logger = Logger.getLogger(NetworkArchitecture.class);
 	
 	
-	private static String NETWORK_SAVE_PATH;
+	//private static String NETWORK_SAVE_PATH;
 	
 	static final String FIELD_NumberOfInnerNeurons="NumberOfInnerNeurons";
 	static final String FIELD_NumberOfInputNeurons="NumberOfInputNeurons";
@@ -57,6 +57,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	static final String FIELD_BestValue="BestValue";
 	
 	private String networkLabel;
+	private String localSavePath="";
 	
 	private int numberOfInnerNeurons;
 	private int numberOfInputNeurons;
@@ -67,6 +68,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	private int maxNumberOfSavedNetworks=50;
 	private boolean resultLoaded=false;
+	
 	
 	//#########################################
 	//##     Optimization & Training         ##
@@ -113,7 +115,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	 */
 	public NetworkArchitecture(){}
 	
-	public NetworkArchitecture(int numberOfInputNeurons,int numberOfInnerNeurons,boolean[] cons  ){
+	public NetworkArchitecture(int numberOfInputNeurons,int numberOfInnerNeurons,boolean[] cons ,String localSavepath ){
 		LinkedList<String> inputNeuronsLabels=new LinkedList<String>();
 		for(int i=0;i<numberOfInputNeurons;i++){
 			inputNeuronsLabels.add(String.valueOf(i));
@@ -130,12 +132,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		addNewNeuralNetwork(inputNeuronsLabels);
 		networkLabel=this.network.getLabel();
+		this.localSavePath=localSavepath;
 		resultLoaded=true;
 			
 	}
 	
 	
-	public NetworkArchitecture(LinkedList<String> inputNeuronsLabels,int numberOfInnerNeurons,boolean[] cons ){
+	public NetworkArchitecture(LinkedList<String> inputNeuronsLabels,int numberOfInnerNeurons,boolean[] cons,String localSavepath ){
 		
 		this.numberOfInputNeurons=inputNeuronsLabels.size();
 		this.numberOfInnerNeurons=numberOfInnerNeurons;
@@ -149,6 +152,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		addNewNeuralNetwork(inputNeuronsLabels);
 		networkLabel=this.network.getLabel();
+		this.localSavePath=localSavepath;
 		resultLoaded=true;
 		
 	}
@@ -450,6 +454,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 	 * @param newInputNeuronsLabels
 	 */
 	public void adaptNetwork(LinkedList<String> newInputNeuronsLabels){
+		if(!resultLoaded)this.loadResults();
+		
+		printState("Before Adaption");
 		
 		LinkedList<String> neuronsLabels=this.getNeuronLabels();
 		
@@ -473,7 +480,22 @@ public class NetworkArchitecture extends XmlParameterElement {
 			}
 		}
 		
+		//this.saveResults();
+		
+		printState("After Adaption");
+		
+		
 	}
+	
+	private void printState(String label){
+		logger.info(label+"Archi: "+this.networkLabel+"Network input: "+this.network.getInputsCount()+", Weigths: "+network.getWeights().length+", Act Array: "+actConsArray.length);
+		int a=0;
+		for(ResultEntity ent:this.getResultsEntities()){
+			a=ent.getDoubleArray().length;
+		}
+		logger.info("Results Size: "+a);
+	}
+	
 	
 	private void addInputNeuron(String label, int index){
 		
@@ -560,15 +582,20 @@ public class NetworkArchitecture extends XmlParameterElement {
         int index=0;
         Layer[] layers=this.network.getLayers();
 		for(Layer layer : layers) {
-            for(Neuron neuron : layer.getNeurons())
+            for(Neuron neuron : layer.getNeurons()){
+            	
+            	if(neuron.getLabel().equals(label)){
+            		neuronToDelete=neuron;
+            	}
                 for(Connection conn : neuron.getInputConnections()) {
                 	//logger.info("From neuron: "+conn.getFromNeuron().getLabel());
                 	if(conn.getFromNeuron().getLabel().equals(label)){
-                		neuronToDelete=conn.getFromNeuron();
+                		//neuronToDelete=conn.getFromNeuron();
                 		weightIds.add(index);
                 	}
                 	index++;
                 }
+            }
         }
         
 		//Remove the neuron all neuron connection
@@ -576,7 +603,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 		//neuronToDelete.removeAllOutputConnections();
 		
 		//Remove the neuron
+		//logger.info("Input layer length: "+layers[0].getNeuronsCount());
 		layers[0].removeNeuron(neuronToDelete);
+		//logger.info("Input layer length: "+layers[0].getNeuronsCount());
+		this.network.setInputNeurons(layers[0].getNeurons());
+		
+		
+		printState("After deletion! ");
 		
 		//Reset all Old results
 		for(ResultEntity ent:optResults.getResults()){
@@ -608,11 +641,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 	 * prepare the Architecture before a optimization by saving the current best value
 	 */
 	public void prepareOptimizationStatistic(){
+		if(!resultLoaded)this.loadResults();
 		if(!hasResults())return;
 		this.beforeOptimizationBestValue=this.optResults.getBestResult().getValue();
 	}
 	
 	public void saveOptimizationStatistic(){
+		if(!resultLoaded)this.loadResults();
 		if(!hasResults())return;
 		
 		lastOptimization=Calendar.getInstance();
@@ -632,11 +667,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	public void prepareTrainingStatistic(ResultEntity ent){
+		if(!resultLoaded)this.loadResults();
 		if(!hasResults())return;
 		this.beforeTrainingBestValue=ent.getValue();
 	}
 	
 	public void saveTrainingStatistic(ResultEntity ent){
+		if(!resultLoaded)this.loadResults();
 		if(!hasResults())return;
 		
 		lastTraining=Calendar.getInstance();
@@ -673,6 +710,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	
 	public void clearResultsAndNetwork(){
+		this.saveResults();
 		this.network=null;
 		this.optResults.getResults().clear();
 		resultLoaded=false;
@@ -866,6 +904,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 	//***      GETTER AND SETTER          ****
 	//****************************************
 	
+	public int getDimension(){
+		return this.actConsArray.length;
+	}
+	
+	public void setLocalSavePath(String localSavePath) {
+		this.localSavePath = localSavePath;
+	}
 	
 	public Configuration getParent() {
 		return parent;
@@ -876,6 +921,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	private LinkedList<Neuron> getNeuronsList(){
+		if(!resultLoaded)this.loadResults();
 		LinkedList<Neuron> neurons=new LinkedList< Neuron>();
 		
 		//Set the neuron Map
@@ -897,7 +943,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	public String getId(){
-		return network.getLabel();
+		return this.networkLabel;
 	}
 	
 	public int getNumberOfInnerNeurons() {
@@ -905,6 +951,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 
 	public NeuralNetwork getNetwork() {
+		if(!resultLoaded)this.loadResults();
 		return network;
 	}
 
@@ -913,6 +960,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	*/
 	public List<ResultEntity> getResultsEntities(){
+		if(!resultLoaded)this.loadResults();
 		return optResults.getResults();
 	}
 
@@ -1074,16 +1122,24 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	
-	public void loadResultsFromPath(String path){
-		//logger.info("File: "+path+File.separator+networkLabel+".nnet");
-		this.network=NeuralNetwork.createFromFile(path+File.separator+networkLabel+".nnet");
-		setOptResuts(OptimizationResults.createFromFile(path+File.separator+networkLabel+".ores"));
+	private void loadResults(){
+		if(localSavePath.isEmpty()){
+			logger.info("Error by loading Results: Local save path is empty!!");
+			return;
+		}
+		this.network=NeuralNetwork.createFromFile(localSavePath+File.separator+networkLabel+".nnet");
+		setOptResuts(OptimizationResults.createFromFile(localSavePath+File.separator+networkLabel+".ores"));
 		resultLoaded=true;
 	}
 	
-	public void saveResultsToPath(String path){
-		network.save(path + File.separator + network.getLabel() + ".nnet");
-		optResults.save(path + File.separator + network.getLabel() + ".ores");
+	private void saveResults(){
+		if(localSavePath.isEmpty()){
+			logger.info("Error by saving results: Local save path is empty!!");
+			return;
+		}
+		if(network==null)return;
+		network.save(localSavePath + File.separator + network.getLabel() + ".nnet");
+		optResults.save(localSavePath + File.separator + network.getLabel() + ".ores");
 	}
 	
 
@@ -1120,6 +1176,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		optResults.save(NETWORK_SAVE_PATH + File.separator + network.getLabel() + ".ores");
 		rootElement.appendChild(e);
 		*/
+		saveResults();
 		
 		if(this.bestResultEntity!=null){
 			rootElement.appendChild(this.bestResultEntity.toDomElement(doc));

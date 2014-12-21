@@ -177,12 +177,9 @@ public class NeuralNetworkChart extends Composite {
     
     
     private void searchBestNetwork(){
-    	if(bestArchi!=null)
-    		bestArchi.clearResultsAndNetwork();
     	
     	bestArchi=config.searchBestNetworkArchitecture();
     	if(bestArchi==null)return;
-		nnprovider.loadArchitectureResults(stock, bestArchi);
 		neuralNetwork=bestArchi.getNetwork();
 		if(bestArchi.getBestResultEntity()!=null){
 			neuralNetwork.setWeights(bestArchi.getBestResultEntity().getDoubleArray());
@@ -348,7 +345,8 @@ public class NeuralNetworkChart extends Composite {
     	boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
     	//logger.info("Best Archi: "+Arrays.toString(bestArchi));
     	
-    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi);
+    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi,
+    			nnprovider.getNetworkArchitecturesLocalSavePath(stock));
     	
     	if(archi!=null){
     		this.neuralNetwork=archi.getNetwork();

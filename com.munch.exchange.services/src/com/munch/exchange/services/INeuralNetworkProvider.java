@@ -11,8 +11,10 @@ public interface INeuralNetworkProvider {
 	boolean load(Stock stock);
 	boolean save(Stock stock);
 	
-	boolean loadArchitectureResults(Stock stock, NetworkArchitecture archi);
-	boolean saveArchitectureResults(Stock stock, NetworkArchitecture archi);
+	String getNetworkArchitecturesLocalSavePath(Stock stock);
+	
+	//boolean loadArchitectureResults(Stock stock, NetworkArchitecture archi);
+	//boolean saveArchitectureResults(Stock stock, NetworkArchitecture archi);
 	
 	void createAllInputPoints(Stock stock);
 	
