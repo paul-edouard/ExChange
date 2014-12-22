@@ -259,7 +259,7 @@ public class NeuralNetworkOptimizer extends Job {
 		private ExchangeRate rate;
 		private Configuration configuration;
 		private int step;
-		private int maximum;
+		private int maximum=-1;
 		private OptimizationResults results=new OptimizationResults();
 		private int dimension;
 		private int nbOfInnerNeurons;

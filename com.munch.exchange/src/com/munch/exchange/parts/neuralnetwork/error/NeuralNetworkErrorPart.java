@@ -389,6 +389,7 @@ public class NeuralNetworkErrorPart {
 	
 	private void updateChart(OptInfo info){
 		if(info.getResults().getResults().isEmpty())return;
+		if(info.getStep()<0)return;
 		//Search the best results
 		boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
     	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi,
@@ -397,7 +398,7 @@ public class NeuralNetworkErrorPart {
 		
     	XYSeries series = dimSerieMap.get(info.getNumberOfInnerNeurons());
     	if(series==null)return;
-    	series.add(info.getMaximum()-info.getStep(), error);
+    	series.add(info.getMaximum()-info.getStep()-1, error);
 	}
 	
 	
