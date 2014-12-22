@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +27,9 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -36,6 +40,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.wb.swt.ResourceManager;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
@@ -43,7 +49,6 @@ import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
@@ -55,22 +60,13 @@ import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptM
 import com.munch.exchange.job.objectivefunc.NetworkArchitectureObjFunc.NetworkArchitectureOptInfo;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
-import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
-import com.munch.exchange.parts.InfoPart;
+import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.parts.MyMDirtyable;
 import com.munch.exchange.parts.neuralnetwork.error.TreeWorkerContentProvider.Worker;
 import com.munch.exchange.parts.neuralnetwork.error.TreeWorkerContentProvider.Workers;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
-
-import org.eclipse.swt.custom.TableTree;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.TableTreeViewer;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.jface.viewers.TreeViewerColumn;
 
 public class NeuralNetworkErrorPart {
 	
@@ -339,14 +335,16 @@ public class NeuralNetworkErrorPart {
 		
 		//Delete old series
 		Set<Integer> keySet=dimSerieMap.keySet();
-		if(keySet==null)return;
-		for(int i:keySet){
-			if(i<info.getMinDim() || i>info.getMaxDim()){
-				errorData.removeSeries(dimSerieMap.get(i));
-				dimSerieMap.remove(i);
-			}
+		Iterator<Integer> iterator = keySet.iterator();
+	    while(iterator.hasNext()) {
+	    	Integer i = iterator.next();
+	    	if(i<info.getMinDim() || i>info.getMaxDim()){
+	    		errorData.removeSeries(dimSerieMap.get(i));
+	    		dimSerieMap.remove(i);
+	    	}
 		}
-		
+	    
+	    
 		//Add or clear the new series
 		for(int i=info.getMinDim();i<=info.getMaxDim();i++){
 			if(dimSerieMap.containsKey(i)){
@@ -389,15 +387,22 @@ public class NeuralNetworkErrorPart {
 	
 	private void updateChart(OptInfo info){
 		if(info.getResults().getResults().isEmpty())return;
+		if(info.getStep()<0)return;
+		
+		
 		//Search the best results
-		boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
-    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi,
-    			nnprovider.getNetworkArchitecturesLocalSavePath(stock));
-    	double error=archi.getBestValue();
+		Configuration config=stock.getNeuralNetwork().getConfiguration();
+		OptimizationResults dimResults=config.getOptResults(info.getDimension());
+		if(dimResults.getResults().isEmpty())return;
+		
+		double error=dimResults.getBestResult().getValue();
+    	//logger.info("Error: "+error);
 		
     	XYSeries series = dimSerieMap.get(info.getNumberOfInnerNeurons());
     	if(series==null)return;
-    	series.add(info.getMaximum()-info.getStep(), error);
+    	
+    	int step=info.getMaximum()-info.getStep()-1;
+    	series.add(step, error);
 	}
 	
 	

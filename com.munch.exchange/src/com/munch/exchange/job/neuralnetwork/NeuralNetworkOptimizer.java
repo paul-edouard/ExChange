@@ -226,9 +226,9 @@ public class NeuralNetworkOptimizer extends Job {
 			else if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_STEP)){
 				//int val=(int)evt.getNewValue();
 				//if(val%10==0){
-					info.setStep((int)evt.getNewValue());
-					info.resetLastReaction();
-					eventBroker.post(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_STEP,info);
+				info.setStep((int)evt.getNewValue());
+				info.resetLastReaction();
+				eventBroker.post(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_STEP,info);
 				//}
 			}
 			// Cancel called
@@ -259,7 +259,7 @@ public class NeuralNetworkOptimizer extends Job {
 		private ExchangeRate rate;
 		private Configuration configuration;
 		private int step;
-		private int maximum;
+		private int maximum=-1;
 		private OptimizationResults results=new OptimizationResults();
 		private int dimension;
 		private int nbOfInnerNeurons;
@@ -353,13 +353,6 @@ public class NeuralNetworkOptimizer extends Job {
 		public OptimizationResults getResults() {
 			return results;
 		}
-		
-
-
-		
-		
-		
-		
 		
 	}
 	
