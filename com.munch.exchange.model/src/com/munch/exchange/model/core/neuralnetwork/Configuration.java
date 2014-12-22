@@ -474,7 +474,7 @@ public class Configuration extends XmlParameterElement {
 	}
 	
 	
-	private void addTimeSeries(TimeSeries series, boolean fireTimeSeriesChanged){
+	public void addTimeSeries(TimeSeries series, boolean fireTimeSeriesChanged){
 		series.addPropertyChangeListener(new PropertyChangeListener() {
 			
 			@Override
@@ -491,9 +491,11 @@ public class Configuration extends XmlParameterElement {
 		}
 	}
 	
+	/*
 	public void addTimeSeries(TimeSeries series){
-		addTimeSeries(series,true);
+		addTimeSeries(series,false);
 	}
+	*/
 	
 	public void removeTimeSeries(TimeSeries series){
 		//series.removePropertyChangeListener(l);
@@ -514,6 +516,35 @@ public class Configuration extends XmlParameterElement {
 	
 	public LinkedList<NetworkArchitecture> getNetworkArchitectures() {
 		return networkArchitectures;
+	}
+	
+	
+	
+	public int[] getMinMaxInnerNeurons(){
+		int numberOfInputNeurons=this.getNumberOfInputNeurons();
+		int[] minMaxInputN={numberOfInputNeurons,numberOfInputNeurons};
+		
+		if(optArchitectureParam.hasParamKey(AlgorithmParameters.MaxDimension)){
+			minMaxInputN[1]=optArchitectureParam.getIntegerParam(AlgorithmParameters.MaxDimension);
+		}
+		if(optArchitectureParam.hasParamKey(AlgorithmParameters.MinDimension)){
+			minMaxInputN[0]=optArchitectureParam.getIntegerParam(AlgorithmParameters.MinDimension);
+		}
+		
+		int[] minMaxInnerN={NetworkArchitecture.calculateNbOfInnerNeurons(minMaxInputN[0], numberOfInputNeurons),
+							NetworkArchitecture.calculateNbOfInnerNeurons(minMaxInputN[1], numberOfInputNeurons)};
+		
+		return minMaxInnerN;
+		
+	}
+	
+	public void setMinMaxInnerNeurons(int[] minMaxInnerN ){
+		if(minMaxInnerN.length!=2)return;
+		
+		int numberOfInputNeurons=this.getNumberOfInputNeurons();
+		//Change the Opt Architecture Parameters
+		optArchitectureParam.setParam(AlgorithmParameters.MaxDimension,NetworkArchitecture.calculateActivatedConnectionsSize(numberOfInputNeurons, minMaxInnerN[1]) );
+		optArchitectureParam.setParam(AlgorithmParameters.MinDimension, NetworkArchitecture.calculateActivatedConnectionsSize(numberOfInputNeurons,minMaxInnerN[0]));
 	}
 	
 	
@@ -689,6 +720,8 @@ public class Configuration extends XmlParameterElement {
 		logger.info("All Archi adapted!!!");
 		
 	}
+	
+	
 	
 	
 	

@@ -23,6 +23,7 @@ public class AddTimeSeriesDialog extends TitleAreaDialog {
 	
 	private TimeSeriesCategory category;
 	private Configuration config;
+	private TimeSeries series=null;
 	
 	/**
 	 * Create the dialog.
@@ -97,13 +98,19 @@ public class AddTimeSeriesDialog extends TitleAreaDialog {
 	protected void okPressed() {
 		
 		if(comboTimeSeries.getItemCount()>0){
-			TimeSeries series=new TimeSeries(comboTimeSeries.getText(), this.category);
-			config.setDirty(true);
-			config.addTimeSeries(series);
+			series=new TimeSeries(comboTimeSeries.getText(), this.category);
+			//config.setDirty(true);
+			//config.addTimeSeries(series);
 		}
 		
 		super.okPressed();
 	}
+
+	public TimeSeries getSeries() {
+		return series;
+	}
+	
+	
 	
 	
 	

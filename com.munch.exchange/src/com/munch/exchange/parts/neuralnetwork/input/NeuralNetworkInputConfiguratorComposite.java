@@ -38,10 +38,12 @@ import org.apache.log4j.Logger;
 import org.eclipse.wb.swt.ResourceManager;
 
 
+
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddTimeSeriesDialog;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
@@ -174,6 +176,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		tree.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
+				if(!isEditing)return;
 				if(e.button==3 && tree.getSelection().length==1){
 					TreeItem item=tree.getSelection()[0];
 					if(item.getData() instanceof NeuralNetworkSerieCategory){
@@ -285,14 +288,15 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			//logger.info("Add serie selected");
 			TreeItem item=tree.getSelection()[0];
 			NeuralNetworkSerieCategory category=(NeuralNetworkSerieCategory) item.getData();
+			Configuration config=stock.getNeuralNetwork().getConfiguration();
 			
-			AddTimeSeriesDialog dialog=new AddTimeSeriesDialog(shell, category.name, stock.getNeuralNetwork().getConfiguration());
-			if(dialog.open()==AddTimeSeriesDialog.OK){
+			AddTimeSeriesDialog dialog=new AddTimeSeriesDialog(shell, category.name, config);
+			if(dialog.open()==AddTimeSeriesDialog.OK && dialog.getSeries()!=null){
 				//TODO
+				config.addTimeSeries(dialog.getSeries(),false);
 				refreshTimeSeries();
-				neuralNetworkProvider.createAllInputPoints(stock);
-				//stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
-				//fireReadyToTrain();
+				//neuralNetworkProvider.createAllInputPoints(stock);
+				
 			}
 		}
 	}
@@ -304,7 +308,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			TimeSeries series=(TimeSeries) item.getData();
 			
 			stock.getNeuralNetwork().getConfiguration().removeTimeSeries(series);
-			stock.getNeuralNetwork().getConfiguration().setDirty(true);
+			//stock.getNeuralNetwork().getConfiguration().setDirty(true);
 			tree.removeAll();
 			
 			//TODO
