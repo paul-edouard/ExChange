@@ -33,6 +33,9 @@ import org.goataa.impl.utils.Constants;
 
 public class NeuralNetworkResultsPart {
 	
+	public static final String NEURAL_NETWORK_RESULTS_ID="com.munch.exchange.part.networkresults";
+	
+	private Stock stock=null;
 	private Configuration config=null;
 	private Label lblSelectedConfig;
 	private Tree tree;
@@ -69,6 +72,7 @@ public class NeuralNetworkResultsPart {
 		addColumn("Inner Neurons",100,new InnerNeuronsLabelProvider());
 		addColumn("Best Result",100,new BestResultsLabelProvider());
 		
+		refresh();
 	}
 	
 	private TreeViewerColumn addColumn(String columnName, int width, CellLabelProvider cellLabelProvider ){
@@ -82,6 +86,12 @@ public class NeuralNetworkResultsPart {
 	}
 	
 	
+	private void refresh(){
+		if(config==null || stock==null)return;
+		lblSelectedConfig.setText(stock.getFullName()+": "+config.getName());
+		treeViewer.setInput(config);
+		treeViewer.refresh();
+	}
 	
 	@PreDestroy
 	public void preDestroy() {
@@ -105,6 +115,15 @@ public class NeuralNetworkResultsPart {
 	//##     ColumnLabelProvider    ##
 	//################################	
 	
+	public void setStock(Stock stock) {
+		this.stock = stock;
+		config=stock.getNeuralNetwork().getConfiguration();
+		
+		if (!isCompositeAbleToReact())return;
+		refresh();
+	}
+
+
 	class IdLabelProvider extends ColumnLabelProvider{
 
 		@Override
@@ -161,17 +180,12 @@ public class NeuralNetworkResultsPart {
 	}
 	
 	@Inject
-	private void neuralNetworkDataLoaded(
+	private void neuralNetworkConfigSelected(
 			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED) Stock stock) {
-	
-		if (!isCompositeAbleToReact())return;
 		
-		config=stock.getNeuralNetwork().getConfiguration();
-		lblSelectedConfig.setText(stock.getFullName()+": "+config.getName());
+		if(stock==null)return;
+		setStock(stock);
 		
-		
-		treeViewer.setInput(config);
-		treeViewer.refresh();
 		
 	}
 	

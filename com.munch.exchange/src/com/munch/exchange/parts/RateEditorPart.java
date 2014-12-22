@@ -13,7 +13,12 @@ import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -35,6 +40,7 @@ import com.munch.exchange.parts.composite.RateWeb;
 import com.munch.exchange.parts.composite.StockInfoGroup;
 import com.munch.exchange.parts.financials.StockFinancials;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkComposite;
+import com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsPart;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IKeyStatisticProvider;
 
@@ -44,6 +50,7 @@ public class RateEditorPart {
 	
 	private DataBindingContext m_bindingContext;
 	
+	private static String NETWORK_TABITEM_TEXT="Neuronal Network";
 	
 	public static final String RATE_EDITOR_ID="com.munch.exchange.partdescriptor.rateeditor";
 	
@@ -58,6 +65,10 @@ public class RateEditorPart {
 	
 	@Inject
 	IExchangeRateProvider exchangeRateProvider;
+	
+	@Inject
+	private EPartService partService;
+	
 	
 	@Inject
 	private IEventBroker eventBroker;
@@ -98,7 +109,7 @@ public class RateEditorPart {
 		createChartTabFolder(tabFolder, "Chart");
 		if(rate instanceof Stock ){
 			createStockFinancialsTabFolder(tabFolder, "Financials");
-			createStockNeuronalNetworkTabFolder(tabFolder, "Neuronal Network");
+			createStockNeuronalNetworkTabFolder(tabFolder, NETWORK_TABITEM_TEXT);
 			
 		}
 		
@@ -225,6 +236,25 @@ public class RateEditorPart {
 	
 	// Neuronal Network
 	private void createStockNeuronalNetworkTabFolder(TabFolder tabFolder,String title) {
+		//Create the event reaction
+		tabFolder.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(!(e.getSource() instanceof TabFolder))return;
+				TabFolder f=(TabFolder)e.getSource();
+				
+				TabItem item=f.getItem(f.getSelectionIndex());
+				if(!item.getText().equals(NETWORK_TABITEM_TEXT))return;
+				
+				MPart part=partService.findPart(NeuralNetworkResultsPart.NEURAL_NETWORK_RESULTS_ID);
+				if(part==null)return;
+				
+				partService.showPart(part, PartState.CREATE);
+				eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,(Stock)rate);
+				
+			}
+		});
+		
 		TabItem tbtmNewItem = new TabItem(tabFolder, SWT.NONE);
 		tbtmNewItem.setText(title);
 
@@ -248,6 +278,9 @@ public class RateEditorPart {
 				NeuralNetworkComposite.class, localContact);
 		neuronalNetworkComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL,
 				true, true, 1, 1));
+		
+		
+		
 
 	}
 	

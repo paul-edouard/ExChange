@@ -20,15 +20,12 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Cursor;
@@ -44,9 +41,6 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.wb.swt.ResourceManager;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
@@ -55,7 +49,6 @@ import org.neuroph.core.events.LearningEventListener;
 import org.neuroph.nnet.learning.BackPropagation;
 
 import com.munch.exchange.IEventConstant;
-import com.munch.exchange.dialog.AddTimeSeriesDialog;
 import com.munch.exchange.dialog.StringEditorDialog;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkDataLoader;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager;
@@ -72,6 +65,7 @@ import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.parts.neuralnetwork.error.NeuralNetworkErrorPart;
+import com.munch.exchange.parts.neuralnetwork.input.NeuralNetworkInputConfiguratorComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
 import com.munch.exchange.wizard.parameter.architecture.ArchitectureOptimizationWizard;
@@ -86,11 +80,12 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	private INeuralNetworkProvider neuralNetworkProvider;
 	
-	private NeuralNetworkContentProvider contentProvider;
+	//private NeuralNetworkContentProvider contentProvider;
 	
 	private NeuralNetworkOutputObjFunc objFunc;
 	
 	private NeuralNetworkChart neuralNetworkChart;
+	private NeuralNetworkInputConfiguratorComposite inputConfigurator;
 	
 	private double maxProfit=0;
 	private double maxPenaltyProfit=0;
@@ -126,10 +121,12 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	//private NeuralNetworkOptimizer optimizer;
 	private NeuralNetworkOptimizerManager optimizerManager;
 	
+	
+	
 	private PropertyChangeListener configChangedListener=new PropertyChangeListener() {
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
-			InfoPart.postInfoText(eventBroker, "Dirty listener");
+			InfoPart.postInfoText(eventBroker, "Dirty listener: "+evt.getPropertyName());
 			if(evt.getPropertyName().equals(Configuration.FIELD_IsDirty)){
 				InfoPart.postInfoText(eventBroker, "Dirty listener value "+String.valueOf(evt.getNewValue()));
 				if(((boolean)evt.getNewValue()))
@@ -146,16 +143,12 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private Text textPenaltyProfit;
 	private Text textError;
 	private Text textGenError;
-	private Tree tree;
-	private TreeViewer treeViewer;
+	
 	private Combo comboConfig;
 	private NeuralNetworkDataLoader nnd_loader;
 	private Button btnSaveConfig;
 	private Button btnDeleteConfig;
 
-	private Menu menu;
-	private MenuItem mntmAddSerie;
-	private MenuItem mntmRemove;
 	private Button btnStartTrain;
 	private Group grpLearning;
 	private Button btnEditConfig;
@@ -168,7 +161,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		super(parent, SWT.NONE);
 		this.stock=(Stock) rate;
 		this.neuralNetworkProvider=nnProvider;
-		contentProvider=new NeuralNetworkContentProvider(this.stock);
+		//contentProvider=new NeuralNetworkContentProvider(this.stock);
 		
 		
 		setLayout(new GridLayout(1, false));
@@ -199,7 +192,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 					btnSaveConfig.setVisible(true);
 				}
 				
-				refreshGui();
+				//refreshGui();
 				fireReadyToTrain();
 				
 			}
@@ -260,7 +253,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 					
 					comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
 					
-					refreshGui();
+					//refreshGui();
 					fireReadyToTrain();
 					
 					btnSaveConfig.setVisible(true);
@@ -338,111 +331,13 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		
 		
-		Composite composite = new Composite(compositeLeft, SWT.NONE);
-		composite.setLayout(new GridLayout(1, false));
-		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		//Composite composite = new Composite(compositeLeft, SWT.NONE);
+		//composite.setLayout(new GridLayout(1, false));
+		//composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
-		treeViewer = new TreeViewer(composite, SWT.BORDER| SWT.MULTI
-				| SWT.V_SCROLL | SWT.FULL_SELECTION);
-		treeViewer.setContentProvider(contentProvider);
-		treeViewer.setInput(contentProvider.getRoot());
-		
-		tree = treeViewer.getTree();
-		tree.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseDown(MouseEvent e) {
-				if(e.button==3 && tree.getSelection().length==1){
-					TreeItem item=tree.getSelection()[0];
-					if(item.getData() instanceof NeuralNetworkSerieCategory){
-						mntmAddSerie.setEnabled(true);
-						mntmRemove.setEnabled(false);
-					}
-					else if(item.getData() instanceof TimeSeries){
-						mntmAddSerie.setEnabled(false);
-						mntmRemove.setEnabled(true);
-					}
-					else{
-						mntmAddSerie.setEnabled(false);
-						mntmRemove.setEnabled(false);
-					}
-					menu.setVisible(true);
-				}
-				
-			}
-		});
-		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		tree.setHeaderVisible(true);
-		tree.setLinesVisible(true);
-		tree.setEnabled(false);
-		
-		
-		TreeViewerColumn treeViewerColumnInputSeries = new TreeViewerColumn(treeViewer, SWT.NONE);
-		treeViewerColumnInputSeries.setLabelProvider(new InputSeriesLabelProvider());
-		TreeColumn trclmnInputSeries = treeViewerColumnInputSeries.getColumn();
-		trclmnInputSeries.setWidth(150);
-		trclmnInputSeries.setText("Input Series");
-		
-		TreeViewerColumn treeViewerColumnNbOfValues = new TreeViewerColumn(treeViewer, SWT.NONE);
-		treeViewerColumnNbOfValues.setLabelProvider(new NbOfValuesLabelProvider());
-		treeViewerColumnNbOfValues.setEditingSupport(new NumberOfValuesEditingSupport(treeViewer,neuralNetworkProvider,stock));
-		TreeColumn trclmnNbOfValues = treeViewerColumnNbOfValues.getColumn();
-		trclmnNbOfValues.setWidth(100);
-		trclmnNbOfValues.setText("Nb. of values");
-		
-		TreeViewerColumn treeViewerColumnTimeLeft = new TreeViewerColumn(treeViewer, SWT.NONE);
-		treeViewerColumnTimeLeft.setLabelProvider(new TimeLeftLabelProvider());
-		treeViewerColumnTimeLeft.setEditingSupport(new TimeLeftEditingSupport(treeViewer,neuralNetworkProvider,stock));
-		TreeColumn trclmnTimeLeft = treeViewerColumnTimeLeft.getColumn();
-		trclmnTimeLeft.setWidth(100);
-		trclmnTimeLeft.setText("Time left");
-		
-		menu = new Menu(tree);
-		tree.setMenu(menu);
-		
-		mntmAddSerie = new MenuItem(menu, SWT.NONE);
-		mntmAddSerie.setImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/add.png"));
-		mntmAddSerie.setEnabled(false);
-		mntmAddSerie.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				//logger.info("Add serie selected");
-				TreeItem item=tree.getSelection()[0];
-				NeuralNetworkSerieCategory category=(NeuralNetworkSerieCategory) item.getData();
-				
-				AddTimeSeriesDialog dialog=new AddTimeSeriesDialog(shell, category.name, stock.getNeuralNetwork().getConfiguration());
-				if(dialog.open()==AddTimeSeriesDialog.OK){
-					//TODO
-					refreshTimeSeries();
-					neuralNetworkProvider.createAllInputPoints(stock);
-					//stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
-					fireReadyToTrain();
-				}
-			}
-		});
-		mntmAddSerie.setText("Add Serie");
-		
-		mntmRemove = new MenuItem(menu, SWT.NONE);
-		mntmRemove.setImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/delete.png"));
-		mntmRemove.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				TreeItem item=tree.getSelection()[0];
-				TimeSeries series=(TimeSeries) item.getData();
-				
-				stock.getNeuralNetwork().getConfiguration().removeTimeSeries(series);
-				stock.getNeuralNetwork().getConfiguration().setDirty(true);
-				tree.removeAll();
-				
-				//TODO
-				refreshTimeSeries();
-				neuralNetworkProvider.createAllInputPoints(stock);
-				//stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
-				fireReadyToTrain();
-				
-			}
-		});
-		mntmRemove.setEnabled(false);
-		mntmRemove.setText("Remove");
+		////////////////////////////////
+		//Create the input configurator
+		createInputConfigurator(ctxt, compositeLeft);
 		
 		Composite compositeLeftBottom = new Composite(compositeLeft, SWT.NONE);
 		compositeLeftBottom.setLayout(new GridLayout(2, false));
@@ -629,10 +524,10 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		sashForm.setWeights(new int[] {254, 282});
 		
 		//TODO
-		//createNeuralNetworkChart(ctxt,compositeGraph);
+		createNeuralNetworkChart(ctxt,compositeGraph);
 		
 		
-		treeViewer.refresh();
+		//treeViewer.refresh();
 		isInitiated=true;
 		
 		loadNeuralData(ctxt);
@@ -653,6 +548,23 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		neuralNetworkChart.setEnabled(false);
 	}
 	
+	private void createInputConfigurator(IEclipseContext context, Composite parentComposite ){
+		//Create a context instance
+		IEclipseContext localContact=EclipseContextFactory.create();
+		localContact.set(Composite.class, parentComposite);
+		//localContact.set(Stock.class, stock);
+		//localContact.set(INeuralNetworkProvider.class, nnProvider);
+		localContact.setParent(context);
+		
+		//////////////////////////////////
+		//Create the Input Configurator //
+		//////////////////////////////////
+		//TODO
+		inputConfigurator=ContextInjectionFactory.make( NeuralNetworkInputConfiguratorComposite.class,localContact);
+		inputConfigurator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		//inputConfigurator.setEnabled(false);
+	}
+	
 	private void fireReadyToTrain(){
 		Configuration config=stock.getNeuralNetwork().getConfiguration();
 		
@@ -670,7 +582,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 			neuralNetworkChart.setEnabled(true);
 		}
 		
-		tree.setEnabled(true);
+		
 		btnSaveConfig.setEnabled(true);
 		btnDeleteConfig.setEnabled(true);
 		btnEditConfig.setEnabled(true);
@@ -687,7 +599,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	}
 	
 	private void setTrainingStatus(boolean status){
-		tree.setEnabled(!status);
+		
 		btnSaveConfig.setEnabled(!status);
 		btnDeleteConfig.setEnabled(!status);
 		btnEditConfig.setEnabled(!status);
@@ -716,12 +628,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		nnd_loader.schedule();
 	}
 	
-	private void refreshTimeSeries(){
-		this.contentProvider.refreshCategories();
-		
-		treeViewer.refresh();
-	}
-	
+	/*
 	private void refreshGui(){
 		//refreshComboConfig(true);
 		//changeLoadedState();
@@ -729,6 +636,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		treeViewer.setInput(contentProvider.getRoot());
 		treeViewer.refresh();
 	}
+	*/
 	
 	private void initConfigurations(){
 		LinkedList<Configuration> configList=stock.getNeuralNetwork().getConfigurations();
@@ -825,8 +733,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		initComboConfig();
 		
-		refreshGui();
-		refreshTimeSeries();
+		//refreshGui();
+		//refreshTimeSeries();
 		fireReadyToTrain();
 		
 		neuralNetworkLoaded=true;
@@ -903,59 +811,5 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
         
     }
 	
-	//################################
-	//##     ColumnLabelProvider    ##
-	//################################
 	
-    
-	class InputSeriesLabelProvider extends ColumnLabelProvider{
-
-		@Override
-		public String getText(Object element) {
-			if(element instanceof NeuralNetworkSerieCategory){
-				NeuralNetworkSerieCategory el=(NeuralNetworkSerieCategory) element;
-				return el.name.getCategoryLabel();
-			}
-			else if(element instanceof TimeSeries){
-				TimeSeries el=(TimeSeries) element;
-				return String.valueOf(el.getName());
-			}
-			return super.getText(element);
-		}
-		
-	}
-	
-	class NbOfValuesLabelProvider extends ColumnLabelProvider{
-
-		@Override
-		public String getText(Object element) {
-			if(element instanceof NeuralNetworkSerieCategory){
-				//NeuralNetworkSerieCategory el=(NeuralNetworkSerieCategory) element;
-				return "-";
-			}
-			else if(element instanceof TimeSeries){
-				TimeSeries el=(TimeSeries) element;
-				return String.valueOf(el.getNumberOfPastValues());
-			}
-			return super.getText(element);
-		}
-		
-	}
-	
-	class TimeLeftLabelProvider extends ColumnLabelProvider{
-
-		@Override
-		public String getText(Object element) {
-			if(element instanceof NeuralNetworkSerieCategory){
-				//NeuralNetworkSerieCategory el=(NeuralNetworkSerieCategory) element;
-				return "-";
-			}
-			else if(element instanceof TimeSeries){
-				TimeSeries el=(TimeSeries) element;
-				return String.valueOf(el.isTimeRemainingActivated());
-			}
-			return super.getText(element);
-		}
-		
-	}
 }
