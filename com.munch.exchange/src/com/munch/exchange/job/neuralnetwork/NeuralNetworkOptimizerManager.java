@@ -13,7 +13,6 @@ import org.neuroph.core.data.DataSet;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
-import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.parts.InfoPart;
@@ -98,7 +97,7 @@ public class NeuralNetworkOptimizerManager extends Job{
 
 	private int getNumberOfProcessors(){
 		int nbOfProc=Runtime.getRuntime().availableProcessors();
-		if(nbOfProc>1)nbOfProc--;
+		//if(nbOfProc>1)nbOfProc--;
 		return nbOfProc;
 		
 	}

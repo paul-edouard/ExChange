@@ -58,10 +58,8 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddTimeSeriesDialog;
 import com.munch.exchange.dialog.StringEditorDialog;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkDataLoader;
-import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer;
-import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
-import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptManagerInfo;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptManagerInfo;
 import com.munch.exchange.job.objectivefunc.NeuralNetworkOutputObjFunc;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
@@ -85,8 +83,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private static Logger logger = Logger.getLogger(NeuralNetworkComposite.class);
 	
 	private Stock stock;
-	
-	//private boolean isLoaded=false;
 	
 	private INeuralNetworkProvider neuralNetworkProvider;
 	
@@ -156,8 +152,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private NeuralNetworkDataLoader nnd_loader;
 	private Button btnSaveConfig;
 	private Button btnDeleteConfig;
-	private Combo comboPeriod;
-	private Button btnActivateDayOf;
+
 	private Menu menu;
 	private MenuItem mntmAddSerie;
 	private MenuItem mntmRemove;
@@ -341,31 +336,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		});
 		btnAddConfig.setText("Add");
 		
-		Label lblPeriod = new Label(compositeLeftHeader, SWT.NONE);
-		lblPeriod.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblPeriod.setText("Period:");
 		
-		comboPeriod = new Combo(compositeLeftHeader, SWT.NONE);
-		comboPeriod.setEnabled(false);
-		comboPeriod.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-			}
-		});
-		comboPeriod.setItems(new String[] {"DAY", "HOUR", "MINUTE", "SECONDE"});
-		comboPeriod.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		comboPeriod.setText("DAY");
-		
-		btnActivateDayOf = new Button(compositeLeftHeader, SWT.CHECK);
-		btnActivateDayOf.setEnabled(false);
-		btnActivateDayOf.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				stock.getNeuralNetwork().getConfiguration()
-						.setDayOfWeekActivated(btnActivateDayOf.getSelection());
-			}
-		});
-		btnActivateDayOf.setText("Day of week");
 		
 		Composite composite = new Composite(compositeLeft, SWT.NONE);
 		composite.setLayout(new GridLayout(1, false));
@@ -658,7 +629,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		sashForm.setWeights(new int[] {254, 282});
 		
 		//TODO
-		createNeuralNetworkChart(ctxt,compositeGraph);
+		//createNeuralNetworkChart(ctxt,compositeGraph);
 		
 		
 		treeViewer.refresh();
@@ -704,9 +675,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnDeleteConfig.setEnabled(true);
 		btnEditConfig.setEnabled(true);
 		btnAddConfig.setEnabled(true);
-		comboPeriod.setEnabled(true);
 		comboConfig.setEnabled(true);
-		btnActivateDayOf.setEnabled(true);
 		
 		
 		btnStartTrain.setEnabled(readyToTrain);
@@ -723,9 +692,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		btnDeleteConfig.setEnabled(!status);
 		btnEditConfig.setEnabled(!status);
 		btnAddConfig.setEnabled(!status);
-		comboPeriod.setEnabled(!status);
 		comboConfig.setEnabled(!status);
-		btnActivateDayOf.setEnabled(!status);
 		btnStartTrain.setEnabled(!status);
 		btnArchOptConf.setEnabled(!status);
 		btnLearnAlg.setEnabled(!status);
