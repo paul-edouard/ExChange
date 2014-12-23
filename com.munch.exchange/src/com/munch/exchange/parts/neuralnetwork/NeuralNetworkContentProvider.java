@@ -8,6 +8,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeriesCategory;
 
@@ -20,16 +21,16 @@ public class NeuralNetworkContentProvider implements
 	private NeuralNetworkSerieCategory root=
 			new NeuralNetworkSerieCategory(null, TimeSeriesCategory.ROOT);
 	
-	private Stock stock;
+	//private Stock stock;
 	
 	private NeuralNetworkSerieCategory rateCategory;
 	private NeuralNetworkSerieCategory financialCategory;
 	
-	public NeuralNetworkContentProvider(Stock stock){
-		this.stock=stock;
+	public NeuralNetworkContentProvider(){
+		//this.stock=stock;
 		
 		buildNeuralNetworkSerieCategories();
-		refreshCategories();
+		refreshCategories(null);
 	}
 	
 	public NeuralNetworkSerieCategory getRoot() {
@@ -92,13 +93,13 @@ public class NeuralNetworkContentProvider implements
 		financialCategory=new NeuralNetworkSerieCategory(this.root,TimeSeriesCategory.FINANCIAL);
 	}
 	
-	public void refreshCategories(){
-		if(this.stock.getNeuralNetwork().getConfiguration()==null)return;
+	public void refreshCategories(Configuration config){
+		if(config==null)return;
 		
 		rateCategory.childs.clear();
 		financialCategory.childs.clear();
 		
-		for(TimeSeries series:this.stock.getNeuralNetwork().getConfiguration().getAllTimeSeries()){
+		for(TimeSeries series:config.getAllTimeSeries()){
 			switch (series.getCategory()) {
 			case RATE:
 				rateCategory.addChild(series);

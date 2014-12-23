@@ -58,5 +58,9 @@ public enum TimeSeriesCategory {
 		
 		return RATE;
 	}
+	
+	public  TimeSeriesCategory createCopy(){
+		return fromString(categoryLabel);
+	}
 
 }

@@ -38,6 +38,15 @@ public class TimeSeries extends XmlParameterElement{
 		numberOfPastValues=6;
 	}
 	
+	public TimeSeries createCopy(){
+		TimeSeries copy = new TimeSeries(Name, category.createCopy());
+		copy.id=this.id;
+		copy.timeRemainingActivated=this.timeRemainingActivated;
+		copy.numberOfPastValues=this.numberOfPastValues;
+
+		return copy;
+	}
+	
 	public void adaptInputValuesToMasterValuePointList(ValuePointList masterValuePointList){
 		
 		ValuePointList adpatedInputValues=new ValuePointList();

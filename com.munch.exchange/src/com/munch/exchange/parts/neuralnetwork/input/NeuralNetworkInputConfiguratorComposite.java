@@ -19,6 +19,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.UIEventTopic;
@@ -39,12 +43,20 @@ import org.eclipse.wb.swt.ResourceManager;
 
 
 
+
+
+
+
+
+
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddTimeSeriesDialog;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
+import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -59,7 +71,11 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 	
 	private boolean isEditing=false;
 	private Stock stock;
+	private Configuration configLocal;
 	private NeuralNetworkContentProvider contentProvider;
+	private TimeSeriesUpdater timeSeriesUpdater;
+	
+	private int numberOfArchitecturesUpdated=0;
 	
 	
 	private INeuralNetworkProvider neuralNetworkProvider;
@@ -90,19 +106,17 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 	private Button btnCancel;
 	private ProgressBar progressBar;
 	
-
-	
 	@Inject
 	public NeuralNetworkInputConfiguratorComposite(Composite parent,ExchangeRate rate,
 			INeuralNetworkProvider nnProvider) {
 		super(parent, SWT.NONE);
 		this.stock=(Stock) rate;
 		this.neuralNetworkProvider=nnProvider;
-		contentProvider=new NeuralNetworkContentProvider(this.stock);
-		
+		contentProvider=new NeuralNetworkContentProvider();
+		configLocal=this.stock.getNeuralNetwork().getConfiguration();
+		timeSeriesUpdater=new TimeSeriesUpdater();
 		
 		setLayout(new GridLayout(1, false));
-		
 		Group grpInputConfiguration = new Group(this, SWT.NONE);
 		grpInputConfiguration.setLayout(new GridLayout(1, false));
 		grpInputConfiguration.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -243,10 +257,16 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 	}
 	
 	private void refreshTimeSeries(){
-		this.contentProvider.refreshCategories();
+		contentProvider.refreshCategories(configLocal);
+		
 		treeViewer.refresh();
 		treeViewer.expandAll();
 	}
+	
+	private synchronized void increaseNbOfArchiUpdated(){
+		numberOfArchitecturesUpdated++;
+	}
+	
 	//################################
 	//##       Button Actions       ##
 	//################################		
@@ -256,8 +276,10 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		btnSave.setVisible(true);
 		btnEdit.setEnabled(false);
 		
-		eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_INPUT_EDITING,stock);
+		configLocal=this.stock.getNeuralNetwork().getConfiguration().createCopy();
 		
+		
+		eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_INPUT_EDITING,stock);
 		
 	}
 	
@@ -267,6 +289,8 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		btnCancel.setVisible(false);
 		btnSave.setVisible(false);
 		
+		configLocal=this.stock.getNeuralNetwork().getConfiguration();
+		refreshTimeSeries();
 		eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_INPUT_CANCELED,stock);
 	}
 	
@@ -276,7 +300,12 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		btnCancel.setVisible(false);
 		btnSave.setVisible(false);
 		
-		eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_INPUT_SAVED,stock);
+		numberOfArchitecturesUpdated=0;
+		progressBar.setMaximum(configLocal.getNetworkArchitectures().size());
+		progressBar.setSelection(numberOfArchitecturesUpdated);
+		
+		//Start the Time Series Updater
+		timeSeriesUpdater.schedule();
 	}
 
 	//################################
@@ -288,12 +317,12 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			//logger.info("Add serie selected");
 			TreeItem item=tree.getSelection()[0];
 			NeuralNetworkSerieCategory category=(NeuralNetworkSerieCategory) item.getData();
-			Configuration config=stock.getNeuralNetwork().getConfiguration();
+			//Configuration config=stock.getNeuralNetwork().getConfiguration();
 			
-			AddTimeSeriesDialog dialog=new AddTimeSeriesDialog(shell, category.name, config);
+			AddTimeSeriesDialog dialog=new AddTimeSeriesDialog(shell, category.name, configLocal);
 			if(dialog.open()==AddTimeSeriesDialog.OK && dialog.getSeries()!=null){
 				//TODO
-				config.addTimeSeries(dialog.getSeries(),false);
+				configLocal.addTimeSeries(dialog.getSeries(),false);
 				refreshTimeSeries();
 				//neuralNetworkProvider.createAllInputPoints(stock);
 				
@@ -307,13 +336,11 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			TreeItem item=tree.getSelection()[0];
 			TimeSeries series=(TimeSeries) item.getData();
 			
-			stock.getNeuralNetwork().getConfiguration().removeTimeSeries(series);
-			//stock.getNeuralNetwork().getConfiguration().setDirty(true);
+			configLocal.removeTimeSeries(series);
 			tree.removeAll();
 			
-			//TODO
 			refreshTimeSeries();
-			neuralNetworkProvider.createAllInputPoints(stock);
+			//neuralNetworkProvider.createAllInputPoints(stock);
 			//stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
 			//fireReadyToTrain();
 			
@@ -400,8 +427,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			TimeSeries el = (TimeSeries) element;
 			el.setTimeRemainingActivated((Boolean) value);
 			
-			
-			neuralNetworkProvider.createAllInputPoints(stock);
+			//neuralNetworkProvider.createAllInputPoints(stock);
 			//stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
 			
 			treeViewer.refresh();
@@ -435,9 +461,35 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		
 		if(stock==null)return;
 		if(!isCompositeAbleToReact(stock.getUUID()))return;
+		if(isEditing)return;
+		
+		configLocal=this.stock.getNeuralNetwork().getConfiguration();
 		
 		refreshTimeSeries();
 		
+	}
+	
+	@Inject
+	private void neuralNetworkConfigInputSaved(
+			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_INPUT_SAVED) Stock stock) {
+		
+		if(stock==null)return;
+		if(!isCompositeAbleToReact(stock.getUUID()))return;
+		
+		configLocal=this.stock.getNeuralNetwork().getConfiguration();
+		refreshTimeSeries();
+		isEditing=false;
+		
+	}
+	
+	@Inject
+	private void neuralNetworkConfigInputSavedStep(
+			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_INPUT_SAVING_STEP) Stock stock) {
+		
+		if(stock==null)return;
+		if(!isCompositeAbleToReact(stock.getUUID()))return;
+		
+		this.progressBar.setSelection(numberOfArchitecturesUpdated);
 	}
 	
 	//################################
@@ -495,6 +547,55 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		}
 		
 	}
+	
+	//################################
+	//##             Job            ##
+	//################################
+	
+	class TimeSeriesUpdater extends Job{
 
+		public TimeSeriesUpdater() {
+			super("Time Series Updater");
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			
+			//Save the old min max inner neurons
+			int[] minMax=stock.getNeuralNetwork().getConfiguration().getMinMaxInnerNeurons();
+			
+			//Copy the time Series from the local one to the current configuration
+			stock.getNeuralNetwork().getConfiguration().copyTimeSeriesFrom(configLocal);
+			configLocal=stock.getNeuralNetwork().getConfiguration();
+			
+			//Recreate all inputs points
+			if (monitor.isCanceled())return Status.CANCEL_STATUS;
+			neuralNetworkProvider.createAllInputPoints(stock);
+			
+			//Update All Architectures
+			for(NetworkArchitecture archi:configLocal.getNetworkArchitectures()){
+				if (monitor.isCanceled())return Status.CANCEL_STATUS;
+				
+				
+				InfoPart.postInfoText(eventBroker, "Adption of Architecture: "+archi.getId());
+				archi.adaptNetwork(configLocal.getInputNeuronNames());
+				
+				//Update the Progress Bar
+				increaseNbOfArchiUpdated();
+				eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_INPUT_SAVING_STEP,stock);
+				
+			}
+			//Reset the Min Max inner neurons
+			configLocal.setMinMaxInnerNeurons(minMax);
+			
+			//Save the configuration
+			neuralNetworkProvider.save(stock);
+			
+			eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_INPUT_SAVED,stock);
+			return Status.OK_STATUS;
+		}
+		
+	}
+	
 			
 }

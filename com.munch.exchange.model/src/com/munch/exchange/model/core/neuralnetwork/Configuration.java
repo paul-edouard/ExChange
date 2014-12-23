@@ -276,6 +276,19 @@ public class Configuration extends XmlParameterElement {
 		
 	}
 	
+	//*************************
+	// Time Series
+	//*************************
+	
+	public Configuration createCopy(){
+		Configuration copy=new Configuration();
+		copy.allTimeSeries=this.createCopyOfTimeSeries();
+		copy.Name=this.Name;
+		
+		//TODO copy the rest of attributes
+		
+		return copy;
+	}
 	
 	public boolean areAllTimeSeriesAvailable(){
 		for(TimeSeries series:this.getAllTimeSeries()){
@@ -285,16 +298,23 @@ public class Configuration extends XmlParameterElement {
 		return true;
 	}
 	
-	
-	
-	/*
-	public void inputNeuronChanged(){
-		LinkedList<String> inputNeurons=getInputNeuronNames();
+	private LinkedList<TimeSeries> createCopyOfTimeSeries(){
+		LinkedList<TimeSeries> copy=new LinkedList<TimeSeries>();
+		for(TimeSeries series:this.allTimeSeries){
+			copy.add(series.createCopy());
+		}
 		
-		for(NetworkArchitecture archi:networkArchitectures)
-			archi.adaptNetwork(inputNeurons);
+		return copy;
 	}
-	*/
+	
+	
+	public void copyTimeSeriesFrom(Configuration config){
+		this.allTimeSeries=config.allTimeSeries;
+	}
+	
+	//*************************
+	// Architecture
+	//*************************
 	
 	@SuppressWarnings("rawtypes")
 	public NetworkArchitecture searchBestNetworkArchitecture(){
@@ -316,7 +336,6 @@ public class Configuration extends XmlParameterElement {
 		return best;
 	}
 	
-	
 	public LinkedList<NetworkArchitecture> searchNetworkArchitectures(int dimension){
 		LinkedList<NetworkArchitecture> l=new LinkedList<NetworkArchitecture>();
 		for(NetworkArchitecture archi:this.networkArchitectures){
@@ -326,6 +345,8 @@ public class Configuration extends XmlParameterElement {
 		
 		return l;
 	}
+	
+	
 	
 	
 	//****************************************
@@ -475,6 +496,7 @@ public class Configuration extends XmlParameterElement {
 	
 	
 	public void addTimeSeries(TimeSeries series, boolean fireTimeSeriesChanged){
+		if(fireTimeSeriesChanged){
 		series.addPropertyChangeListener(new PropertyChangeListener() {
 			
 			@Override
@@ -485,6 +507,7 @@ public class Configuration extends XmlParameterElement {
 				
 			}
 		});
+		}
 		allTimeSeries.add(series);
 		if(fireTimeSeriesChanged){
 			fireTimeSeriesChanged();
