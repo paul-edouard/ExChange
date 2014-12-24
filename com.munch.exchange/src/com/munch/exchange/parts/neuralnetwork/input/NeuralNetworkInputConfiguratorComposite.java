@@ -9,6 +9,7 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -40,6 +41,7 @@ import org.apache.log4j.Logger;
 
 
 import org.eclipse.wb.swt.ResourceManager;
+
 
 
 
@@ -105,6 +107,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 	private Button btnActivateDayOf;
 	private Button btnCancel;
 	private ProgressBar progressBar;
+	private Point progressBarPoint;
 	
 	@Inject
 	public NeuralNetworkInputConfiguratorComposite(Composite parent,ExchangeRate rate,
@@ -250,9 +253,15 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		mntmRemove.setEnabled(false);
 		mntmRemove.setText("Remove");
 		
-		progressBar = new ProgressBar(grpInputConfiguration, SWT.NONE);
+		progressBar = new ProgressBar(compositeBottom, SWT.NONE);
 		progressBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		progressBar.setVisible(false);
+		//progressBarPoint=progressBar.getSize();
+		//compositeBottom.layout();
+		//compositeBottom.pack();
+		//progressBar.setSize(0, 0);
 		
+		//compositeBottom.update();
 		
 	}
 	
@@ -277,7 +286,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		btnEdit.setEnabled(false);
 		
 		configLocal=this.stock.getNeuralNetwork().getConfiguration().createCopy();
-		
+		refreshTimeSeries();
 		
 		eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_INPUT_EDITING,stock);
 		
@@ -479,6 +488,11 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		configLocal=this.stock.getNeuralNetwork().getConfiguration();
 		refreshTimeSeries();
 		isEditing=false;
+		progressBar.setVisible(false);
+		//progressBar.setSize(0,0);
+		//compositeBottom.update();
+		//compositeBottom.pack();
+		//compositeBottom.layout();
 		
 	}
 	
@@ -489,7 +503,11 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		if(stock==null)return;
 		if(!isCompositeAbleToReact(stock.getUUID()))return;
 		
-		this.progressBar.setSelection(numberOfArchitecturesUpdated);
+		progressBar.setSize(progressBarPoint);
+		progressBar.setVisible(true);
+		progressBar.setMaximum(configLocal.getNetworkArchitectures().size());
+		progressBar.setSelection(numberOfArchitecturesUpdated);
+		//compositeBottom.update();
 	}
 	
 	//################################
@@ -565,6 +583,8 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			int[] minMax=stock.getNeuralNetwork().getConfiguration().getMinMaxInnerNeurons();
 			
 			//Copy the time Series from the local one to the current configuration
+			for(TimeSeries s:configLocal.getAllTimeSeries())
+				InfoPart.postInfoText(eventBroker, "Series: "+s);
 			stock.getNeuralNetwork().getConfiguration().copyTimeSeriesFrom(configLocal);
 			configLocal=stock.getNeuralNetwork().getConfiguration();
 			
@@ -572,12 +592,14 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			if (monitor.isCanceled())return Status.CANCEL_STATUS;
 			neuralNetworkProvider.createAllInputPoints(stock);
 			
-			//Update All Architectures
+			//Update all architectures
+			int pos=1;
 			for(NetworkArchitecture archi:configLocal.getNetworkArchitectures()){
 				if (monitor.isCanceled())return Status.CANCEL_STATUS;
 				
 				
-				InfoPart.postInfoText(eventBroker, "Adption of Architecture: "+archi.getId());
+				InfoPart.postInfoText(eventBroker, "Adation of Architecture: "+archi.getId()+" "+
+						(pos++)+"/"+configLocal.getNetworkArchitectures().size());
 				archi.adaptNetwork(configLocal.getInputNeuronNames());
 				
 				//Update the Progress Bar

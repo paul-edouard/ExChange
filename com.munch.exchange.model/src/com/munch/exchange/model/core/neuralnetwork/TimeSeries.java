@@ -237,4 +237,16 @@ public class TimeSeries extends XmlParameterElement{
 	@Override
 	protected void appendChild(Element rootElement, Document doc) {}
 
+	@Override
+	public String toString() {
+		return "TimeSeries [Name=" + Name + ", id=" + id + ", category="
+				+ category + ", timeRemainingActivated="
+				+ timeRemainingActivated + ", numberOfPastValues="
+				+ numberOfPastValues + ", parent=" + parent + ", inputValues="
+				+ inputValues + "]";
+	}
+	
+	
+	
+
 }

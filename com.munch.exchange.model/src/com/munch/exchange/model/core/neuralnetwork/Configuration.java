@@ -309,7 +309,10 @@ public class Configuration extends XmlParameterElement {
 	
 	
 	public void copyTimeSeriesFrom(Configuration config){
-		this.allTimeSeries=config.allTimeSeries;
+		this.allTimeSeries.clear();
+		for(TimeSeries series:config.allTimeSeries){
+			this.allTimeSeries.add(series.createCopy());
+		}
 	}
 	
 	//*************************
