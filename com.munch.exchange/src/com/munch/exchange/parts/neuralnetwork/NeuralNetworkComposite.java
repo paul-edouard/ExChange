@@ -448,6 +448,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				int maxDim=minDim;
 				
 				logger.info("Number of input neurons: "+minDim);
+				//trainingSet.ge
 				
 				
 				AlgorithmParameters<boolean[]> optArchitectureParam=stock.getNeuralNetwork().getConfiguration().getOptArchitectureParam();
