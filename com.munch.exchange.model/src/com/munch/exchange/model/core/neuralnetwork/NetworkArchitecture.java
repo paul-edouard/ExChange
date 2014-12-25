@@ -515,6 +515,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 			layers[0].addNeuron(index, neuron);
 		
 		
+		this.network.setInputNeurons(layers[0].getNeurons());
+		
+		
 		//Add zero connections to all neurons of the next layers
 		for(Neuron in:layers[1].getNeurons()){
 			ConnectionFactory.createConnection(neuron, in, 0);
@@ -610,6 +613,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		
 		printState("After deletion! ");
+		
+		
 		
 		//Reset all Old results
 		for(ResultEntity ent:optResults.getResults()){

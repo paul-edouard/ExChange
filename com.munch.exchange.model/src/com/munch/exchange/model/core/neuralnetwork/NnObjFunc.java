@@ -54,6 +54,10 @@ public class NnObjFunc extends OptimizationModule implements
 		//Calculate the output for all the test data
 		int pos=0;
 		for(DataSetRow testSetRow : testSet.getRows()) {
+			if(testSetRow.getInput().length!=network.getInputsCount()){
+				logger.info("Size error: Test Row Size: "+testSetRow.getInput().length+", Network input: "+network.getInputsCount());
+				continue;
+			}
 			 network.setInput(testSetRow.getInput());
 			 network.calculate();
 	         double[] networkOutput = network.getOutput();

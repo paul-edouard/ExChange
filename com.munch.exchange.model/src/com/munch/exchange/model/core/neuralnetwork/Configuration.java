@@ -176,7 +176,7 @@ public class Configuration extends XmlParameterElement {
 			createDayOfWeekSeries(sortedTimeSeries);
 		}
 		for(TimeSeries series:sortedTimeSeries){
-			//logger.info("Serie "+series.getName()+", number of inputs: "+series.getInputValues().size());
+			logger.info("Serie "+series.getName()+", number of inputs: "+series.getInputValues().size());
 			//TODO Series zero
 			LinkedList<double[]> d_array_list=series.transformSeriesToDoubleArrayList(lastInputPointDate);
 			doubleArrayList.addAll(d_array_list);
