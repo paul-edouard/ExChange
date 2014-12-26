@@ -447,7 +447,14 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				int minDim=stock.getNeuralNetwork().getConfiguration().getNumberOfInputNeurons();
 				int maxDim=minDim;
 				
+				logger.info("Dataset row size: "+trainingSet.getRowAt(0).getInput().length);
 				logger.info("Number of input neurons: "+minDim);
+				
+				if(minDim!=trainingSet.getRowAt(0).getInput().length){
+					logger.info("Input neuron size error: "+minDim);
+					return;
+				}
+				
 				//trainingSet.ge
 				
 				

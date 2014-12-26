@@ -76,10 +76,19 @@ public class NeuralNetworkOptimizerManager extends Job{
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
 		info.setConfiguration(configuration);
+		for(NeuralNetworkOptimizer optimizer:optimizers){
+			if(optimizer!=null)
+				optimizer.setConfiguration(this.configuration);
+		}
 	}
 
 	public void setTrainingSet(DataSet trainingSet) {
 		this.trainingSet = trainingSet;
+		for(NeuralNetworkOptimizer optimizer:optimizers){
+			if(optimizer!=null)
+				optimizer.setTrainingSet(this.trainingSet);
+		}
+		
 	}
 	
 	public void setMinMax(int minDim, int maxDim){
