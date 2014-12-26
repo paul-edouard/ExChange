@@ -12,6 +12,8 @@ import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Label;
@@ -40,6 +42,9 @@ public class NeuralNetworkResultsPart {
 	private Label lblSelectedConfig;
 	private Tree tree;
 	private TreeViewer treeViewer;
+	private TreeNNResultViewerComparator comparator;
+	
+	
 	@Inject
 	public NeuralNetworkResultsPart() {
 		//TODO Your code here
@@ -47,6 +52,9 @@ public class NeuralNetworkResultsPart {
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
+		
+		comparator=new TreeNNResultViewerComparator();
+		
 		parent.setLayout(new GridLayout(1, false));
 		
 		Composite compositeHeader = new Composite(parent, SWT.NONE);
@@ -62,33 +70,40 @@ public class NeuralNetworkResultsPart {
 				| SWT.V_SCROLL | SWT.FULL_SELECTION );
 		treeViewer.setAutoExpandLevel(1);
 		treeViewer.setContentProvider(new TreeNNResultsContentProvider());
+		treeViewer.setComparator(comparator);
 		
 		tree = treeViewer.getTree();
 		tree.setHeaderVisible(true);
 		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 		
-		addColumn("Id",100,new IdLabelProvider());
-		addColumn("Inner Neurons",100,new InnerNeuronsLabelProvider());
-		addColumn("Best Result",100,new BestResultsLabelProvider());
+		TreeColumn firstColumn=addColumn("Id",50,new IdLabelProvider(),0);
+		addColumn("Inner Neurons",50,new InnerNeuronsLabelProvider(),1);
+		addColumn("Best Result",100,new BestResultsLabelProvider(),2);
 		
-		addColumn("Best Opt. Rate",100,new BestOptimizationRateLabelProvider());
-		addColumn("Middle Opt. Rate",100,new MiddleOptimizationRateLabelProvider());
+		addColumn("Best Opt. Rate",100,new BestOptimizationRateLabelProvider(),3);
+		addColumn("Middle Opt. Rate",100,new MiddleOptimizationRateLabelProvider(),4);
+		addColumn("Nb. Of Opt.",50,new NbOfOptimizationRateLabelProvider(),5);
 		
-		addColumn("Best Tr. Rate",100,new BestTrainingRateLabelProvider());
-		addColumn("Middle Tr. Rate",100,new MiddleTrainingRateLabelProvider());
+		addColumn("Best Tr. Rate",100,new BestTrainingRateLabelProvider(),6);
+		addColumn("Middle Tr. Rate",100,new MiddleTrainingRateLabelProvider(),7);
+		addColumn("Nb. Of Tr.",50,new NbOfTrainingRateLabelProvider(),8);
+		
+		tree.setSortColumn(firstColumn);
+	    tree.setSortDirection(1);
 		
 		refresh();
 	}
 	
-	private TreeViewerColumn addColumn(String columnName, int width, CellLabelProvider cellLabelProvider ){
+	private TreeColumn addColumn(String columnName, int width, CellLabelProvider cellLabelProvider, int columnId ){
 		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
 		treeViewerColumn.setLabelProvider(cellLabelProvider);
 		TreeColumn trclmnId = treeViewerColumn.getColumn();
 		trclmnId.setWidth(width);
 		trclmnId.setText(columnName);
+		trclmnId.addSelectionListener(getSelectionAdapter(trclmnId, columnId));
 		
-		return treeViewerColumn;
+		return trclmnId;
 	}
 	
 	
@@ -219,6 +234,23 @@ public class NeuralNetworkResultsPart {
 		
 	}
 	
+	class NbOfOptimizationRateLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				
+				int val=el.getNumberOfOptimization();
+				if(val==Constants.WORST_FITNESS)return "No Results";
+				return String.valueOf(val);
+				//return String.valueOf(val);
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
 	
 	class BestTrainingRateLabelProvider extends ColumnLabelProvider{
 
@@ -265,6 +297,40 @@ public class NeuralNetworkResultsPart {
 		}
 		
 	}
+	
+	class NbOfTrainingRateLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				
+				int val=el.getNumberOfTraining();
+				if(val==Constants.WORST_FITNESS)return "No Results";
+				return String.valueOf(val);
+				//return String.valueOf(val);
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
+	
+	private SelectionAdapter getSelectionAdapter(final  TreeColumn  column,
+		      final int index) {
+		    SelectionAdapter selectionAdapter = new SelectionAdapter() {
+		      @Override
+		      public void widgetSelected(SelectionEvent e) {
+		        comparator.setColumn(index);
+		        int dir = comparator.getDirection();
+		        treeViewer.getTree().setSortDirection(dir);
+		        treeViewer.getTree().setSortColumn(column);
+		        treeViewer.refresh();
+		      }
+		    };
+		    return selectionAdapter;
+		  }
+	
 	
 	//################################
 	//##       Event Reaction       ##

@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.neuroph.core.learning.LearningRule;
 import org.neuroph.nnet.learning.financial.FinancialLearning;
 import org.neuroph.nnet.learning.financial.FinancialMomentumBackpropagation;
+import org.neuroph.nnet.learning.financial.FinancialResilientPropagation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -20,7 +21,12 @@ public class LearnParameters extends XmlParameterElement implements FinancialLea
 	
 	
 	//ResilientPropagation
-	
+	public static final String RESILIENT_PROPAGATION="Resilient Propagation";
+	public static final String RP_DecreaseFactor="RP DecreaseFactor";
+	public static final String RP_IncreaseFactor="RP IncreaseFactor";
+	public static final String RP_InitialDelta="RP InitialDelta";
+	public static final String RP_MaxDelta="RP MaxDelta";
+	public static final String RP_MinDelta="RP MinDelta";
 	
 	
 	//IterativeLearning
@@ -61,13 +67,26 @@ public class LearnParameters extends XmlParameterElement implements FinancialLea
 		
 		if(type.equals(MOMENTUM_BACK_PROPAGATION)){
 			FinancialMomentumBackpropagation bp=new FinancialMomentumBackpropagation();
-			bp.setDiffFactorArray(diffFactorArray);
 			bp.setMomentum(this.getDoubleParam(MBP_Momentum));
-			bp.setLearningRate(this.getDoubleParam(IL_LearningRate));
 			
 			bp.setMaxIterations(this.getIntegerParam(Max_Iterations));
 			bp.setBatchMode(this.getBooleanParam(BatchMode));
+			bp.setDiffFactorArray(diffFactorArray);
+			bp.setLearningRate(this.getDoubleParam(IL_LearningRate));
 			return bp;
+		}
+		else if(type.equals(RESILIENT_PROPAGATION)){
+			FinancialResilientPropagation bp=new FinancialResilientPropagation();
+			bp.setDecreaseFactor(this.getDoubleParam(RP_DecreaseFactor));
+			bp.setIncreaseFactor(this.getDoubleParam(RP_IncreaseFactor));
+			bp.setInitialDelta(this.getDoubleParam(RP_InitialDelta));
+			bp.setMaxDelta(this.getDoubleParam(RP_MaxDelta));
+			bp.setMinDelta(this.getDoubleParam(RP_MinDelta));
+			
+			bp.setMaxIterations(this.getIntegerParam(Max_Iterations));
+			bp.setBatchMode(this.getBooleanParam(BatchMode));
+			bp.setDiffFactorArray(diffFactorArray);
+			bp.setLearningRate(this.getDoubleParam(IL_LearningRate));
 		}
 		
 		return null;

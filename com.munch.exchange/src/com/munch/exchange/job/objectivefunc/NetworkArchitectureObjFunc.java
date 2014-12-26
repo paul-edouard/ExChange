@@ -162,9 +162,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 				
 				if(architecture.getNetwork().getLearningRule() instanceof BackPropagation){	
 					BackPropagation bp = (BackPropagation)architecture.getNetwork().getLearningRule();
-					
-					ent.setValue(bp.getTotalNetworkError());
-					architecture.saveTrainingStatistic(ent);
+					//ent.setValue(bp.getTotalNetworkError());
+					architecture.saveTrainingStatistic(bp.getTotalNetworkError());
 				}
 				
 			}

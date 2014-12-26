@@ -81,7 +81,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	private int numberOfTraining=0;
 	private Calendar lastTraining=Calendar.getInstance();
-	private double bestTrainingRate=0;
+	private double bestTrainingRate=Double.NEGATIVE_INFINITY;
 	private double middleTrainingRate=0;
 	private double beforeTrainingBestValue=Constants.WORST_FITNESS;
 	
@@ -92,7 +92,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	private int numberOfOptimization=0;
 	private Calendar lastOptimization=Calendar.getInstance();
-	private double bestOptimizationRate=0;
+	private double bestOptimizationRate=Double.NEGATIVE_INFINITY;
 	private double middleOptimzationRate=0;
 	private double beforeOptimizationBestValue=Constants.WORST_FITNESS;
 	
@@ -656,15 +656,16 @@ public class NetworkArchitecture extends XmlParameterElement {
 		if(!hasResults())return;
 		
 		lastOptimization=Calendar.getInstance();
-		
+		numberOfOptimization++;	
 		double newBest=this.optResults.getBestResult().getValue();
-		double optRate=0;
+		double optRate=Double.NEGATIVE_INFINITY;
 		if(beforeOptimizationBestValue!=Constants.WORST_FITNESS){
 			optRate=(beforeOptimizationBestValue-newBest)/beforeOptimizationBestValue;
 		}
+		if(Double.isInfinite(optRate))return;
 		bestOptimizationRate=Math.max(bestOptimizationRate, optRate);
-		middleOptimzationRate=(middleOptimzationRate*numberOfOptimization+optRate)/(numberOfOptimization+1);
-		numberOfOptimization++;		
+		middleOptimzationRate=(middleOptimzationRate*(numberOfOptimization-1)+optRate)/(numberOfOptimization);
+			
 		
 		
 		//logger.info("Statistics:\n"+
@@ -672,25 +673,29 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	public void prepareTrainingStatistic(ResultEntity ent){
+		beforeTrainingBestValue=Constants.WORST_FITNESS;
 		if(!resultLoaded)this.loadResults();
 		if(!hasResults())return;
-		this.beforeTrainingBestValue=ent.getValue();
+		beforeTrainingBestValue=ent.getValue();
 	}
 	
-	public void saveTrainingStatistic(ResultEntity ent){
+	public void saveTrainingStatistic(double networkError){
 		if(!resultLoaded)this.loadResults();
 		if(!hasResults())return;
 		
 		lastTraining=Calendar.getInstance();
+		numberOfTraining++;
 		
-		double newBest=ent.getValue();
-		double optRate=0;
+		double newBest=networkError;
+		double optRate=Double.NEGATIVE_INFINITY;
 		if(beforeTrainingBestValue!=Constants.WORST_FITNESS){
 			optRate=(beforeTrainingBestValue-newBest)/beforeTrainingBestValue;
 		}
+		//logger.info("Best: "+bestTrainingRate+", local: "+optRate);
+		if(Double.isInfinite(optRate))return;
 		bestTrainingRate=Math.max(bestTrainingRate, optRate);
-		middleTrainingRate=(middleTrainingRate*numberOfTraining+optRate)/(numberOfTraining+1);
-		numberOfTraining++;
+		middleTrainingRate=(middleTrainingRate*(numberOfTraining-1)+optRate)/(numberOfTraining);
+		
 		
 	}
 	
