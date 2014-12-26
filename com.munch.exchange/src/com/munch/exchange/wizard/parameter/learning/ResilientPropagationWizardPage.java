@@ -30,6 +30,7 @@ public class ResilientPropagationWizardPage extends WizardPage {
 		setTitle("Resilient Propagation");
 		setDescription("Please set the learning rate and the resilient parameters");
 		
+		
 		this.param=param;
 	}
 
