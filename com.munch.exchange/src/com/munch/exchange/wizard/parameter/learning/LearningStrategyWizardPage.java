@@ -1,5 +1,6 @@
 package com.munch.exchange.wizard.parameter.learning;
 
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -10,6 +11,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 
 import com.munch.exchange.model.core.neuralnetwork.LearnParameters;
+
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -24,15 +26,22 @@ public class LearningStrategyWizardPage extends WizardPage {
 	private LearnParameters param;
 	private Button btnBatchMode;
 	
+	private ResilientPropagationWizardPage rp_page;
+	private MomentumBackPropagationWizardPage mbp_page;
+	
 
 	/**
 	 * Create the wizard.
 	 */
-	public LearningStrategyWizardPage(LearnParameters param) {
+	public LearningStrategyWizardPage(LearnParameters param,
+							ResilientPropagationWizardPage rp_page,
+							MomentumBackPropagationWizardPage mbp_page) {
 		super("wizardPage");
 		setTitle("Learning Strategy Selection");
 		setDescription("Please select the learning strategy");
 		
+		this.rp_page=rp_page;
+		this.mbp_page=mbp_page;
 		this.param=param;
 	}
 
@@ -59,6 +68,7 @@ public class LearningStrategyWizardPage extends WizardPage {
 		});
 		comboAlgorithmType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		comboAlgorithmType.add(LearnParameters.MOMENTUM_BACK_PROPAGATION);
+		comboAlgorithmType.add(LearnParameters.RESILIENT_PROPAGATION);
 		comboAlgorithmType.setText(LearnParameters.MOMENTUM_BACK_PROPAGATION);
 		if(!param.getType().isEmpty())
 			comboAlgorithmType.setText(param.getType());
@@ -79,7 +89,7 @@ public class LearningStrategyWizardPage extends WizardPage {
 			}
 		});
 		spinnerNumberOfIterations.setIncrement(1);
-		spinnerNumberOfIterations.setMaximum(100);
+		spinnerNumberOfIterations.setMaximum(1000);
 		spinnerNumberOfIterations.setMinimum(1);
 		spinnerNumberOfIterations.setSelection(3);
 		if(param.hasParamKey(LearnParameters.Max_Iterations)){
@@ -111,6 +121,21 @@ public class LearningStrategyWizardPage extends WizardPage {
 		param.setParam(LearnParameters.Max_Iterations, spinnerNumberOfIterations.getSelection());
 		param.setParam(LearnParameters.BatchMode, btnBatchMode.getSelection());
 	}
+
+	@Override
+	public IWizardPage getNextPage() {
+		if(comboAlgorithmType.getText().equals(LearnParameters.RESILIENT_PROPAGATION)){
+			return this.rp_page;
+		}
+		else if(comboAlgorithmType.getText().equals(LearnParameters.MOMENTUM_BACK_PROPAGATION)){
+			return this.mbp_page;
+		}
+		
+		// TODO Auto-generated method stub
+		return super.getNextPage();
+	}
+	
+	
 	
 	
 

@@ -87,6 +87,7 @@ public class LearnParameters extends XmlParameterElement implements FinancialLea
 			bp.setBatchMode(this.getBooleanParam(BatchMode));
 			bp.setDiffFactorArray(diffFactorArray);
 			bp.setLearningRate(this.getDoubleParam(IL_LearningRate));
+			return bp;
 		}
 		
 		return null;

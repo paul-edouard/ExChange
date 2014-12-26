@@ -391,7 +391,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	public static  void setDefaultBooleansParameters(AlgorithmParameters<boolean[]> optArchitectureParam){
 		
 		//ArchitectureOptimizationAlgorithmWizardPage
-		optArchitectureParam.setType(AlgorithmParameters.ALGORITHM_Simple_Generational_EA);
+		optArchitectureParam.setType(AlgorithmParameters.ALGORITHM_Keep_Best_SGEA);
 		optArchitectureParam.setParam(AlgorithmParameters.TERMINATION_Steps,5);
 		//optArchitectureParam.setParam(AlgorithmParameters.MaxDimension, 0);
 		//optArchitectureParam.setParam(AlgorithmParameters.MinDimension, 0);
@@ -402,7 +402,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 		optArchitectureParam.setParam(AlgorithmParameters.Tournament_Size, 3);
 		optArchitectureParam.setParam(AlgorithmParameters.EA_MatingPoolSize, 10);
 		optArchitectureParam.setParam(AlgorithmParameters.EA_PopulationSize, 30);
-		optArchitectureParam.setParam(AlgorithmParameters.NULLARY_SEARCH_OPERATION, AlgorithmParameters.NSO_BooleanArrayUniformCreation);
+		optArchitectureParam.setParam(AlgorithmParameters.NULLARY_SEARCH_OPERATION, AlgorithmParameters.NSO_MixNetworkCreation);
 		optArchitectureParam.setParam(AlgorithmParameters.BINARY_SEARCH_OPERATION, AlgorithmParameters.BSO_BooleanArrayUniformCrossover);
 		optArchitectureParam.setParam(AlgorithmParameters.UNARY_SEARCH_OPERATION,AlgorithmParameters.USO_BooleanArraySingleBitFlipMutation);
 		optArchitectureParam.setParam(AlgorithmParameters.EA_MutationRate, 0.5d);

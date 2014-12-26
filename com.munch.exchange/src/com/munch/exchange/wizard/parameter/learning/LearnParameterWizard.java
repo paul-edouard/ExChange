@@ -11,13 +11,19 @@ public class LearnParameterWizard extends Wizard {
 	
 	private LearningStrategyWizardPage strategyPage;
 	private MomentumBackPropagationWizardPage mbpPage;
+	private ResilientPropagationWizardPage rpPage;
+	
 	
 	public LearnParameterWizard(LearnParameters param) {
 		setWindowTitle("Learning Parameter Setting");
 		this.param=param;
 		
-		strategyPage=new LearningStrategyWizardPage(this.param);
+		//strategyPage=new LearningStrategyWizardPage(this.param);
 		mbpPage=new MomentumBackPropagationWizardPage(this.param);
+		rpPage=new ResilientPropagationWizardPage(this.param);
+		
+		
+		strategyPage=new LearningStrategyWizardPage(this.param,rpPage,  mbpPage);
 		
 	}
 	
@@ -33,6 +39,8 @@ public class LearnParameterWizard extends Wizard {
 	public void addPages() {
 		addPage(strategyPage);
 		addPage(mbpPage);
+		addPage(rpPage);
+		
 	}
 
 	@Override
