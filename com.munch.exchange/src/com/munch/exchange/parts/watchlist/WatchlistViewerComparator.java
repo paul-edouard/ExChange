@@ -21,19 +21,15 @@ public class WatchlistViewerComparator extends ViewerComparator {
 	
 	private Calendar startWatchDate=Calendar.getInstance();
 
-	  public WatchlistViewerComparator(WatchlistService watchlistService) {
+	public WatchlistViewerComparator(WatchlistService watchlistService) {
 	    this.propertyIndex = 0;
 	    direction = DESCENDING;
 	    this.watchlistService=watchlistService;
-	  }
+	}
 	  
-	  
-
-	  public void setStartWatchDate(Calendar startWatchDate) {
+	public void setStartWatchDate(Calendar startWatchDate) {
 		this.startWatchDate = startWatchDate;
 	}
-
-
 
 	public int getDirection() {
 	    return direction == 1 ? SWT.DOWN : SWT.UP;

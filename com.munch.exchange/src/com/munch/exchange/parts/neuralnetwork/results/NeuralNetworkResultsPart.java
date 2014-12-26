@@ -72,6 +72,12 @@ public class NeuralNetworkResultsPart {
 		addColumn("Inner Neurons",100,new InnerNeuronsLabelProvider());
 		addColumn("Best Result",100,new BestResultsLabelProvider());
 		
+		addColumn("Best Opt. Rate",100,new BestOptimizationRateLabelProvider());
+		addColumn("Middle Opt. Rate",100,new MiddleOptimizationRateLabelProvider());
+		
+		addColumn("Best Tr. Rate",100,new BestTrainingRateLabelProvider());
+		addColumn("Middle Tr. Rate",100,new MiddleTrainingRateLabelProvider());
+		
 		refresh();
 	}
 	
@@ -156,9 +162,104 @@ public class NeuralNetworkResultsPart {
 		public String getText(Object element) {
 			if(element instanceof NetworkArchitecture){
 				NetworkArchitecture el=(NetworkArchitecture) element;
-				double val=el.getBestValue();
+				double val=el.getBestValue()*100;
+				if(val==Constants.WORST_FITNESS)return "No Results";
+				return String.format("%.3f", val);
+				//return String.valueOf(val);
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
+	class BestOptimizationRateLabelProvider extends ColumnLabelProvider{
+		
+		@Override
+		public String getToolTipText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				
+				double val=el.getBestOptimizationRate()*100;
 				if(val==Constants.WORST_FITNESS)return "No Results";
 				return String.valueOf(val);
+			}
+			return super.getToolTipText(element);
+		}
+		
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				
+				double val=el.getBestOptimizationRate()*100;
+				if(val==Constants.WORST_FITNESS)return "No Results";
+				return String.format("%.3f", val);
+				//return String.valueOf(val);
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
+	class MiddleOptimizationRateLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				
+				double val=el.getMiddleOptimzationRate()*100;
+				if(val==Constants.WORST_FITNESS)return "No Results";
+				return String.format("%.3f", val);
+				//return String.valueOf(val);
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
+	
+	class BestTrainingRateLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				
+				double val=el.getBestTrainingRate()*100;
+				if(val==Constants.WORST_FITNESS)return "No Results";
+				return String.format("%.3f", val);
+				//return String.valueOf(val);
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
+	class MiddleTrainingRateLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getToolTipText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				
+				double val=el.getMiddleTrainingRate()*100;
+				if(val==Constants.WORST_FITNESS)return "No Results";
+				return String.valueOf(val);
+			}
+			return super.getToolTipText(element);
+		}
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				
+				double val=el.getMiddleTrainingRate()*100;
+				if(val==Constants.WORST_FITNESS)return "No Results";
+				return String.format("%.3f", val);
+				//return String.valueOf(val);
 			}
 			return super.getText(element);
 		}
