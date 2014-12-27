@@ -1,6 +1,7 @@
 package com.munch.exchange.job.neuralnetwork;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
@@ -112,15 +113,19 @@ public class NeuralNetworkOptimizerManager extends Job{
 	}
 
 	
+	private HashSet<Integer> alreadyClearDim=new HashSet<Integer>();
+	
 	private void saveAndClearAllArchitectures(NeuralNetworkOptimizer optimizer){
 		if(optimizer.getDimension()==0)return;
+		if(alreadyClearDim.contains(optimizer.getDimension()))return;
 		
 		InfoPart.postInfoText(eventBroker, "Clear Architecture Started for dimension: "+optimizer.getDimension());
-		
 		LinkedList<NetworkArchitecture> list=configuration.searchNetworkArchitectures(optimizer.getDimension());
 		for(NetworkArchitecture archi: list){
 			archi.clearResultsAndNetwork();
 		}
+		alreadyClearDim.add(optimizer.getDimension());
+		
 	}
 	
 	//################################
@@ -133,6 +138,7 @@ public class NeuralNetworkOptimizerManager extends Job{
 		InfoPart.postInfoText(eventBroker, "Network Manager Started"
 		+"\tMin InnerNeurons: "+currentInnerNeurons+"\tMax InnerNeurons: "+maxInnerNeurons);
 		
+		alreadyClearDim.clear();
 		info.clearOptimizerMap();
 		eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_STARTED,info);
 		
@@ -179,7 +185,7 @@ public class NeuralNetworkOptimizerManager extends Job{
 			for(NeuralNetworkOptimizer optimizer:optimizers){
 				pos++;
 				if(optimizer.getState()==Job.RUNNING){
-					InfoPart.postInfoText(eventBroker, "Job "+pos+" is running");
+					//InfoPart.postInfoText(eventBroker, "Job "+pos+" is running");
 					info.getOptimizerStatusMap().put(pos, OPTIMIZER_STATUS_RUNNING);
 					eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_WORKER_STATE_CHANGED,info);
 					areAllFinished=false;
@@ -191,11 +197,11 @@ public class NeuralNetworkOptimizerManager extends Job{
 				}
 			}
 			
-			if(areAllFinished)break;
-			
 			if(!makeItSleep(monitor)){
 				returnStatus=Status.CANCEL_STATUS;
 			}
+			
+			if(areAllFinished)break;
 		
 		}
 		

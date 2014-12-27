@@ -304,7 +304,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 				Individual<double[], double[]> ind=(Individual<double[], double[]>) evt.getNewValue();
 				ResultEntity ent=new ResultEntity(ind.g,ind.v);
 				if(info.getResults().addResult(ent)){
-					eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
+					eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
 				}
 			}
 			else if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_STEP)){

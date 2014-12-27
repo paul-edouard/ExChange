@@ -90,8 +90,17 @@ public class TreeNNResultViewerComparator extends ViewerComparator {
 			else if(p2.getNumberOfOptimization() < p1.getNumberOfOptimization())
 				rc = -1;
 			break;
+			
+		// Nb. Of Optimization
+		case 9:
+			if(p2.getLastOptimization().getTimeInMillis() > p1.getLastOptimization().getTimeInMillis())
+				rc = 1;
+			else if(p2.getLastOptimization().getTimeInMillis() < p1.getLastOptimization().getTimeInMillis())
+				rc = -1;
+			break;			
+			
 
-		// Best Optimization
+		// Best Training
 		case 6:
 			if(p2.getBestTrainingRate() > p1.getBestTrainingRate())
 				rc = 1;
@@ -99,7 +108,7 @@ public class TreeNNResultViewerComparator extends ViewerComparator {
 				rc = -1;
 			break;
 				
-		// Middle Optimization
+		// Middle Training
 		case 7:
 			if(p2.getMiddleTrainingRate() > p1.getMiddleTrainingRate())
 				rc = 1;
@@ -107,7 +116,7 @@ public class TreeNNResultViewerComparator extends ViewerComparator {
 				rc = -1;
 			break;
 				
-		// Middle Optimization
+		// Middle Training
 		case 8:
 			if(p2.getNumberOfTraining() > p1.getNumberOfTraining())
 				rc = 1;
@@ -115,7 +124,14 @@ public class TreeNNResultViewerComparator extends ViewerComparator {
 				rc = -1;
 			break;
 			
-			
+		// Last Training
+		case 10:
+			if(p2.getLastTraining().getTimeInMillis() > p1.getLastTraining().getTimeInMillis())
+				rc = 1;
+			else if(p2.getLastTraining().getTimeInMillis() < p1.getLastTraining().getTimeInMillis())
+				rc = -1;
+			break;			
+							
 
 		default:
 			rc = 0;

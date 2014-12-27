@@ -338,23 +338,26 @@ public class NeuralNetworkErrorPart {
 		Iterator<Integer> iterator = keySet.iterator();
 	    while(iterator.hasNext()) {
 	    	Integer i = iterator.next();
-	    	if(i<info.getMinDim() || i>info.getMaxDim()){
+	    	//if(i<info.getMinDim() || i>info.getMaxDim()){
 	    		errorData.removeSeries(dimSerieMap.get(i));
-	    		dimSerieMap.remove(i);
-	    	}
+	    		//dimSerieMap.remove(i);
+	    	//}
 		}
+	    
+	    dimSerieMap.clear();
+	    
 	    
 	    
 		//Add or clear the new series
 		for(int i=info.getMinDim();i<=info.getMaxDim();i++){
-			if(dimSerieMap.containsKey(i)){
-				dimSerieMap.get(i).clear();
-			}
-			else{
+			//if(dimSerieMap.containsKey(i)){
+			//	dimSerieMap.get(i).clear();
+			//}
+			//else{
 				XYSeries series = new XYSeries("Dim "+i);
 				dimSerieMap.put(i, series);
 				errorData.addSeries(series);
-			}
+			//}
 				
 		}
 		
@@ -368,8 +371,8 @@ public class NeuralNetworkErrorPart {
 	private void updateProgressBar(OptInfo info){
 		
 		int step=info.getMaximum()-info.getStep()-1;
-		if(nbOfOptSteps==0)
-			nbOfOptSteps=info.getMaximum();
+		//if(nbOfOptSteps==0)
+		nbOfOptSteps=info.getMaximum();
 		
 		
 		dimSerieSteps.put(info.getNumberOfInnerNeurons(), step);
@@ -487,6 +490,8 @@ public class NeuralNetworkErrorPart {
 		btnStop.setEnabled(false);
 		progressBarNetworkError.setSelection(0);
 		progressBarNetworkError.setEnabled(false);
+		
+		treeViewer.refresh();
 		
 	}
 	

@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Composite;
 import javax.annotation.PreDestroy;
 
 import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.di.UIEventTopic;
@@ -25,9 +26,13 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 
 import com.munch.exchange.IEventConstant;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
+import com.munch.exchange.job.objectivefunc.NetworkArchitectureObjFunc.NetworkArchitectureOptInfo;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
+import com.munch.exchange.model.tool.DateTool;
+import com.munch.exchange.parts.InfoPart;
 
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -43,6 +48,9 @@ public class NeuralNetworkResultsPart {
 	private Tree tree;
 	private TreeViewer treeViewer;
 	private TreeNNResultViewerComparator comparator=new TreeNNResultViewerComparator();
+	
+	@Inject
+	private IEventBroker eventBroker;
 	
 	
 	@Inject
@@ -84,10 +92,12 @@ public class NeuralNetworkResultsPart {
 		addColumn("Best Opt. Rate",100,new BestOptimizationRateLabelProvider(),3);
 		addColumn("Middle Opt. Rate",100,new MiddleOptimizationRateLabelProvider(),4);
 		addColumn("Nb. Of Opt.",50,new NbOfOptimizationRateLabelProvider(),5);
+		addColumn("Last Opt.",100,new LastOptimizationLabelProvider(),9);
 		
 		addColumn("Best Tr. Rate",100,new BestTrainingRateLabelProvider(),6);
 		addColumn("Middle Tr. Rate",100,new MiddleTrainingRateLabelProvider(),7);
 		addColumn("Nb. Of Tr.",50,new NbOfTrainingRateLabelProvider(),8);
+		addColumn("Last Tr.",100,new LastTrainingLabelProvider(),10);
 		
 		tree.setSortColumn(firstColumn);
 	    tree.setSortDirection(1);
@@ -187,6 +197,7 @@ public class NeuralNetworkResultsPart {
 		
 	}
 	
+	
 	class BestOptimizationRateLabelProvider extends ColumnLabelProvider{
 		
 		@Override
@@ -242,8 +253,21 @@ public class NeuralNetworkResultsPart {
 				NetworkArchitecture el=(NetworkArchitecture) element;
 				
 				int val=el.getNumberOfOptimization();
-				if(val==Constants.WORST_FITNESS)return "No Results";
 				return String.valueOf(val);
+				//return String.valueOf(val);
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
+	class LastOptimizationLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				return DateTool.dateToString(el.getLastOptimization()).replace("T", " ");
 				//return String.valueOf(val);
 			}
 			return super.getText(element);
@@ -315,6 +339,19 @@ public class NeuralNetworkResultsPart {
 		
 	}
 	
+	class LastTrainingLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				return DateTool.dateToString(el.getLastTraining()).replace("T", " ");
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
 	
 	private SelectionAdapter getSelectionAdapter(final  TreeColumn  column,
 		      final int index) {
@@ -353,9 +390,48 @@ public class NeuralNetworkResultsPart {
 		if(stock==null)return;
 		setStock(stock);
 		
+	}
+	
+	//ARCHITECTURE
+	@Inject
+	private void networkArchitectureAllTopic(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_ALLTOPICS) OptInfo info){
+		if(info==null)return;
+		if(info.getConfiguration()!=this.config)return;
+		if (!isCompositeAbleToReact())return;
+		
+		//InfoPart.postInfoText(eventBroker, "NETWORK_ARCHITECTURE_OPTIMIZATION_ALLTOPICS recieved!");
+		
+		treeViewer.setInput(config);
+		treeViewer.refresh();
 		
 	}
 	
+	//OPTIMIZATION
+	@Inject
+	private void networkOptimizationAllTopic(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_ALLTOPICS) NetworkArchitectureOptInfo info){
+		if(info==null)return;
+		if(info.getConfiguration()!=this.config)return;
+		if (!isCompositeAbleToReact())return;
+		
+		//InfoPart.postInfoText(eventBroker, "NETWORK_OPTIMIZATION_ALLTOPICS recieved!");
+		
+		
+		//treeViewer.setInput(config);
+		treeViewer.refresh();
+	}
+	
+	//LEARNING
+	/*
+	@Inject
+	private void networkOptimizationLeaning(@Optional @UIEventTopic(IEventConstant.NETWORK_LEARNING_STARTED) NetworkArchitectureOptInfo info){
+		if(info==null)return;
+		if(info.getConfiguration()!=this.config)return;
+		if (!isCompositeAbleToReact())return;
+		
+		treeViewer.refresh();
+	}
+	*/
+		
 	
 	
 	
