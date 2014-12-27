@@ -166,11 +166,15 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 				architecture.getNetwork().setWeights(ent.getDoubleArray());
 				architecture.getNetwork().learn(trainingSet);
 				
+				architecture.saveTrainingStatistic(architecture.getBestResultEntity().getValue());
+				
+				/*
 				if(architecture.getNetwork().getLearningRule() instanceof BackPropagation){	
 					BackPropagation bp = (BackPropagation)architecture.getNetwork().getLearningRule();
 					//ent.setValue(bp.getTotalNetworkError());
 					architecture.saveTrainingStatistic(bp.getTotalNetworkError());
 				}
+				*/
 				
 			}
 			

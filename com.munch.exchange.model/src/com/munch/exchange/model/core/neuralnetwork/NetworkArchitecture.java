@@ -740,7 +740,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		outputStr+="\nInput neurons: "+numberOfInputNeurons;
 		outputStr+="\nInput neurons: "+numberOfInnerNeurons;
 		
-		
+		/*
 		int numberOfNeurons=numberOfInputNeurons+numberOfInnerNeurons+1;
 		outputStr="\nMatrix:\n";
 		for(int i=0;i<numberOfNeurons;i++){
@@ -755,7 +755,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 			outputStr+="]\n";
 		}
 		outputStr+="\n";
-		
+		*/
 		return outputStr;
 	}
 

@@ -42,7 +42,7 @@ public class NeuralNetworkResultsPart {
 	private Label lblSelectedConfig;
 	private Tree tree;
 	private TreeViewer treeViewer;
-	private TreeNNResultViewerComparator comparator;
+	private TreeNNResultViewerComparator comparator=new TreeNNResultViewerComparator();
 	
 	
 	@Inject

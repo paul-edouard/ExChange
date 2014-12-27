@@ -3,6 +3,7 @@ package com.munch.exchange.parts.neuralnetwork.results;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
+import org.goataa.impl.utils.Constants;
 
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.quote.QuotePoint;
@@ -40,9 +41,9 @@ public class TreeNNResultViewerComparator extends ViewerComparator {
 		NetworkArchitecture p2 = (NetworkArchitecture) e2;
 
 		int rc = 0;
-		if (p1 == null || p2 == null)
+		if (p1 == null || p2 == null )
 			return rc;
-
+		
 		switch (propertyIndex) {
 
 		// Id
@@ -52,42 +53,66 @@ public class TreeNNResultViewerComparator extends ViewerComparator {
 
 		// InnerNeurons
 		case 1:
-			rc = (p2.getNumberOfInnerNeurons() >= p1.getNumberOfInnerNeurons() ? 1: -1);
+			if(p2.getNumberOfInnerNeurons() > p1.getNumberOfInnerNeurons())
+				rc = 1;
+			else if(p2.getNumberOfInnerNeurons() < p1.getNumberOfInnerNeurons())
+				rc = -1;
 			break;
 			
 		// Best Result
 		case 2:
-			rc = (p2.getBestValue() >= p1.getBestValue() ? 1: -1);
+			if(p2.getBestValue() > p1.getBestValue())
+				rc = 1;
+			else if(p2.getBestValue() < p1.getBestValue())
+				rc = -1;
 			break;
 			
 		// Best Optimization
 		case 3:
-			rc = (p2.getBestOptimizationRate() >= p1.getBestOptimizationRate() ? 1: -1);
+			if(p2.getBestOptimizationRate() > p1.getBestOptimizationRate())
+				rc = 1;
+			else if(p2.getBestOptimizationRate() < p1.getBestOptimizationRate())
+				rc = -1;
 			break;
 			
 		// Middle Optimization
 		case 4:
-			rc = (p2.getMiddleOptimzationRate() >= p1.getMiddleOptimzationRate() ? 1: -1);
+			if(p2.getMiddleOptimzationRate() > p1.getMiddleOptimzationRate())
+				rc = 1;
+			else if(p2.getMiddleOptimzationRate() < p1.getMiddleOptimzationRate())
+				rc = -1;
 			break;
 			
 		// Nb. Of Optimization
 		case 5:
-			rc = (p2.getNumberOfOptimization() >= p1.getNumberOfOptimization() ? 1: -1);
+			if(p2.getNumberOfOptimization() > p1.getNumberOfOptimization())
+				rc = 1;
+			else if(p2.getNumberOfOptimization() < p1.getNumberOfOptimization())
+				rc = -1;
 			break;
 
 		// Best Optimization
 		case 6:
-			rc = (p2.getBestTrainingRate() >= p1.getBestTrainingRate() ? 1: -1);
+			if(p2.getBestTrainingRate() > p1.getBestTrainingRate())
+				rc = 1;
+			else if(p2.getBestTrainingRate() < p1.getBestTrainingRate())
+				rc = -1;
 			break;
 				
 		// Middle Optimization
 		case 7:
-			rc = (p2.getMiddleTrainingRate() >= p1.getMiddleTrainingRate() ? 1: -1);
+			if(p2.getMiddleTrainingRate() > p1.getMiddleTrainingRate())
+				rc = 1;
+			else if(p2.getMiddleTrainingRate() < p1.getMiddleTrainingRate())
+				rc = -1;
 			break;
 				
 		// Middle Optimization
 		case 8:
-			rc = (p2.getNumberOfTraining() >= p1.getNumberOfTraining() ? 1: -1);
+			if(p2.getNumberOfTraining() > p1.getNumberOfTraining())
+				rc = 1;
+			else if(p2.getNumberOfTraining() < p1.getNumberOfTraining())
+				rc = -1;
 			break;
 			
 			
