@@ -284,7 +284,14 @@ abstract public class SupervisedLearning extends IterativeLearning implements
         return outputError;
     }
     
-    /**
+    
+    
+    
+    protected void setErrorFunction(ErrorFunction errorFunction) {
+		this.errorFunction = errorFunction;
+	}
+
+	/**
      * Returns true if learning is performed in batch mode, false otherwise
      * @return true if learning is performed in batch mode, false otherwise
      */

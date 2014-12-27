@@ -12,27 +12,27 @@ public class FinancialResilientPropagation extends ResilientPropagation
 
 	private double[] diffFactorArray=null;
 	
-	@Override
-	protected double[] calculateOutputError(double[] desiredOutput,
-			double[] output) {
-		// TODO Auto-generated method stub
-		if(diffFactorArray==null || diffFactorArray.length!=desiredOutput.length){
-			return super.calculateOutputError(desiredOutput, output);
-		}
-		
-		double[] outputError = new double[desiredOutput.length];
-	        
-	    for (int i = 0; i < output.length; i++) {
-	            outputError[i] = (desiredOutput[i] - output[i])*diffFactorArray[i];
-	     }
-	        
-	    return outputError;
-		
-	}
-
+	
 	@Override
 	public void setDiffFactorArray(double[] diffFactorArray) {
 		this.diffFactorArray=diffFactorArray;
+		
 	}
+
+
+	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		this.setErrorFunction(new FinancialMeanSquaredError(getTrainingSet().size(),diffFactorArray) );
+		
+	}
+
+	
+	
+	
+	
+	
+	
 
 }

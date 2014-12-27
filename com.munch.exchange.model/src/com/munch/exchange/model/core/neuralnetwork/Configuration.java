@@ -214,7 +214,7 @@ public class Configuration extends XmlParameterElement {
 			trainingSet.addRow(new NNDataSetRaw(input, output,diff));
 		}
 		
-		logger.info("Diff: "+Arrays.toString(outputdiffFactor));
+		//logger.info("Diff: "+Arrays.toString(outputdiffFactor));
 		
 		//Normalize the training set
 		trainingSet.normalize();

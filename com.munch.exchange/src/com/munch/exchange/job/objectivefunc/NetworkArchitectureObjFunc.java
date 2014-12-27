@@ -52,6 +52,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	private Configuration configuration;
 	private DataSet trainingSet;
 	private NetworkArchitecture architecture;
+	private NnObjFunc objFunc;
 	
 	//Event variables
 	private IEventBroker eventBroker;
@@ -156,6 +157,11 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 					logger.info("Ent: "+Arrays.toString(ent.getDoubleArray()));
 					continue;
 				}
+				
+				
+				//logger.info("Error before learning: "+ ent.getValue());
+				//logger.info("Calculated Error obj func: "+ objFunc.calError(ent.getDoubleArray()));
+				
 				architecture.prepareTrainingStatistic(ent);
 				architecture.getNetwork().setWeights(ent.getDoubleArray());
 				architecture.getNetwork().learn(trainingSet);
@@ -256,7 +262,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		algorithm.setGPM(gpm);
 		
 		//Set the objective function
-		algorithm.setObjectiveFunction(new NnObjFunc(architecture, trainingSet) );
+		objFunc=new NnObjFunc(architecture, trainingSet);
+		algorithm.setObjectiveFunction(objFunc );
 		
 		// Add the last best results
 		configuration.getOptLearnParam().addLastBestResults(algorithm,
