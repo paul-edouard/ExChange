@@ -18,6 +18,7 @@ import org.neuroph.core.data.DataSetRow;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
@@ -44,6 +45,8 @@ public class Configuration extends XmlParameterElement {
 	private boolean dayOfWeekActivated=false;
 	private String Name="New Neural Network Configuration";
 	private Calendar lastUpdate=Calendar.getInstance();
+	
+	private Stock parent;
 	
 	//Training Data
 	//private int numberOfInputNeurons;
@@ -72,6 +75,8 @@ public class Configuration extends XmlParameterElement {
 		AlgorithmParameters.setDefaultBooleansParameters(optArchitectureParam);
 		AlgorithmParameters.setDefaultDoublesParameters(optLearnParam);
 		LearnParameters.setDefaultLearnParameters(learnParam);
+		
+		//this.parent=parent;
 	}
 	
 	
@@ -284,6 +289,7 @@ public class Configuration extends XmlParameterElement {
 		Configuration copy=new Configuration();
 		copy.allTimeSeries=this.createCopyOfTimeSeries();
 		copy.Name=this.Name;
+		copy.parent=this.parent;
 		
 		//TODO copy the rest of attributes
 		
@@ -564,6 +570,9 @@ public class Configuration extends XmlParameterElement {
 		
 	}
 	
+	
+
+
 	public void setMinMaxInnerNeurons(int[] minMaxInnerN ){
 		if(minMaxInnerN.length!=2)return;
 		
@@ -571,6 +580,14 @@ public class Configuration extends XmlParameterElement {
 		//Change the Opt Architecture Parameters
 		optArchitectureParam.setParam(AlgorithmParameters.MaxDimension,NetworkArchitecture.calculateActivatedConnectionsSize(numberOfInputNeurons, minMaxInnerN[1]) );
 		optArchitectureParam.setParam(AlgorithmParameters.MinDimension, NetworkArchitecture.calculateActivatedConnectionsSize(numberOfInputNeurons,minMaxInnerN[0]));
+	}
+	
+	public Stock getParent() {
+		return parent;
+	}
+
+	public void setParent(Stock parent) {
+		this.parent = parent;
 	}
 	
 	

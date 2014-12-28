@@ -5,7 +5,7 @@
       <children xsi:type="advanced:Perspective" xmi:id="_hCNcSGTNEeOTfZ5LPzv9Rg">
         <children xsi:type="basic:PartSashContainer" xmi:id="_hCNcSWTNEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.partsashcontainer.left" horizontal="true">
           <children xsi:type="basic:PartStack" xmi:id="_hCNcSmTNEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.partstack.left" containerData="25" accessibilityPhrase="Partstack Left" selectedElement="_fcohEIUwEeO8JejmZH0Bqw">
-            <children xsi:type="basic:Part" xmi:id="_fcohEIUwEeO8JejmZH0Bqw" elementId="com.munch.exchange.part.rates" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.RatesOverviewPart" label="Rates Overview" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png">
+            <children xsi:type="basic:Part" xmi:id="_fcohEIUwEeO8JejmZH0Bqw" elementId="com.munch.exchange.part.rates" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.RatesOverviewPart" label="Rates Overview" iconURI="platform:/plugin/com.munch.exchange/icons/package.gif">
               <handlers xmi:id="_2X_CQIXPEeOHHYCHtnBtIA" elementId="com.munch.exchange.handler.rates.add" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.AddRateHandler" command="_EztE8IXQEeOHHYCHtnBtIA"/>
               <handlers xmi:id="_iD3JEIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.handler.delete_rate" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.DeleteRateHandler" command="_q70BMIaQEeOL4pkNq6bgJQ"/>
               <handlers xmi:id="_kS-iIOceEeOcocoRitCrsA" elementId="com.munch.exchange.handler.clrearhistorypoints" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.ClearHistoryPointsHandler" command="_Watx0OceEeOcocoRitCrsA"/>
@@ -17,7 +17,7 @@
                 <children xsi:type="menu:HandledToolItem" xmi:id="_tSYvsIXPEeOHHYCHtnBtIA" elementId="com.munch.exchange.handledtoolitem.rates.add" label="add" iconURI="platform:/plugin/com.munch.exchange/icons/add.png" tooltip="Add a new rate" command="_EztE8IXQEeOHHYCHtnBtIA"/>
               </toolbar>
             </children>
-            <children xsi:type="basic:Part" xmi:id="_F6RdoIboEeSK6OWfylybxw" elementId="com.munch.exchange.part.networkresults" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsPart" label="Network Results" iconURI="platform:/plugin/com.munch.exchange/icons/package.gif" tooltip="Liste the network result of the selected configuration">
+            <children xsi:type="basic:Part" xmi:id="_F6RdoIboEeSK6OWfylybxw" elementId="com.munch.exchange.part.networkresults" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsPart" label="Network Results" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/history_list.gif" tooltip="Liste the network result of the selected configuration">
               <toolbar xmi:id="_fu1n4IboEeSK6OWfylybxw" elementId="com.munch.exchange.toolbar.0"/>
             </children>
           </children>
@@ -25,6 +25,7 @@
             <children xsi:type="basic:PartStack" xmi:id="_l_ZS4IjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partstack.rightup" containerData="80">
               <children xsi:type="basic:Part" xmi:id="_Zb_CYIkDEeOSs_sLuwXLrA" elementId="com.munch.exchange.part.dummy" toBeRendered="false" visible="false"/>
               <children xsi:type="basic:Part" xmi:id="_JREhQOY9EeOR1coZunVn8w" elementId="com.munch.exchange.part.watchlist" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.watchlist.WatchlistPart" label="Wachtlist" iconURI="platform:/plugin/com.munch.exchange/icons/console_view.gif"/>
+              <children xsi:type="basic:Part" xmi:id="_GlAaEI6mEeSBTbBmTuUumA" elementId="com.munch.exchange.part.brain" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.brain.NeuralNetworkBrainPart" label="Brain" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/type.gif"/>
             </children>
             <children xsi:type="basic:PartStack" xmi:id="_qoPGQIjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partstack.rightdown" containerData="20">
               <children xsi:type="basic:Part" xmi:id="_h70vUGTOEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.part.info" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.InfoPart" label="Info" iconURI="platform:/plugin/com.munch.exchange/icons/console_view.gif">
@@ -46,6 +47,7 @@
                   </children>
                 </toolbar>
               </children>
+              <children xsi:type="basic:Part" xmi:id="_rGWQEI6mEeSBTbBmTuUumA" elementId="com.munch.exchange.part.resultschart" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsChartPart" label="Results Chart" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png"/>
             </children>
           </children>
         </children>

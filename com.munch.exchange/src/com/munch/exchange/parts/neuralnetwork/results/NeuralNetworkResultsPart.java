@@ -13,6 +13,7 @@ import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridLayout;
@@ -23,11 +24,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
 import com.munch.exchange.job.objectivefunc.NetworkArchitectureObjFunc.NetworkArchitectureOptInfo;
+import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
@@ -37,6 +41,8 @@ import com.munch.exchange.parts.InfoPart;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.goataa.impl.utils.Constants;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 
 public class NeuralNetworkResultsPart {
 	
@@ -51,6 +57,9 @@ public class NeuralNetworkResultsPart {
 	
 	@Inject
 	private IEventBroker eventBroker;
+	
+	@Inject
+	ESelectionService selectionService;
 	
 	
 	@Inject
@@ -76,6 +85,20 @@ public class NeuralNetworkResultsPart {
 		
 		treeViewer = new TreeViewer(parent, SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL | SWT.FULL_SELECTION );
+		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
+				
+				ISelection selection=event.getSelection();
+				if(selection instanceof IStructuredSelection){
+					IStructuredSelection sel=(IStructuredSelection) selection;
+					if(sel.size()==1 && sel.getFirstElement() instanceof NetworkArchitecture){
+						NetworkArchitecture selArchi=(NetworkArchitecture) sel.getFirstElement();
+						selectionService.setSelection(selArchi);
+					}
+				}
+				
+			}
+		});
 		treeViewer.setAutoExpandLevel(1);
 		treeViewer.setContentProvider(new TreeNNResultsContentProvider());
 		treeViewer.setComparator(comparator);

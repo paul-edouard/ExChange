@@ -1,22 +1,25 @@
-package com.munch.exchange.parts.neuralnetwork;
+ 
+package com.munch.exchange.parts.neuralnetwork.brain;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.GridLayout;
-import java.util.Arrays;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.log4j.Logger;
-import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
-import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.e4.ui.di.Focus;
+import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
@@ -31,24 +34,14 @@ import org.neuroph.core.Connection;
 import org.neuroph.core.Layer;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.Neuron;
-import org.neuroph.core.learning.LearningRule;
-import org.neuroph.nnet.MultiLayerPerceptron;
 
-import com.munch.exchange.IEventConstant;
-import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
-import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
-import com.munch.exchange.model.core.neuralnetwork.Configuration;
-import com.munch.exchange.model.core.neuralnetwork.NNetworkListener;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
-import com.munch.exchange.parts.composite.RateChart;
-import com.munch.exchange.services.IExchangeRateProvider;
-import com.munch.exchange.services.INeuralNetworkProvider;
 
-public class NeuralNetworkChart extends Composite {
+
+public class NeuralNetworkBrainPart {
 	
-	
-	private static Logger logger = Logger.getLogger(NeuralNetworkChart.class);
+	private static Logger logger = Logger.getLogger(NeuralNetworkBrainPart.class);
 	
 	private JFreeChart chart;
 	private Composite compositeChart;
@@ -58,56 +51,56 @@ public class NeuralNetworkChart extends Composite {
 	private DefaultXYZDataset xyzDataset=new DefaultXYZDataset();
 	private XYSeriesCollection xySeriesCollection=new XYSeriesCollection();
 	
-	private org.neuroph.core.NeuralNetwork neuralNetwork;
-	private Stock stock;
-	private Configuration config;
-	private NetworkArchitecture bestArchi;
+	@SuppressWarnings("rawtypes")
+	private NeuralNetwork neuralNetwork;
+	private NetworkArchitecture archi;
 	
 	private HashMap<Neuron, double[]> neuronXYZPosMap=new HashMap<Neuron, double[]>();
 	
 	
-	@Inject
-	private IExchangeRateProvider exchangeRateProvider;
 	
 	@Inject
-	private INeuralNetworkProvider nnprovider;
+	private Shell shell;
 	
 	private double maxAbsWeight=0;
-	/**
-	 * Create the composite.
-	 * @param parent
-	 * @param style
-	 */
-	@SuppressWarnings("unchecked")
+	
+	
 	@Inject
-	public NeuralNetworkChart(Composite parent,ExchangeRate rate
-			,/*MultiLayerPerceptron multiLayerPerceptron, */IEclipseContext p_context,INeuralNetworkProvider nnprovider ) {
-		super(parent, SWT.NONE);
-		
-		this.setLayout(new org.eclipse.swt.layout.GridLayout(1, false));
-		
-		this.stock=(Stock) rate;
-		this.nnprovider=nnprovider;
-		
+	public NeuralNetworkBrainPart() {
+		//TODO Your code here
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		GridLayout gl_parent = new GridLayout(1, false);
+		gl_parent.verticalSpacing = 0;
+		gl_parent.horizontalSpacing = 0;
+		gl_parent.marginWidth = 0;
+		gl_parent.marginHeight = 0;
+		parent.setLayout(gl_parent);
 		//==================================================
 		//==                 CHART                        ==    
 		//==================================================
 		chart = createChart();
-		compositeChart = new ChartComposite(this, SWT.NONE,chart);
+		compositeChart = new ChartComposite(parent, SWT.NONE,chart);
 		compositeChart.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
 		compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		
-		//Add the listener
-		this.stock.getNeuralNetwork().addEventListener(new NNetworkListener() {
-			
-			@Override
-			public void currentConfigurationChanged(EventObject e) {
-				updateYXZDataSet();
-			}
-		});
-		
+				
 	}
 	
+	
+	@PreDestroy
+	public void preDestroy() {
+		//TODO Your code here
+	}
+	
+	
+	@Focus
+	public void onFocus() {
+		//TODO Your code here
+	}
+	
+
 	/**
      * Creates a chart.
      *
@@ -118,8 +111,8 @@ public class NeuralNetworkChart extends Composite {
     	//====================
     	//===  Main Axis   ===
     	//====================
-    	NumberAxis domainAxis =createAxis("X");
-    	NumberAxis valueAxis =createAxis("Y");
+    	NumberAxis domainAxis =createAxis("");
+    	NumberAxis valueAxis =createAxis("");
     	
     	
     	updateYXZDataSet();
@@ -132,7 +125,7 @@ public class NeuralNetworkChart extends Composite {
     	 //=========================
     	//=== Create the Chart  ===
     	//=========================
-        chart = new JFreeChart("Network",
+        chart = new JFreeChart("",
                 JFreeChart.DEFAULT_TITLE_FONT, plot, false);
         chart.setBackgroundPaint(Color.white);
       
@@ -176,24 +169,19 @@ public class NeuralNetworkChart extends Composite {
     }
     
     
-    private void searchBestNetwork(){
+    private void searchNetwork(){
     	
-    	bestArchi=config.searchBestNetworkArchitecture();
-    	if(bestArchi==null)return;
-		neuralNetwork=bestArchi.getNetwork();
-		if(bestArchi.getBestResultEntity()!=null){
-			neuralNetwork.setWeights(bestArchi.getBestResultEntity().getDoubleArray());
+    	if(archi==null)return;
+		neuralNetwork=archi.getNetwork();
+		if(archi.getBestResultEntity()!=null){
+			neuralNetwork.setWeights(archi.getBestResultEntity().getDoubleArray());
 		}
     }
     
     public void updateYXZDataSet(){
     	
     	clearDataSet();
-    	
-    	config=stock.getNeuralNetwork().getConfiguration();
-    	if(config!=null && neuralNetwork==null){
-    		searchBestNetwork();
-    	}
+    	searchNetwork();
     	
     	if(neuralNetwork==null){
     		double[] x = {2.1, 2.3, 2.3, 2.2, 2.2, 1.8, 1.8, 1.9, 2.3, 3.8};
@@ -299,85 +287,34 @@ public class NeuralNetworkChart extends Composite {
     	this.xySeriesCollection.removeAllSeries();
     	
     }
-    
+	
     //################################
   	//##       Event Reaction       ##
   	//################################
-    private boolean isCompositeAbleToReact(String rate_uuid){
-		if (this.isDisposed())
+    private boolean isCompositeAbleToReact(){
+		if (shell.isDisposed())
 			return false;
-		if (rate_uuid == null || rate_uuid.isEmpty())
-			return false;
-
-		ExchangeRate incoming = exchangeRateProvider.load(rate_uuid);
-		if (incoming == null || stock == null )
-			return false;
-		if (!incoming.getUUID().equals(stock.getUUID()))
+		
+		if(archi==null)return false;
+		if(archi.getParent()==null)return false;
+		
+		Stock stock=archi.getParent().getParent();
+		if (stock == null )
 			return false;
 		
 		return true;
 	}
-    
+	
+	
     @Inject
-	private void neuralNetworkChanged(
-			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_NEW_CURRENT) String rate_uuid) {
-
-		if (!isCompositeAbleToReact(rate_uuid))
-			return;
-		
-		//TODO
-		//this.neuralNetwork=this.stock.getNeuralNetwork().getConfiguration().getCurrentNetwork();
-		
-		updateYXZDataSet();
-		
-		//logger.info("---->  Message recieved!!: ");
-	}
-    
-    @Inject
-    private void newBestResult(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL) OptInfo info){
-    	
-    	
-    	if(info==null)return;
-    	 	
-    	if (!isCompositeAbleToReact(info.getRate().getUUID()))
-			return;
-    	
-    	boolean[] bestArchi=info.getResults().getBestResult().getBooleanArray();
-    	//logger.info("Best Archi: "+Arrays.toString(bestArchi));
-    	
-    	NetworkArchitecture archi=stock.getNeuralNetwork().getConfiguration().searchArchitecture(bestArchi,
-    			nnprovider.getNetworkArchitecturesLocalSavePath(stock));
-    	
-    	if(archi!=null){
-    		this.neuralNetwork=archi.getNetwork();
+	public void analyseSelection( @Optional  @Named(IServiceConstants.ACTIVE_SELECTION) 
+	NetworkArchitecture selArchi){
+    	archi=selArchi;
+    	if(isCompositeAbleToReact())
     		updateYXZDataSet();
-    	}
-    	else{
-    		logger.info("Best Archi null!!!");
-    	}
     	
-    }
-    
-    
-    
-    @Inject
-    private void optimizationFinished(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_FINISHED) OptInfo info){
-    	
-    	
-    	if(info==null)return;
-    	 	
-    	if (!isCompositeAbleToReact(info.getRate().getUUID()))
-			return;
-    	
-    	config=stock.getNeuralNetwork().getConfiguration();
-    	if(config!=null)
-    		searchBestNetwork();
-    }
+	}
 	
-    
-    
-    
-    
 	
-
+	
 }

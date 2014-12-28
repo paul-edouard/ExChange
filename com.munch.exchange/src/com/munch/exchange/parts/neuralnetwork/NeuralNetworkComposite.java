@@ -18,8 +18,6 @@ import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -36,11 +34,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Tree;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
@@ -59,11 +54,9 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
-import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.composite.RateChart;
-import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.parts.neuralnetwork.error.NeuralNetworkErrorPart;
 import com.munch.exchange.parts.neuralnetwork.input.NeuralNetworkInputConfiguratorComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -84,7 +77,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	private NeuralNetworkOutputObjFunc objFunc;
 	
-	private NeuralNetworkChart neuralNetworkChart;
 	private NeuralNetworkInputConfiguratorComposite inputConfigurator;
 	
 	private double maxProfit=0;
@@ -310,7 +302,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				//stock.getNeuralNetwork().getConfiguration().removePropertyChangeListener(configChangedListener);
 				
 				int i=0;String configName="New Config";
-				while(!stock.getNeuralNetwork().addNewConfiguration(configName)){
+				while(!stock.getNeuralNetwork().addNewConfiguration(configName,stock)){
 					configName="New Config_"+String.valueOf(i);
 					i++;
 				}
@@ -534,8 +526,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		compositeGraph.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		sashForm.setWeights(new int[] {254, 282});
 		
-		//TODO
-		createNeuralNetworkChart(ctxt,compositeGraph);
 		
 		
 		//treeViewer.refresh();
@@ -545,19 +535,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		fireReadyToTrain();
 	}
 	
-	private void createNeuralNetworkChart(IEclipseContext context, Composite parentComposite){
-		//Create a context instance
-		IEclipseContext localContact=EclipseContextFactory.create();
-		localContact.set(Composite.class, parentComposite);
-		localContact.setParent(context);
-						
-		//////////////////////////////////
-		//Create the Chart Composite
-		//////////////////////////////////
-		neuralNetworkChart=ContextInjectionFactory.make( NeuralNetworkChart.class,localContact);
-		neuralNetworkChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		neuralNetworkChart.setEnabled(false);
-	}
+	
 	
 	private void createInputConfigurator(IEclipseContext context, Composite parentComposite ){
 		//Create a context instance
@@ -587,11 +565,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		boolean readyToTrain=config!=null &&  config.getOutputPointList()!=null &&
 				config.getNumberOfTimeSeries()>0 && config.getOutputPointList().size()>0;
 				
-		//btnStartTrain.setEnabled(readyToTrain);
-		if(readyToTrain && neuralNetworkChart!=null){
-			neuralNetworkChart.updateYXZDataSet();
-			neuralNetworkChart.setEnabled(true);
-		}
+		
 		
 		
 		btnSaveConfig.setEnabled(true);
@@ -653,7 +627,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		LinkedList<Configuration> configList=stock.getNeuralNetwork().getConfigurations();
 		
 		if(configList.size()==0){
-			stock.getNeuralNetwork().addNewConfiguration("New Config");
+			stock.getNeuralNetwork().addNewConfiguration("New Config",stock);
 			stock.getNeuralNetwork().getConfiguration().addPropertyChangeListener(configChangedListener);
 			
 			btnSaveConfig.setVisible(true);

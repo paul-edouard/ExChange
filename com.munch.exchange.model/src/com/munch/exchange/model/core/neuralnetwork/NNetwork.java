@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class NNetwork extends XmlParameterElement{
@@ -22,7 +23,6 @@ public class NNetwork extends XmlParameterElement{
 	
 	private LinkedList<Configuration> Configurations=new LinkedList<Configuration>();
 	private String currentConfiguration;
-	
 	
 	public Configuration getConfiguration(){
 		for(Configuration config:Configurations){
@@ -72,7 +72,7 @@ public class NNetwork extends XmlParameterElement{
 		//changes.firePropertyChange(FIELD_CurrentConfiguration, this.currentConfiguration, this.currentConfiguration = currentConfiguration);
 	}
 	
-	public boolean addNewConfiguration(String configName){
+	public boolean addNewConfiguration(String configName, Stock stock){
 		for(Configuration config:Configurations){
 			if(config.getName().equals(configName))
 				return false;
@@ -81,6 +81,7 @@ public class NNetwork extends XmlParameterElement{
 		Configuration conf=new Configuration();
 		conf.setName(configName);
 		conf.setDirty(true);
+		conf.setParent(stock);
 		
 		Configurations.add(conf);
 		currentConfiguration=configName;
@@ -98,7 +99,8 @@ public class NNetwork extends XmlParameterElement{
 		changes.firePropertyChange(FIELD_Configurations, this.Configurations,
 				this.Configurations = configuations);
 	}
-
+	
+	
 	@Override
 	protected void initAttribute(Element rootElement) {
 		this.setCurrentConfiguration(rootElement.getAttribute(FIELD_CurrentConfiguration));

@@ -6,6 +6,7 @@ import com.munch.exchange.model.core.analystestimation.AnalystEstimation;
 import com.munch.exchange.model.core.divident.HistoricalDividend;
 import com.munch.exchange.model.core.financials.Financials;
 import com.munch.exchange.model.core.keystat.KeyStatistics;
+import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NNetwork;
 import com.munch.exchange.model.tool.DateTool;
 
@@ -49,7 +50,11 @@ public class Stock extends ExchangeRate {
 	}
 
 	public void setNeuralNetwork(NNetwork neuralNetwork) {
-	changes.firePropertyChange(FIELD_NeuralNetwork, this.neuralNetwork, this.neuralNetwork = neuralNetwork);}
+		changes.firePropertyChange(FIELD_NeuralNetwork, this.neuralNetwork, this.neuralNetwork = neuralNetwork);
+		for(Configuration config:neuralNetwork.getConfigurations()){
+			config.setParent(this);
+		}
+	}
 	
 
 	public KeyStatistics getKeyStatistics() {
