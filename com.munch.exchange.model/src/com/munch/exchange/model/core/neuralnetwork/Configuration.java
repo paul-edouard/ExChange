@@ -51,7 +51,7 @@ public class Configuration extends XmlParameterElement {
 	//Training Data
 	//private int numberOfInputNeurons;
 	private DataSet trainingSet=null;
-	private double[] lastInput;
+	private double[] lastInput=null;
 	private LinkedList<TimeSeries> allTimeSeries=new LinkedList<TimeSeries>();
 	private ValuePointList outputPointList=new ValuePointList();
 	
@@ -79,6 +79,217 @@ public class Configuration extends XmlParameterElement {
 		//this.parent=parent;
 	}
 	
+	
+	
+	public synchronized OptimizationResults getOptResults(int dimension){
+		if(!netArchiOptResultMap.containsKey(dimension)){
+			netArchiOptResultMap.put(dimension, new OptimizationResults() );
+		}
+		return netArchiOptResultMap.get(dimension);
+	}
+	
+	
+	
+	public LinkedList<String> getInputNeuronNames(){
+		
+		LinkedList<String> names=new LinkedList<String>();
+		if(dayOfWeekActivated){
+			names.add(FIELD_DayOfWeek);
+		}
+		for(TimeSeries series:this.getSortedTimeSeries()){
+			names.addAll(series.getInputNeuronNames());
+		}
+		
+		return names;
+	}
+
+	
+	public int getNumberOfInputNeurons(){
+		return getInputNeuronNames().size();
+	}
+	
+	private void createDayOfWeekSeries(LinkedList<TimeSeries> sortedTimeSeries){
+		TimeSeries dayOfWeekSerie=new TimeSeries(FIELD_DayOfWeek, TimeSeriesCategory.RATE);
+		dayOfWeekSerie.setNumberOfPastValues(1);
+		for(ValuePoint point:sortedTimeSeries.getFirst().getInputValues()){
+			double dayofWeek=(double)point.getDate().get(Calendar.DAY_OF_WEEK);
+			dayOfWeekSerie.getInputValues().add(new ValuePoint(point.getDate(), dayofWeek));
+		}
+		sortedTimeSeries.addFirst(dayOfWeekSerie);
+	}
+	
+	/*
+	 * create the boolean like output array and the output diff array 
+	 */
+	private double[][] createOutputArrays(int maxNumberOfValues){
+		double[] outputArray=new double[maxNumberOfValues];
+		double[] outputDiffArray=new double[maxNumberOfValues];
+		
+		double[][] output=new double[2][maxNumberOfValues];
+		
+		double[] tt=outputPointList.toDoubleArray();
+		String[] diffArray=outputPointList.toStringArray();
+		
+		//logger.info("Output double: "+Arrays.toString(tt));
+		//logger.info("Output diff: "+Arrays.toString(diffArray));
+		
+		int diff=outputPointList.toDoubleArray().length-maxNumberOfValues;
+		for(int i=tt.length-1;i>=0;i--){
+			if(i-diff<0)break;
+			outputArray[i-diff]=tt[i];
+			outputDiffArray[i-diff]=Double.valueOf(diffArray[i]);
+		}
+		
+		output[0]=outputArray;
+		output[1]=outputDiffArray;
+		
+		return output;
+		
+	}
+	
+	
+	
+	//********************************
+	//  Training Data & Last Input
+	//********************************
+	
+	/**
+	 * create the Training Data and the last input array
+	 */
+	private void createTrainingData(){
+		
+		if(!areAllTimeSeriesAvailable()){
+			logger.info("Create Training Data ERROR: the time series are not available");
+			return;
+		}
+		
+		//Create the input arrays
+		LinkedList<double[]> doubleArrayList=new LinkedList<double[]>();
+		LinkedList<TimeSeries> sortedTimeSeries=this.getSortedTimeSeries();
+		if(dayOfWeekActivated){
+			createDayOfWeekSeries(sortedTimeSeries);
+		}
+		for(TimeSeries series:sortedTimeSeries){
+			logger.info("Serie "+series.getName()+", number of inputs: "+series.getInputValues().size());
+			//TODO Series zero
+			LinkedList<double[]> d_array_list=series.transformSeriesToDoubleArrayList(lastInputPointDate);
+			doubleArrayList.addAll(d_array_list);
+		}
+		
+		//Create the output array
+		double[][] outputs=createOutputArrays(doubleArrayList.get(0).length-1);
+		
+		//Create the Training set
+		trainingSet = new DataSet(doubleArrayList.size(), 1);
+		int len=doubleArrayList.get(0).length;
+		double[] outputdiffFactor=new double[len-1];
+		for(int i=0;i<len;i++){
+	
+			double[] input=new double[doubleArrayList.size()];
+			for(int j=0;j<doubleArrayList.size();j++){
+				input[j]=doubleArrayList.get(j)[i];
+			}
+			
+			double[] output=null;
+			double[] diff=null;
+			
+			if(i==len-1){
+				output=new double[]{0};
+				diff=new double[]{0};
+			}
+			else{
+				output=new double[]{outputs[0][i]};
+				diff=new double[]{outputs[1][i]};
+			}
+			
+			if(i<len-1)
+				outputdiffFactor[i]=outputs[1][i];
+			
+			trainingSet.addRow(new NNDataSetRaw(input, output,diff));
+		}
+		
+		//logger.info("Diff: "+Arrays.toString(outputdiffFactor));
+		
+		//Normalize the training set
+		trainingSet.normalize();
+		
+		//Save the last input
+		DataSetRow raw=trainingSet.getRowAt(len-1);
+		lastInput=raw.getInput();
+		trainingSet.removeRowAt(len-1);
+		
+		//Set the DiffFactor of the
+		this.learnParam.setDiffFactorArray(outputdiffFactor);
+		
+		
+		fireTrainingDataSetChanged();
+		
+		//return trainingSet;
+	}
+	
+	public void resetTrainingData(){
+		trainingSet=null;
+		lastInput=null;
+	}
+	
+	public DataSet getTrainingSet() {
+		if(trainingSet==null)createTrainingData();
+		return trainingSet;
+	}
+	
+	public double[] getLastInput() {
+		if(lastInput==null || lastInput.length==0)
+			createTrainingData();
+		return lastInput;
+	}
+	
+	
+	//*************************
+	// Time Series
+	//*************************
+	
+	public Configuration createCopy(){
+		Configuration copy=new Configuration();
+		copy.allTimeSeries=this.createCopyOfTimeSeries();
+		copy.Name=this.Name;
+		copy.parent=this.parent;
+		
+		//TODO copy the rest of attributes
+		
+		return copy;
+	}
+	
+	/**
+	 * Check if all times series are correctly loaded
+	 * @return
+	 */
+	public boolean areAllTimeSeriesAvailable(){
+		for(TimeSeries series:this.getAllTimeSeries()){
+			if(series.getInputValues().isEmpty())return false;
+		}
+		
+		return true;
+	}
+	
+	private LinkedList<TimeSeries> createCopyOfTimeSeries(){
+		LinkedList<TimeSeries> copy=new LinkedList<TimeSeries>();
+		for(TimeSeries series:this.allTimeSeries){
+			copy.add(series.createCopy());
+		}
+		
+		return copy;
+	}
+	
+	public void copyTimeSeriesFrom(Configuration config){
+		this.allTimeSeries.clear();
+		for(TimeSeries series:config.allTimeSeries){
+			this.allTimeSeries.add(series.createCopy());
+		}
+	}
+	
+	//*************************
+	// Architecture
+	//*************************
 	
 	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray, String localSavePath){
 		return searchArchitecture(actConsArray,false,localSavePath);
@@ -148,183 +359,6 @@ public class Configuration extends XmlParameterElement {
 		networkArchitectures.add(architecture);
 	}
 	
-	public synchronized OptimizationResults getOptResults(int dimension){
-		if(!netArchiOptResultMap.containsKey(dimension)){
-			netArchiOptResultMap.put(dimension, new OptimizationResults() );
-		}
-		return netArchiOptResultMap.get(dimension);
-	}
-	
-	
-	
-	public LinkedList<String> getInputNeuronNames(){
-		
-		LinkedList<String> names=new LinkedList<String>();
-		if(dayOfWeekActivated){
-			names.add(FIELD_DayOfWeek);
-		}
-		for(TimeSeries series:this.getSortedTimeSeries()){
-			names.addAll(series.getInputNeuronNames());
-		}
-		
-		return names;
-	}
-
-	public DataSet createTrainingDataSet(){
-		
-		//if(trainingSet!=null)return trainingSet;
-		
-		//Create the input arrays
-		LinkedList<double[]> doubleArrayList=new LinkedList<double[]>();
-		LinkedList<TimeSeries> sortedTimeSeries=this.getSortedTimeSeries();
-		if(dayOfWeekActivated){
-			createDayOfWeekSeries(sortedTimeSeries);
-		}
-		for(TimeSeries series:sortedTimeSeries){
-			logger.info("Serie "+series.getName()+", number of inputs: "+series.getInputValues().size());
-			//TODO Series zero
-			LinkedList<double[]> d_array_list=series.transformSeriesToDoubleArrayList(lastInputPointDate);
-			doubleArrayList.addAll(d_array_list);
-		}
-		
-		//Create the output array
-		double[][] outputs=createOutputArrays(doubleArrayList.get(0).length-1);
-		
-		//Create the Training set
-		trainingSet = new DataSet(doubleArrayList.size(), 1);
-		int len=doubleArrayList.get(0).length;
-		double[] outputdiffFactor=new double[len-1];
-		for(int i=0;i<len;i++){
-	
-			double[] input=new double[doubleArrayList.size()];
-			for(int j=0;j<doubleArrayList.size();j++){
-				input[j]=doubleArrayList.get(j)[i];
-			}
-			
-			double[] output=null;
-			double[] diff=null;
-			
-			if(i==len-1){
-				output=new double[]{0};
-				diff=new double[]{0};
-			}
-			else{
-				output=new double[]{outputs[0][i]};
-				diff=new double[]{outputs[1][i]};
-			}
-			
-			if(i<len-1)
-				outputdiffFactor[i]=outputs[1][i];
-			
-			trainingSet.addRow(new NNDataSetRaw(input, output,diff));
-		}
-		
-		//logger.info("Diff: "+Arrays.toString(outputdiffFactor));
-		
-		//Normalize the training set
-		trainingSet.normalize();
-		
-		//Save the last input
-		DataSetRow raw=trainingSet.getRowAt(len-1);
-		lastInput=raw.getInput();
-		trainingSet.removeRowAt(len-1);
-		
-		//Set the DiffFactor of the
-		this.learnParam.setDiffFactorArray(outputdiffFactor);
-		
-		
-		fireTrainingDataSetChanged();
-		
-		return trainingSet;
-	}
-	
-	public int getNumberOfInputNeurons(){
-		return getInputNeuronNames().size();
-	}
-	
-	private void createDayOfWeekSeries(LinkedList<TimeSeries> sortedTimeSeries){
-		TimeSeries dayOfWeekSerie=new TimeSeries(FIELD_DayOfWeek, TimeSeriesCategory.RATE);
-		dayOfWeekSerie.setNumberOfPastValues(1);
-		for(ValuePoint point:sortedTimeSeries.getFirst().getInputValues()){
-			double dayofWeek=(double)point.getDate().get(Calendar.DAY_OF_WEEK);
-			dayOfWeekSerie.getInputValues().add(new ValuePoint(point.getDate(), dayofWeek));
-		}
-		sortedTimeSeries.addFirst(dayOfWeekSerie);
-	}
-	
-	/*
-	 * create the boolean like output array and the output diff array 
-	 */
-	private double[][] createOutputArrays(int maxNumberOfValues){
-		double[] outputArray=new double[maxNumberOfValues];
-		double[] outputDiffArray=new double[maxNumberOfValues];
-		
-		double[][] output=new double[2][maxNumberOfValues];
-		
-		double[] tt=outputPointList.toDoubleArray();
-		String[] diffArray=outputPointList.toStringArray();
-		
-		//logger.info("Output double: "+Arrays.toString(tt));
-		//logger.info("Output diff: "+Arrays.toString(diffArray));
-		
-		int diff=outputPointList.toDoubleArray().length-maxNumberOfValues;
-		for(int i=tt.length-1;i>=0;i--){
-			if(i-diff<0)break;
-			outputArray[i-diff]=tt[i];
-			outputDiffArray[i-diff]=Double.valueOf(diffArray[i]);
-		}
-		
-		output[0]=outputArray;
-		output[1]=outputDiffArray;
-		
-		return output;
-		
-	}
-	
-	//*************************
-	// Time Series
-	//*************************
-	
-	public Configuration createCopy(){
-		Configuration copy=new Configuration();
-		copy.allTimeSeries=this.createCopyOfTimeSeries();
-		copy.Name=this.Name;
-		copy.parent=this.parent;
-		
-		//TODO copy the rest of attributes
-		
-		return copy;
-	}
-	
-	public boolean areAllTimeSeriesAvailable(){
-		for(TimeSeries series:this.getAllTimeSeries()){
-			if(series.getInputValues().isEmpty())return false;
-		}
-		
-		return true;
-	}
-	
-	private LinkedList<TimeSeries> createCopyOfTimeSeries(){
-		LinkedList<TimeSeries> copy=new LinkedList<TimeSeries>();
-		for(TimeSeries series:this.allTimeSeries){
-			copy.add(series.createCopy());
-		}
-		
-		return copy;
-	}
-	
-	
-	public void copyTimeSeriesFrom(Configuration config){
-		this.allTimeSeries.clear();
-		for(TimeSeries series:config.allTimeSeries){
-			this.allTimeSeries.add(series.createCopy());
-		}
-	}
-	
-	//*************************
-	// Architecture
-	//*************************
-	
 	@SuppressWarnings("rawtypes")
 	public NetworkArchitecture searchBestNetworkArchitecture(){
 		double error=Double.POSITIVE_INFINITY;
@@ -356,13 +390,9 @@ public class Configuration extends XmlParameterElement {
 	}
 	
 	
-	
-	
 	//****************************************
 	//***      GETTER AND SETTER          ****
 	//****************************************
-	
-	
 	
 	
 	public Type getOptimizationResultType(){
@@ -381,12 +411,6 @@ public class Configuration extends XmlParameterElement {
 		}
 	}
 	
-	public double[] getLastInput() {
-		if(lastInput==null || lastInput.length==0)
-			this.createTrainingDataSet();
-		return lastInput;
-	}
-
 	public Calendar getLastInputPointDate() {
 		return lastInputPointDate;
 	}
@@ -401,9 +425,6 @@ public class Configuration extends XmlParameterElement {
 		}
 	
 	}
-	
-	
-	
 	
 	public boolean isDirty() {
 		return isDirty;
@@ -714,6 +735,7 @@ public class Configuration extends XmlParameterElement {
 					.trainingDataSetChanged(event);
 		}
 	}
+	
 	
 	public synchronized void fireTimeSeriesChanged() {
 		ConfigurationEvent event = new ConfigurationEvent(this);

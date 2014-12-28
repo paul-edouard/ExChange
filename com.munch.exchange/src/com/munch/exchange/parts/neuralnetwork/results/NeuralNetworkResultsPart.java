@@ -1,6 +1,8 @@
  
 package com.munch.exchange.parts.neuralnetwork.results;
 
+import java.util.HashMap;
+
 import javax.inject.Inject;
 import javax.annotation.PostConstruct;
 
@@ -8,6 +10,10 @@ import org.eclipse.swt.widgets.Composite;
 
 import javax.annotation.PreDestroy;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
@@ -16,6 +22,7 @@ import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Label;
@@ -37,6 +44,7 @@ import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.InfoPart;
+import com.munch.exchange.services.INeuralNetworkProvider;
 
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -48,6 +56,7 @@ public class NeuralNetworkResultsPart {
 	
 	public static final String NEURAL_NETWORK_RESULTS_ID="com.munch.exchange.part.networkresults";
 	
+	
 	private Stock stock=null;
 	private Configuration config=null;
 	private Label lblSelectedConfig;
@@ -55,12 +64,16 @@ public class NeuralNetworkResultsPart {
 	private TreeViewer treeViewer;
 	private TreeNNResultViewerComparator comparator=new TreeNNResultViewerComparator();
 	
+	private ResultsLoader resultLoader=new ResultsLoader();
+	
 	@Inject
 	private IEventBroker eventBroker;
 	
 	@Inject
 	ESelectionService selectionService;
 	
+	@Inject
+	INeuralNetworkProvider nn_provider;
 	
 	@Inject
 	public NeuralNetworkResultsPart() {
@@ -121,6 +134,8 @@ public class NeuralNetworkResultsPart {
 		addColumn("Middle Tr. Rate",100,new MiddleTrainingRateLabelProvider(),7);
 		addColumn("Nb. Of Tr.",50,new NbOfTrainingRateLabelProvider(),8);
 		addColumn("Last Tr.",100,new LastTrainingLabelProvider(),10);
+		
+		addColumn("Prediction",100,new PredictionLabelProvider(),11);
 		
 		tree.setSortColumn(firstColumn);
 	    tree.setSortDirection(1);
@@ -376,6 +391,43 @@ public class NeuralNetworkResultsPart {
 	}
 	
 	
+	class PredictionLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				double pred=getResultsInfo(el).prediction;
+				return String.format("%.2f", pred);
+			}
+			return super.getText(element);
+		}
+
+		@Override
+		public Color getBackground(Object element) {
+			
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				double pred=getResultsInfo(el).prediction;
+				if(pred>0.5)
+					return new Color(null, 0, 255, 0);
+				else
+					return new Color(null, 255, 0, 0);
+			}
+			
+			return super.getBackground(element);
+		}
+		
+		
+		
+		
+		
+	}
+	
+	
+	
+	
+	
 	private SelectionAdapter getSelectionAdapter(final  TreeColumn  column,
 		      final int index) {
 		    SelectionAdapter selectionAdapter = new SelectionAdapter() {
@@ -390,6 +442,64 @@ public class NeuralNetworkResultsPart {
 		    };
 		    return selectionAdapter;
 		  }
+
+	
+	//#######################################
+	//##       Results Worker & Info       ##
+	//#######################################	
+	
+	private HashMap<String, ResultsInfo> resultsInfoMap=new HashMap<String, ResultsInfo>();
+	
+	private synchronized ResultsInfo getResultsInfo(NetworkArchitecture archi){
+		if(!resultsInfoMap.containsKey(archi.getId()))
+			resultsInfoMap.put(archi.getId(), new ResultsInfo());
+		
+		return resultsInfoMap.get(archi.getId());
+	}
+	
+	class ResultsInfo{
+		public double prediction=Double.NaN;
+		
+	}
+	
+	class ResultsLoader extends Job {
+		
+		
+
+		public ResultsLoader() {
+			super("Result loader");
+			
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			resultsInfoMap.clear();
+			
+			if (monitor.isCanceled())return Status.CANCEL_STATUS;
+			if(!config.areAllTimeSeriesAvailable()){
+				nn_provider.createAllInputPoints(stock);
+			}
+			
+			double[] input=config.getLastInput();
+			
+			for(NetworkArchitecture archi:config.getNetworkArchitectures()){
+				if (monitor.isCanceled())return Status.CANCEL_STATUS;
+				
+				double pred=archi.calculateNetworkOutputFromBestResult(input);
+				
+				ResultsInfo info=getResultsInfo(archi);
+				info.prediction=pred;
+				
+			}
+			
+			
+			eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_RESULTS_CALCULATED,config);
+			
+			
+			return Status.OK_STATUS;
+		}
+		
+	}
 	
 	
 	//################################
@@ -413,7 +523,22 @@ public class NeuralNetworkResultsPart {
 		if(stock==null)return;
 		setStock(stock);
 		
+		
+		resultLoader.schedule();
+		
+		
 	}
+	@Inject
+	private void neuralNetworkResutsCalculated(
+			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_RESULTS_CALCULATED) Configuration config) {
+		
+		if(config==null)return;
+		if(this.config!=config)return;
+		
+		if (!isCompositeAbleToReact())return;
+		treeViewer.refresh();
+	}
+	
 	
 	//ARCHITECTURE
 	@Inject

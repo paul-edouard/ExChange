@@ -433,7 +433,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				}
 				
 				
-				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().createTrainingDataSet();
+				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().getTrainingSet();
 				
 				
 				int minDim=stock.getNeuralNetwork().getConfiguration().getNumberOfInputNeurons();

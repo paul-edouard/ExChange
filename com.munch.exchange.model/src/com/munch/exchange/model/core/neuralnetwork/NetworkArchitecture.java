@@ -107,9 +107,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	private Configuration parent=null;
 	
-	
-	
-	
+	//*************************
+	// CONSTRUCTORS
+	//*************************
+
 	/**
 	 * Default constructor
 	 */
@@ -156,6 +157,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 		resultLoaded=true;
 		
 	}
+	
+	//**************************************
+	// Neural Network Creation & Functions
+	//**************************************
 	
 	/**
 	 *  Create the neural network corresponding to the input data
@@ -448,6 +453,25 @@ public class NetworkArchitecture extends XmlParameterElement {
 		convertActConsMatrixToArray();
 	}
 
+	
+	public double calculateNetworkOutputFromBestResult(double[] input){
+		if(!resultLoaded)this.loadResults();
+		if(this.getBestResultEntity()==null)return Double.NaN;
+		
+		network.setWeights(this.getBestResultEntity().getDoubleArray());
+		network.setInput(input);
+		network.calculate();
+		double[] networkOutput = network.getOutput();
+		if(networkOutput.length==1)return networkOutput[0];
+		
+		return Double.NaN;
+	}
+	
+	
+	//*************************
+	// ADAPTION to new input neurons
+	//*************************
+	
 	/**
 	 * Adapt the Network to the new inputs neurons without loosing the old best weights found so far
 	 * 
@@ -495,7 +519,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 		}
 		logger.info("Results Size: "+a);
 	}
-	
 	
 	private void addInputNeuron(String label, int index){
 		
@@ -635,12 +658,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 	}
 	
-	public boolean hasResults(){
-		if(this.optResults==null)return false;
-		if(this.optResults.getResults()==null)return false;
-		return !this.optResults.getResults().isEmpty();
-	}
 	
+	//*************************
+	// STATISTIC
+	//*************************
 	
 	/**
 	 * prepare the Architecture before a optimization by saving the current best value
@@ -700,6 +721,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	
+	//*************************
+	// RESULTS
+	//*************************
+	
 	/**
 	 * Add a result untity to the current list and save the best value
 	 * @param ent
@@ -718,7 +743,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return this.optResults.getBestResult();
 	}
 	
-	
 	public void clearResultsAndNetwork(){
 		this.saveResults();
 		this.network=null;
@@ -726,9 +750,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 		resultLoaded=false;
 	}
 	
-	//****************************************
-	//***            STATIC               ****
-	//****************************************
+	public boolean hasResults(){
+		if(this.optResults==null)return false;
+		if(this.optResults.getResults()==null)return false;
+		return !this.optResults.getResults().isEmpty();
+	}
+	
+	
 	
 	@Override
 	public String toString() {
@@ -758,7 +786,12 @@ public class NetworkArchitecture extends XmlParameterElement {
 		*/
 		return outputStr;
 	}
-
+	
+	//****************************************
+	//***            STATIC               ****
+	//****************************************
+	
+	
 	public static boolean[] convertActConsMatrixToArray(boolean[][] actConsMatrix,int numberOfInputNeurons,int numberOfInnerNeurons){
 		boolean[] actConsArray=new boolean[calculateActivatedConnectionsSize(numberOfInputNeurons,numberOfInnerNeurons)];
 		for(int i=0;i<actConsArray.length;i++){
@@ -908,6 +941,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return x;
 		
 	}
+	
 	
 	
 	//****************************************
