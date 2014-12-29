@@ -1,5 +1,7 @@
 package com.munch.exchange.model.core.neuralnetwork;
 
+import java.util.Arrays;
+
 import org.neuroph.core.data.DataSetRow;
 
 public class NNDataSetRaw extends DataSetRow {
@@ -30,6 +32,14 @@ public class NNDataSetRaw extends DataSetRow {
 
 	public double[] getEndVal() {
 		return endVal;
+	}
+	
+
+	@Override
+	public String toString() {
+		return "NNDataSetRaw [diff=" + Arrays.toString(diff) + ", startVal="
+				+ Arrays.toString(startVal) + ", endVal="
+				+ Arrays.toString(endVal) + "]";
 	}
 	
 	

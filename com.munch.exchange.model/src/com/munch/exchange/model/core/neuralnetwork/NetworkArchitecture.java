@@ -508,6 +508,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	         
 	         if(row instanceof NNDataSetRaw){
 	        	 NNDataSetRaw nn_row=(NNDataSetRaw) row;
+	        	// logger.info("Row:"+nn_row);
 	        	 outputdiff[pos]=nn_row.getDiff()[0];
 	        	 startVal[pos]=nn_row.getStartVal()[0];
 	        	 endVal[pos]=nn_row.getEndVal()[0];
@@ -543,6 +544,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		double[] profit=new double[output.length];
 		
+		logger.info("Output: "+Arrays.toString(output));
+		
 		double BUY_LIMIT=0.5;
 		
 		double sum_pro=0;
@@ -574,6 +577,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return n_outputs;
 	}
 	
+	
+	public double[][] calculateNetworkOutputsAndProfitFromBestResult(DataSet dataSet,double penalty){
+		if(this.getBestResultEntity()==null)
+			return null;
+		
+		return calculateNetworkOutputsAndProfit(dataSet, this.getBestResultEntity().getDoubleArray(), penalty);
+	}
 	
 	//*************************
 	// ADAPTION to new input neurons

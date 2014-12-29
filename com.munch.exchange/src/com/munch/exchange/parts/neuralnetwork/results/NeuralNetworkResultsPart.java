@@ -1,11 +1,13 @@
  
 package com.munch.exchange.parts.neuralnetwork.results;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import javax.inject.Inject;
 import javax.annotation.PostConstruct;
 
+import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Composite;
 
 import javax.annotation.PreDestroy;
@@ -42,13 +44,16 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
+import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.InfoPart;
+import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.services.INeuralNetworkProvider;
 
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.goataa.impl.utils.Constants;
+import org.neuroph.core.data.DataSet;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 
@@ -56,6 +61,7 @@ public class NeuralNetworkResultsPart {
 	
 	public static final String NEURAL_NETWORK_RESULTS_ID="com.munch.exchange.part.networkresults";
 	
+	private static Logger logger = Logger.getLogger(NeuralNetworkResultsPart.class);
 	
 	private Stock stock=null;
 	private Configuration config=null;
@@ -136,6 +142,7 @@ public class NeuralNetworkResultsPart {
 		addColumn("Last Tr.",100,new LastTrainingLabelProvider(),10);
 		
 		addColumn("Prediction",100,new PredictionLabelProvider(),11);
+		addColumn("Tot. Profit",100,new TotalProfitLabelProvider(),12);
 		
 		tree.setSortColumn(firstColumn);
 	    tree.setSortDirection(1);
@@ -418,9 +425,21 @@ public class NeuralNetworkResultsPart {
 			return super.getBackground(element);
 		}
 		
-		
-		
-		
+	}
+	
+	
+	class TotalProfitLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				double pro=getResultsInfo(el).totalProfit;
+				return String.format("%.2f", pro);
+			}
+			return super.getText(element);
+		}
+
 		
 	}
 	
@@ -459,6 +478,7 @@ public class NeuralNetworkResultsPart {
 	
 	class ResultsInfo{
 		public double prediction=Double.NaN;
+		public double totalProfit=Double.NaN;
 		
 	}
 	
@@ -476,20 +496,38 @@ public class NeuralNetworkResultsPart {
 			resultsInfoMap.clear();
 			
 			if (monitor.isCanceled())return Status.CANCEL_STATUS;
+			
+			//TODO don't save the output list
+			ValuePointList l=nn_provider.calculateMaxProfitOutputList(stock,RateChart.PENALTY);
+			config.setOutputPointList(l);
+			
+			if (monitor.isCanceled())return Status.CANCEL_STATUS;
+			
 			if(!config.areAllTimeSeriesAvailable()){
 				nn_provider.createAllInputPoints(stock);
 			}
 			
+			
 			double[] input=config.getLastInput();
+			DataSet dataset=config.getTrainingSet();
+			
+			//RateChart.PENALTY;
 			
 			for(NetworkArchitecture archi:config.getNetworkArchitectures()){
 				if (monitor.isCanceled())return Status.CANCEL_STATUS;
 				
-				double pred=archi.calculateNetworkOutputFromBestResult(input);
-				
 				ResultsInfo info=getResultsInfo(archi);
+				
+				//Prediction
+				double pred=archi.calculateNetworkOutputFromBestResult(input);
 				info.prediction=pred;
 				
+				//Profit
+				double[][] outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset, RateChart.PENALTY);
+				if(outputs==null)continue;
+				double[] profit=outputs[outputs.length-1];
+				info.totalProfit=profit[profit.length-1];
+				//logger.info("Profit: "+Arrays.toString(profit));
 			}
 			
 			
