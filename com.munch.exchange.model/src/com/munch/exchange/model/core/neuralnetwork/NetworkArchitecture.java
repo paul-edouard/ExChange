@@ -18,6 +18,8 @@ import org.neuroph.core.Connection;
 import org.neuroph.core.Layer;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.Neuron;
+import org.neuroph.core.data.DataSet;
+import org.neuroph.core.data.DataSetRow;
 import org.neuroph.core.transfer.Linear;
 import org.neuroph.nnet.comp.neuron.InputNeuron;
 import org.neuroph.nnet.learning.BackPropagation;
@@ -454,11 +456,10 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 
 	
-	public double calculateNetworkOutputFromBestResult(double[] input){
+	private double calculateNetworkOutput(double[] input,double[] weigths ){
 		if(!resultLoaded)this.loadResults();
-		if(this.getBestResultEntity()==null)return Double.NaN;
 		
-		network.setWeights(this.getBestResultEntity().getDoubleArray());
+		network.setWeights(weigths);
 		network.setInput(input);
 		network.calculate();
 		double[] networkOutput = network.getOutput();
@@ -466,6 +467,57 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		return Double.NaN;
 	}
+	
+	public double calculateNetworkOutputFromBestResult(double[] input){
+		if(this.getBestResultEntity()==null)
+			return Double.NaN;
+		
+		return calculateNetworkOutput(input,this.getBestResultEntity().getDoubleArray());
+	}
+	
+	/**
+	 * calculate the network output of a complete set of data
+	 * 
+	 * @param dataSet
+	 * @param weigths
+	 * @return 3 arrays: network output, desired output, the diff factor
+	 */
+	public double[][] calculateNetworkOutputs(DataSet dataSet,double[] weigths){
+		if(!resultLoaded)this.loadResults();
+		
+		network.setWeights(weigths);
+		
+		double[] output = new double[dataSet.getRows().size()];
+		double[] desiredOutput = new double[dataSet.getRows().size()];
+		double[] outputdiff=new double[dataSet.getRows().size()];
+		
+		int pos=0;
+		for(DataSetRow row : dataSet.getRows()) {
+			if(row.getInput().length!=network.getInputsCount()){
+				logger.info("Size error: Test Row Size: "+row.getInput().length+", Network input: "+network.getInputsCount());
+				continue;
+			}
+			 network.setInput(row.getInput());
+			 network.calculate();
+	         double[] networkOutput = network.getOutput();
+	         
+	         output[pos]=networkOutput[0];
+	         desiredOutput[pos]=row.getDesiredOutput()[0];
+	         
+	         if(row instanceof NNDataSetRaw){
+	        	 NNDataSetRaw nn_row=(NNDataSetRaw) row;
+	        	 outputdiff[pos]=nn_row.getDiff()[0];
+	         }
+	         
+	         pos++;
+			
+		}
+		
+		double[][] outputs={output,desiredOutput,outputdiff};
+		
+		return outputs;
+	}
+	
 	
 	
 	//*************************

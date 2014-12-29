@@ -175,13 +175,14 @@ public class Configuration extends XmlParameterElement {
 			LinkedList<double[]> d_array_list=series.transformSeriesToDoubleArrayList(lastInputPointDate);
 			doubleArrayList.addAll(d_array_list);
 		}
+		int len=doubleArrayList.get(0).length;
 		
 		//Create the output array
-		double[][] outputs=createOutputArrays(doubleArrayList.get(0).length-1);
+		double[][] outputs=createOutputArrays(len-1);
 		
 		//Create the Training set
 		trainingSet = new DataSet(doubleArrayList.size(), 1);
-		int len=doubleArrayList.get(0).length;
+		
 		double[] outputdiffFactor=new double[len-1];
 		for(int i=0;i<len;i++){
 	

@@ -24,13 +24,13 @@ public class NnObjFunc extends OptimizationModule implements
 	private static Logger logger = Logger.getLogger(NnObjFunc.class);
 	
 	private NetworkArchitecture architecture;
-	private NeuralNetwork network;
+	//private NeuralNetwork network;
 	private DataSet testSet;
 	private double maxProfit;
 	private double penalty;
 	
 	public NnObjFunc(NetworkArchitecture architecture, DataSet testSet/*,double maxProfit, double penalty*/){
-		this.network=architecture.getNetwork();
+		//this.network=architecture.getNetwork();
 		this.testSet=testSet;
 		this.architecture=architecture;
 		this.maxProfit=maxProfit;
@@ -42,16 +42,20 @@ public class NnObjFunc extends OptimizationModule implements
 		
 		//logger.info("Computing: "+Arrays.toString(x));
 		
-		network.setWeights(x);
+		
+		double[][] outputs=architecture.calculateNetworkOutputs(testSet, x);
+		
+		double[] output=outputs[0];
+		double[] desiredOutput=outputs[1];
+		double[] outputdiff=outputs[2];
+		
+		//network.setWeights(x);
 		//logger.info("X input:" + Arrays.toString(x));
 		
-		double[] output = new double[testSet.getRows().size()];
-		double[] desiredOutput = new double[testSet.getRows().size()];
-		
 		double[] outputError = new double[testSet.getRows().size()];
-		double[] outputdiff=new double[testSet.getRows().size()];
 		
 		//Calculate the output for all the test data
+		/*
 		int pos=0;
 		for(DataSetRow testSetRow : testSet.getRows()) {
 			if(testSetRow.getInput().length!=network.getInputsCount()){
@@ -73,7 +77,7 @@ public class NnObjFunc extends OptimizationModule implements
 	         pos++;
 	          
 	       }
-		
+		*/
 		//Calculate the error
         for (int i = 0; i < output.length; i++) {
             outputError[i] = (desiredOutput[i] - output[i])*outputdiff[i];
@@ -104,7 +108,7 @@ public class NnObjFunc extends OptimizationModule implements
 		return error;
 	}
 	
-	
+	/*
 	public double calError(double[] x){
 		
 		network.setWeights(x);
@@ -187,7 +191,7 @@ public class NnObjFunc extends OptimizationModule implements
 		return error;
 		
 	}
-	
+	*/
 	
 	
 	
