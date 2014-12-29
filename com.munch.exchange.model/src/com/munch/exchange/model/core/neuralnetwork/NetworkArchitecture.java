@@ -480,16 +480,18 @@ public class NetworkArchitecture extends XmlParameterElement {
 	 * 
 	 * @param dataSet
 	 * @param weigths
-	 * @return 3 arrays: network output, desired output, the diff factor
+	 * @return 3 arrays: network output, desired output, the diff factor, start values, end values
 	 */
 	public double[][] calculateNetworkOutputs(DataSet dataSet,double[] weigths){
 		if(!resultLoaded)this.loadResults();
 		
 		network.setWeights(weigths);
 		
-		double[] output = new double[dataSet.getRows().size()];
-		double[] desiredOutput = new double[dataSet.getRows().size()];
-		double[] outputdiff=new double[dataSet.getRows().size()];
+		double[] output 		= new double[dataSet.getRows().size()];
+		double[] desiredOutput 	= new double[dataSet.getRows().size()];
+		double[] outputdiff		= new double[dataSet.getRows().size()];
+		double[] startVal		= new double[dataSet.getRows().size()];
+		double[] endVal			= new double[dataSet.getRows().size()];
 		
 		int pos=0;
 		for(DataSetRow row : dataSet.getRows()) {
@@ -507,17 +509,70 @@ public class NetworkArchitecture extends XmlParameterElement {
 	         if(row instanceof NNDataSetRaw){
 	        	 NNDataSetRaw nn_row=(NNDataSetRaw) row;
 	        	 outputdiff[pos]=nn_row.getDiff()[0];
+	        	 startVal[pos]=nn_row.getStartVal()[0];
+	        	 endVal[pos]=nn_row.getEndVal()[0];
 	         }
 	         
 	         pos++;
 			
 		}
 		
-		double[][] outputs={output,desiredOutput,outputdiff};
+		double[][] outputs={output, desiredOutput, outputdiff, startVal, endVal};
 		
 		return outputs;
 	}
 	
+	
+	/**
+	 * calculate the profit and add at the end of the output matrix
+	 * 
+	 * @param dataSet
+	 * @param weigths
+	 * @param penalty
+	 * @return
+	 */
+	public double[][] calculateNetworkOutputsAndProfit(DataSet dataSet,double[] weigths, double penalty){
+		
+		
+		double[][] outputs=calculateNetworkOutputs(dataSet,weigths);
+		double[] output 		= outputs[0];
+		double[] desiredOutput 	= outputs[1];
+		double[] outputdiff		= outputs[2];
+		double[] startVal		= outputs[3];
+		double[] endVal			= outputs[4];
+		
+		double[] profit=new double[output.length];
+		
+		double BUY_LIMIT=0.5;
+		
+		double sum_pro=0;
+		for(int i=0;i<output.length;i++){
+			double val=Double.NaN;
+			double nextVal=Double.NaN;
+			double lastVal=Double.NaN;
+			
+			val=output[i];
+			
+			if(i>0)lastVal=output[i-1];
+			
+			if(i<output.length-1)nextVal=output[i+1];
+			
+			if(val>BUY_LIMIT){
+				sum_pro+=outputdiff[i];
+				if(Double.isNaN(lastVal) || lastVal <=BUY_LIMIT )
+					sum_pro-=penalty*startVal[i];
+				if(Double.isNaN(nextVal) || nextVal <=BUY_LIMIT )
+					sum_pro-=penalty*endVal[i];
+			}
+			
+			profit[i]=sum_pro;
+			
+		}
+		
+		double[][] n_outputs={output, desiredOutput, outputdiff, startVal, endVal,profit };
+		
+		return n_outputs;
+	}
 	
 	
 	//*************************

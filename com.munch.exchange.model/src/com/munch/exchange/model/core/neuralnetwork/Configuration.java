@@ -124,11 +124,13 @@ public class Configuration extends XmlParameterElement {
 	private double[][] createOutputArrays(int maxNumberOfValues){
 		double[] outputArray=new double[maxNumberOfValues];
 		double[] outputDiffArray=new double[maxNumberOfValues];
+		double[] outputStartArray=new double[maxNumberOfValues];
+		double[] outputEndArray=new double[maxNumberOfValues];
 		
-		double[][] output=new double[2][maxNumberOfValues];
+		//double[][] output=new double[2][maxNumberOfValues];
 		
 		double[] tt=outputPointList.toDoubleArray();
-		String[] diffArray=outputPointList.toStringArray();
+		String[] metaDataArray=outputPointList.toStringArray();
 		
 		//logger.info("Output double: "+Arrays.toString(tt));
 		//logger.info("Output diff: "+Arrays.toString(diffArray));
@@ -137,11 +139,18 @@ public class Configuration extends XmlParameterElement {
 		for(int i=tt.length-1;i>=0;i--){
 			if(i-diff<0)break;
 			outputArray[i-diff]=tt[i];
-			outputDiffArray[i-diff]=Double.valueOf(diffArray[i]);
+			String[] mdatas=metaDataArray[i].split(";");
+			if(mdatas.length!=3)continue;
+			
+			outputDiffArray[i-diff]=Double.valueOf(mdatas[0]);
+			outputStartArray[i-diff]=Double.valueOf(mdatas[1]);
+			outputEndArray[i-diff]=Double.valueOf(mdatas[2]);
 		}
 		
-		output[0]=outputArray;
-		output[1]=outputDiffArray;
+		//output[0]=outputArray;
+		//output[1]=outputDiffArray;
+		
+		double[][] output={outputArray,outputDiffArray,outputStartArray,outputEndArray};
 		
 		return output;
 		
@@ -193,20 +202,26 @@ public class Configuration extends XmlParameterElement {
 			
 			double[] output=null;
 			double[] diff=null;
+			double[] startVal=null;
+			double[] endVal=null;
 			
 			if(i==len-1){
 				output=new double[]{0};
 				diff=new double[]{0};
+				startVal=new double[]{0};
+				endVal=new double[]{0};
 			}
 			else{
 				output=new double[]{outputs[0][i]};
 				diff=new double[]{outputs[1][i]};
+				startVal=new double[]{outputs[2][i]};
+				endVal=new double[]{outputs[3][i]};
 			}
 			
 			if(i<len-1)
 				outputdiffFactor[i]=outputs[1][i];
 			
-			trainingSet.addRow(new NNDataSetRaw(input, output,diff));
+			trainingSet.addRow(new NNDataSetRaw(input, output,diff, startVal, endVal));
 		}
 		
 		//logger.info("Diff: "+Arrays.toString(outputdiffFactor));
