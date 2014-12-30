@@ -352,7 +352,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			
 			
 			if(info.getResults().addResult(ent)){
-				eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
+				eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
 			}
 			
 		}

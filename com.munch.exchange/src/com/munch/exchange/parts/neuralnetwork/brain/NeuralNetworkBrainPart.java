@@ -157,7 +157,7 @@ public class NeuralNetworkBrainPart {
     	plot.setDomainPannable(true);
         plot.setRangePannable(true);
         
-        plot.setBackgroundPaint(Color.lightGray);
+        plot.setBackgroundPaint(Color.white);
         //plot1.setBackgroundPaint(Color.BLACK);
         plot.setDomainGridlinePaint(Color.white);
         plot.setRangeGridlinePaint(Color.white);
@@ -168,6 +168,8 @@ public class NeuralNetworkBrainPart {
     	return plot;
     }
     
+    
+   
     
     private void searchNetwork(){
     	

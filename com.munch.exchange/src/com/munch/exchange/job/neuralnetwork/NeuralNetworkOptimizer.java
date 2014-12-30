@@ -220,7 +220,7 @@ public class NeuralNetworkOptimizer extends Job {
 				//logger.info("New Best Results: "+ind.v);
 				if(info.getResults().addResult(new ResultEntity(ind.x,ind.v))){
 					info.resetLastReaction();
-					eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
+					eventBroker.post(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
 				}
 			}
 			else if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_STEP)){

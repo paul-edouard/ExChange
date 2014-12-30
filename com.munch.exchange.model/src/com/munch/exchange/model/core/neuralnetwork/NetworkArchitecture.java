@@ -544,7 +544,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		double[] profit=new double[output.length];
 		
-		logger.info("Output: "+Arrays.toString(output));
+		//logger.info("Output: "+Arrays.toString(output));
 		
 		double BUY_LIMIT=0.5;
 		

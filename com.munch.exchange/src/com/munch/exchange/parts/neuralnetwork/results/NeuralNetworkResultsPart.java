@@ -527,6 +527,7 @@ public class NeuralNetworkResultsPart {
 				if(outputs==null)continue;
 				double[] profit=outputs[outputs.length-1];
 				info.totalProfit=profit[profit.length-1];
+				//logger.info("Output: "+Arrays.toString(outputs[0]));
 				//logger.info("Profit: "+Arrays.toString(profit));
 			}
 			
