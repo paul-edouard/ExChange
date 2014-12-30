@@ -107,7 +107,7 @@ public class NeuralNetworkOptimizerManager extends Job{
 
 	private int getNumberOfProcessors(){
 		int nbOfProc=Runtime.getRuntime().availableProcessors();
-		//if(nbOfProc>1)nbOfProc--;
+		if(nbOfProc>1)nbOfProc--;
 		return nbOfProc;
 		
 	}

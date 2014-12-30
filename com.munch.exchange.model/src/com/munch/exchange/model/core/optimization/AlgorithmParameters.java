@@ -105,21 +105,13 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 		
 	}
 	
-	public ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> createDoubleAlgorithm(){
+	public ISOOptimizationAlgorithm<double[], X, Individual<double[], X>> createDoubleAlgorithm(int dimension,double min, double max){
 		if(type.equals(ALGORITHM_Evolution_Strategy)){
 			//Creation
 			EvolutionStrategy<X> ES = new EvolutionStrategy<X>();
-			ES.setDimension(this.getIntegerParam(ES_Dimension));
-			
-			if(this.hasParamKey(ES_Minimum))
-				ES.setMinimum(this.getDoubleParam(ES_Minimum));
-			else
-				ES.setMinimum(-1.0);
-			
-			if(this.hasParamKey(ES_Maximum))
-				ES.setMaximum(this.getDoubleParam(ES_Maximum));
-			else
-				ES.setMaximum(1.0);
+			ES.setDimension(dimension);
+			ES.setMinimum(min);
+			ES.setMaximum(max);
 			//Number of parents
 			ES.setMu(this.getIntegerParam(ES_Mu));
 			//Number of offspring

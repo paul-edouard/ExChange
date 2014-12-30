@@ -33,11 +33,6 @@ public class FinancialMeanSquaredError implements ErrorFunction, Serializable {
 	@Override
 	public void addOutputError(double[] outputError) {
 		
-		//System.out.println("Outputdiff   : "+Arrays.toString(diffFactorArray));
-		//System.out.println("outputError  : "+Arrays.toString(outputError));
-		
-		
-		
 		
 		
 		double outputErrorSqrSum = 0;

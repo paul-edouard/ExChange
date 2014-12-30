@@ -184,7 +184,9 @@ public class Configuration extends XmlParameterElement {
 			LinkedList<double[]> d_array_list=series.transformSeriesToDoubleArrayList(lastInputPointDate);
 			doubleArrayList.addAll(d_array_list);
 		}
-		int len=doubleArrayList.get(0).length;
+		
+		int len=Math.min(doubleArrayList.get(0).length,500);
+		//int len=doubleArrayList.get(0).length;
 		
 		//Create the output array
 		double[][] outputs=createOutputArrays(len-1);
@@ -194,7 +196,8 @@ public class Configuration extends XmlParameterElement {
 		
 		double[] outputdiffFactor=new double[len-1];
 		for(int i=0;i<len;i++){
-	
+			
+			
 			double[] input=new double[doubleArrayList.size()];
 			for(int j=0;j<doubleArrayList.size();j++){
 				input[j]=doubleArrayList.get(j)[i];

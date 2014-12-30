@@ -361,7 +361,7 @@ public class NeuralNetworkResultsChartPart {
 		@Override
 		public void mouseScrolled(MouseEvent e) {
 			// TODO Auto-generated method stub
-			logger.info("mouseScrolled: "+e);
+			//logger.info("mouseScrolled: "+e);
 			
 			scalePeriode(e.count*3);
 			

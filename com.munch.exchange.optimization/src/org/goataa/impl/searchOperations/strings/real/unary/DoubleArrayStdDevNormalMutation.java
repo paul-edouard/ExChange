@@ -91,12 +91,15 @@ public final class DoubleArrayStdDevNormalMutation extends
     	  loop++;
         // Use a normally distributed random number with a standard
         // deviation as specified in the array stddev.
-    	if(i<stddevs.length)
-    		d = (g[i] + (r.nextGaussian() * stddevs[i]));
-    	else{
-    		d = (g[i] + (r.nextGaussian() ));
-    		System.out.println("Error in class: "+this.getClass().getName()+", stddevs length: "+Arrays.toString(stddevs));
+    	if(i>=stddevs.length){
+    		System.out.println("Error: i="+i+", stddevs length: "+stddevs.length);
+    		System.out.println("Error");
     	}
+    	d = (g[i] + (r.nextGaussian() * stddevs[i]));
+    	//else{
+    	//	d = (g[i] + (r.nextGaussian() ));
+    	//	System.out.println("Error in class: "+this.getClass().getName()+", stddevs length: "+Arrays.toString(stddevs));
+    	//}
         if(loop>MAX_NB_OF_LOOPS)break;
       } while ((d < this.min) || (d > this.max));
       gnew[i] = d;

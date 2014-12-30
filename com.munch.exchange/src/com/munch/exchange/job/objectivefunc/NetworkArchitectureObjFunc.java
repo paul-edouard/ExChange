@@ -226,8 +226,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	@SuppressWarnings("unchecked")
 	private void prepareNetworkWeightsOptimization() {
 		//Set the dimension
-		configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Dimension, architecture.getNetwork().getWeights().length);
-		configuration.getOptLearnParam().setParam(AlgorithmParameters.EA_Dimension, architecture.getNetwork().getWeights().length);
+		//configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Dimension, architecture.getNetwork().getWeights().length);
+		//configuration.getOptLearnParam().setParam(AlgorithmParameters.EA_Dimension, architecture.getNetwork().getWeights().length);
 		
 		//minWeigth=configuration.getOptLearnParam().getDoubleParam(AlgorithmParameters.ES_Minimum);
 		//maxWeigth=configuration.getOptLearnParam().getDoubleParam(AlgorithmParameters.ES_Maximum);
@@ -250,11 +250,12 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			}
 		}
 		
-		configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Minimum, minWeigth);
-		configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Maximum, maxWeigth);
+		//configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Minimum, minWeigth);
+		//configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Maximum, maxWeigth);
 		
 		// Create the algorithm
-		algorithm = configuration.getOptLearnParam().createDoubleAlgorithm();
+		int dimension=architecture.getNetwork().getWeights().length;
+		algorithm = configuration.getOptLearnParam().createDoubleAlgorithm(dimension,minWeigth,maxWeigth);
 		
 		//Set the number of loops
 		if(configuration.getOptLearnParam().hasParamKey(AlgorithmParameters.OPTIMIZATION_Loops)){
@@ -288,6 +289,11 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		TerminationPropertyChangeListener listener = new TerminationPropertyChangeListener(
 				monitor);
 		term.addPropertyChangeListener(listener);
+		
+		
+		
+		
+		
 	}
 	
 	private class TerminationPropertyChangeListener implements PropertyChangeListener{
