@@ -224,11 +224,13 @@ public class NeuralNetworkErrorPart {
 		trclmnStatusOpt.setWidth(100);
 		trclmnStatusOpt.setText("Optimization Status");
 		
+		/*
 		TreeViewerColumn treeViewerColumn_5 = new TreeViewerColumn(treeViewer, SWT.NONE);
 		treeViewerColumn_5.setLabelProvider(new StatusLeaningLabelProvider());
 		TreeColumn trclmnStatusLearning = treeViewerColumn_5.getColumn();
 		trclmnStatusLearning.setWidth(100);
 		trclmnStatusLearning.setText("Learning Status");
+		*/
 		
 	}
 	
@@ -610,6 +612,7 @@ public class NeuralNetworkErrorPart {
 	}
 	
 	//LEARNING
+	/*
 	@Inject
 	private void networkOptimizationLeaning(@Optional @UIEventTopic(IEventConstant.NETWORK_LEARNING_STARTED) NetworkArchitectureOptInfo info){
 		if(info==null)return;
@@ -623,6 +626,7 @@ public class NeuralNetworkErrorPart {
 		
 		treeViewer.refresh();
 	}
+	*/
 	
 	
 	//################################

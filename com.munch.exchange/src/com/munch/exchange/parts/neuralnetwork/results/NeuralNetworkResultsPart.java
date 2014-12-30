@@ -594,6 +594,7 @@ public class NeuralNetworkResultsPart {
 	}
 	
 	//OPTIMIZATION
+	/*
 	@Inject
 	private void networkOptimizationAllTopic(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_ALLTOPICS) NetworkArchitectureOptInfo info){
 		if(info==null)return;
@@ -606,6 +607,7 @@ public class NeuralNetworkResultsPart {
 		//treeViewer.setInput(config);
 		treeViewer.refresh();
 	}
+	*/
 	
 	//LEARNING
 	/*

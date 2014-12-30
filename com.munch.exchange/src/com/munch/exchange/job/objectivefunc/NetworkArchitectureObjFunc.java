@@ -138,7 +138,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			info.setLearningMax(NB_OF_RESULTS_TO_TRAIN);
 			for(int j=0;j<NB_OF_RESULTS_TO_TRAIN;j++){
 				info.setLearningId(j);
-				eventBroker.post(IEventConstant.NETWORK_LEARNING_STARTED,info);
+				//eventBroker.post(IEventConstant.NETWORK_LEARNING_STARTED,info);
 				
 				if(monitor.isCanceled() || isCancel)break;
 				if(architecture.getResultsEntities().size()<=j)break;
@@ -315,7 +315,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			}
 			else if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_STEP)){
 				int val=(int)evt.getNewValue();
-				if(val%20==0){
+				if(val%50==0){
 					info.setStep((int)evt.getNewValue());
 					eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_NEW_STEP,info);
 				}
