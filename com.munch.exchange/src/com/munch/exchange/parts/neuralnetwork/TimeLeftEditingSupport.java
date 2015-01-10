@@ -50,10 +50,6 @@ public class TimeLeftEditingSupport extends EditingSupport {
 		TimeSeries el = (TimeSeries) element;
 		el.setTimeRemainingActivated((Boolean) value);
 		
-		
-		neuralNetworkProvider.createAllInputPoints(stock);
-		//stock.getNeuralNetwork().getConfiguration().inputNeuronChanged();
-		
 	    viewer.update(element, null);
 
 	}

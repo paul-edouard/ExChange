@@ -34,6 +34,7 @@ import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.services.INeuralNetworkProvider;
+import com.munch.exchange.utils.ProfitUtils;
 
 public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		IObjectiveFunction<boolean[]> , LearningEventListener{
@@ -102,6 +103,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		architecture=configuration.searchArchitecture(x,
 				nnprovider.getNetworkArchitecturesLocalSavePath((Stock)rate));
 		if(architecture==null)return Constants.WORST_FITNESS;
+		architecture.lockResults(true);
 		
 		//if(!nnprovider.loadArchitectureResults((Stock) rate, architecture))return  Constants.WORST_FITNESS;
 		
@@ -117,7 +119,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		//Prepare the Optimization info
 		iniOptInfo(x);
 		
-		eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_STARTED,info);
+		eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_STARTED,info);
 		
 		//Start the Optimization
 		for(int i=0;i<optLoops;i++){
@@ -166,6 +168,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 				architecture.getNetwork().setWeights(ent.getDoubleArray());
 				architecture.getNetwork().learn(trainingSet);
 				
+				//saveLearningResults();
+				
 				architecture.saveTrainingStatistic(architecture.getBestResultEntity().getValue());
 				
 				/*
@@ -199,6 +203,9 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		configuration.getOptResults(x.length).addResult(new ResultEntity(x, bestResult.getValue()));
 		//nnprovider.saveArchitectureResults((Stock) rate, architecture);
 		//architecture.clearResultsAndNetwork();
+		
+		architecture.lockResults(false);
+		architecture.clearResultsAndNetwork(true);
 		
 		return bestResult.getValue();
 	}
@@ -331,35 +338,55 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		
 	}
 	
+	
+	private void saveLearningResults(BackPropagation bp){
+		
+		//if(!(architecture.getNetwork().getLearningRule() instanceof BackPropagation))return;
+		
+		//BackPropagation bp = (BackPropagation)architecture.getNetwork().getLearningRule();
+		double error=bp.getTotalNetworkError();
+		
+		//Double[] weigths=architecture.getNetwork().getWeights();
+		Double[] weigths=bp.getPreviousEpochNetworkWeights();
+		double[] w=new double[weigths.length];
+		for(int i=0;i<weigths.length;i++){
+			w[i]=weigths[i];
+		}
+		
+		
+		ResultEntity ent=new ResultEntity(w, error);
+		ent.setId(ent.getId()+", Learning");
+		//Save the new results entity
+
+		for(int j=0;j<w.length;j++){
+			if(Double.isNaN(w[j]) || Double.isInfinite(w[j])){
+				logger.info("Weigth is NaN or Infinite after learning!");
+				return;
+			}
+			
+			if(w[j]>maxWeigth)
+				maxWeigth=Math.min(w[j]+Math.abs(w[j])*0.1,MAX_WEIGTH_FACTOR);
+			if(w[j]<minWeigth)
+				minWeigth=Math.max(w[j]-Math.abs(w[j])*0.1,-MAX_WEIGTH_FACTOR);
+		}
+		architecture.addResultEntity(ent);
+		
+		
+		if(info.getResults().addResult(ent)){
+			eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
+		}
+		
+		
+	}
+	
+	
 	@Override
     public void handleLearningEvent(LearningEvent event) {
 		
 		if(event.getSource() instanceof BackPropagation){
 			
 			BackPropagation bp = (BackPropagation)event.getSource();
-			
-			//logger.info("Learning Error: "+ bp.getTotalNetworkError()+", x Size:" +trainingSet.size()*bp.getTotalNetworkError());
-			
-			ResultEntity ent=new ResultEntity(bp.getNeuralNetwork().getWeights(), bp.getTotalNetworkError());
-			//Save the new results entity
-			Double[] weigths=bp.getNeuralNetwork().getWeights();
-			for(int j=0;j<weigths.length;j++){
-				if(Double.isNaN(weigths[j]) || Double.isInfinite(weigths[j])){
-					logger.info("Weigth is NaA or Infinite after learning!");
-					return;
-				}
-				
-				if(weigths[j]>maxWeigth)
-					maxWeigth=Math.min(weigths[j]+Math.abs(weigths[j])*0.1,MAX_WEIGTH_FACTOR);
-				if(weigths[j]<minWeigth)
-					minWeigth=Math.max(weigths[j]-Math.abs(weigths[j])*0.1,-MAX_WEIGTH_FACTOR);
-			}
-			architecture.addResultEntity(ent);
-			
-			
-			if(info.getResults().addResult(ent)){
-				eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
-			}
+			saveLearningResults(bp);
 			
 		}
         

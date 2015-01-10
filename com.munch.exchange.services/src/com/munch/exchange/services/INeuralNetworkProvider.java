@@ -16,8 +16,15 @@ public interface INeuralNetworkProvider {
 	//boolean loadArchitectureResults(Stock stock, NetworkArchitecture archi);
 	//boolean saveArchitectureResults(Stock stock, NetworkArchitecture archi);
 	
-	void createAllInputPoints(Stock stock);
+	/**
+	 * create all value point from the defined time series
+	 * the output value point list will be also created
+	 * 
+	 * @param stock
+	 */
+	void createAllValuePoints(Configuration configuration);
 	
-	ValuePointList calculateMaxProfitOutputList(Stock stock);
-	ValuePointList calculateMaxProfitOutputList(Stock stock,double penalty);
+	//ValuePointList calculateMaxProfitOutputList(Stock stock);
+	
+	//ValuePointList calculateMaxProfitOutputList(Stock stock,double penalty);
 }

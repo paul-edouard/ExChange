@@ -25,6 +25,7 @@ public class NeuralNetworkContentProvider implements
 	
 	private NeuralNetworkSerieCategory rateCategory;
 	private NeuralNetworkSerieCategory financialCategory;
+	private NeuralNetworkSerieCategory OutputCategory;
 	
 	public NeuralNetworkContentProvider(){
 		//this.stock=stock;
@@ -91,6 +92,7 @@ public class NeuralNetworkContentProvider implements
 	private void buildNeuralNetworkSerieCategories(){
 		rateCategory=new NeuralNetworkSerieCategory(this.root,TimeSeriesCategory.RATE);
 		financialCategory=new NeuralNetworkSerieCategory(this.root,TimeSeriesCategory.FINANCIAL);
+		OutputCategory=new NeuralNetworkSerieCategory(this.root,TimeSeriesCategory.TARGET_OUTPUT);
 	}
 	
 	public void refreshCategories(Configuration config){
@@ -98,6 +100,7 @@ public class NeuralNetworkContentProvider implements
 		
 		rateCategory.childs.clear();
 		financialCategory.childs.clear();
+		OutputCategory.childs.clear();
 		
 		for(TimeSeries series:config.getAllTimeSeries()){
 			switch (series.getCategory()) {
@@ -106,6 +109,9 @@ public class NeuralNetworkContentProvider implements
 				break;
 			case FINANCIAL:
 				financialCategory.addChild(series);
+				break;
+			case TARGET_OUTPUT:
+				OutputCategory.addChild(series);
 				break;
 
 			default:

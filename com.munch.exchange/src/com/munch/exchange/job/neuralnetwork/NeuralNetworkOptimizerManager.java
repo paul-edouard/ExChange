@@ -120,10 +120,12 @@ public class NeuralNetworkOptimizerManager extends Job{
 		if(alreadyClearDim.contains(optimizer.getDimension()))return;
 		
 		InfoPart.postInfoText(eventBroker, "Clear Architecture Started for dimension: "+optimizer.getDimension());
+		/*
 		LinkedList<NetworkArchitecture> list=configuration.searchNetworkArchitectures(optimizer.getDimension());
 		for(NetworkArchitecture archi: list){
 			archi.clearResultsAndNetwork();
 		}
+		*/
 		alreadyClearDim.add(optimizer.getDimension());
 		
 	}

@@ -102,7 +102,7 @@ public class NeuralNetworkOptimizer extends Job {
 		//InfoPart.postInfoText(eventBroker, "Network Optimization Started");
 		
 		prepareNetworkArchitectureOptimization(monitor);
-		eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED,info);
+		eventBroker.post(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_STARTED,info);
 		
 		
 		if(term==null){
@@ -220,7 +220,7 @@ public class NeuralNetworkOptimizer extends Job {
 				//logger.info("New Best Results: "+ind.v);
 				if(info.getResults().addResult(new ResultEntity(ind.x,ind.v))){
 					info.resetLastReaction();
-					eventBroker.post(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
+					eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
 				}
 			}
 			else if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_STEP)){
@@ -228,7 +228,7 @@ public class NeuralNetworkOptimizer extends Job {
 				//if(val%10==0){
 				info.setStep((int)evt.getNewValue());
 				info.resetLastReaction();
-				eventBroker.post(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_STEP,info);
+				eventBroker.send(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_NEW_STEP,info);
 				//}
 			}
 			// Cancel called

@@ -7,7 +7,8 @@ import com.munch.exchange.model.core.DatePoint;
 public enum TimeSeriesCategory {
 	ROOT("Root"),
 	RATE("Rate"),
-	FINANCIAL("Financial");
+	FINANCIAL("Financial"),
+	TARGET_OUTPUT("Target Output");
 	
 	private String categoryLabel;
 	
@@ -33,7 +34,9 @@ public enum TimeSeriesCategory {
 			break;
 		case FINANCIAL:
 			serieNames.add("no");
-			
+			break;
+		case TARGET_OUTPUT:
+			serieNames.add("Desired Output");
 			break;
 
 		default:
@@ -54,6 +57,9 @@ public enum TimeSeriesCategory {
 		}
 		else if(input.equals("Root")){
 			return ROOT;
+		}
+		else if(input.equals("Target Output")){
+			return TARGET_OUTPUT;
 		}
 		
 		return RATE;

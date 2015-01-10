@@ -16,6 +16,7 @@ import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -72,6 +73,9 @@ public class RateEditorPart {
 	
 	@Inject
 	private IEventBroker eventBroker;
+	
+	@Inject
+	ESelectionService selectionService;
 	
 	RateTitle titleComposite;
 	OverviewRateChart chartComposite;
@@ -250,7 +254,12 @@ public class RateEditorPart {
 				if(part==null)return;
 				
 				partService.showPart(part, PartState.CREATE);
-				eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,(Stock)rate);
+				
+				Stock stock=(Stock)rate;
+				//selectionService.setSelection(stock.getNeuralNetwork().getConfiguration());
+				eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
+				
+				//eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,(Stock)rate);
 				
 			}
 		});

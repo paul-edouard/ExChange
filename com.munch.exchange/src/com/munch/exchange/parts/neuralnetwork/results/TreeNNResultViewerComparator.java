@@ -37,10 +37,15 @@ public class TreeNNResultViewerComparator extends ViewerComparator {
 	
 	@Override
 	public int compare(Viewer viewer, Object e1, Object e2) {
+		
+		int rc = 0;
+		
+		if(e1 instanceof NetworkArchitecture && e2 instanceof NetworkArchitecture){
+		
 		NetworkArchitecture p1 = (NetworkArchitecture) e1;
 		NetworkArchitecture p2 = (NetworkArchitecture) e2;
 
-		int rc = 0;
+		
 		if (p1 == null || p2 == null )
 			return rc;
 		
@@ -136,10 +141,18 @@ public class TreeNNResultViewerComparator extends ViewerComparator {
 		default:
 			rc = 0;
 		}
+		
+		}
+		
+		
 		// If descending order, flip the direction
 		if (direction == DESCENDING) {
 			rc = -rc;
 		}
+		
+		
+		
+		
 		return rc;
 	}
 	

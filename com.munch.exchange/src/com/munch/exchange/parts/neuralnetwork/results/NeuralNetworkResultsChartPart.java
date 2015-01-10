@@ -41,6 +41,7 @@ import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.services.INeuralNetworkProvider;
+import com.munch.exchange.utils.ProfitUtils;
 
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.graphics.Rectangle;
@@ -55,9 +56,11 @@ public class NeuralNetworkResultsChartPart {
 	
 	private XYLineAndShapeRenderer responseRenderer =new XYLineAndShapeRenderer(true, false);
 	private XYLineAndShapeRenderer profitRenderer =new XYLineAndShapeRenderer(true, false);
+	private XYLineAndShapeRenderer maxProfitRenderer =new XYLineAndShapeRenderer(true, false);
 	
 	private XYSeriesCollection responseCollection=new XYSeriesCollection();
 	private XYSeriesCollection profitCollection=new XYSeriesCollection();
+	private XYSeriesCollection maxProfitCollection=new XYSeriesCollection();
 
 	
 	private NetworkArchitecture archi;
@@ -106,6 +109,7 @@ public class NeuralNetworkResultsChartPart {
     	//====================
     	NumberAxis domainAxis =	createAxis("Step");
     	NumberAxis profitAxis =	createAxis("Profit");
+    	NumberAxis maxProfitAxis =	createAxis("Max Profit");
     	NumberAxis valueAxis  =	createAxis("Response");
     	
     	
@@ -121,6 +125,11 @@ public class NeuralNetworkResultsChartPart {
         plot.setRenderer(1, profitRenderer);
         plot.setRangeAxis(1, profitAxis);
         plot.mapDatasetToRangeAxis(1, 1);
+        
+        plot.setDataset(2,maxProfitCollection);
+        plot.setRenderer(2, maxProfitRenderer);
+        plot.setRangeAxis(2, maxProfitAxis);
+        plot.mapDatasetToRangeAxis(2, 2);
     	
     	
     	 //=========================
@@ -178,18 +187,16 @@ public class NeuralNetworkResultsChartPart {
     	Configuration config=archi.getParent();
     	Stock stock=archi.getParent().getParent();
     	
-    	ValuePointList l=nn_provider.calculateMaxProfitOutputList(stock,RateChart.PENALTY);
-    	config.setOutputPointList(l);
 		
 		if(!archi.getParent().areAllTimeSeriesAvailable()){
-			nn_provider.createAllInputPoints(stock);
+			nn_provider.createAllValuePoints(config);
 		}
 		
 		//double[] input=config.getLastInput();
 		DataSet dataset=config.getTrainingSet();
 		
     
-		outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset, RateChart.PENALTY);
+		outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset,ProfitUtils.PENALTY);
 		if(outputs==null)return;
 		
 		updateSeries();
@@ -199,6 +206,7 @@ public class NeuralNetworkResultsChartPart {
     	
     	responseCollection.removeAllSeries();
     	profitCollection.removeAllSeries();
+    	maxProfitCollection.removeAllSeries();
     	
     	double[] output 		= outputs[0];
 		double[] desiredOutput 	= outputs[1];
@@ -206,14 +214,16 @@ public class NeuralNetworkResultsChartPart {
 		double[] startVal		= outputs[3];
 		double[] endVal			= outputs[4];
 		double[] profit			= outputs[5];
+		double[] desiredProfit	= outputs[6];
 		
 		if(period[0]==period[1]){
 			resetPeriode();
 		}
 		
-		addSeriesAsLine(responseRenderer, responseCollection,createResponseSerie("Output",output) , Color.blue);
-		addSeriesAsLine(responseRenderer, responseCollection,createResponseSerie("Desired Ouput",desiredOutput) , Color.black);
-		addSeriesAsLine(profitRenderer, profitCollection,createSerie("Profit",profit) , Color.gray);
+		addSeriesAsLine(responseRenderer, responseCollection,createResponseSerie("Output",output) , Color.blue,false);
+		addSeriesAsLine(responseRenderer, responseCollection,createResponseSerie("Desired Ouput",desiredOutput) , Color.black,true);
+		addSeriesAsLine(profitRenderer, profitCollection,createSerie("Profit",profit) , Color.gray,false);
+		addSeriesAsLine(maxProfitRenderer, maxProfitCollection,createSerie("Max Profit",desiredProfit) , Color.darkGray,false);
     }
     
     
@@ -268,14 +278,23 @@ public class NeuralNetworkResultsChartPart {
     }
     
     
-    private void addSeriesAsLine(XYLineAndShapeRenderer rend,  XYSeriesCollection col, XYSeries series,Color color){
+    private void addSeriesAsLine(XYLineAndShapeRenderer rend,  XYSeriesCollection col, XYSeries series,Color color,boolean dash){
 		
 		col.addSeries(series);
 		int pos=col.indexOf(series.getKey());
 		if(pos>=0){
 			rend.setSeriesShapesVisible(pos, false);
 			rend.setSeriesLinesVisible(pos, true);
-			rend.setSeriesStroke(pos,new BasicStroke(2.0f));
+			
+			if(dash){
+				rend.setSeriesStroke( pos,new BasicStroke(3.0f,
+		                BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
+		                1.0f, new float[] {6.0f, 6.0f}, 0.0f));
+			}
+			else
+				rend.setSeriesStroke(pos,new BasicStroke(2.0f));
+			
+			
 			rend.setSeriesPaint(pos, color);
 		}
 	}
@@ -310,7 +329,7 @@ public class NeuralNetworkResultsChartPart {
 		@Override
 		public void mouseDown(MouseEvent event) {
 			// TODO Auto-generated method stub
-			logger.info("mouseDown: "+event);
+			//logger.info("mouseDown: "+event);
 			if(event.button==1){
 				x=event.x;
 				trans=0;
@@ -351,7 +370,7 @@ public class NeuralNetworkResultsChartPart {
 				int diff=endP-startP;
 				trans=fac*diff*2;
 				
-				logger.info("Rec: "+rec.width+", fac: "+fac+", trans: "+trans);
+				//logger.info("Rec: "+rec.width+", fac: "+fac+", trans: "+trans);
 				
 				setPeriod(startP+(int)(trans), endP+(int)(trans));
 				//x=event.x;

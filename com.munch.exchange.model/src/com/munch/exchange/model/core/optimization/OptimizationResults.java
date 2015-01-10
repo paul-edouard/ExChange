@@ -86,7 +86,7 @@ public class OptimizationResults extends XmlParameterElement implements Serializ
 	}
 	
 	
-	
+
 	public void setMaxResult(int maxResult) {
 	this.maxResult = maxResult;
 	}

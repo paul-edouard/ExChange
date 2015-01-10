@@ -466,13 +466,14 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 	
 	@Inject
 	private void neuralNetworkConfigSelected(
-			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED) Stock stock) {
+			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED) Configuration config) {
+		if(config==null)return;
 		
-		if(stock==null)return;
-		if(!isCompositeAbleToReact(stock.getUUID()))return;
+		if(config.getParent()==null)return;
+		if(!isCompositeAbleToReact(config.getParent().getUUID()))return;
 		if(isEditing)return;
 		
-		configLocal=this.stock.getNeuralNetwork().getConfiguration();
+		configLocal=config;
 		
 		refreshTimeSeries();
 		
@@ -590,7 +591,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			
 			//Recreate all inputs points
 			if (monitor.isCanceled())return Status.CANCEL_STATUS;
-			neuralNetworkProvider.createAllInputPoints(stock);
+			neuralNetworkProvider.createAllValuePoints(configLocal);
 			
 			//Update all architectures
 			int pos=1;

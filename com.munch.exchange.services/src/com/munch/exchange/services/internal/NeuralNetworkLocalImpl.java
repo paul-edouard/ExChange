@@ -4,9 +4,11 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.LinkedList;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import com.munch.exchange.model.core.DatePoint;
+import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
@@ -17,8 +19,11 @@ import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeriesCategory;
 import com.munch.exchange.model.core.neuralnetwork.ValuePoint;
 import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
+import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Xml;
+import com.munch.exchange.services.IHistoricalDataProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
+import com.munch.exchange.utils.ProfitUtils;
 
 
 public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
@@ -46,8 +51,6 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		return this.getSavePath(stock)+File.separator+str;
 	}
 	
-	
-
 	@Override
 	public synchronized boolean load(Stock stock) {
 		if(stock==null)return false;
@@ -147,38 +150,67 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 
 	
 	@Override
-	public void createAllInputPoints(Stock stock) {
-		LinkedList<HistoricalPoint> hisPointList=stock.getHistoricalData().getNoneEmptyPoints();
-		if(hisPointList.isEmpty())return;
+	public void createAllValuePoints(Configuration configuration) {
+		//Test if the stock has a defined parent
+		if(configuration.getParent()==null){
+			logger.error("The configation has not defined parent!");
+			return;
+		}
+		Stock stock=configuration.getParent();
 		
-		Configuration config=stock.getNeuralNetwork().getConfiguration();
+		//Check if the historical data are loaded
+		LinkedList<HistoricalPoint> hisPointList=stock.getHistoricalData().getNoneEmptyPoints();
+		if(hisPointList.isEmpty()){
+			logger.error("No historical data found! Please load them first");
+			return;
+		}
+		
+		
 		//TODO
+		
+		//=======================================================
+		//==Step 0: Create the Output Value Points             ==
+		//=======================================================
+		ValuePointList outputPointList=calculateMaxProfitOutputList(stock, ProfitUtils.PENALTY );
+		configuration.setOutputPointList(outputPointList);
+		if(configuration.getOutputPointList().isEmpty()){
+			logger.error("The output point list is empty");
+			return;
+		}
 		
 		//=======================================================
 		//==Step 1: search the last available input point date ==
 		//=======================================================
-		if(config.getPeriod()==PeriodType.DAY){
+		if(configuration.getPeriod()==PeriodType.DAY){
 			//Rate Series
-			for(TimeSeries series:config.getTimeSeriesFromCategory(TimeSeriesCategory.RATE)){
+			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.RATE)){
 				int nbOfValues=series.getNumberOfPastValues();
-				config.setLastInputPointDate(hisPointList.get(nbOfValues-1).getDate());
+				configuration.setLastInputPointDate(hisPointList.get(nbOfValues-1).getDate());
 			}
+			
+			//Target Output
+			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.TARGET_OUTPUT)){
+				int nbOfValues=series.getNumberOfPastValues();
+				configuration.setLastInputPointDate(outputPointList.get(nbOfValues).getDate());
+			}
+			
 		}
 		//Last output point
-		if(!config.getOutputPointList().isEmpty())
-			config.setLastInputPointDate(config.getOutputPointList().getFirst().getDate());
+		configuration.setLastInputPointDate(configuration.getOutputPointList().getFirst().getDate());
+		
+		logger.info("Last output point: "+DateTool.dateToDayString(configuration.getLastInputPointDate()));
 		
 		
 		//===========================================
 		//==  Step 2: create the input value lists ==
 		//===========================================
-		if(config.getPeriod()==PeriodType.DAY){
+		if(configuration.getPeriod()==PeriodType.DAY){
 			//Rate Series
-			for(TimeSeries series:config.getTimeSeriesFromCategory(TimeSeriesCategory.RATE)){
+			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.RATE)){
 				series.getInputValues().clear();
 				for(HistoricalPoint his_point:hisPointList){
 					ValuePoint point=new ValuePoint(his_point.getDate(),his_point.get(series.getName()));
-					
+					//if(point.getDate().before(configuration.getLastInputPointDate()))continue;
 					//======================================
 					//==Set the next value date: + 1 DAY  ==
 					//======================================
@@ -188,20 +220,76 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 					
 					series.getInputValues().add(point);
 				}
+				
+				logger.info("Series: "+series.getName()
+						+", first point: "+DateTool.dateToDayString(series.getInputValues().getFirst().getDate())
+						+", last point: "+DateTool.dateToDayString(series.getInputValues().getLast().getDate())
+						+", Size:"+series.getInputValues().size());
 			}
 			//Financial Series
-			for(TimeSeries series:config.getTimeSeriesFromCategory(TimeSeriesCategory.FINANCIAL)){
+			/*
+			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.FINANCIAL)){
 				//series.adaptInputValuesToMasterValuePointList(masterValuePointList);
 			}
+			*/
+			
+			//Target Output
+			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.TARGET_OUTPUT)){
+				series.getInputValues().clear();
+				ValuePoint lastPoint=null;
+				for(ValuePoint point:outputPointList){
+					if(lastPoint!=null){
+						ValuePoint outputPoint=new ValuePoint(point.getDate(), lastPoint.getValue());
+						//if(point.getDate().before(configuration.getLastInputPointDate()))continue;
+						//======================================
+						//==Set the next value date: + 1 DAY  ==
+						//======================================
+						Calendar expectedNextValue=Calendar.getInstance();
+						expectedNextValue.setTimeInMillis(point.getDate().getTimeInMillis()+PeriodType.DAY.getPeriod());
+						outputPoint.setNextValueDate(expectedNextValue);
+						
+						series.getInputValues().add(outputPoint);
+					}
+					lastPoint=point;
+				}
+				
+				//Create the last point
+				Calendar lastValueDate=Calendar.getInstance();
+				lastValueDate.setTimeInMillis(lastPoint.getDate().getTimeInMillis()+PeriodType.DAY.getPeriod());
+				ValuePoint lastOutputPoint=new ValuePoint(lastValueDate, lastPoint.getValue());
+				
+				Calendar expectedNextValue=Calendar.getInstance();
+				expectedNextValue.setTimeInMillis(lastValueDate.getTimeInMillis()+PeriodType.DAY.getPeriod());
+				lastOutputPoint.setNextValueDate(expectedNextValue);
+				
+				
+				series.getInputValues().add(lastOutputPoint);
+				
+				logger.info("Series: "+series.getName()
+						+", first point: "+DateTool.dateToDayString(series.getInputValues().getFirst().getDate())
+						+", last point: "+DateTool.dateToDayString(series.getInputValues().getLast().getDate())
+						+", Size:"+series.getInputValues().size());
+				
+				
+			}
+			
 		}
 		
-		//config.fireTimeSeriesChanged();
+		
+		
+		
+		
 	}
 
-	@Override
+	
 	public ValuePointList calculateMaxProfitOutputList(Stock stock) {
 		ValuePointList list=new ValuePointList();
 		LinkedList<HistoricalPoint> pList=stock.getHistoricalData().getNoneEmptyPoints();
+		if(pList.size()==0){
+			logger.info("Error: No historical data found for stock: "+stock.getFullName()+
+					"\n Cannot calculate the Max Profit!");
+			return null;
+		}
 		
 		HistoricalPoint lastPoint=null;
 		for(HistoricalPoint point:pList){
@@ -211,7 +299,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 					list.add(new ValuePoint(lastPoint.getDate(), 1.0));
 				}
 				else{
-					list.add(new ValuePoint(lastPoint.getDate(), 0.0));
+					list.add(new ValuePoint(lastPoint.getDate(), -1.0));
 				}
 			}
 			lastPoint=point;
@@ -219,6 +307,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		
 		return list;
 	}
+	
 	
 	private class BlockPoint{
 		public ValuePoint val_point;
@@ -236,7 +325,11 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 	
 	private class Block extends LinkedList<BlockPoint>{
 		
-		private boolean isFixedCalculated=false;
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 5184761223315339159L;
+		//private boolean isFixedCalculated=false;
 		private boolean isFixed=false;
 		private double sum;
 		private double penalty;
@@ -255,7 +348,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 						vpoint=new ValuePoint(lastPoint.getDate(), 1.0);
 					}
 					else{
-						vpoint=new ValuePoint(lastPoint.getDate(), 0.0);
+						vpoint=new ValuePoint(lastPoint.getDate(), -1.0);
 					}
 					vpoint.setMetaData(	String.valueOf(diff)+";"+
 										String.valueOf(startValue)+";"+
@@ -326,6 +419,12 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 	private class BlockList extends LinkedList<Block>{
 		
 		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -2340474530665998257L;
+
+
 		public ValuePointList toValuePointList(){
 			ValuePointList list=new ValuePointList();
 			
@@ -422,7 +521,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			
 			for(int i=0;i<pow;i++){
 				for(int j=0;j<row;j++){
-					matrix[i][j]=0;
+					matrix[i][j]=-1;
 				}
 				
 				int t=(int)Math.pow(2, i);
@@ -451,9 +550,9 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 				
 				if(current.getFirst().val_point.getValue()>0){
 					profit+=current.sum;
-					if(last==null || last.getFirst().val_point.getValue()==0)
+					if(last==null || last.getFirst().val_point.getValue()==-1)
 						profit-=current.penalty*current.getStartValue();
-					if(next==null ||  next.getFirst().val_point.getValue()==0)
+					if(next==null ||  next.getFirst().val_point.getValue()==-1)
 						profit-=current.penalty*current.getEndValue();
 				}
 			}
@@ -464,8 +563,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 	}
 	
 	
-	@Override
-	public ValuePointList calculateMaxProfitOutputList(Stock stock,
+	private ValuePointList calculateMaxProfitOutputList(Stock stock,
 			double penalty) {
 		//ValuePointList list=new ValuePointList();
 		LinkedList<HistoricalPoint> pList=stock.getHistoricalData().getNoneEmptyPoints();
@@ -580,6 +678,60 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 	*/
 	
 	public static void main(String[] args){
+		BasicConfigurator.configure();
+		
+		ExchangeRateProviderLocalImpl exChangeProvider=new ExchangeRateProviderLocalImpl();
+		exChangeProvider.init("C:\\Users\\paul-edouard\\Desktop\\Programierung\\03_Boerse\\99_TEST_DATA");
+		
+		Stock stock=(Stock)exChangeProvider.load("DAI.DE");
+		logger.info("stock loaded: "+stock.getFullName());
+		
+		IHistoricalDataProvider his_data_provider=new HistoricalDataProviderLocalImpl();
+		his_data_provider.load(stock);
+		LinkedList<HistoricalPoint> pList=stock.getHistoricalData().getNoneEmptyPoints();
+		ValuePointList hisPoints=new ValuePointList();
+		for(HistoricalPoint point:pList){
+			hisPoints.add(new ValuePoint(point.getDate(), point.get(DatePoint.FIELD_Close)));
+		}
+		
+		NeuralNetworkLocalImpl nn_provider=new NeuralNetworkLocalImpl();
+		ValuePointList maxProfitSignal=nn_provider.calculateMaxProfitOutputList(stock);
+		logger.info("List: "+maxProfitSignal.size());
+		
+		
+		double[] penalties={0,0.0025,0.005,0.011};
+		for(int i=0;i<penalties.length;i++){
+			double penalty=penalties[i];
+			
+			double profit=ProfitUtils.calculate(
+					maxProfitSignal.toDoubleArray(),
+					hisPoints.toDoubleArray(),
+					0.5,
+					penalty);
+			
+			ValuePointList maxPenaltyProfitSignal=nn_provider.calculateMaxProfitOutputList(stock, penalty);
+			
+			double maxPenalty=ProfitUtils.calculate(
+					maxPenaltyProfitSignal.toDoubleArray(),
+					hisPoints.toDoubleArray(),
+					0.5,
+					penalty);
+			
+			
+			logger.info("Signal         Max Profit: "+profit+", Penalty: "+penalty);
+			logger.info("Signal Max Penalty Profit: "+maxPenalty+", Penalty: "+penalty);
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		/*
 		int pow=4;
 		int row=(int)Math.pow(2, pow);
 		double[][] matrix=new double[pow][row];
@@ -608,7 +760,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			out+="]\n";
 		}
 		System.out.println(out);
-		
+		*/
 		
 	}
 	

@@ -17,6 +17,7 @@ import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -48,7 +49,6 @@ import com.munch.exchange.dialog.StringEditorDialog;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkDataLoader;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptManagerInfo;
-import com.munch.exchange.job.objectivefunc.NeuralNetworkOutputObjFunc;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
@@ -73,9 +73,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	private INeuralNetworkProvider neuralNetworkProvider;
 	
-	//private NeuralNetworkContentProvider contentProvider;
-	
-	private NeuralNetworkOutputObjFunc objFunc;
 	
 	private NeuralNetworkInputConfiguratorComposite inputConfigurator;
 	
@@ -108,6 +105,9 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	@Inject
 	private INeuralNetworkProvider nnprovider;
+	
+	@Inject
+	ESelectionService selectionService;
 	
 	
 	//private NeuralNetworkOptimizer optimizer;
@@ -180,7 +180,8 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				if(!stock.getNeuralNetwork().getCurrentConfiguration().equals(comboConfig.getText())){
 					
 					stock.getNeuralNetwork().setCurrentConfiguration(comboConfig.getText());
-					eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock);
+					
+					eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
 					btnSaveConfig.setVisible(true);
 				}
 				
@@ -244,6 +245,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 					//InfoPart.postInfoText(eventBroker, "New current: "+stock.getNeuralNetwork().getCurrentConfiguration());
 					
 					comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
+					eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
 					
 					//refreshGui();
 					fireReadyToTrain();
@@ -283,6 +285,9 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 					
 					config.setName(dialog.getNewString());
 					stock.getNeuralNetwork().setCurrentConfiguration(dialog.getNewString());
+					eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
+					
+					
 					config.setDirty(true);
 					btnSaveConfig.setVisible(true);
 					//InfoPart.postInfoText(eventBroker, "New Config Name: "+stock.getNeuralNetwork().getCurrentConfiguration());
@@ -309,6 +314,10 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				
 				comboConfig.add(stock.getNeuralNetwork().getCurrentConfiguration());
 				comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
+				
+				eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
+				
+				
 				
 				stock.getNeuralNetwork().getConfiguration().addPropertyChangeListener(configChangedListener);
 				
@@ -429,11 +438,12 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				//logger.info("Start Train click!");
 				
 				if(!stock.getNeuralNetwork().getConfiguration().areAllTimeSeriesAvailable()){
-					neuralNetworkProvider.createAllInputPoints(stock);
+					neuralNetworkProvider.createAllValuePoints(stock.getNeuralNetwork().getConfiguration());
 				}
 				
-				
-				DataSet trainingSet=stock.getNeuralNetwork().getConfiguration().getTrainingSet();
+				Configuration config=stock.getNeuralNetwork().getConfiguration();
+				config.resetTrainingData();
+				DataSet trainingSet=config.getTrainingSet();
 				
 				
 				int minDim=stock.getNeuralNetwork().getConfiguration().getNumberOfInputNeurons();
@@ -556,11 +566,11 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	private void fireReadyToTrain(){
 		Configuration config=stock.getNeuralNetwork().getConfiguration();
-		
+		/*
 		if(config!=null &&( config.getOutputPointList()==null || config.getOutputPointList().isEmpty())){
 			prepareOutputPointList();
 		}
-		
+		*/
 		
 		boolean readyToTrain=config!=null &&  config.getOutputPointList()!=null &&
 				config.getNumberOfTimeSeries()>0 && config.getOutputPointList().size()>0;
@@ -648,22 +658,14 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		}
 		
 		comboConfig.setText(stock.getNeuralNetwork().getCurrentConfiguration());
-		eventBroker.post(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock);
+		eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
+		
+		//eventBroker.post(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock);
 		btnDeleteConfig.setVisible(stock.getNeuralNetwork().getConfigurations().size()>1);
 	}
 	
-	private NeuralNetworkOutputObjFunc getObjFunc(){
-		if(objFunc!=null)return objFunc;
-		
-		objFunc=new NeuralNetworkOutputObjFunc(
-				 HistoricalPoint.FIELD_Close,
-				 RateChart.PENALTY,
-				 stock.getHistoricalData().getNoneEmptyPoints(),
-				 maxProfit
-				 );
-		return objFunc;
-	}
 	
+	/*
 	private void prepareOutputPointList(){
 		if(stock.getNeuralNetwork().getConfiguration()==null){
 			return;
@@ -682,6 +684,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		fireReadyToTrain();
 	}
+	*/
 	
 	//################################
 	//##       Event Reaction       ##
@@ -714,7 +717,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		
 		initConfigurations();
 		
-		prepareOutputPointList();
+		//prepareOutputPointList();
 		
 		initComboConfig();
 		

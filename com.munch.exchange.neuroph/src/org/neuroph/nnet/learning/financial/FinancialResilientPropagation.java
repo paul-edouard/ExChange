@@ -9,14 +9,19 @@ public class FinancialResilientPropagation extends ResilientPropagation
 	 * 
 	 */
 	private static final long serialVersionUID = 5024635739582291189L;
-
-	private double[] diffFactorArray=null;
+	
+	private double[] desiredOutput		=	null;
+	private double[] diffFactorArray	=	null;
+	private double[] startVal			= 	null;
+	private double[] endVal				= 	null;
 	
 	
 	@Override
-	public void setDiffFactorArray(double[] diffFactorArray) {
+	public void setArrays(double[] desiredOutput, double[] diffFactorArray, double[] startVal, double[] endVal) {
+		this.desiredOutput=desiredOutput;
 		this.diffFactorArray=diffFactorArray;
-		
+		this.startVal=startVal;
+		this.endVal=endVal;
 	}
 
 
@@ -24,7 +29,8 @@ public class FinancialResilientPropagation extends ResilientPropagation
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-		this.setErrorFunction(new FinancialMeanSquaredError(getTrainingSet().size(),diffFactorArray) );
+		this.setErrorFunction(new FinancialProfitError(getTrainingSet().size(),
+				desiredOutput,diffFactorArray,startVal,endVal) );
 		
 	}
 

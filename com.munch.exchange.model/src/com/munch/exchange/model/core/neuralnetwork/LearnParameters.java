@@ -43,7 +43,11 @@ public class LearnParameters extends XmlParameterElement implements FinancialLea
 	private String type="";
 	private String name;
 	
-	private double[] diffFactorArray=null;
+	private double[] desiredOutput		=	null;
+	private double[] diffFactorArray	=	null;
+	private double[] startVal			= 	null;
+	private double[] endVal				= 	null;
+	
 	
 	private static Logger logger = Logger.getLogger(LearnParameters.class);
 	
@@ -71,7 +75,7 @@ public class LearnParameters extends XmlParameterElement implements FinancialLea
 			
 			bp.setMaxIterations(this.getIntegerParam(Max_Iterations));
 			bp.setBatchMode(this.getBooleanParam(BatchMode));
-			bp.setDiffFactorArray(diffFactorArray);
+			bp.setArrays(desiredOutput,diffFactorArray,startVal,endVal);
 			bp.setLearningRate(this.getDoubleParam(IL_LearningRate));
 			return bp;
 		}
@@ -85,7 +89,7 @@ public class LearnParameters extends XmlParameterElement implements FinancialLea
 			
 			bp.setMaxIterations(this.getIntegerParam(Max_Iterations));
 			bp.setBatchMode(this.getBooleanParam(BatchMode));
-			bp.setDiffFactorArray(diffFactorArray);
+			bp.setArrays(desiredOutput,diffFactorArray,startVal,endVal);
 			bp.setLearningRate(this.getDoubleParam(IL_LearningRate));
 			return bp;
 		}
@@ -140,8 +144,11 @@ public class LearnParameters extends XmlParameterElement implements FinancialLea
 	}
 
 	@Override
-	public void setDiffFactorArray(double[] diffFactorArray) {
+	public void setArrays(double[] desiredOutput, double[] diffFactorArray, double[] startVal, double[] endVal) {
+		this.desiredOutput=desiredOutput;
 		this.diffFactorArray=diffFactorArray;
+		this.startVal=startVal;
+		this.endVal=endVal;
 	}
 	
 	

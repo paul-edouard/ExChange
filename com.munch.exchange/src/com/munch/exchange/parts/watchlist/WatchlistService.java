@@ -29,6 +29,7 @@ import com.munch.exchange.parts.composite.RateChartBollingerBandsComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IQuoteProvider;
 import com.munch.exchange.services.IWatchlistProvider;
+import com.munch.exchange.utils.ProfitUtils;
 
 public class WatchlistService {
 	
@@ -202,7 +203,7 @@ public class WatchlistService {
 			//Create the Bollinger Band function
 			BollingerBandObjFunc bollingerBandObjFunc=new BollingerBandObjFunc(
 					 HistoricalPoint.FIELD_Close,
-					 RateChart.PENALTY,
+					 ProfitUtils.PENALTY,
 					 rate.getHistoricalData().getNoneEmptyPoints(),
 					 RateChartBollingerBandsComposite.maxNumberOfDays,
 					 RateChartBollingerBandsComposite.maxBandFactor,
@@ -228,7 +229,7 @@ public class WatchlistService {
 			//Create the Bollinger Band function
 			RelativeStrengthIndexObjFunc func=new RelativeStrengthIndexObjFunc(
 					 HistoricalPoint.FIELD_Close,
-					 RateChart.PENALTY,
+					 ProfitUtils.PENALTY,
 					 rate.getHistoricalData().getNoneEmptyPoints(),
 					 maxProfit
 					 );

@@ -37,3 +37,4 @@ Export-Package: org.neuroph.contrib,
  org.neuroph.util.io,
  org.neuroph.util.plugins,
  org.neuroph.util.random
+Require-Bundle: com.munch.exchange.utils;bundle-version="1.0.0"

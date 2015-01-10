@@ -17,12 +17,20 @@ public class FinancialMeanSquaredError implements ErrorFunction, Serializable {
 
 	private transient double totalSquaredErrorSum;
 	private transient double n;
+	private transient double[] desiredOutput = null;
 	private transient double[] diffFactorArray = null;
+	private transient double[] startVal = null;
+	private transient double[] endVal = null;
 	private int pos=0;
+	private double pow=4;
 
-	public FinancialMeanSquaredError(double n, double[] diffFactorArray) {
+	public FinancialMeanSquaredError(double n,double[] desiredOutput, double[] diffFactorArray,
+			double[] startVal, double[] endVal) {
 		this.n = n;
 		this.diffFactorArray = diffFactorArray;
+		this.startVal=startVal;
+		this.endVal=endVal;
+		this.desiredOutput=desiredOutput;
 	}
 
 	@Override
@@ -40,7 +48,7 @@ public class FinancialMeanSquaredError implements ErrorFunction, Serializable {
 			// for (double error : outputError) {
 			double error = outputError[i];
 			double errorScaled = error * diffFactorArray[pos];
-			outputErrorSqrSum += (errorScaled * errorScaled) * 0.5; // a;so
+			outputErrorSqrSum += Math.pow(errorScaled, pow) * 0.5; // a;so
 																	// multiply
 																	// with
 																	// 1/trainingSetSize

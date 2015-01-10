@@ -20,6 +20,7 @@ import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.Neuron;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
+import org.neuroph.core.input.WeightedSum;
 import org.neuroph.core.transfer.Linear;
 import org.neuroph.nnet.comp.neuron.InputNeuron;
 import org.neuroph.nnet.learning.BackPropagation;
@@ -40,6 +41,7 @@ import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.model.xml.XmlParameterElement;
+import com.munch.exchange.utils.ProfitUtils;
 
 public class NetworkArchitecture extends XmlParameterElement {
 	
@@ -69,7 +71,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	
 	private int maxNumberOfSavedNetworks=50;
-	private boolean resultLoaded=false;
+	
 	
 	
 	//#########################################
@@ -198,8 +200,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		//Create the inner neurons
 		NeuronProperties neuronProperties = new NeuronProperties();
-        neuronProperties.setProperty("useBias", false);
-        neuronProperties.setProperty("transferFunction", TransferFunctionType.SIGMOID);
+		neuronProperties.setProperty("useBias", true);
+	    neuronProperties.setProperty("transferFunction", TransferFunctionType.TANH);
+	      
         for(int i=numberOfInputNeurons;i<numberOfInnerNeurons+numberOfInputNeurons;i++){
         	Neuron neuron = NeuronFactory.createNeuron(neuronProperties);
         	neuron.setLabel(UUID.randomUUID().toString());
@@ -456,7 +459,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 
 	
-	private double calculateNetworkOutput(double[] input,double[] weigths ){
+	public double calculateNetworkOutput(double[] input,double[] weigths ){
 		if(!resultLoaded)this.loadResults();
 		
 		network.setWeights(weigths);
@@ -542,10 +545,17 @@ public class NetworkArchitecture extends XmlParameterElement {
 		double[] startVal		= outputs[3];
 		double[] endVal			= outputs[4];
 		
-		double[] profit=new double[output.length];
+		double[] changes=new double[startVal.length+1];
+		for(int i=0;i<startVal.length;i++){
+			changes[i]=startVal[i];
+		}
+		changes[startVal.length]=endVal[endVal.length-1];
+		
+		double[] profit=ProfitUtils.calculateArray(output, changes);
+		double[] desiredProfit=ProfitUtils.calculateArray(desiredOutput, changes);
 		
 		//logger.info("Output: "+Arrays.toString(output));
-		
+		/*
 		double BUY_LIMIT=0.5;
 		
 		double sum_pro=0;
@@ -571,8 +581,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 			profit[i]=sum_pro;
 			
 		}
-		
-		double[][] n_outputs={output, desiredOutput, outputdiff, startVal, endVal,profit };
+		*/
+		double[][] n_outputs={output, desiredOutput, outputdiff, startVal, endVal,profit,desiredProfit };
 		
 		return n_outputs;
 	}
@@ -842,16 +852,49 @@ public class NetworkArchitecture extends XmlParameterElement {
 	// RESULTS
 	//*************************
 	
+	private boolean resultLoaded=false;
+	private boolean resultLocked=false;
+	
 	/**
 	 * Add a result untity to the current list and save the best value
 	 * @param ent
 	 */
-	public void addResultEntity(ResultEntity ent){
+	public boolean addResultEntity(ResultEntity ent){
+		
+		//Test if the entity is already present
+		for(ResultEntity old_ent:this.getResultsEntities()){
+			if(old_ent.getValue()!=ent.getValue())continue;
+			
+			return false;
+			//logger.info("Same Value");
+			/*
+			double[] old_genome=old_ent.getDoubleArray();
+			double[] new_genome=ent.getDoubleArray();
+			
+			if(old_genome.length!=new_genome.length)continue;
+			
+			boolean same_genome=true;
+			for(int i=0;i<old_genome.length;i++){
+				if(old_genome[i]==new_genome[i])continue;
+				same_genome=false;
+				break;
+			}
+			
+			if(same_genome){
+				logger.info("Same Genome");
+				return false;
+			}
+			*/
+		}
 		
 		
 		if(bestResultEntity==null || ent.getValue()<bestResultEntity.getValue())
 			setBestResultEntity(ent);
+		ent.setParentId(this.getId());
 		this.optResults.addResult(ent);
+		
+		return true;
+		
 	}
 	
 	public ResultEntity getBestResultEntity(){
@@ -860,8 +903,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return this.optResults.getBestResult();
 	}
 	
-	public void clearResultsAndNetwork(){
-		this.saveResults();
+	public synchronized void clearResultsAndNetwork(boolean saveResults){
+		if(resultLocked) return;
+		if(saveResults)this.saveResults();
 		this.network=null;
 		this.optResults.getResults().clear();
 		resultLoaded=false;
@@ -873,6 +917,60 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return !this.optResults.getResults().isEmpty();
 	}
 	
+	private synchronized void loadResults(){
+		if(localSavePath.isEmpty()){
+			logger.info("Error by loading Results: Local save path is empty!!");
+			return;
+		}
+		this.network=NeuralNetwork.createFromFile(localSavePath+File.separator+networkLabel+".nnet");
+		setOptResuts(OptimizationResults.createFromFile(localSavePath+File.separator+networkLabel+".ores"));
+		resultLoaded=true;
+	}
+	
+	private void saveResults(){
+		if(localSavePath.isEmpty()){
+			logger.info("Error by saving results: Local save path is empty!!");
+			return;
+		}
+		if(network==null)return;
+		network.save(localSavePath + File.separator + network.getLabel() + ".nnet");
+		optResults.save(localSavePath + File.separator + network.getLabel() + ".ores");
+	}
+	
+	/**
+	 * set the lock status of the results, if the lock status is set to true then the results clear results function has no effect
+	 * @param resultLocked
+	 */
+	public synchronized void lockResults(boolean resultLocked){
+		this.resultLocked=resultLocked;
+	}
+	
+	public List<ResultEntity> getResultsEntities(){
+		if(!resultLoaded)this.loadResults();
+		return optResults.getResults();
+	}
+	
+	public void setOptResuts(OptimizationResults optResuts) {
+		this.optResults = optResuts;
+		for(ResultEntity resultEntity:optResults.getResults()){
+			resultEntity.setParentId(this.getId());
+		}
+		if(this.optResults!=null && this.optResults.getBestResult()!=null)
+			setBestResultEntity(this.optResults.getBestResult());
+	}
+	
+	public double getBestValue() {
+		if(bestResultEntity==null)return Constants.WORST_FITNESS;
+		return bestResultEntity.getValue();
+	}
+	
+	private void setBestResultEntity(ResultEntity bestResultEntity) {
+		changes.firePropertyChange(FIELD_BestResultEntity, this.bestResultEntity, this.bestResultEntity = bestResultEntity);
+	}
+	
+	public boolean isResultLoaded() {
+		return resultLoaded;
+	}
 	
 	
 	@Override
@@ -1120,17 +1218,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return optResults;
 	}
 	*/
-	public List<ResultEntity> getResultsEntities(){
-		if(!resultLoaded)this.loadResults();
-		return optResults.getResults();
-	}
-
-	public void setOptResuts(OptimizationResults optResuts) {
-		this.optResults = optResuts;
-		if(this.optResults!=null && this.optResults.getBestResult()!=null)
-			setBestResultEntity(this.optResults.getBestResult());
-	}
 	
+
 	public void setNumberOfInnerNeurons(int numberOfInnerNeurons) {
 	changes.firePropertyChange(FIELD_NumberOfInnerNeurons, this.numberOfInnerNeurons, this.numberOfInnerNeurons = numberOfInnerNeurons);}
 	
@@ -1152,14 +1241,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return actConsArray;
 	}
 
-	public double getBestValue() {
-		if(bestResultEntity==null)return Constants.WORST_FITNESS;
-		return bestResultEntity.getValue();
-	}
-	
-	private void setBestResultEntity(ResultEntity bestResultEntity) {
-		changes.firePropertyChange(FIELD_BestResultEntity, this.bestResultEntity, this.bestResultEntity = bestResultEntity);
-	}
 	
 	public int getNumberOfTraining() {
 		return numberOfTraining;
@@ -1193,9 +1274,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return middleOptimzationRate;
 	}
 
-	public boolean isResultLoaded() {
-		return resultLoaded;
-	}
 
 	public void setActConsArray(boolean[] actConsArray) {
 		this.actConsArray = actConsArray;
@@ -1283,25 +1361,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	
-	private void loadResults(){
-		if(localSavePath.isEmpty()){
-			logger.info("Error by loading Results: Local save path is empty!!");
-			return;
-		}
-		this.network=NeuralNetwork.createFromFile(localSavePath+File.separator+networkLabel+".nnet");
-		setOptResuts(OptimizationResults.createFromFile(localSavePath+File.separator+networkLabel+".ores"));
-		resultLoaded=true;
-	}
 	
-	private void saveResults(){
-		if(localSavePath.isEmpty()){
-			logger.info("Error by saving results: Local save path is empty!!");
-			return;
-		}
-		if(network==null)return;
-		network.save(localSavePath + File.separator + network.getLabel() + ".nnet");
-		optResults.save(localSavePath + File.separator + network.getLabel() + ".ores");
-	}
 	
 
 	@Override
@@ -1352,6 +1412,30 @@ public class NetworkArchitecture extends XmlParameterElement {
 		convertActConsArrayToMatrix();
 	
 	}
+	
+	
+	 public static void main(String args[]) {
+		 
+		 NeuronProperties neuronProperties = new NeuronProperties();
+	        neuronProperties.setProperty("useBias", false);
+	        neuronProperties.setProperty("transferFunction", TransferFunctionType.TANH);
+	       // neuronProperties.setProperty("transferFunction.slope", new Double(2));
+	        neuronProperties.setProperty("inputFunction", WeightedSum.class);
+	        Neuron neuron = NeuronFactory.createNeuron(neuronProperties);
+	        
+	        
+	        double[] a={-3,-2,-1,-0.5,0,0.5,1,2,3};
+	        for(int i=0;i<a.length;i++){
+	        	neuron.setInput(a[i]);
+	 	        neuron.calculate();
+	 	        System.out.println("Input: "+a[i]+", output: "+neuron.getOutput());
+	        }
+	        
+	       
+	        
+		 
+	 }
+	
 	
 	
 }

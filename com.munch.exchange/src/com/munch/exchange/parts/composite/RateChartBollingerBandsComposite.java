@@ -50,6 +50,7 @@ import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
 import com.munch.exchange.parts.OptimizationErrorPart;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.utils.ProfitUtils;
 import com.munch.exchange.wizard.OptimizationWizard;
 
 public class RateChartBollingerBandsComposite extends Composite {
@@ -629,7 +630,7 @@ public class RateChartBollingerBandsComposite extends Composite {
 		
 		bollingerBandObjFunc=new BollingerBandObjFunc(
 				 HistoricalPoint.FIELD_Close,
-				 RateChart.PENALTY,
+				 ProfitUtils.PENALTY,
 				 rate.getHistoricalData().getNoneEmptyPoints(),
 				 maxNumberOfDays,
 				 maxBandFactor,

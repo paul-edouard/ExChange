@@ -44,6 +44,7 @@ import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
 import com.munch.exchange.parts.OptimizationErrorPart;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.utils.ProfitUtils;
 import com.munch.exchange.wizard.OptimizationWizard;
 
 public class RateChartMACDComposite extends Composite {
@@ -273,7 +274,7 @@ public class RateChartMACDComposite extends Composite {
 		
 		macdObjFunc = new MacdObjFunc(rate.getHistoricalData()
 				.getXYSeries(HistoricalPoint.FIELD_Close), period,
-				maxProfit, RateChart.PENALTY);
+				maxProfit, ProfitUtils.PENALTY);
 		return macdObjFunc;
 	}
 	

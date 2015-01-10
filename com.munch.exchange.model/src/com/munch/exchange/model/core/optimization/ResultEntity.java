@@ -3,6 +3,7 @@ package com.munch.exchange.model.core.optimization;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.UUID;
 
 import org.goataa.impl.utils.Constants;
 import org.goataa.impl.utils.Individual;
@@ -21,6 +22,7 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 
 	private LinkedList<Object> genome=new LinkedList<Object>();
 	
+	
 	private final String STRING="string";
 	private final String INTEGER="integer";
 	private final String FLOAT="float";
@@ -30,7 +32,13 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 	static final String FIELD_Genome="genome";
 	static final String FIELD_Value="Value";
 	
+	//Properties
+	public static final String GENERATED_FROM="GENERATED_FROM";
+	
 	private double value=Constants.WORST_FITNESS;
+	
+	private String parentId;
+	private String id=UUID.randomUUID().toString();
 	
 	public ResultEntity(){
 		
@@ -130,7 +138,13 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 	}
 	
 	
-	
+	public String getParentId() {
+		return parentId;
+	}
+
+	public void setParentId(String parentId) {
+	this.parentId = parentId;
+	}
 	
 	public double getValue() {
 		return value;
@@ -138,6 +152,18 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 
 	public void setValue(double value) {
 	changes.firePropertyChange(FIELD_Value, this.value, this.value = value);}
+	
+	
+
+	public String getId() {
+		return id;
+	}
+	
+	
+
+	public void setId(String id) {
+	this.id = id;
+	}
 	
 
 	public LinkedList<Object> getGenome() {

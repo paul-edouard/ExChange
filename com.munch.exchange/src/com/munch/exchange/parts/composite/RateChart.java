@@ -80,7 +80,7 @@ import com.munch.exchange.services.IExchangeRateProvider;
 public class RateChart extends Composite {
 	
 	
-	public static final double PENALTY=0.0025;
+	//public static final double PENALTY=0.0025;
 	//public static double PENALTY=0.00;
 	
 	private static Logger logger = Logger.getLogger(RateChart.class);

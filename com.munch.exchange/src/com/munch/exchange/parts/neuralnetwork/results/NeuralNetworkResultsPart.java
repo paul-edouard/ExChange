@@ -45,10 +45,12 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
+import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.services.INeuralNetworkProvider;
+import com.munch.exchange.utils.ProfitUtils;
 
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -208,6 +210,10 @@ public class NeuralNetworkResultsPart {
 				NetworkArchitecture el=(NetworkArchitecture) element;
 				return String.valueOf(el.getId());
 			}
+			if(element instanceof ResultEntity){
+				ResultEntity res=(ResultEntity) element;
+				return res.getId()+"["+res.getStringParam(ResultEntity.GENERATED_FROM)+"]";
+			}
 			return super.getText(element);
 		}
 		
@@ -221,7 +227,13 @@ public class NeuralNetworkResultsPart {
 				NetworkArchitecture el=(NetworkArchitecture) element;
 				return String.valueOf(el.getNumberOfInnerNeurons());
 			}
-			return super.getText(element);
+			if(element instanceof ResultEntity){
+				ResultEntity res=(ResultEntity) element;
+				NetworkArchitecture el=(NetworkArchitecture)config.searchArchitecture(res.getParentId());
+				if(el==null)return "";
+				return String.valueOf(el.getNumberOfInnerNeurons());
+			}
+			return "";
 		}
 		
 	}
@@ -230,14 +242,21 @@ public class NeuralNetworkResultsPart {
 
 		@Override
 		public String getText(Object element) {
+			double val=Double.NaN;
 			if(element instanceof NetworkArchitecture){
 				NetworkArchitecture el=(NetworkArchitecture) element;
-				double val=el.getBestValue()*100;
-				if(val==Constants.WORST_FITNESS)return "No Results";
-				return String.format("%.3f", val);
+				val=el.getBestValue();
+				
 				//return String.valueOf(val);
 			}
-			return super.getText(element);
+			if(element instanceof ResultEntity){
+				ResultEntity res=(ResultEntity) element;
+				val=res.getValue();
+			}
+			
+			if(val==Constants.WORST_FITNESS)return "No Results";
+			//return String.valueOf(val);
+			return String.format("%.4f", val);
 		}
 		
 	}
@@ -268,7 +287,7 @@ public class NeuralNetworkResultsPart {
 				return String.format("%.3f", val);
 				//return String.valueOf(val);
 			}
-			return super.getText(element);
+			return "";
 		}
 		
 	}
@@ -285,7 +304,7 @@ public class NeuralNetworkResultsPart {
 				return String.format("%.3f", val);
 				//return String.valueOf(val);
 			}
-			return super.getText(element);
+			return "";
 		}
 		
 	}
@@ -301,7 +320,7 @@ public class NeuralNetworkResultsPart {
 				return String.valueOf(val);
 				//return String.valueOf(val);
 			}
-			return super.getText(element);
+			return "";
 		}
 		
 	}
@@ -315,7 +334,7 @@ public class NeuralNetworkResultsPart {
 				return DateTool.dateToString(el.getLastOptimization()).replace("T", " ");
 				//return String.valueOf(val);
 			}
-			return super.getText(element);
+			return "";
 		}
 		
 	}
@@ -333,7 +352,7 @@ public class NeuralNetworkResultsPart {
 				return String.format("%.3f", val);
 				//return String.valueOf(val);
 			}
-			return super.getText(element);
+			return "";
 		}
 		
 	}
@@ -362,7 +381,7 @@ public class NeuralNetworkResultsPart {
 				return String.format("%.3f", val);
 				//return String.valueOf(val);
 			}
-			return super.getText(element);
+			return "";
 		}
 		
 	}
@@ -379,7 +398,7 @@ public class NeuralNetworkResultsPart {
 				return String.valueOf(val);
 				//return String.valueOf(val);
 			}
-			return super.getText(element);
+			return "";
 		}
 		
 	}
@@ -392,7 +411,7 @@ public class NeuralNetworkResultsPart {
 				NetworkArchitecture el=(NetworkArchitecture) element;
 				return DateTool.dateToString(el.getLastTraining()).replace("T", " ");
 			}
-			return super.getText(element);
+			return "";
 		}
 		
 	}
@@ -407,6 +426,11 @@ public class NeuralNetworkResultsPart {
 				double pred=getResultsInfo(el).prediction;
 				return String.format("%.2f", pred);
 			}
+			if(element instanceof ResultEntity){
+				ResultEntity el=(ResultEntity) element;
+				double pred=getResultsInfo(el).prediction;
+				return String.format("%.2f", pred);
+			}
 			return super.getText(element);
 		}
 
@@ -415,6 +439,14 @@ public class NeuralNetworkResultsPart {
 			
 			if(element instanceof NetworkArchitecture){
 				NetworkArchitecture el=(NetworkArchitecture) element;
+				double pred=getResultsInfo(el).prediction;
+				if(pred>0.5)
+					return new Color(null, 0, 255, 0);
+				else
+					return new Color(null, 255, 0, 0);
+			}
+			if(element instanceof ResultEntity){
+				ResultEntity el=(ResultEntity) element;
 				double pred=getResultsInfo(el).prediction;
 				if(pred>0.5)
 					return new Color(null, 0, 255, 0);
@@ -434,6 +466,11 @@ public class NeuralNetworkResultsPart {
 		public String getText(Object element) {
 			if(element instanceof NetworkArchitecture){
 				NetworkArchitecture el=(NetworkArchitecture) element;
+				double pro=getResultsInfo(el).totalProfit;
+				return String.format("%.2f", pro);
+			}
+			if(element instanceof ResultEntity){
+				ResultEntity el=(ResultEntity) element;
 				double pro=getResultsInfo(el).totalProfit;
 				return String.format("%.2f", pro);
 			}
@@ -476,6 +513,14 @@ public class NeuralNetworkResultsPart {
 		return resultsInfoMap.get(archi.getId());
 	}
 	
+	private synchronized ResultsInfo getResultsInfo(ResultEntity ent){
+		if(!resultsInfoMap.containsKey(ent.getId()))
+			resultsInfoMap.put(ent.getId(), new ResultsInfo());
+		
+		return resultsInfoMap.get(ent.getId());
+	}
+	
+	
 	class ResultsInfo{
 		public double prediction=Double.NaN;
 		public double totalProfit=Double.NaN;
@@ -498,13 +543,13 @@ public class NeuralNetworkResultsPart {
 			if (monitor.isCanceled())return Status.CANCEL_STATUS;
 			
 			//TODO don't save the output list
-			ValuePointList l=nn_provider.calculateMaxProfitOutputList(stock,RateChart.PENALTY);
-			config.setOutputPointList(l);
+			//ValuePointList l=nn_provider.calculateMaxProfitOutputList(stock,RateChart.PENALTY);
+			//config.setOutputPointList(l);
 			
 			if (monitor.isCanceled())return Status.CANCEL_STATUS;
 			
 			if(!config.areAllTimeSeriesAvailable()){
-				nn_provider.createAllInputPoints(stock);
+				nn_provider.createAllValuePoints(config);
 			}
 			
 			
@@ -514,6 +559,28 @@ public class NeuralNetworkResultsPart {
 			//RateChart.PENALTY;
 			
 			for(NetworkArchitecture archi:config.getNetworkArchitectures()){
+				boolean wasLoaded=false;
+				if(archi.isResultLoaded()){
+					logger.info("Results here!!"+archi.getId());
+					wasLoaded=true;
+					for(ResultEntity ent:archi.getResultsEntities()){
+						if (monitor.isCanceled())return Status.CANCEL_STATUS;
+						
+						ResultsInfo info=getResultsInfo(ent);
+						
+						//Prediction
+						double pred=archi.calculateNetworkOutput(input, ent.getDoubleArray());
+						info.prediction=pred;
+						
+						//Profit
+						double[][] outputs=archi.calculateNetworkOutputsAndProfit(dataset, ent.getDoubleArray(), ProfitUtils.PENALTY);
+						if(outputs==null)continue;
+						double[] profit=outputs[5];
+						info.totalProfit=profit[profit.length-1];
+						
+					}
+				}
+				
 				if (monitor.isCanceled())return Status.CANCEL_STATUS;
 				
 				ResultsInfo info=getResultsInfo(archi);
@@ -523,12 +590,14 @@ public class NeuralNetworkResultsPart {
 				info.prediction=pred;
 				
 				//Profit
-				double[][] outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset, RateChart.PENALTY);
+				double[][] outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset, ProfitUtils.PENALTY);
 				if(outputs==null)continue;
-				double[] profit=outputs[outputs.length-1];
+				double[] profit=outputs[5];
 				info.totalProfit=profit[profit.length-1];
 				//logger.info("Output: "+Arrays.toString(outputs[0]));
 				//logger.info("Profit: "+Arrays.toString(profit));
+				if(!wasLoaded)
+					archi.clearResultsAndNetwork(false);
 			}
 			
 			
@@ -557,16 +626,16 @@ public class NeuralNetworkResultsPart {
 	
 	@Inject
 	private void neuralNetworkConfigSelected(
-			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED) Stock stock) {
+			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED) Configuration config) {
 		
+		if(config==null)return;
+		stock=config.getParent();
 		if(stock==null)return;
 		setStock(stock);
 		
-		
 		resultLoader.schedule();
-		
-		
 	}
+	
 	@Inject
 	private void neuralNetworkResutsCalculated(
 			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_RESULTS_CALCULATED) Configuration config) {
@@ -578,6 +647,44 @@ public class NeuralNetworkResultsPart {
 		treeViewer.refresh();
 	}
 	
+	
+	@Inject
+	private void neuralNetworkResutsRefreshCalled(
+			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_RESULTS_REFRESH_CALLED) Configuration config) {
+		
+		if(config==null)return;
+		stock=config.getParent();
+		if(stock==null)return;
+		setStock(stock);
+		
+		resultLoader.schedule();
+	}
+	
+	
+	@Inject
+	private void neuralNetworkResutsLoadingCalled(
+			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_RESULTS_LOADING_CALLED) NetworkArchitecture archi) {
+		
+		if(archi==null)return;
+		if(archi.getParent()!=config)return;
+		
+		resultLoader.schedule();
+	}
+	
+	@Inject
+	private void neuralNetworkResutsUnloadingCalled(
+			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_RESULTS_UNLOADING_CALLED) NetworkArchitecture archi) {
+		
+		if(archi==null)return;
+		if(archi.getParent()!=config)return;
+		
+		refresh();
+	}
+	
+	
+	
+	
+	/*
 	
 	//ARCHITECTURE
 	@Inject
@@ -594,7 +701,7 @@ public class NeuralNetworkResultsPart {
 	}
 	
 	//OPTIMIZATION
-	/*
+	
 	@Inject
 	private void networkOptimizationAllTopic(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_ALLTOPICS) NetworkArchitectureOptInfo info){
 		if(info==null)return;
@@ -607,10 +714,10 @@ public class NeuralNetworkResultsPart {
 		//treeViewer.setInput(config);
 		treeViewer.refresh();
 	}
-	*/
+	
 	
 	//LEARNING
-	/*
+	
 	@Inject
 	private void networkOptimizationLeaning(@Optional @UIEventTopic(IEventConstant.NETWORK_LEARNING_STARTED) NetworkArchitectureOptInfo info){
 		if(info==null)return;

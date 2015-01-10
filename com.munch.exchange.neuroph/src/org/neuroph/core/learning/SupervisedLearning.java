@@ -54,6 +54,12 @@ abstract public class SupervisedLearning extends IterativeLearning implements
      * Total network error in previous epoch
      */
     protected transient double previousEpochError;
+    
+    /**
+     * Save the network weigths before the next modification
+     */
+    protected transient Double[] previousEpochNetworkWeights;
+    
     /**
      * Max allowed network error (condition to stop learning)
      */
@@ -137,6 +143,7 @@ abstract public class SupervisedLearning extends IterativeLearning implements
     @Override
     protected void beforeEpoch() {
         this.previousEpochError = this.totalNetworkError;
+        this.previousEpochNetworkWeights=this.neuralNetwork.getWeights();
         this.totalNetworkError = 0d;
         this.totalSquaredErrorSum = 0d;  
         this.errorFunction.reset();
@@ -343,8 +350,17 @@ abstract public class SupervisedLearning extends IterativeLearning implements
     public double getPreviousEpochError() {
         return previousEpochError;
     }
-
+    
     /**
+     * Returns the network weights of previous learning epoch
+     *
+     * @return the network weights of previous learning epoch
+     */
+    public Double[] getPreviousEpochNetworkWeights() {
+		return previousEpochNetworkWeights;
+	}
+
+	/**
      * Returns min error change stopping criteria
      *
      * @return min error change stopping criteria

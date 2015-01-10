@@ -12,9 +12,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.jfree.chart.renderer.category.MinMaxCategoryRenderer;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
+import org.neuroph.core.data.norm.RangeNormalizer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -49,12 +51,12 @@ public class Configuration extends XmlParameterElement {
 	private Stock parent;
 	
 	//Training Data
-	//private int numberOfInputNeurons;
 	private DataSet trainingSet=null;
 	private double[] lastInput=null;
-	private LinkedList<TimeSeries> allTimeSeries=new LinkedList<TimeSeries>();
 	private ValuePointList outputPointList=new ValuePointList();
 	
+	//Time Series
+	private LinkedList<TimeSeries> allTimeSeries=new LinkedList<TimeSeries>();
 	private Calendar lastInputPointDate=null;
 	
 	//Optimization Parameters
@@ -185,8 +187,8 @@ public class Configuration extends XmlParameterElement {
 			doubleArrayList.addAll(d_array_list);
 		}
 		
-		int len=Math.min(doubleArrayList.get(0).length,500);
-		//int len=doubleArrayList.get(0).length;
+		//int len=Math.min(doubleArrayList.get(0).length,500);
+		int len=doubleArrayList.get(0).length;
 		
 		//Create the output array
 		double[][] outputs=createOutputArrays(len-1);
@@ -194,12 +196,13 @@ public class Configuration extends XmlParameterElement {
 		//Create the Training set
 		trainingSet = new DataSet(doubleArrayList.size(), 1);
 		
-		double[] outputdiffFactor=new double[len-1];
+		//double[] outputdiffFactor=new double[len-1];
 		for(int i=0;i<len;i++){
 			
 			
 			double[] input=new double[doubleArrayList.size()];
 			for(int j=0;j<doubleArrayList.size();j++){
+				
 				input[j]=doubleArrayList.get(j)[i];
 			}
 			
@@ -221,8 +224,8 @@ public class Configuration extends XmlParameterElement {
 				endVal=new double[]{outputs[3][i]};
 			}
 			
-			if(i<len-1)
-				outputdiffFactor[i]=outputs[1][i];
+			//if(i<len-1)
+			//	outputdiffFactor[i]=outputs[1][i];
 			
 			trainingSet.addRow(new NNDataSetRaw(input, output,diff, startVal, endVal));
 		}
@@ -230,7 +233,7 @@ public class Configuration extends XmlParameterElement {
 		//logger.info("Diff: "+Arrays.toString(outputdiffFactor));
 		
 		//Normalize the training set
-		trainingSet.normalize();
+		trainingSet.normalize(new RangeNormalizer(-1, 1));
 		
 		//Save the last input
 		DataSetRow raw=trainingSet.getRowAt(len-1);
@@ -238,7 +241,7 @@ public class Configuration extends XmlParameterElement {
 		trainingSet.removeRowAt(len-1);
 		
 		//Set the DiffFactor of the
-		this.learnParam.setDiffFactorArray(outputdiffFactor);
+		this.learnParam.setArrays(outputs[0],outputs[1],outputs[2],outputs[3]);
 		
 		
 		fireTrainingDataSetChanged();
@@ -309,6 +312,13 @@ public class Configuration extends XmlParameterElement {
 	//*************************
 	// Architecture
 	//*************************
+	
+	public synchronized NetworkArchitecture searchArchitecture(String id){
+		for(NetworkArchitecture architecture :networkArchitectures){
+			if(architecture.getId().equals(id))return architecture;
+		}
+		return null;
+	}
 	
 	public synchronized NetworkArchitecture searchArchitecture(boolean[] actConsArray, String localSavePath){
 		return searchArchitecture(actConsArray,false,localSavePath);
@@ -530,6 +540,9 @@ public class Configuration extends XmlParameterElement {
 		for(TimeSeries series:this.getTimeSeriesFromCategory(TimeSeriesCategory.FINANCIAL)){
 			list.add(series);
 		}
+		for(TimeSeries series:this.getTimeSeriesFromCategory(TimeSeriesCategory.TARGET_OUTPUT)){
+			list.add(series);
+		}
 		return list;
 	}
 	
@@ -658,9 +671,11 @@ public class Configuration extends XmlParameterElement {
 			ent.init(childElement);
 			addTimeSeries(ent,false);
 		}
+		/*
 		else if(childElement.getTagName().equals(outputPointList.getTagName())){
 			outputPointList.init(childElement);
 		}
+		*/
 		else if(childElement.getTagName().equals(optLearnParam.getTagName())){
 			optLearnParam.init(childElement);
 		}
@@ -698,7 +713,7 @@ public class Configuration extends XmlParameterElement {
 		for(TimeSeries ent:allTimeSeries){
 			rootElement.appendChild(ent.toDomElement(doc));
 		}
-		rootElement.appendChild(outputPointList.toDomElement(doc));
+		//rootElement.appendChild(outputPointList.toDomElement(doc));
 		rootElement.appendChild(optLearnParam.toDomElement(doc));
 		rootElement.appendChild(learnParam.toDomElement(doc));
 		rootElement.appendChild(optArchitectureParam.toDomElement(doc));
