@@ -28,7 +28,11 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.ClusteredXYBarRenderer;
+import org.jfree.chart.renderer.xy.StackedXYBarRenderer;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.DefaultTableXYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
@@ -54,7 +58,9 @@ public class NeuralNetworkResultsChartPart {
 	private JFreeChart chart;
 	private Composite compositeChart;
 	
-	private XYLineAndShapeRenderer responseRenderer =new XYLineAndShapeRenderer(true, false);
+	private  XYBarRenderer responseRenderer=new  XYBarRenderer(0);
+	
+	//private XYLineAndShapeRenderer responseRenderer =new XYLineAndShapeRenderer(true, false);
 	private XYLineAndShapeRenderer profitRenderer =new XYLineAndShapeRenderer(true, false);
 	private XYLineAndShapeRenderer maxProfitRenderer =new XYLineAndShapeRenderer(true, false);
 	
@@ -118,18 +124,26 @@ public class NeuralNetworkResultsChartPart {
     	//====================
     	//===  Main Plot   ===
     	//====================
-    	XYPlot plot = createPlot(responseCollection,responseRenderer,domainAxis,valueAxis);
+    	//XYPlot plot = createPlot(responseCollection,responseRenderer,domainAxis,valueAxis);
+    	XYPlot plot = createPlot(profitCollection,profitRenderer,domainAxis,profitAxis);
     	
+    	 plot.setDataset(1,maxProfitCollection);
+         plot.setRenderer(1, maxProfitRenderer);
+         plot.setRangeAxis(1, maxProfitAxis);
+         plot.mapDatasetToRangeAxis(1, 1);
     	
+    	/*
     	plot.setDataset(1,profitCollection);
         plot.setRenderer(1, profitRenderer);
         plot.setRangeAxis(1, profitAxis);
         plot.mapDatasetToRangeAxis(1, 1);
-        
-        plot.setDataset(2,maxProfitCollection);
-        plot.setRenderer(2, maxProfitRenderer);
-        plot.setRangeAxis(2, maxProfitAxis);
+    	*/
+    	plot.setDataset(2,responseCollection);
+        plot.setRenderer(2, responseRenderer);
+        plot.setRangeAxis(2, valueAxis);
         plot.mapDatasetToRangeAxis(2, 2);
+        
+       
     	
     	
     	 //=========================
@@ -220,9 +234,14 @@ public class NeuralNetworkResultsChartPart {
 			resetPeriode();
 		}
 		
-		addSeriesAsLine(responseRenderer, responseCollection,createResponseSerie("Output",output) , Color.blue,false);
-		addSeriesAsLine(responseRenderer, responseCollection,createResponseSerie("Desired Ouput",desiredOutput) , Color.black,true);
+		
+		XYSeries[] responseSeries=createResponseSerie("Output",output, desiredOutput);
+		
+		addSeriesAsBar(responseRenderer, responseCollection,responseSeries[0] , Color.blue,false);
+		addSeriesAsBar(responseRenderer, responseCollection,responseSeries[1] , Color.red,false);
+		addSeriesAsBar(responseRenderer, responseCollection,createTargetResponseSerie("Desired Ouput",desiredOutput) , Color.white,true);
 		addSeriesAsLine(profitRenderer, profitCollection,createSerie("Profit",profit) , Color.gray,false);
+		addSeriesAsLine(profitRenderer, profitCollection,createDeltaSerie("Delta Profit",desiredProfit,profit) , Color.GREEN,false);
 		addSeriesAsLine(maxProfitRenderer, maxProfitCollection,createSerie("Max Profit",desiredProfit) , Color.darkGray,false);
     }
     
@@ -262,20 +281,57 @@ public class NeuralNetworkResultsChartPart {
 		
 		return 	r_series;
     }
+    private XYSeries createDeltaSerie(String name,double[] x,double[] ref){
+        	XYSeries r_series =new XYSeries(name);
+    		//int pos=1;
+    		for(int i=0;i<x.length;i++){
+    			if(i>=period[0] && i<period[1]){
+    				r_series.add(i,ref[period[0]]+(x[i]-x[period[0]]));
+    				//pos++;
+    			}
+    		}
+    		
+    		return 	r_series;
+    }
     
-    private XYSeries createResponseSerie(String name,double[] x){
+    private XYSeries[] createResponseSerie(String name,double[] x,double[] target){
+    	XYSeries r_series_good =new XYSeries(name +" [Good]");
+    	XYSeries r_series_bad =new XYSeries(name +" [Bad]");
+    	//int pos=1;
+		for(int i=0;i<x.length;i++){
+			if(i>=period[0] && i<period[1]){
+				if(Math.abs(target[i]-x[i])>1){
+					r_series_bad.add((double)i, x[i]);
+				}
+				else{
+					r_series_good.add((double)i, x[i]);
+				}
+				//r_series.add(i-0.5, x[i]);
+				//r_series.add((double)i, x[i]);
+				//pos++;
+			}
+		}
+		
+		XYSeries[] series={r_series_good,r_series_bad};
+		
+		return 	series;
+    }
+    
+    
+    private XYSeries createTargetResponseSerie(String name,double[] x){
     	XYSeries r_series =new XYSeries(name);
 		//int pos=1;
 		for(int i=0;i<x.length;i++){
 			if(i>=period[0] && i<period[1]){
-				r_series.add(i-0.5, x[i]);
-				r_series.add(i+0.5, x[i]);
+				//r_series.add(i-0.5, x[i]);
+				r_series.add((double)i, x[i]);
 				//pos++;
 			}
 		}
 		
 		return 	r_series;
     }
+    
     
     
     private void addSeriesAsLine(XYLineAndShapeRenderer rend,  XYSeriesCollection col, XYSeries series,Color color,boolean dash){
@@ -285,6 +341,28 @@ public class NeuralNetworkResultsChartPart {
 		if(pos>=0){
 			rend.setSeriesShapesVisible(pos, false);
 			rend.setSeriesLinesVisible(pos, true);
+			
+			if(dash){
+				rend.setSeriesStroke( pos,new BasicStroke(3.0f,
+		                BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
+		                1.0f, new float[] {6.0f, 6.0f}, 0.0f));
+			}
+			else
+				rend.setSeriesStroke(pos,new BasicStroke(2.0f));
+			
+			
+			rend.setSeriesPaint(pos, color);
+		}
+	}
+    
+    private void addSeriesAsBar(XYBarRenderer rend,  XYSeriesCollection col, XYSeries series,Color color,boolean dash){
+		
+		col.addSeries(series);
+		int pos=col.indexOf(series.getKey());
+		if(pos>=0){
+			//rend.setSeriesShapesVisible(pos, false);
+			//rend.setSeriesLinesVisible(pos, true);
+			rend.setShadowVisible(false);
 			
 			if(dash){
 				rend.setSeriesStroke( pos,new BasicStroke(3.0f,

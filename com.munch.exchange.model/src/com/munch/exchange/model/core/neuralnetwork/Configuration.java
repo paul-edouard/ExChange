@@ -110,15 +110,7 @@ public class Configuration extends XmlParameterElement {
 		return getInputNeuronNames().size();
 	}
 	
-	private void createDayOfWeekSeries(LinkedList<TimeSeries> sortedTimeSeries){
-		TimeSeries dayOfWeekSerie=new TimeSeries(FIELD_DayOfWeek, TimeSeriesCategory.RATE);
-		dayOfWeekSerie.setNumberOfPastValues(1);
-		for(ValuePoint point:sortedTimeSeries.getFirst().getInputValues()){
-			double dayofWeek=(double)point.getDate().get(Calendar.DAY_OF_WEEK);
-			dayOfWeekSerie.getInputValues().add(new ValuePoint(point.getDate(), dayofWeek));
-		}
-		sortedTimeSeries.addFirst(dayOfWeekSerie);
-	}
+	
 	
 	/*
 	 * create the boolean like output array and the output diff array 
@@ -227,7 +219,9 @@ public class Configuration extends XmlParameterElement {
 			//if(i<len-1)
 			//	outputdiffFactor[i]=outputs[1][i];
 			
-			trainingSet.addRow(new NNDataSetRaw(input, output,diff, startVal, endVal));
+			NNDataSetRaw raw=new NNDataSetRaw(input, output, diff, startVal, endVal);
+			
+			trainingSet.addRow(raw);
 		}
 		
 		//logger.info("Diff: "+Arrays.toString(outputdiffFactor));
@@ -247,6 +241,16 @@ public class Configuration extends XmlParameterElement {
 		fireTrainingDataSetChanged();
 		
 		//return trainingSet;
+	}
+	
+	private void createDayOfWeekSeries(LinkedList<TimeSeries> sortedTimeSeries){
+		TimeSeries dayOfWeekSerie=new TimeSeries(FIELD_DayOfWeek, TimeSeriesCategory.RATE);
+		dayOfWeekSerie.setNumberOfPastValues(1);
+		for(ValuePoint point:sortedTimeSeries.getFirst().getInputValues()){
+			double dayofWeek=(double)point.getDate().get(Calendar.DAY_OF_WEEK);
+			dayOfWeekSerie.getInputValues().add(new ValuePoint(point.getDate(), dayofWeek));
+		}
+		sortedTimeSeries.addFirst(dayOfWeekSerie);
 	}
 	
 	public void resetTrainingData(){

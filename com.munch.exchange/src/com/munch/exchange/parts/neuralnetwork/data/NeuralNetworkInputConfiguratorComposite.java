@@ -1,4 +1,4 @@
-package com.munch.exchange.parts.neuralnetwork.input;
+package com.munch.exchange.parts.neuralnetwork.data;
 
 
 

@@ -163,7 +163,7 @@ public class NeuralNetworkBrainPart {
         plot.setRangeGridlinePaint(Color.white);
         
          
-        bubbleRenderer.setSeriesPaint(0, Color.blue);
+        bubbleRenderer.setSeriesPaint(0, Color.darkGray);
     	
     	return plot;
     }
@@ -220,7 +220,7 @@ public class NeuralNetworkBrainPart {
     			
     			y.add((i+0.2) * -5.0);
     			x.add(j * 20.0 - 10.0 * neurons.length);
-    			z.add(neuron.getOutput() * 15);
+    			z.add(neuron.getOutput() * 5+6);
     			
     			neuronXYZPosMap.put(neuron, new double[]{x.getLast(),y.getLast(),z.getLast()});
     			
