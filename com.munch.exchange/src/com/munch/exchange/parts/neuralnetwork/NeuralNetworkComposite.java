@@ -58,6 +58,7 @@ import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkInputConfiguratorComposite;
+import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkTrainingDataComposite;
 import com.munch.exchange.parts.neuralnetwork.error.NeuralNetworkErrorPart;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
@@ -75,6 +76,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	
 	
 	private NeuralNetworkInputConfiguratorComposite inputConfigurator;
+	private NeuralNetworkTrainingDataComposite trainingDataViewer;
 	
 	private double maxProfit=0;
 	private double maxPenaltyProfit=0;
@@ -131,11 +133,6 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private Button btnLearnOptConf;
 	private Button btnLearnAlg;
 	
-	private Text textMaxProfit;
-	private Text textPenaltyProfit;
-	private Text textError;
-	private Text textGenError;
-	
 	private Combo comboConfig;
 	private NeuralNetworkDataLoader nnd_loader;
 	private Button btnSaveConfig;
@@ -144,6 +141,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 	private Button btnStartTrain;
 	private Group grpLearning;
 	private Button btnEditConfig;
+	private Composite compositeLeftMiddle;
 	
 	
 	@Inject
@@ -330,38 +328,15 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		});
 		btnAddConfig.setText("Add");
 		
+		compositeLeftMiddle = new Composite(compositeLeft, SWT.NONE);
+		compositeLeftMiddle.setLayout(new GridLayout(1, false));
+		compositeLeftMiddle.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
-		
-		//Composite composite = new Composite(compositeLeft, SWT.NONE);
-		//composite.setLayout(new GridLayout(1, false));
-		//composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 		////////////////////////////////
-		//Create the input configurator
-		createInputConfigurator(ctxt, compositeLeft);
+		//Create the Input configuror
+		createInputConfigurator(ctxt, compositeLeftMiddle);
 		
-		Composite compositeLeftBottom = new Composite(compositeLeft, SWT.NONE);
-		compositeLeftBottom.setLayout(new GridLayout(2, false));
-		compositeLeftBottom.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		//btnOpt.setEnabled(false);
-		
-		Label lblMaxProfit = new Label(compositeLeftBottom, SWT.NONE);
-		lblMaxProfit.setText("Max Profit:");
-		
-		textMaxProfit = new Text(compositeLeftBottom, SWT.BORDER);
-		textMaxProfit.setEnabled(false);
-		textMaxProfit.setEditable(false);
-		textMaxProfit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
-		
-		Label lblPenalityProfit = new Label(compositeLeftBottom, SWT.NONE);
-		lblPenalityProfit.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblPenalityProfit.setText("Penality Profit:");
-		
-		textPenaltyProfit = new Text(compositeLeftBottom, SWT.BORDER);
-		textPenaltyProfit.setEditable(false);
-		textPenaltyProfit.setEnabled(false);
-		textPenaltyProfit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Composite compositeRight = new Composite(sashForm, SWT.NONE);
 		compositeRight.setLayout(new GridLayout(1, false));
@@ -509,34 +484,14 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		});
 		btnStartTrain.setText("Start");
 		
-		Composite compositeRightHeader = new Composite(compositeRight, SWT.NONE);
-		compositeRightHeader.setLayout(new GridLayout(4, false));
-		compositeRightHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
-		Label lblError = new Label(compositeRightHeader, SWT.NONE);
-		lblError.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblError.setText("Error:");
-		
-		textError = new Text(compositeRightHeader, SWT.BORDER);
-		textError.setEnabled(false);
-		textError.setEditable(false);
-		textError.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
-		Label lblGenError = new Label(compositeRightHeader, SWT.NONE);
-		lblGenError.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblGenError.setText("Gen. Error:");
-		
-		textGenError = new Text(compositeRightHeader, SWT.BORDER);
-		textGenError.setEnabled(false);
-		textGenError.setEditable(false);
-		textGenError.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
-		Composite compositeGraph = new Composite(compositeRight, SWT.NONE);
-		compositeGraph.setLayout(new GridLayout(1, false));
-		compositeGraph.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		Composite compositeData = new Composite(compositeRight, SWT.NONE);
+		compositeData.setLayout(new GridLayout(1, false));
+		compositeData.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		sashForm.setWeights(new int[] {254, 282});
 		
-		
+		////////////////////////////////
+		//Create the Training data Composite
+		createTrainingDataViewer(ctxt, compositeData);
 		
 		//treeViewer.refresh();
 		isInitiated=true;
@@ -563,6 +518,25 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 		inputConfigurator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		//inputConfigurator.setEnabled(false);
 	}
+	
+	
+	private void createTrainingDataViewer(IEclipseContext context, Composite parentComposite ){
+		//Create a context instance
+		IEclipseContext localContact=EclipseContextFactory.create();
+		localContact.set(Composite.class, parentComposite);
+		//localContact.set(Stock.class, stock);
+		//localContact.set(INeuralNetworkProvider.class, nnProvider);
+		localContact.setParent(context);
+		
+		//////////////////////////////////
+		//Create the Input Configurator //
+		//////////////////////////////////
+		//TODO
+		trainingDataViewer=ContextInjectionFactory.make( NeuralNetworkTrainingDataComposite.class,localContact);
+		trainingDataViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		//inputConfigurator.setEnabled(false);
+	}
+	
 	
 	private void fireReadyToTrain(){
 		Configuration config=stock.getNeuralNetwork().getConfiguration();
