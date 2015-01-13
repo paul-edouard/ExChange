@@ -549,7 +549,7 @@ public class NeuralNetworkResultsPart {
 			if (monitor.isCanceled())return Status.CANCEL_STATUS;
 			
 			if(!config.areAllTimeSeriesAvailable()){
-				nn_provider.createAllValuePoints(config);
+				nn_provider.createAllValuePoints(config,false);
 			}
 			
 			

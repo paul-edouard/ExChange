@@ -51,6 +51,7 @@ import org.eclipse.wb.swt.ResourceManager;
 
 
 
+
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddTimeSeriesDialog;
 import com.munch.exchange.model.core.ExchangeRate;
@@ -59,8 +60,7 @@ import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.parts.InfoPart;
-import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider;
-import com.munch.exchange.parts.neuralnetwork.NeuralNetworkContentProvider.NeuralNetworkSerieCategory;
+import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkInputConfiguratorContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
 
@@ -74,7 +74,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 	private boolean isEditing=false;
 	private Stock stock;
 	private Configuration configLocal;
-	private NeuralNetworkContentProvider contentProvider;
+	private NeuralNetworkInputConfiguratorContentProvider contentProvider;
 	private TimeSeriesUpdater timeSeriesUpdater;
 	
 	private int numberOfArchitecturesUpdated=0;
@@ -115,7 +115,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		super(parent, SWT.NONE);
 		this.stock=(Stock) rate;
 		this.neuralNetworkProvider=nnProvider;
-		contentProvider=new NeuralNetworkContentProvider();
+		contentProvider=new NeuralNetworkInputConfiguratorContentProvider();
 		configLocal=this.stock.getNeuralNetwork().getConfiguration();
 		timeSeriesUpdater=new TimeSeriesUpdater();
 		
@@ -591,7 +591,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			
 			//Recreate all inputs points
 			if (monitor.isCanceled())return Status.CANCEL_STATUS;
-			neuralNetworkProvider.createAllValuePoints(configLocal);
+			neuralNetworkProvider.createAllValuePoints(configLocal,true);
 			
 			//Update all architectures
 			int pos=1;

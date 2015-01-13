@@ -150,7 +150,16 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 
 	
 	@Override
-	public void createAllValuePoints(Configuration configuration) {
+	public synchronized void createAllValuePoints(Configuration configuration, boolean forceCreation) {
+		
+		if(!forceCreation){
+			if(configuration.areAllTimeSeriesAvailable() 
+					&& configuration.getOutputPointList()!=null 
+					&& !configuration.getOutputPointList().isEmpty())
+			
+			return;
+		}
+		
 		//Test if the stock has a defined parent
 		if(configuration.getParent()==null){
 			logger.error("The configation has not defined parent!");

@@ -1,4 +1,4 @@
-package com.munch.exchange.parts.neuralnetwork;
+package com.munch.exchange.parts.neuralnetwork.data;
 
 import java.util.LinkedList;
 
@@ -12,11 +12,11 @@ import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
 import com.munch.exchange.model.core.neuralnetwork.TimeSeriesCategory;
 
-public class NeuralNetworkContentProvider implements
+public class NeuralNetworkInputConfiguratorContentProvider implements
 		IStructuredContentProvider, ITreeContentProvider {
 	
 	
-	private static Logger logger = Logger.getLogger(NeuralNetworkContentProvider.class);
+	private static Logger logger = Logger.getLogger(NeuralNetworkInputConfiguratorContentProvider.class);
 	
 	private NeuralNetworkSerieCategory root=
 			new NeuralNetworkSerieCategory(null, TimeSeriesCategory.ROOT);
@@ -27,7 +27,7 @@ public class NeuralNetworkContentProvider implements
 	private NeuralNetworkSerieCategory financialCategory;
 	private NeuralNetworkSerieCategory OutputCategory;
 	
-	public NeuralNetworkContentProvider(){
+	public NeuralNetworkInputConfiguratorContentProvider(){
 		//this.stock=stock;
 		
 		buildNeuralNetworkSerieCategories();

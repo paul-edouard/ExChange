@@ -203,7 +203,7 @@ public class NeuralNetworkResultsChartPart {
     	
 		
 		if(!archi.getParent().areAllTimeSeriesAvailable()){
-			nn_provider.createAllValuePoints(config);
+			nn_provider.createAllValuePoints(config,false);
 		}
 		
 		//double[] input=config.getLastInput();

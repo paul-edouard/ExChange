@@ -156,10 +156,13 @@ public class Configuration extends XmlParameterElement {
 	//  Training Data & Last Input
 	//********************************
 	
+	public static final String ROOT_DATA_SET="root";
+	
+	
 	/**
 	 * create the Training Data and the last input array
 	 */
-	private void createTrainingData(){
+	private synchronized void createTrainingData(){
 		
 		if(!areAllTimeSeriesAvailable()){
 			logger.info("Create Training Data ERROR: the time series are not available");
@@ -187,6 +190,8 @@ public class Configuration extends XmlParameterElement {
 		
 		//Create the Training set
 		trainingSet = new DataSet(doubleArrayList.size(), 1);
+		trainingSet.setLabel(ROOT_DATA_SET);
+		//this.getInputNeuronNames().toArray();
 		
 		//double[] outputdiffFactor=new double[len-1];
 		for(int i=0;i<len;i++){

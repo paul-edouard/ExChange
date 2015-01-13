@@ -22,7 +22,7 @@ public interface INeuralNetworkProvider {
 	 * 
 	 * @param stock
 	 */
-	void createAllValuePoints(Configuration configuration);
+	void createAllValuePoints(Configuration configuration, boolean forceCreation);
 	
 	//ValuePointList calculateMaxProfitOutputList(Stock stock);
 	

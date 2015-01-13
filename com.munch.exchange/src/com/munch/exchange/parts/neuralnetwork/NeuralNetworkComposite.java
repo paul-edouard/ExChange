@@ -413,7 +413,7 @@ public class NeuralNetworkComposite extends Composite implements LearningEventLi
 				//logger.info("Start Train click!");
 				
 				if(!stock.getNeuralNetwork().getConfiguration().areAllTimeSeriesAvailable()){
-					neuralNetworkProvider.createAllValuePoints(stock.getNeuralNetwork().getConfiguration());
+					neuralNetworkProvider.createAllValuePoints(stock.getNeuralNetwork().getConfiguration(),true);
 				}
 				
 				Configuration config=stock.getNeuralNetwork().getConfiguration();
