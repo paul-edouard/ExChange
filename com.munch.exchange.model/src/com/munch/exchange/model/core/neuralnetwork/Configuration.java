@@ -21,6 +21,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesCategory;
+import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlock;
+import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlocks;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.model.core.optimization.OptimizationResults;
 import com.munch.exchange.model.core.optimization.OptimizationResults.Type;
@@ -54,6 +58,7 @@ public class Configuration extends XmlParameterElement {
 	private DataSet trainingSet=null;
 	private double[] lastInput=null;
 	private ValuePointList outputPointList=new ValuePointList();
+	private TrainingBlocks trainingBlocks=new TrainingBlocks();
 	
 	//Time Series
 	private LinkedList<TimeSeries> allTimeSeries=new LinkedList<TimeSeries>();
@@ -263,7 +268,7 @@ public class Configuration extends XmlParameterElement {
 		lastInput=null;
 	}
 	
-	public DataSet getTrainingSet() {
+	public DataSet getDataSet() {
 		if(trainingSet==null)createTrainingData();
 		return trainingSet;
 	}
@@ -274,11 +279,56 @@ public class Configuration extends XmlParameterElement {
 		return lastInput;
 	}
 	
+	public TrainingBlocks getTrainingBlocks() {
+		return trainingBlocks;
+	}
+	
+	public DataSet getTrainingDataSet(){
+		DataSet allData=this.getDataSet();
+		if(trainingBlocks.getBlocks().isEmpty())return allData;
+		
+		//Create the training set
+		DataSet trainSet=new DataSet(allData.getInputSize(), allData.getOutputSize());
+		
+		for(TrainingBlock block : trainingBlocks.getBlocks()){
+			if(!block.isTraining())continue;
+			
+			for(int i=block.getStart();i<=block.getEnd();i++){
+				trainSet.addRow(allData.getRowAt(i));
+			}
+		
+		}
+		return trainSet;
+		
+	}
+	
+	public DataSet getValidateDataSet(){
+		if(trainingBlocks.getBlocks().isEmpty())return null;
+		
+		DataSet allData=this.getDataSet();
+		//Create the training set
+		DataSet valSet=new DataSet(allData.getInputSize(), allData.getOutputSize());
+				
+		for(TrainingBlock block : trainingBlocks.getBlocks()){
+			if(block.isTraining())continue;
+					
+			for(int i=block.getStart();i<=block.getEnd();i++){
+				valSet.addRow(allData.getRowAt(i));
+			}
+				
+		}
+		return valSet;
+	}
+	
 	
 	//*************************
 	// Time Series
 	//*************************
 	
+	
+
+
+
 	public Configuration createCopy(){
 		Configuration copy=new Configuration();
 		copy.allTimeSeries=this.createCopyOfTimeSeries();
@@ -694,6 +744,9 @@ public class Configuration extends XmlParameterElement {
 		else if(childElement.getTagName().equals(optArchitectureParam.getTagName())){
 			optArchitectureParam.init(childElement);
 		}
+		else if(childElement.getTagName().equals(trainingBlocks.getTagName())){
+			trainingBlocks.init(childElement);
+		}
 		else if(childElement.getTagName().equals(arch.getTagName())){
 			arch.init(childElement);
 			arch.setParent(this);
@@ -726,6 +779,7 @@ public class Configuration extends XmlParameterElement {
 		rootElement.appendChild(optLearnParam.toDomElement(doc));
 		rootElement.appendChild(learnParam.toDomElement(doc));
 		rootElement.appendChild(optArchitectureParam.toDomElement(doc));
+		rootElement.appendChild(trainingBlocks.toDomElement(doc));
 		
 		for(NetworkArchitecture ent:networkArchitectures){
 			rootElement.appendChild(ent.toDomElement(doc));

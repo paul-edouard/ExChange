@@ -14,8 +14,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
-import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
-import com.munch.exchange.model.core.neuralnetwork.TimeSeriesCategory;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesCategory;
 
 public class AddTimeSeriesDialog extends TitleAreaDialog {
 	private Combo comboTimeSeries;

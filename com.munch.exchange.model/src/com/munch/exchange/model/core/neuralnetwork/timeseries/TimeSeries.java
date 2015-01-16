@@ -1,4 +1,4 @@
-package com.munch.exchange.model.core.neuralnetwork;
+package com.munch.exchange.model.core.neuralnetwork.timeseries;
 
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -6,6 +6,8 @@ import java.util.LinkedList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.neuralnetwork.ValuePoint;
+import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class TimeSeries extends XmlParameterElement{
@@ -15,7 +17,7 @@ public class TimeSeries extends XmlParameterElement{
 	static final String FIELD_Id="Id";
 	static final String FIELD_Category="Category";
 	static final String FIELD_TimeRemainingActivated="TimeRemainingActivated";
-	static final String FIELD_NumberOfPastValues="NumberOfPastValues";
+	public static final String FIELD_NumberOfPastValues="NumberOfPastValues";
 	static final String FIELD_InputValues="InputValues";
 	
 	private String Name;

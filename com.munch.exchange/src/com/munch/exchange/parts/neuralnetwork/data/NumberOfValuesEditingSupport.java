@@ -6,7 +6,7 @@ import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TreeViewer;
 
 import com.munch.exchange.model.core.Stock;
-import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 import com.munch.exchange.services.INeuralNetworkProvider;
 
 public class NumberOfValuesEditingSupport extends EditingSupport {

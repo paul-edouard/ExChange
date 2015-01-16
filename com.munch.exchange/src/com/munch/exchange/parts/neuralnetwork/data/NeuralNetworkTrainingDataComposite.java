@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -26,7 +27,11 @@ import org.neuroph.core.data.DataSetRow;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.services.INeuralNetworkProvider;
+
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 
 public class NeuralNetworkTrainingDataComposite extends Composite{
 	
@@ -36,10 +41,10 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 	private Configuration config=null;
 	
 	private Text textNbOfAvailableData;
-	private Text textPercentOfTraining;
+	private Text textTrainingRate;
 	private Text textNbOfBlocks;
 	private Slider sliderNbOfBlocks;
-	private Slider sliderPercentOfTraining;
+	private Slider sliderTrainingRate;
 	
 	private NeuralNetworkTrainingDataContentProvider contentProvider=new NeuralNetworkTrainingDataContentProvider();
 	private Tree tree;
@@ -47,6 +52,12 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 	
 	@Inject
 	private INeuralNetworkProvider neuralNetworkProvider;
+	
+	@Inject
+	private IEventBroker eventBroker;
+	
+	
+	private Button btnDistribute;
 	
 	
 	@Inject
@@ -64,23 +75,60 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 		textNbOfAvailableData = new Text(compositeHeader, SWT.BORDER);
 		textNbOfAvailableData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		textNbOfAvailableData.setEditable(false);
-		new Label(compositeHeader, SWT.NONE);
+		
+		btnDistribute = new Button(compositeHeader, SWT.NONE);
+		btnDistribute.setEnabled(false);
+		btnDistribute.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				config.getTrainingBlocks().setNbOfBlocks(sliderNbOfBlocks.getSelection());
+				config.getTrainingBlocks().setTrainingRate(((double) sliderTrainingRate.getSelection() )/100.0);
+				
+				
+				config.getTrainingBlocks().createBlocks(config.getDataSet());
+				
+				InfoPart.postInfoText(eventBroker, String.valueOf(config.getTrainingBlocks()));
+				
+			}
+		});
+		btnDistribute.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		btnDistribute.setText("Distribute");
 		
 		Label lblPerOfTraining = new Label(compositeHeader, SWT.NONE);
-		lblPerOfTraining.setText("Per. of Training:");
+		lblPerOfTraining.setText("Training Rate:");
 		
-		sliderPercentOfTraining = new Slider(compositeHeader, SWT.NONE);
+		sliderTrainingRate = new Slider(compositeHeader, SWT.NONE);
+		sliderTrainingRate.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				textTrainingRate.setText(sliderTrainingRate.getSelection()+"%");
+			}
+		});
+		sliderTrainingRate.setMaximum(101);
+		sliderTrainingRate.setMinimum(1);
+		sliderTrainingRate.setSelection(70);
+		sliderTrainingRate.setPageIncrement(1);
 		
-		textPercentOfTraining = new Text(compositeHeader, SWT.BORDER);
-		textPercentOfTraining.setEditable(false);
-		textPercentOfTraining.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textTrainingRate = new Text(compositeHeader, SWT.BORDER);
+		textTrainingRate.setText("70%");
+		textTrainingRate.setEditable(false);
+		textTrainingRate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Label lblNbOfBlocks = new Label(compositeHeader, SWT.NONE);
 		lblNbOfBlocks.setText("Nb. of Blocks:");
 		
 		sliderNbOfBlocks = new Slider(compositeHeader, SWT.NONE);
+		sliderNbOfBlocks.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				textNbOfBlocks.setText(String.valueOf(sliderNbOfBlocks.getSelection()));
+			}
+		});
+		sliderNbOfBlocks.setSelection(20);
+		sliderNbOfBlocks.setPageIncrement(1);
 		
 		textNbOfBlocks = new Text(compositeHeader, SWT.BORDER);
+		textNbOfBlocks.setText("20");
 		textNbOfBlocks.setEditable(false);
 		textNbOfBlocks.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
@@ -132,9 +180,22 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 	private void refreshGui(){
 		
 		logger.info("Refresh called!");
-		textNbOfAvailableData.setText(String.valueOf(this.config.getTrainingSet().size()));
+		textNbOfAvailableData.setText(String.valueOf(this.config.getDataSet().size()));
+		btnDistribute.setEnabled(true);
+		if(this.config.getTrainingBlocks().getNbOfBlocks()>0){
+			this.sliderNbOfBlocks.setSelection(this.config.getTrainingBlocks().getNbOfBlocks());
+			this.textNbOfBlocks.setText(String.valueOf(sliderNbOfBlocks.getSelection()));
+			
+			this.sliderTrainingRate.setSelection( (int)(this.config.getTrainingBlocks().getTrainingRate()*100));
+			this.textTrainingRate.setText(sliderTrainingRate.getSelection()+"%");
+		}
+		else{
+			this.sliderNbOfBlocks.setSelection(20);
+			this.sliderTrainingRate.setSelection(70);
+		}
 		
-		if(this.config.getTrainingSet()==null){
+		
+		if(this.config.getDataSet()==null){
 			logger.info("Training set is null!");
 			return;
 		}

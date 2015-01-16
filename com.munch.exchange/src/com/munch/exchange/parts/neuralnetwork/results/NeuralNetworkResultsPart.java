@@ -144,7 +144,10 @@ public class NeuralNetworkResultsPart {
 		addColumn("Last Tr.",100,new LastTrainingLabelProvider(),10);
 		
 		addColumn("Prediction",100,new PredictionLabelProvider(),11);
+		
 		addColumn("Tot. Profit",100,new TotalProfitLabelProvider(),12);
+		addColumn("Train. Profit",100,new TrainProfitLabelProvider(),13);
+		addColumn("Val. Profit",100,new ValidateProfitLabelProvider(),14);
 		
 		tree.setSortColumn(firstColumn);
 	    tree.setSortDirection(1);
@@ -480,6 +483,46 @@ public class NeuralNetworkResultsPart {
 		
 	}
 	
+	class TrainProfitLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				double pro=getResultsInfo(el).trainProfit;
+				return String.format("%.2f", pro);
+			}
+			if(element instanceof ResultEntity){
+				ResultEntity el=(ResultEntity) element;
+				double pro=getResultsInfo(el).trainProfit;
+				return String.format("%.2f", pro);
+			}
+			return super.getText(element);
+		}
+
+		
+	}
+	
+	class ValidateProfitLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				double pro=getResultsInfo(el).validateProfit;
+				return String.format("%.2f", pro);
+			}
+			if(element instanceof ResultEntity){
+				ResultEntity el=(ResultEntity) element;
+				double pro=getResultsInfo(el).validateProfit;
+				return String.format("%.2f", pro);
+			}
+			return super.getText(element);
+		}
+
+		
+	}
+	
 	
 	
 	
@@ -524,6 +567,8 @@ public class NeuralNetworkResultsPart {
 	class ResultsInfo{
 		public double prediction=Double.NaN;
 		public double totalProfit=Double.NaN;
+		public double trainProfit=Double.NaN;
+		public double validateProfit=Double.NaN;
 		
 	}
 	
@@ -554,7 +599,9 @@ public class NeuralNetworkResultsPart {
 			
 			
 			double[] input=config.getLastInput();
-			DataSet dataset=config.getTrainingSet();
+			DataSet dataset=config.getDataSet();
+			DataSet trainSet=config.getTrainingDataSet();
+			DataSet valSet=config.getValidateDataSet();
 			
 			//RateChart.PENALTY;
 			
@@ -572,11 +619,22 @@ public class NeuralNetworkResultsPart {
 						double pred=archi.calculateNetworkOutput(input, ent.getDoubleArray());
 						info.prediction=pred;
 						
-						//Profit
+						//Total Profit
 						double[][] outputs=archi.calculateNetworkOutputsAndProfit(dataset, ent.getDoubleArray(), ProfitUtils.PENALTY);
 						if(outputs==null)continue;
 						double[] profit=outputs[5];
 						info.totalProfit=profit[profit.length-1];
+						
+						//Train Profit
+						outputs=archi.calculateNetworkOutputsAndProfit(trainSet, ent.getDoubleArray(), ProfitUtils.PENALTY);
+						if(outputs==null)continue;profit=outputs[5];
+						info.trainProfit=profit[profit.length-1];
+						
+						//Validate Profit
+						if(valSet==null)continue;
+						outputs=archi.calculateNetworkOutputsAndProfit(valSet, ent.getDoubleArray(), ProfitUtils.PENALTY);
+						if(outputs==null)continue;profit=outputs[5];
+						info.validateProfit=profit[profit.length-1];
 						
 					}
 				}

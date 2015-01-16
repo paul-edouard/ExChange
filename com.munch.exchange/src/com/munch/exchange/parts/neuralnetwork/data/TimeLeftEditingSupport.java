@@ -8,7 +8,7 @@ import org.eclipse.swt.SWT;
 
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
-import com.munch.exchange.model.core.neuralnetwork.TimeSeries;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 import com.munch.exchange.services.INeuralNetworkProvider;
 
 public class TimeLeftEditingSupport extends EditingSupport {

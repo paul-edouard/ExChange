@@ -45,7 +45,7 @@ public class NeuralNetworkTrainingDataContentProvider implements
 			Object[]  objs=new Object[2];
 			
 			objs[0]=p_el.getLastInput();
-			objs[1]=p_el.getTrainingSet();
+			objs[1]=p_el.getDataSet();
 			
 			return objs;
 			

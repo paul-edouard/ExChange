@@ -43,6 +43,8 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
+import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlock;
+import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlocks;
 import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.services.INeuralNetworkProvider;
 import com.munch.exchange.utils.ProfitUtils;
@@ -207,7 +209,7 @@ public class NeuralNetworkResultsChartPart {
 		}
 		
 		//double[] input=config.getLastInput();
-		DataSet dataset=config.getTrainingSet();
+		DataSet dataset=config.getDataSet();
 		
     
 		outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset,ProfitUtils.PENALTY);
@@ -239,7 +241,11 @@ public class NeuralNetworkResultsChartPart {
 		
 		addSeriesAsBar(responseRenderer, responseCollection,responseSeries[0] , Color.blue,false);
 		addSeriesAsBar(responseRenderer, responseCollection,responseSeries[1] , Color.red,false);
-		addSeriesAsBar(responseRenderer, responseCollection,createTargetResponseSerie("Desired Ouput",desiredOutput) , Color.white,true);
+		
+		XYSeries[] targetSeries=createTargetResponseSerie("Desired Ouput",desiredOutput);
+		addSeriesAsBar(responseRenderer, responseCollection,targetSeries[0] , Color.white,true);
+		addSeriesAsBar(responseRenderer, responseCollection,targetSeries[1] , Color.yellow,true);
+		
 		addSeriesAsLine(profitRenderer, profitCollection,createSerie("Profit",profit) , Color.gray,false);
 		addSeriesAsLine(profitRenderer, profitCollection,createDeltaSerie("Delta Profit",desiredProfit,profit) , Color.GREEN,false);
 		addSeriesAsLine(maxProfitRenderer, maxProfitCollection,createSerie("Max Profit",desiredProfit) , Color.darkGray,false);
@@ -318,18 +324,44 @@ public class NeuralNetworkResultsChartPart {
     }
     
     
-    private XYSeries createTargetResponseSerie(String name,double[] x){
-    	XYSeries r_series =new XYSeries(name);
+    private XYSeries[] createTargetResponseSerie(String name,double[] x){
+    	
+    	TrainingBlocks tb=this.archi.getParent().getTrainingBlocks();
+    	
+    	XYSeries train_series =new XYSeries(name+" [Train]");
+    	XYSeries val_series =new XYSeries(name+ " [Validate]");
+    	
+    	if(!tb.getBlocks().isEmpty()){
+    		for(TrainingBlock block:tb.getBlocks()){
+    			for(int i=block.getStart();i<block.getEnd();i++){
+    				if(i>=period[0] && i<period[1]){
+    					if(block.isTraining()){
+    						train_series.add((double)i, x[i]);
+    					}
+    					else{
+    						val_series.add((double)i, x[i]);
+    					}
+    				}
+    			}
+    		}
+    		
+    		
+    	}
+    	
+    	else{
 		//int pos=1;
 		for(int i=0;i<x.length;i++){
 			if(i>=period[0] && i<period[1]){
 				//r_series.add(i-0.5, x[i]);
-				r_series.add((double)i, x[i]);
+				train_series.add((double)i, x[i]);
 				//pos++;
 			}
 		}
+    	}
 		
-		return 	r_series;
+		XYSeries[] ss={train_series,val_series};
+		
+		return 	ss;
     }
     
     

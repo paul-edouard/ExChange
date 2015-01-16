@@ -1,4 +1,4 @@
-package com.munch.exchange.model.core.neuralnetwork;
+package com.munch.exchange.model.core.neuralnetwork.timeseries;
 
 import java.util.LinkedList;
 
