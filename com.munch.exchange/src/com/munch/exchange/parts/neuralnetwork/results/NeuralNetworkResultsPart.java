@@ -647,13 +647,22 @@ public class NeuralNetworkResultsPart {
 				double pred=archi.calculateNetworkOutputFromBestResult(input);
 				info.prediction=pred;
 				
-				//Profit
+				//Total Profit
 				double[][] outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset, ProfitUtils.PENALTY);
 				if(outputs==null)continue;
 				double[] profit=outputs[5];
 				info.totalProfit=profit[profit.length-1];
-				//logger.info("Output: "+Arrays.toString(outputs[0]));
-				//logger.info("Profit: "+Arrays.toString(profit));
+				
+				//Train Profit
+				outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(trainSet, ProfitUtils.PENALTY);
+				if(outputs==null)continue;profit=outputs[5];
+				info.trainProfit=profit[profit.length-1];
+				
+				//Validate Profit
+				if(valSet==null)continue;
+				outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(valSet,  ProfitUtils.PENALTY);
+				if(outputs==null)continue;profit=outputs[5];
+				info.validateProfit=profit[profit.length-1];
 				if(!wasLoaded)
 					archi.clearResultsAndNetwork(false);
 			}

@@ -29,7 +29,7 @@ public class DeleteRateHandler {
 	
 	@Execute
 	public void execute(Shell shell, IExchangeRateProvider rateProvider) {
-		System.out.println("Selected Rate:"+selectedRate.getFullName());
+	//	System.out.println("Selected Rate:"+selectedRate.getFullName());
 		if(selectedRate==null){
 			MessageDialog.openError(shell, "Selection error", "No rate selected");
 			return;
