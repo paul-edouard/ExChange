@@ -504,6 +504,8 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		
 		if(stock==null)return;
 		if(!isCompositeAbleToReact(stock.getUUID()))return;
+		if(configLocal==null)return;
+		if(configLocal.getNetworkArchitectures()==null)return;
 		
 		//progressBar.setSize(progressBarPoint);
 		progressBar.setVisible(true);

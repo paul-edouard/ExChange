@@ -118,9 +118,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 	/**
 	 * Default constructor
 	 */
-	public NetworkArchitecture(){}
+	public NetworkArchitecture(){
+		this.setSaveParameters(false);
+	}
 	
 	public NetworkArchitecture(int numberOfInputNeurons,int numberOfInnerNeurons,boolean[] cons ,String localSavepath ){
+		this.setSaveParameters(false);
+		
 		LinkedList<String> inputNeuronsLabels=new LinkedList<String>();
 		for(int i=0;i<numberOfInputNeurons;i++){
 			inputNeuronsLabels.add(String.valueOf(i));
@@ -144,6 +148,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	
 	public NetworkArchitecture(LinkedList<String> inputNeuronsLabels,int numberOfInnerNeurons,boolean[] cons,String localSavepath ){
+		this.setSaveParameters(false);
 		
 		this.numberOfInputNeurons=inputNeuronsLabels.size();
 		this.numberOfInnerNeurons=numberOfInnerNeurons;

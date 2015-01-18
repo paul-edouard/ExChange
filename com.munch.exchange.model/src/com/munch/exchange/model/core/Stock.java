@@ -51,9 +51,11 @@ public class Stock extends ExchangeRate {
 
 	public void setNeuralNetwork(NNetwork neuralNetwork) {
 		changes.firePropertyChange(FIELD_NeuralNetwork, this.neuralNetwork, this.neuralNetwork = neuralNetwork);
+		/*
 		for(Configuration config:neuralNetwork.getConfigurations()){
 			config.setParent(this);
 		}
+		*/
 	}
 	
 

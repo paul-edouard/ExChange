@@ -20,33 +20,51 @@ public class NNetwork extends XmlParameterElement{
 	static final String FIELD_Configurations="Configurations";
 	static final String FIELD_CurrentConfiguration="CurrentConfiguration";
 	
+	private LinkedList<ConfigLinkInfo> configInfoList=new LinkedList<ConfigLinkInfo>();
 	
-	private LinkedList<Configuration> Configurations=new LinkedList<Configuration>();
-	private String currentConfiguration;
+	//private LinkedList<Configuration> Configurations=new LinkedList<Configuration>();
+	private String currentConfigName;
+	private Configuration configuration;
 	
+	
+	
+	
+	
+	public void setConfiguration(Configuration configuration) {
+	this.configuration = configuration;
+	}
+	
+
 	public Configuration getConfiguration(){
-		for(Configuration config:Configurations){
-			if(config.getName().equals(currentConfiguration))
-				return config;
-		}
-		return null;
+		return configuration;
 	}
 
-	public String getCurrentConfiguration() {
-		return currentConfiguration;
+	public String getCurrentConfigName() {
+		return currentConfigName;
+	}
+	
+	public String getCurrentConfigId() {
+		
+		for(ConfigLinkInfo configInfo:configInfoList){
+			if(configInfo.name.equals(currentConfigName))
+				return configInfo.id;
+		}
+		
+		return "";
 	}
 	
 	
 	public boolean removeCurrentConfiguration(){
 		
-		if(Configurations.size()<2)return false;
+		if(configInfoList.size()<2)return false;
 		
-		for(int i=0;i<Configurations.size();i++){
-			Configuration config=Configurations.get(i);
+		for(int i=0;i<configInfoList.size();i++){
+			ConfigLinkInfo configInfo=configInfoList.get(i);
 		//for(Configuration config:Configurations){
-			if(config.getName().equals(currentConfiguration)){
-				Configurations.remove(i);
-				currentConfiguration=Configurations.getFirst().getName();
+			if(configInfo.name.equals(currentConfigName)){
+				configInfoList.remove(i);
+				currentConfigName=configInfoList.getFirst().name;
+				configuration=null;
 				fireConfigurationChanged();
 				return true;
 			}
@@ -59,10 +77,11 @@ public class NNetwork extends XmlParameterElement{
 	
 	
 	public boolean setCurrentConfiguration(String currentConfiguration) {
-		if(this.currentConfiguration==null || !this.currentConfiguration.equals(currentConfiguration)){
-			this.currentConfiguration = currentConfiguration;
-			for(Configuration config:Configurations){
-				if(config.getName().equals(currentConfiguration)){
+		if(this.currentConfigName==null || !this.currentConfigName.equals(currentConfiguration)){
+			for(ConfigLinkInfo configInfo:configInfoList){
+				if(configInfo.name.equals(currentConfiguration)){
+					this.currentConfigName = currentConfiguration;
+					configuration=null;
 					fireConfigurationChanged();
 					return true;
 				}
@@ -72,61 +91,101 @@ public class NNetwork extends XmlParameterElement{
 		//changes.firePropertyChange(FIELD_CurrentConfiguration, this.currentConfiguration, this.currentConfiguration = currentConfiguration);
 	}
 	
-	public boolean addNewConfiguration(String configName, Stock stock){
-		for(Configuration config:Configurations){
-			if(config.getName().equals(configName))
+	public boolean addNewConfiguration(Configuration new_config, Stock stock){
+		for(ConfigLinkInfo configInfo:configInfoList){
+			if(configInfo.name.equals(new_config.getName()))
 				return false;
 		}
 		
-		Configuration conf=new Configuration();
-		conf.setName(configName);
-		conf.setDirty(true);
-		conf.setParent(stock);
+		if(new_config==null)return false;
 		
-		Configurations.add(conf);
-		currentConfiguration=configName;
+		new_config.setParent(stock);
+		
+		ConfigLinkInfo configInfo=new ConfigLinkInfo();
+		configInfo.id=new_config.getId();
+		configInfo.name=new_config.getName();
+		
+		configInfoList.add(configInfo);
+		
+		
+		currentConfigName=configInfo.name;
+		configuration=new_config;
 		
 		fireConfigurationChanged();
 		
 		return true;
 	}
 	
-	public LinkedList<Configuration> getConfigurations() {
-		return Configurations;
+	public LinkedList<ConfigLinkInfo> getConfigInfoList() {
+		return configInfoList;
 	}
 
-	public void setConfigurations(LinkedList<Configuration> configuations) {
-		changes.firePropertyChange(FIELD_Configurations, this.Configurations,
-				this.Configurations = configuations);
+	
+	
+	//****************************************
+	//***      CONFIGURATION LINK INFO    ****
+	//****************************************
+	
+
+
+	public class ConfigLinkInfo extends XmlParameterElement{
+		
+		
+		static final String FIELD_Id="Id";
+		static final String FIELD_Name="Name";
+		
+		public String id;
+		public String name;
+		@Override
+		protected void initAttribute(Element rootElement) {
+			this.id=(rootElement.getAttribute(FIELD_Id));
+			this.name=(rootElement.getAttribute(FIELD_Name));
+			
+		}
+		@Override
+		protected void initChild(Element childElement) {}
+		@Override
+		protected void setAttribute(Element rootElement) {
+			rootElement.setAttribute(FIELD_Id,this.id);
+			rootElement.setAttribute(FIELD_Name,this.name);
+		}
+		@Override
+		protected void appendChild(Element rootElement, Document doc) {}
+		
 	}
 	
+	
+	
+	//****************************************
+	//***               XML               ****
+	//****************************************
 	
 	@Override
 	protected void initAttribute(Element rootElement) {
-		this.setCurrentConfiguration(rootElement.getAttribute(FIELD_CurrentConfiguration));
+		this.currentConfigName=rootElement.getAttribute(FIELD_CurrentConfiguration);
 		
-		Configurations.clear();
+		configInfoList.clear();
 	}
 
 	@Override
 	protected void initChild(Element childElement) {
-		Configuration ent=new Configuration();
+		ConfigLinkInfo ent=new ConfigLinkInfo();
 		if(childElement.getTagName().equals(ent.getTagName())){
 			ent.init(childElement);
-			Configurations.add(ent);
+			configInfoList.add(ent);
 		}
 		
 	}
 
 	@Override
 	protected void setAttribute(Element rootElement) {
-		rootElement.setAttribute(FIELD_CurrentConfiguration,this.getCurrentConfiguration());
+		rootElement.setAttribute(FIELD_CurrentConfiguration,this.getCurrentConfigName());
 		
 	}
 
 	@Override
 	protected void appendChild(Element rootElement, Document doc) {
-		for(Configuration ent:Configurations){
+		for(ConfigLinkInfo ent:configInfoList){
 			rootElement.appendChild(ent.toDomElement(doc));
 		}
 		
@@ -134,6 +193,7 @@ public class NNetwork extends XmlParameterElement{
 		
 	}
 	
+
 	//****************************************
 	//***            LISTENER             ****
 	//****************************************

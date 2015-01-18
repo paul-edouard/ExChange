@@ -8,6 +8,16 @@ import org.w3c.dom.NodeList;
 public abstract class XmlParameterElement extends ParameterElement implements
 		XmlElementIF {
 	
+	
+	private boolean saveParameters=true;
+	
+	
+	
+	public void setSaveParameters(boolean saveParameters) {
+	this.saveParameters = saveParameters;
+	}
+	
+
 	/**
 	 * initializes the attributes from a xml element
 	 * @param rootElement
@@ -80,7 +90,9 @@ public abstract class XmlParameterElement extends ParameterElement implements
 		this.setAttribute(e);
 		
 		//Parameter
-		e.appendChild(this.getParameter().toDomElement(doc));
+		if(saveParameters){
+			e.appendChild(this.getParameter().toDomElement(doc));
+		}
 		//child
 		this.appendChild(e,doc);
 		

@@ -31,6 +31,8 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 	
 	final private static String NeuronalNetworkPathStr="NeuronalNetwork";
 	final private static String NeuronalNetworkFileStr="NeuronalNetwork.xml";
+	final private static String NeuronalNetworkConfigFilePrefixStr="Config_";
+	final private static String NeuronalNetworkConfigFileSuffixStr=".xml";
 	
 	private static Logger logger = Logger.getLogger(NeuralNetworkLocalImpl.class);
 	
@@ -47,9 +49,40 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		return "";
 	}
 	
+	private String getArchitecturePath(Stock stock,Configuration config){
+		String nn_path=getSavePath(stock);
+		File dir=new File(nn_path+File.separator+config.getId());
+		if(dir.exists()){
+			return dir.getAbsolutePath();
+		}
+		
+		if(dir.mkdirs()){
+			return dir.getAbsolutePath();
+		}
+		return "";
+		
+	}
+	
+	@Override
+	public String getNetworkArchitecturesLocalSavePath(Stock stock) {
+		if(stock==null)return null;
+		if(stock.getDataPath()==null)return null;
+		if(stock.getDataPath().isEmpty())return null;
+		
+		NNetwork network=stock.getNeuralNetwork();
+		if(network==null)return null;
+		if(network.getConfiguration()==null)return null;
+		
+		return getArchitecturePath(stock , network.getConfiguration());
+	}
+
+	
+	
+	
 	private String getFileName(Stock stock, String str){
 		return this.getSavePath(stock)+File.separator+str;
 	}
+	
 	
 	@Override
 	public synchronized boolean load(Stock stock) {
@@ -62,19 +95,12 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		NNetwork network=new NNetwork();
 		if(localFile.exists()){
 			//Set the Network Save Path
-			//NetworkArchitecture.setNetworkSavePath(this.getSavePath(stock));
-			
 			if( Xml.load(network, localFile.getAbsolutePath())){
 				
-				String localPath=this.getNetworkArchitecturesLocalSavePath(stock);
-				//Set the local path of all NetworkArchitectures
-				for(Configuration config:network.getConfigurations()){
-					for(NetworkArchitecture archi:config.getNetworkArchitectures())
-						archi.setLocalSavePath(localPath);
-				}
 				stock.setNeuralNetwork(network);
 				logger.info("Neural Network localy found for "+stock.getFullName());
-				return true;
+				//Load now the current configuration
+				return loadConfiguration(stock);
 			}
 			
 		}
@@ -89,36 +115,54 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 	}
 	
 	
-	public String getNetworkArchitecturesLocalSavePath(Stock stock){
-		if(stock==null)return "";
-		if(stock.getDataPath()==null)return "";
-		if(stock.getDataPath().isEmpty())return "";
+	@Override
+	public boolean loadConfiguration(Stock stock) {
 		
-		String path=this.getSavePath(stock);
-		File dirPath=new File(path);
-		if(!dirPath.isDirectory())return "";
-		
-		return path;
-	}
-	
-	
-	/*
-	public synchronized boolean loadArchitectureResults(Stock stock, NetworkArchitecture archi){
 		if(stock==null)return false;
 		if(stock.getDataPath()==null)return false;
 		if(stock.getDataPath().isEmpty())return false;
 		
-		if(archi==null)return false;
+		NNetwork network=stock.getNeuralNetwork();
+		if(network==null){
+			logger.info("No neural network loaded "+stock.getFullName());
+			return false;
+		}
 		
-		if(archi.isResultLoaded())return true;
+		String configId=network.getCurrentConfigId();
+		if(configId.isEmpty()){
+			logger.info("No current config found for "+stock.getFullName());
+			logger.info("Creation of a empty one "+stock.getFullName());
+			Configuration config=new Configuration();
+			config.setName("New Config");
+			network.addNewConfiguration(config, stock);
+			return true;
+		}
 		
-		File dirPath=new File(this.getSavePath(stock));
-		if(!dirPath.isDirectory())return false;
+		String f_name=NeuronalNetworkConfigFilePrefixStr+configId+NeuronalNetworkConfigFileSuffixStr;
+		File localFile=new File(getFileName(stock,f_name));
+		if(localFile.exists()){
+			Configuration config=new Configuration();
+			if( Xml.load(config, localFile.getAbsolutePath())){
+				network.setConfiguration(config);
+				config.setParent(stock);
+				//Set the local path of all NetworkArchitectures
+				String path=this.getArchitecturePath(stock, config);
+				for(NetworkArchitecture archi:config.getNetworkArchitectures()){
+					if(path.isEmpty())break;
+					archi.setLocalSavePath(path);
+				}
+				
+				logger.info("Configuration localy found for "+stock.getFullName());
+				return true;
+				
+			}
+		}
 		
-		archi.loadResultsFromPath(this.getSavePath(stock));
-		return true;
-		
-	}*/
+		logger.info("the network configuration couldn't be loaded for "+stock.getFullName());
+		return false;
+	}
+
+	
 
 	@Override
 	public synchronized boolean save(Stock stock) {
@@ -131,8 +175,93 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		
 		
 		logger.info("Writing file: "+fileStr);
-		return Xml.save(stock.getNeuralNetwork(), fileStr);
+		if(Xml.save(stock.getNeuralNetwork(), fileStr)){
+			return saveConfiguration(stock);
+		}
+		
+		return false;
 	}
+	
+	@Override
+	public synchronized boolean saveConfiguration(Stock stock) {
+		
+		if(stock==null)return false;
+		if(stock.getDataPath()==null)return false;
+		if(stock.getDataPath().isEmpty())return false;
+		
+		NNetwork network=stock.getNeuralNetwork();
+		if(network==null)return false;
+		if(network.getConfiguration()==null)return false;
+		
+		
+		String f_name=NeuronalNetworkConfigFilePrefixStr+network.getConfiguration().getId()+NeuronalNetworkConfigFileSuffixStr;
+		String fileStr=getFileName(stock,f_name);
+		
+		logger.info("Writing file: "+fileStr);
+		if(Xml.save(network.getConfiguration(), fileStr)){
+			//Clean the Architecture directory
+			cleanArchitectureDirectory(stock,network.getConfiguration());
+			return true;
+			
+		}
+		
+		return false;
+	}
+	
+	public synchronized boolean deleteConfiguration(Stock stock){
+		
+		if(stock==null)return false;
+		if(stock.getDataPath()==null)return false;
+		if(stock.getDataPath().isEmpty())return false;
+		
+		NNetwork network=stock.getNeuralNetwork();
+		if(network==null)return false;
+		if(network.getConfiguration()==null)return false;
+		
+		//Delete the config file
+		String f_name=NeuronalNetworkConfigFilePrefixStr+network.getConfiguration().getId()+NeuronalNetworkConfigFileSuffixStr;
+		String fileStr=getFileName(stock,f_name);
+		File configFile=new File(fileStr);
+		configFile.delete();
+		
+		String path=this.getArchitecturePath(stock, network.getConfiguration());
+		File archi_dir=new File(path);
+		if(archi_dir.isDirectory()){
+			File[] allFiles=archi_dir.listFiles();
+			for(int i=0;i<allFiles.length;i++)
+				allFiles[i].delete();
+		}
+		
+		archi_dir.delete();
+		
+		return true;
+	}
+	
+	
+	private void cleanArchitectureDirectory(Stock stock, Configuration config){
+		String path=this.getArchitecturePath(stock, config);
+		File archi_dir=new File(path);
+		if(archi_dir.isDirectory()){
+			String[] allFiles=archi_dir.list();
+			for(int i=0;i<allFiles.length;i++){
+				String fileName=allFiles[i];
+				logger.info("Archi file found: "+fileName);
+				boolean archiFound=false;
+				for(NetworkArchitecture archi:config.getNetworkArchitectures()){
+					if(fileName.contains(archi.getId()))
+						archiFound=true;
+				}
+				
+				if(!archiFound){
+					//Delete the file
+					File toDelete=new File(path+File.separator+fileName);
+					toDelete.delete();
+				}
+				
+			}
+		}
+	}
+	
 	
 	/*
 	public synchronized boolean saveArchitectureResults(Stock stock, NetworkArchitecture archi){
@@ -316,6 +445,11 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		
 		return list;
 	}
+	
+	
+	//****************************************
+	//***              BLOCKS             ****
+	//****************************************	
 	
 	
 	private class BlockPoint{
@@ -772,6 +906,9 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 		*/
 		
 	}
+
+	
+	
 	
 	
 }

@@ -146,11 +146,11 @@ public class OpenNNConfigEditorHandler {
 	}
 	
 	private MPart createRateEditorPart(){
-		MPart part = partService.createPart(RateEditorPart.RATE_EDITOR_ID);
+		MPart part = partService.createPart(NeuralNetworkConfigEditor.CONFIG_EDITOR_ID);
 		
 		//MPart part =MBasicFactory.INSTANCE.createPartDescrip;
 		
-		part.setLabel(selectedStock.getName());
+		part.setLabel("NN Config: "+selectedStock.getName());
 		part.setIconURI(getIconURI());
 		part.setVisible(true);
 		part.setDirty(false);
@@ -172,6 +172,7 @@ public class OpenNNConfigEditorHandler {
 	private void setConfigEditorPartContext(MPart part){
 		part.setContext(context.createChild());
 		part.getContext().set(Stock.class, selectedStock);
+		part.getContext().set(ExchangeRate.class, selectedRate);
 		part.getContext().set(MDirtyable.class, new MyMDirtyable(part));
 	}
 	

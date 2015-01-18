@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.jfree.chart.renderer.category.MinMaxCategoryRenderer;
@@ -40,6 +41,7 @@ public class Configuration extends XmlParameterElement {
 	static final String FIELD_DayOfWeekActivated="DayOfWeekActivated";
 	static final String FIELD_DayOfWeek="Day of Week";
 	static final String FIELD_Name="Name";
+	static final String FIELD_Id="Id";
 	static final String FIELD_LastUpdate="LastUpdate";
 	static final String FIELD_AllTimeSeries="AllTimeSeries";
 	static final String FIELD_OutputPointList="OutputPointList";
@@ -50,7 +52,11 @@ public class Configuration extends XmlParameterElement {
 	private PeriodType period=PeriodType.DAY;
 	private boolean dayOfWeekActivated=false;
 	private String Name="New Neural Network Configuration";
+	private String id;
+	//private String localSavePath="";
+	
 	private Calendar lastUpdate=Calendar.getInstance();
+	
 	
 	private Stock parent;
 	
@@ -79,11 +85,12 @@ public class Configuration extends XmlParameterElement {
 	
 	
 	public Configuration(){
+		
+		id=UUID.randomUUID().toString();
+		
 		AlgorithmParameters.setDefaultBooleansParameters(optArchitectureParam);
 		AlgorithmParameters.setDefaultDoublesParameters(optLearnParam);
 		LearnParameters.setDefaultLearnParameters(learnParam);
-		
-		//this.parent=parent;
 	}
 	
 	
@@ -188,6 +195,7 @@ public class Configuration extends XmlParameterElement {
 		}
 		
 		//int len=Math.min(doubleArrayList.get(0).length,500);
+		if(doubleArrayList.size()==0)return;
 		int len=doubleArrayList.get(0).length;
 		
 		//Create the output array
@@ -325,8 +333,6 @@ public class Configuration extends XmlParameterElement {
 	// Time Series
 	//*************************
 	
-	
-
 
 
 	public Configuration createCopy(){
@@ -702,15 +708,21 @@ public class Configuration extends XmlParameterElement {
 		this.parent = parent;
 	}
 	
-	
+	public String getId() {
+		return id;
+	}
+
 	//****************************************
 	//***             XML                 ****
 	//****************************************
+
+	
 
 	@Override
 	protected void initAttribute(Element rootElement) {
 		
 		this.setName(rootElement.getAttribute(FIELD_Name));
+		this.id=rootElement.getAttribute(FIELD_Id);
 		this.setLastUpdate(DateTool.StringToDate(rootElement.getAttribute(FIELD_LastUpdate)));
 		
 		this.setPeriod(PeriodType.fromString((rootElement.getAttribute(FIELD_Period))));
@@ -762,6 +774,8 @@ public class Configuration extends XmlParameterElement {
 
 	@Override
 	protected void setAttribute(Element rootElement) {
+		
+		rootElement.setAttribute(FIELD_Id,this.getId());
 		rootElement.setAttribute(FIELD_Name,this.getName());
 		rootElement.setAttribute(FIELD_LastUpdate,DateTool.dateToString( this.getLastUpdate()));
 		

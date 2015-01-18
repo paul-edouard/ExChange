@@ -11,10 +11,14 @@ public interface INeuralNetworkProvider {
 	boolean load(Stock stock);
 	boolean save(Stock stock);
 	
+	boolean loadConfiguration(Stock stock);
+	boolean saveConfiguration(Stock stock);
+	boolean deleteConfiguration(Stock stock);
+	
+	
+	
 	String getNetworkArchitecturesLocalSavePath(Stock stock);
 	
-	//boolean loadArchitectureResults(Stock stock, NetworkArchitecture archi);
-	//boolean saveArchitectureResults(Stock stock, NetworkArchitecture archi);
 	
 	/**
 	 * create all value point from the defined time series
@@ -24,7 +28,4 @@ public interface INeuralNetworkProvider {
 	 */
 	void createAllValuePoints(Configuration configuration, boolean forceCreation);
 	
-	//ValuePointList calculateMaxProfitOutputList(Stock stock);
-	
-	//ValuePointList calculateMaxProfitOutputList(Stock stock,double penalty);
 }
