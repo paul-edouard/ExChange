@@ -38,6 +38,7 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NNetwork.ConfigLinkInfo;
+import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkInputConfiguratorComposite;
 import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkTrainingDataComposite;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -168,7 +169,9 @@ public class NeuralNetworkConfigEditor {
 	
 	@Focus
 	public void onFocus() {
-		//TODO Your code here
+		if(stock!=null && stock.getNeuralNetwork().getConfiguration()!=null){
+		eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
+		}
 	}
 	
 	
@@ -397,7 +400,6 @@ public class NeuralNetworkConfigEditor {
 			inputConfigurator=ContextInjectionFactory.make( NeuralNetworkInputConfiguratorComposite.class,localContact);
 			inputConfigurator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		}
-
 		
 	private void createTrainingDataViewer( Composite parentComposite ){
 			//Create a context instance
@@ -412,8 +414,7 @@ public class NeuralNetworkConfigEditor {
 			trainingDataViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		}	
 		
-	
-	
+
 	private void initComboConfig(){
 		
 		initConfigurations();
@@ -513,7 +514,6 @@ public class NeuralNetworkConfigEditor {
 		}
 		
 	}
-	
 	
 	
 	//################################

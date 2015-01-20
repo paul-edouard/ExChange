@@ -15,21 +15,22 @@ import com.munch.exchange.model.core.neuralnetwork.Configuration;
 
 public class ArchitectureOptimizationConfigurationHandler {
 	
-	@Inject
-	Shell shell;
+
 	
 	private Configuration config=null;
 	
 	
 	@Execute
-	public void execute() {
+	public void execute(Shell shell) {
+		if(shell==null)return;
 		MessageDialog.openInformation(shell, "ArchitectureOptimizationConfigurationHandler", "ArchitectureOptimizationConfigurationHandler");
 	}
 	
 	
 	@CanExecute
 	public boolean canExecute() {
-		return this.config!=null;
+		//return this.config!=null;
+		return true;
 	}
 	
 	

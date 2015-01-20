@@ -16,21 +16,24 @@ import com.munch.exchange.model.core.neuralnetwork.Configuration;
 public class LearningConfigurationHandler {
 	
 	
-	@Inject
-	Shell shell;
+	
 	
 	private Configuration config=null;
 	
 	@Execute
-	public void execute() {
+	public void execute(Shell shell) {
+		if(shell==null)return;
 		MessageDialog.openInformation(shell, "LearningConfigurationHandler", "LearningConfigurationHandler");
 	}
 	
 	
+	
 	@CanExecute
 	public boolean canExecute() {
-		return this.config!=null;
+		//return this.config!=null;
+		return true;
 	}
+	
 	
 	
 	@Inject

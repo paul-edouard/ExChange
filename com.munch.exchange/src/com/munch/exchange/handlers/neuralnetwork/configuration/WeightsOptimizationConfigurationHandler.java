@@ -15,20 +15,21 @@ import com.munch.exchange.model.core.neuralnetwork.Configuration;
 
 public class WeightsOptimizationConfigurationHandler {
 	
-	@Inject
-	Shell shell;
+	
 	
 	private Configuration config=null;
 	
 	@Execute
-	public void execute() {
+	public void execute(Shell shell) {
+		if(shell==null)return;
 		MessageDialog.openInformation(shell, "WeightsOptimizationConfigurationHandler", "WeightsOptimizationConfigurationHandler"+config.getName());
 	}
 	
 	
 	@CanExecute
 	public boolean canExecute() {
-		return this.config!=null;
+		//return this.config!=null;
+		return true;
 	}
 	
 	
