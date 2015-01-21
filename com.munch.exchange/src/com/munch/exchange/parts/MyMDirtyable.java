@@ -16,6 +16,14 @@ public class MyMDirtyable implements MDirtyable {
 	@Override
 	public void setDirty(boolean value) {
 		part.setDirty(value);
+		/*
+		if(value && !part.getLabel().startsWith("*")){
+			part.setLabel("*"+part.getLabel());
+		}
+		else if(part.getLabel().startsWith("*")){
+			part.setLabel(part.getLabel().substring(1,part.getLabel().length() ));
+		}
+		*/
 	}
 	
 	@Override

@@ -82,7 +82,7 @@ public class RateEditorPart {
 	RateChart rateChart;
 	RateWeb rateWeb;
 	StockFinancials stockFinancials;
-	NeuralNetworkComposite neuronalNetworkComposite;
+	//NeuralNetworkComposite neuronalNetworkComposite;
 	
 	
 	RateCommonInfoGroup commonInfoComposite;
@@ -113,7 +113,7 @@ public class RateEditorPart {
 		createChartTabFolder(tabFolder, "Chart");
 		if(rate instanceof Stock ){
 			createStockFinancialsTabFolder(tabFolder, "Financials");
-			createStockNeuronalNetworkTabFolder(tabFolder, NETWORK_TABITEM_TEXT);
+			//createStockNeuronalNetworkTabFolder(tabFolder, NETWORK_TABITEM_TEXT);
 			
 		}
 		
@@ -237,7 +237,7 @@ public class RateEditorPart {
 		
 	}
 	
-	
+	/*
 	// Neuronal Network
 	private void createStockNeuronalNetworkTabFolder(TabFolder tabFolder,String title) {
 		//Create the event reaction
@@ -288,11 +288,8 @@ public class RateEditorPart {
 		neuronalNetworkComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL,
 				true, true, 1, 1));
 		
-		
-		
-
 	}
-	
+	*/
 	
 	
 	private void createWebTabFolder(TabFolder tabFolder, String title){

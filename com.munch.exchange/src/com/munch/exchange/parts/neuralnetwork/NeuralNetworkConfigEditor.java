@@ -27,6 +27,7 @@ import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.e4.ui.model.application.ui.MDirtyable;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.munch.exchange.IEventConstant;
@@ -93,12 +94,15 @@ public class NeuralNetworkConfigEditor {
 	@Inject
 	Shell shell;
 	
+	@Inject
+	MDirtyable dirty;
+	
 	private Label lblLoading;
 	
 	
 	private Button btnAddConfig;
 	private Combo comboConfig;
-	private Button btnSaveConfig;
+	//private Button btnSaveConfig;
 	private Button btnDeleteConfig;
 	private Button btnEditConfig;
 	
@@ -177,7 +181,24 @@ public class NeuralNetworkConfigEditor {
 	
 	@Persist
 	public void save() {
-		//TODO Your code here
+		
+		Cursor cursor_wait=new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+		Cursor cursor_old=shell.getCursor();
+		shell.setCursor(cursor_wait);
+		
+		
+		if(neuralNetworkProvider.save(stock))
+			setDirty(false);
+		
+		
+		shell.setCursor(cursor_old);
+	}
+	
+	private void setDirty(boolean dirtyState){
+		comboConfig.setEnabled(!dirtyState);
+		btnAddConfig.setEnabled(!dirtyState);
+		dirty.setDirty(dirtyState);
+		stock.getNeuralNetwork().getConfiguration().setDirty(dirtyState);
 	}
 	
 	
@@ -214,7 +235,7 @@ public class NeuralNetworkConfigEditor {
 					stock.getNeuralNetwork().setCurrentConfiguration(comboConfig.getText());
 					
 					eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
-					btnSaveConfig.setVisible(true);
+					setDirty(true);
 				}
 				
 			}
@@ -228,26 +249,6 @@ public class NeuralNetworkConfigEditor {
 		composite_2.setLayout(gl_composite_2);
 		composite_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 		
-		btnSaveConfig = new Button(composite_2, SWT.NONE);
-		btnSaveConfig.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-					
-					Cursor cursor_wait=new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
-					Cursor cursor_old=shell.getCursor();
-					shell.setCursor(cursor_wait);
-					
-					neuralNetworkProvider.save(stock);
-					btnSaveConfig.setVisible(false);
-					
-					shell.setCursor(cursor_old);
-				
-				
-			}
-		});
-		btnSaveConfig.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
-		btnSaveConfig.setText("Save");
-		btnSaveConfig.setVisible(false);
 		
 		btnDeleteConfig = new Button(composite_2, SWT.NONE);
 		btnDeleteConfig.setEnabled(false);
@@ -277,9 +278,8 @@ public class NeuralNetworkConfigEditor {
 					neuralNetworkProvider.loadConfiguration(stock);
 					
 					eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());	
-					btnSaveConfig.setVisible(true);
 					
-					//enableComboConfigTextChangeReaction=true;
+					setDirty(true);
 				}
 				
 				//Reset the cursor
@@ -317,8 +317,7 @@ public class NeuralNetworkConfigEditor {
 					eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
 					
 					
-					config.setDirty(true);
-					btnSaveConfig.setVisible(true);
+					setDirty(true);
 					//InfoPart.postInfoText(eventBroker, "New Config Name: "+stock.getNeuralNetwork().getCurrentConfiguration());
 					
 					//enableComboConfigTextChangeReaction=true;
@@ -350,7 +349,7 @@ public class NeuralNetworkConfigEditor {
 				//stock.getNeuralNetwork().getConfiguration().addPropertyChangeListener(configChangedListener);
 				
 				btnDeleteConfig.setVisible(stock.getNeuralNetwork().getConfigInfoList().size()>1);
-				btnSaveConfig.setVisible(true);
+				setDirty(true);
 				
 				
 				
@@ -440,7 +439,7 @@ public class NeuralNetworkConfigEditor {
 			Configuration config=new Configuration();
 			config.setName("New Config");
 			stock.getNeuralNetwork().addNewConfiguration(config,stock);
-			btnSaveConfig.setVisible(true);
+			setDirty(true);
 		}
 	}
 	
@@ -567,6 +566,19 @@ public class NeuralNetworkConfigEditor {
 			return;
 		dataLoadingStates[1]=true;
 		createConfigEditorGui();
+	}
+	
+	
+	@Inject
+	private void neuralNetworkConfigDirty(
+			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_DIRTY) Configuration config) {
+		if(config==null)return;
+		if(stock.getNeuralNetwork().getConfiguration()!=config)return;
+		
+		
+		if(config.isDirty())
+			setDirty(true);
+			
 	}
 	
 	

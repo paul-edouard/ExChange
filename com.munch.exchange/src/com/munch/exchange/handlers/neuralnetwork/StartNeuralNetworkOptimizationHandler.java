@@ -4,6 +4,7 @@ package com.munch.exchange.handlers.neuralnetwork;
 import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.CanExecute;
@@ -19,9 +20,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.neuroph.core.data.DataSet;
 
 import com.munch.exchange.IEventConstant;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
+import com.munch.exchange.parts.neuralnetwork.error.NeuralNetworkErrorPart;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
 
@@ -56,7 +59,7 @@ public class StartNeuralNetworkOptimizationHandler {
 	ESelectionService selectionService;
 	
 	
-	
+	private NeuralNetworkOptimizerManager optimizerManager;
 	
 	private Configuration config=null;
 	
@@ -119,7 +122,7 @@ public class StartNeuralNetworkOptimizationHandler {
 			optimizerManager.setMinMax(minDim, maxDim);
 		}
 		
-		setTrainingStatus(true);
+		//setTrainingStatus(true);
 		
 		
 		//Open the Neural network error part
@@ -136,16 +139,17 @@ public class StartNeuralNetworkOptimizationHandler {
 		optimizerManager.schedule();
 		
 		
-		stock.getNeuralNetwork().getConfiguration().setDirty(true);
-		
-		
+		//stock.getNeuralNetwork().getConfiguration().setDirty(true);
 		
 	}
 	
 	
 	@CanExecute
 	public boolean canExecute() {
-		return this.config!=null;
+		if(this.config==null)return false;
+		if(this.optimizerManager!=null && this.optimizerManager.getState()==Job.RUNNING)return false;
+		
+		return true;
 		//return true;
 	}
 	
