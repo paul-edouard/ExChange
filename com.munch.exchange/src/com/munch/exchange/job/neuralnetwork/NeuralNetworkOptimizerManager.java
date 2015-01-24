@@ -207,12 +207,21 @@ public class NeuralNetworkOptimizerManager extends Job{
 		
 		}
 		
+		saveConfig();
 		
 		InfoPart.postInfoText(eventBroker, "Optimizer manager is finished!");
 		eventBroker.send(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_FINISHED,info);
 		
 		return returnStatus;
 	}
+	
+	
+	private void saveConfig(){
+		InfoPart.postInfoText(eventBroker, "Save Configuration after optimization: "+configuration.getName());
+		nnprovider.saveConfiguration(configuration.getParent());
+	}
+	
+	
 	
 	private boolean makeItSleep(IProgressMonitor monitor){
 		

@@ -86,6 +86,8 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 				
 				
 				config.getTrainingBlocks().createBlocks(config.getDataSet());
+				config.setDirty(true);
+				eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_DIRTY,config);
 				
 				InfoPart.postInfoText(eventBroker, String.valueOf(config.getTrainingBlocks()));
 				
@@ -180,6 +182,8 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 	private void refreshGui(){
 		
 		logger.info("Refresh called!");
+		if(config==null)return;
+		if(this.config.getDataSet()==null)return;
 		textNbOfAvailableData.setText(String.valueOf(this.config.getDataSet().size()));
 		btnDistribute.setEnabled(true);
 		if(this.config.getTrainingBlocks().getNbOfBlocks()>0){
@@ -206,11 +210,22 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 		treeViewer.refresh();
 	}
 	
+	
+	public void setEnabled(boolean enabled){
+		
+		tree.setEnabled(enabled);
+		sliderNbOfBlocks.setEnabled(enabled);
+		sliderTrainingRate.setEnabled(enabled);
+		btnDistribute.setEnabled(enabled);
+		
+	}
+	
+	
 	//################################
 	//##     ColumnLabelProvider    ##
 	//################################	
 	
-	class IdLabelProvider extends ColumnLabelProvider{
+ 	class IdLabelProvider extends ColumnLabelProvider{
 
 		@Override
 		public String getText(Object element) {

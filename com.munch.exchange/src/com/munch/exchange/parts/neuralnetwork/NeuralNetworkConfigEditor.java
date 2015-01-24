@@ -35,6 +35,7 @@ import com.munch.exchange.dialog.StringEditorDialog;
 import com.munch.exchange.job.FinancialDataLoader;
 import com.munch.exchange.job.HistoricalDataLoader;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkDataLoader;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptManagerInfo;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
@@ -202,6 +203,29 @@ public class NeuralNetworkConfigEditor {
 	}
 	
 	
+	private void setEnabled(boolean enabled){
+		trainingDataViewer.setEnabled(enabled);
+	}
+	
+	private void loadCurrentConfig(){
+		
+		//Set the wait cursor
+		Cursor cursor_wait=new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+		Cursor cursor_old=shell.getCursor();
+		shell.setCursor(cursor_wait);
+		
+		//Load the configuration
+		neuralNetworkProvider.loadConfiguration(stock);
+		
+		eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
+		
+		setDirty(true);
+		
+		
+		//Reset the cursor
+		shell.setCursor(cursor_old);
+	}
+	
 	private void createConfigEditorGui(){
 		if(!dataLoadingStates[0] || !dataLoadingStates[1] || !dataLoadingStates[2])return;
 		
@@ -234,8 +258,8 @@ public class NeuralNetworkConfigEditor {
 					
 					stock.getNeuralNetwork().setCurrentConfiguration(comboConfig.getText());
 					
-					eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
-					setDirty(true);
+					loadCurrentConfig();
+					
 				}
 				
 			}
@@ -275,11 +299,7 @@ public class NeuralNetworkConfigEditor {
 					comboConfig.setText(stock.getNeuralNetwork().getCurrentConfigName());
 					
 					//Load the configuration
-					neuralNetworkProvider.loadConfiguration(stock);
-					
-					eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());	
-					
-					setDirty(true);
+					loadCurrentConfig();
 				}
 				
 				//Reset the cursor
@@ -580,6 +600,24 @@ public class NeuralNetworkConfigEditor {
 			setDirty(true);
 			
 	}
+	
+	
+	@Inject
+    private void optimizationFinished(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_FINISHED) NNOptManagerInfo info){
+    	
+    	
+    	if(info==null)return;
+    	 	
+    	if (!isCompositeAbleToReact(info.getRate().getUUID()))return;
+    	
+    	if(stock.getNeuralNetwork().getConfiguration()!=info.getConfiguration())return;
+    	
+    	setEnabled(true);
+    	
+    	stock.getNeuralNetwork().getConfiguration().setDirty(true);
+    	
+    }
+	
 	
 	
 	
