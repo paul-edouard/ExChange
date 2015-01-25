@@ -444,7 +444,7 @@ public class NeuralNetworkResultsPart {
 			if(element instanceof NetworkArchitecture){
 				NetworkArchitecture el=(NetworkArchitecture) element;
 				double pred=getResultsInfo(el).prediction;
-				if(pred>0.5)
+				if(pred>ProfitUtils.SIGNAL_LIMIT)
 					return new Color(null, 0, 255, 0);
 				else
 					return new Color(null, 255, 0, 0);
@@ -452,7 +452,7 @@ public class NeuralNetworkResultsPart {
 			if(element instanceof ResultEntity){
 				ResultEntity el=(ResultEntity) element;
 				double pred=getResultsInfo(el).prediction;
-				if(pred>0.5)
+				if(pred>ProfitUtils.SIGNAL_LIMIT)
 					return new Color(null, 0, 255, 0);
 				else
 					return new Color(null, 255, 0, 0);

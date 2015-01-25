@@ -333,7 +333,7 @@ public class NeuralNetworkResultsChartPart {
     	
     	if(!tb.getBlocks().isEmpty()){
     		for(TrainingBlock block:tb.getBlocks()){
-    			for(int i=block.getStart();i<block.getEnd();i++){
+    			for(int i=block.getStart();i<=block.getEnd();i++){
     				if(i>=period[0] && i<period[1]){
     					if(block.isTraining()){
     						train_series.add((double)i, x[i]);
