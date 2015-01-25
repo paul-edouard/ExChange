@@ -165,12 +165,10 @@ public class NeuralNetworkConfigEditor {
 		
 	}
 	
-	
 	@PreDestroy
  	public void preDestroy() {
 		loadingChanger.cancel();
 	}
-	
 	
 	@Focus
 	public void onFocus() {
@@ -178,7 +176,6 @@ public class NeuralNetworkConfigEditor {
 		eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
 		}
 	}
-	
 	
 	@Persist
 	public void save() {
@@ -202,9 +199,15 @@ public class NeuralNetworkConfigEditor {
 		stock.getNeuralNetwork().getConfiguration().setDirty(dirtyState);
 	}
 	
-	
 	private void setEnabled(boolean enabled){
 		trainingDataViewer.setEnabled(enabled);
+		inputConfigurator.setEnabled(enabled);
+		
+		comboConfig.setEnabled(enabled);
+		btnAddConfig.setVisible(enabled);
+		btnEditConfig.setVisible(enabled);
+		btnDeleteConfig.setVisible(enabled);
+		
 	}
 	
 	private void loadCurrentConfig(){
@@ -216,8 +219,8 @@ public class NeuralNetworkConfigEditor {
 		
 		//Load the configuration
 		neuralNetworkProvider.loadConfiguration(stock);
-		
 		eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED,stock.getNeuralNetwork().getConfiguration());
+		refreshTrainingDataViewer();
 		
 		setDirty(true);
 		
@@ -403,6 +406,8 @@ public class NeuralNetworkConfigEditor {
 		
 		initComboConfig();
 		
+		refreshTrainingDataViewer();
+		
 		parent.layout();
 		
 	}
@@ -411,6 +416,7 @@ public class NeuralNetworkConfigEditor {
 			//Create a context instance
 			IEclipseContext localContact=EclipseContextFactory.create();
 			localContact.set(Composite.class, parentComposite);
+			localContact.set(NeuralNetworkConfigEditor.class, this);
 			localContact.setParent(context);
 			
 			//////////////////////////////////
@@ -424,6 +430,7 @@ public class NeuralNetworkConfigEditor {
 			//Create a context instance
 			IEclipseContext localContact=EclipseContextFactory.create();
 			localContact.set(Composite.class, parentComposite);
+			localContact.set(Stock.class, stock);
 			localContact.setParent(context);
 			
 			//////////////////////////////////
@@ -463,9 +470,13 @@ public class NeuralNetworkConfigEditor {
 		}
 	}
 	
+	public void refreshTrainingDataViewer(){
+		trainingDataViewer.refreshGui();
+	}
+	
 	
 	//############################
-	//##   LOADING              ##
+	//##    WORKERS             ##
 	//############################
 	
 	private class LoadingStateChanger extends Job{
@@ -535,6 +546,29 @@ public class NeuralNetworkConfigEditor {
 	}
 	
 	
+	private class OptResultsUpdater extends Job{
+		
+		
+		public OptResultsUpdater() {
+			super("Update results");
+			//this.lblLoading=lblLoading;
+			
+			setSystem(true);
+			setPriority(SHORT);
+			schedule();
+		}
+		
+		
+		
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			
+		}
+		
+	}
+	
+	
+	
 	//################################
 	//##       Event Reaction       ##
 	//################################
@@ -595,11 +629,24 @@ public class NeuralNetworkConfigEditor {
 		if(config==null)return;
 		if(stock.getNeuralNetwork().getConfiguration()!=config)return;
 		
-		
-		if(config.isDirty())
-			setDirty(true);
+		setDirty(config.isDirty());
 			
 	}
+	
+	
+	@Inject
+    private void optimizationStarted(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_STARTED) NNOptManagerInfo info){
+
+    	if(info==null)return;
+    	 	
+    	if (!isCompositeAbleToReact(info.getRate().getUUID()))return;
+    	
+    	if(stock.getNeuralNetwork().getConfiguration()!=info.getConfiguration())return;
+    	
+    	setEnabled(false);
+    	
+	}
+    
 	
 	
 	@Inject
@@ -614,7 +661,7 @@ public class NeuralNetworkConfigEditor {
     	
     	setEnabled(true);
     	
-    	stock.getNeuralNetwork().getConfiguration().setDirty(true);
+    	//stock.getNeuralNetwork().getConfiguration().setDirty(true);
     	
     }
 	

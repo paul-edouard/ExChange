@@ -218,7 +218,14 @@ public class NeuralNetworkOptimizerManager extends Job{
 	
 	private void saveConfig(){
 		InfoPart.postInfoText(eventBroker, "Save Configuration after optimization: "+configuration.getName());
-		nnprovider.saveConfiguration(configuration.getParent());
+		
+		if(nnprovider.saveConfiguration(configuration.getParent())){
+			configuration.setDirty(false);
+		}
+		else{
+			InfoPart.postInfoText(eventBroker, "Error: Couldn't save the configuration: "+configuration.getName());
+		}
+		
 	}
 	
 	

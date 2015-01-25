@@ -69,6 +69,26 @@ public class StartNeuralNetworkOptimizationHandler {
 		
 		if(shell==null)return;
 		
+		if(this.config.isDirty()){
+			boolean res=MessageDialog.openQuestion(shell, "Configuration is dirty", "Do you want to save the configuration and start the optimization");
+			if(res){
+				
+				if(nnprovider.saveConfiguration(config.getParent())){
+					config.setDirty(false);
+					eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_DIRTY,config);
+				}
+				else{
+					MessageDialog.openInformation(shell, "Configuration save Error", "Couldn't save the configuration: "+config.getName());
+					return;
+				}
+				
+			}
+			else{
+				return;
+			}
+			
+		}
+		
 		//MessageDialog.openInformation(shell, "StartNeuralNetworkOptimizationHandler", "StartNeuralNetworkOptimizationHandler"+config.getName());
 		//logger.info("Start Train click!");
 		Stock stock=config.getParent();
@@ -147,6 +167,7 @@ public class StartNeuralNetworkOptimizationHandler {
 	@CanExecute
 	public boolean canExecute() {
 		if(this.config==null)return false;
+		
 		if(this.optimizerManager!=null && this.optimizerManager.getState()==Job.RUNNING)return false;
 		
 		return true;

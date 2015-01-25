@@ -26,7 +26,9 @@ import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
 
 import com.munch.exchange.IEventConstant;
+import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlock;
 import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.services.INeuralNetworkProvider;
 
@@ -55,6 +57,9 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 	
 	@Inject
 	private IEventBroker eventBroker;
+	
+	@Inject
+	private Stock stock;
 	
 	
 	private Button btnDistribute;
@@ -85,11 +90,7 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 				config.getTrainingBlocks().setTrainingRate(((double) sliderTrainingRate.getSelection() )/100.0);
 				
 				
-				config.getTrainingBlocks().createBlocks(config.getDataSet());
-				config.setDirty(true);
-				eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_DIRTY,config);
-				
-				InfoPart.postInfoText(eventBroker, String.valueOf(config.getTrainingBlocks()));
+				createTrainingBlocks();
 				
 			}
 		});
@@ -179,33 +180,99 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 	}
 
 	
-	private void refreshGui(){
+	private void createTrainingBlocks(){
+		config.getTrainingBlocks().createBlocks(config.getDataSet());
+		config.setResultsCalculationNeeded(true);
+		config.setDirty(true);
+		eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_DIRTY,config);
+		
+		InfoPart.postInfoText(eventBroker, String.valueOf(config.getTrainingBlocks()));
+	}
+	
+	private void adaptTrainingBlocks(){
+		
+		int nbOfRows=config.getDataSet().getRows().size();
+		TrainingBlock block=config.getTrainingBlocks().getBlocks().getLast();
+		
+		if(block.getEnd()!=nbOfRows-1){
+			if(block.getStart()<=nbOfRows-1){
+				block.setEnd(nbOfRows-1);
+			}
+			else{
+				config.getTrainingBlocks().createBlocks(config.getDataSet());
+			}
+			
+			config.setDirty(true);
+			config.setResultsCalculationNeeded(true);
+			eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_DIRTY,config);
+		}
+		
+		
+		
+	}
+	
+	
+	private void resetGui(){
+		textNbOfAvailableData.setText("");
+		removeAllInputsColumns();
+		
+		//treeViewer.setInput(new Configuration());
+		tree.setEnabled(false);
+		treeViewer.refresh();
+	}
+	
+	public void refreshGui(){
 		
 		logger.info("Refresh called!");
-		if(config==null)return;
-		if(this.config.getDataSet()==null)return;
+		config=stock.getNeuralNetwork().getConfiguration();
+		if(config==null){
+			resetGui();
+			return;
+		}
+		if(this.config.getDataSet()==null){
+			InfoPart.postInfoText(eventBroker, "Data set is null: Try to create them");
+			neuralNetworkProvider.createAllValuePoints(this.config,false);
+		}
+		
+		
+		if(this.config.getDataSet()==null){
+			InfoPart.postInfoText(eventBroker, "Cannot refresh Training data composite: Training set is null!");
+			resetGui();
+			return;
+		}
+		
+		
+		
+		if(this.config.getTrainingBlocks().getNbOfBlocks()<=0){
+			this.config.getTrainingBlocks().setNbOfBlocks(20);
+			this.config.getTrainingBlocks().setTrainingRate(0.7);
+			createTrainingBlocks();
+		}
+		
+		adaptTrainingBlocks();
+		
+		
 		textNbOfAvailableData.setText(String.valueOf(this.config.getDataSet().size()));
 		btnDistribute.setEnabled(true);
-		if(this.config.getTrainingBlocks().getNbOfBlocks()>0){
+		//if(this.config.getTrainingBlocks().getNbOfBlocks()>0){
 			this.sliderNbOfBlocks.setSelection(this.config.getTrainingBlocks().getNbOfBlocks());
 			this.textNbOfBlocks.setText(String.valueOf(sliderNbOfBlocks.getSelection()));
 			
 			this.sliderTrainingRate.setSelection( (int)(this.config.getTrainingBlocks().getTrainingRate()*100));
 			this.textTrainingRate.setText(sliderTrainingRate.getSelection()+"%");
+		/*
 		}
 		else{
 			this.sliderNbOfBlocks.setSelection(20);
 			this.sliderTrainingRate.setSelection(70);
 		}
+		*/
 		
 		
-		if(this.config.getDataSet()==null){
-			logger.info("Training set is null!");
-			return;
-		}
 		removeAllInputsColumns();
 		createAllInputsColumns();
 		
+		tree.setEnabled(true);
 		treeViewer.setInput(this.config);
 		treeViewer.refresh();
 	}
@@ -213,7 +280,7 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 	
 	public void setEnabled(boolean enabled){
 		
-		tree.setEnabled(enabled);
+		//tree.setEnabled(enabled);
 		sliderNbOfBlocks.setEnabled(enabled);
 		sliderTrainingRate.setEnabled(enabled);
 		btnDistribute.setEnabled(enabled);
@@ -297,7 +364,7 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 	//################################
 	//##       Event Reaction       ##
 	//################################
-	
+	/*
 	private boolean isCompositeAbleToReact(){
 		if (textNbOfAvailableData == null  )
 			return false;
@@ -307,8 +374,8 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 
 		return true;
 	}
-	
-	
+	*/
+	/*
 	@Inject
 	private void neuralNetworkConfigSelected(
 			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_SELECTED) Configuration config) {
@@ -320,11 +387,9 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 		this.config=config;
 		neuralNetworkProvider.createAllValuePoints(this.config,false);
 		
-		
-		
 		refreshGui();
 	}
-	
+	*/
 	/*
 	@Inject
 	private void neuralNetworkConfigResultsCalculated(

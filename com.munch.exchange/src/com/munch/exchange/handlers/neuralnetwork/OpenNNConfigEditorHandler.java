@@ -35,6 +35,7 @@ import com.munch.exchange.parts.RateEditorPart;
 import com.munch.exchange.parts.RatesOverviewPart;
 import com.munch.exchange.parts.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkConfigEditor;
+import com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsPart;
 import com.munch.exchange.services.IBundleResourceLoader;
 
 public class OpenNNConfigEditorHandler {
@@ -77,6 +78,11 @@ public class OpenNNConfigEditorHandler {
 			MessageDialog.openError(shell, "Selection error", "No rate selected");
 			return;
 		}
+		
+		MPart part=partService.findPart(NeuralNetworkResultsPart.NEURAL_NETWORK_RESULTS_ID);
+		if(part==null)return;
+		
+		partService.showPart(part, PartState.CREATE);
 		
 		//MessageDialog.openInformation(shell, "Stock selected", selectedStock.getFullName());
 		openConfigEditor();

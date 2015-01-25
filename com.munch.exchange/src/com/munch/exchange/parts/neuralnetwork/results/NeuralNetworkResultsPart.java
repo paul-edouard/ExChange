@@ -39,6 +39,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptManagerInfo;
 import com.munch.exchange.job.objectivefunc.NetworkArchitectureObjFunc.NetworkArchitectureOptInfo;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
@@ -574,11 +575,15 @@ public class NeuralNetworkResultsPart {
 	
 	class ResultsLoader extends Job {
 		
+		private boolean loadResultsEntities=true;
 		
+		
+		public void setLoadResultsEntities(boolean loadResultsEntities) {
+			this.loadResultsEntities = loadResultsEntities;
+		}
 
 		public ResultsLoader() {
 			super("Result loader");
-			
 		}
 
 		@Override
@@ -593,9 +598,9 @@ public class NeuralNetworkResultsPart {
 			
 			if (monitor.isCanceled())return Status.CANCEL_STATUS;
 			
-			if(!config.areAllTimeSeriesAvailable()){
+			//if(!config.areAllTimeSeriesAvailable()){
 				nn_provider.createAllValuePoints(config,false);
-			}
+			//}
 			
 			
 			double[] input=config.getLastInput();
@@ -605,9 +610,9 @@ public class NeuralNetworkResultsPart {
 			
 			//RateChart.PENALTY;
 			
-			for(NetworkArchitecture archi:config.getNetworkArchitectures()){
+			for(NetworkArchitecture archi:config.getNetworkArchitecturesCopy()){
 				boolean wasLoaded=false;
-				if(archi.isResultLoaded()){
+				if(archi.isResultLoaded() && loadResultsEntities){
 					logger.info("Results here!!"+archi.getId());
 					wasLoaded=true;
 					for(ResultEntity ent:archi.getResultsEntities()){
@@ -749,7 +754,31 @@ public class NeuralNetworkResultsPart {
 	}
 	
 	
+
+	@Inject
+    private void optimizationStarted(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_STARTED) NNOptManagerInfo info){
+
+    	if(info==null)return;
+    	if (!isCompositeAbleToReact())return;
+    	if(stock.getNeuralNetwork().getConfiguration()!=info.getConfiguration())return;
+    	
+    	resultLoader.setLoadResultsEntities(false);
+	}
+    
 	
+	
+	@Inject
+    private void optimizationFinished(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_FINISHED) NNOptManagerInfo info){
+    	
+    	
+		if(info==null)return;
+    	if (!isCompositeAbleToReact())return;
+    	if(stock.getNeuralNetwork().getConfiguration()!=info.getConfiguration())return;
+    	
+    	resultLoader.setLoadResultsEntities(true);
+    
+    	
+    }
 	
 	/*
 	

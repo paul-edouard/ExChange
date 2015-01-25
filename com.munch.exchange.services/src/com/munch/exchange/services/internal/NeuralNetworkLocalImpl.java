@@ -245,7 +245,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			String[] allFiles=archi_dir.list();
 			for(int i=0;i<allFiles.length;i++){
 				String fileName=allFiles[i];
-				logger.info("Archi file found: "+fileName);
+				//logger.info("Archi file found: "+fileName);
 				boolean archiFound=false;
 				for(NetworkArchitecture archi:config.getNetworkArchitectures()){
 					if(fileName.contains(archi.getId()))

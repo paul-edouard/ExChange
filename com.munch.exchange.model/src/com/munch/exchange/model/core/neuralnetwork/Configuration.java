@@ -171,6 +171,8 @@ public class Configuration extends XmlParameterElement {
 	public static final String ROOT_DATA_SET="root";
 	
 	
+	private boolean resultsCalculationNeeded=false;
+	
 	/**
 	 * create the Training Data and the last input array
 	 */
@@ -287,6 +289,7 @@ public class Configuration extends XmlParameterElement {
 		return lastInput;
 	}
 	
+	
 	public TrainingBlocks getTrainingBlocks() {
 		return trainingBlocks;
 	}
@@ -329,11 +332,22 @@ public class Configuration extends XmlParameterElement {
 	}
 	
 	
+	public synchronized boolean isResultsCalculationNeeded() {
+		return resultsCalculationNeeded;
+	}
+
+	public void setResultsCalculationNeeded(boolean resultsCalculationNeeded) {
+		this.resultsCalculationNeeded = resultsCalculationNeeded;
+	}
+	
 	//*************************
 	// Time Series
 	//*************************
 	
 
+
+	
+	
 
 	public Configuration createCopy(){
 		Configuration copy=new Configuration();
@@ -666,6 +680,13 @@ public class Configuration extends XmlParameterElement {
 	
 	public LinkedList<NetworkArchitecture> getNetworkArchitectures() {
 		return networkArchitectures;
+	}
+	
+	public synchronized LinkedList<NetworkArchitecture> getNetworkArchitecturesCopy(){
+		LinkedList<NetworkArchitecture> copy=new LinkedList<NetworkArchitecture>();
+		copy.addAll(networkArchitectures);
+		
+		return copy;
 	}
 	
 	
