@@ -69,6 +69,12 @@ public class StartNeuralNetworkOptimizationHandler {
 		
 		if(shell==null)return;
 		
+		if(this.config.isResultsCalculationNeeded()){
+			MessageDialog.openInformation(shell, "Configuration: "+config.getName()+" results need to be updated", "Please save the configuration first!: ");
+			return;
+		}
+		
+		
 		if(this.config.isDirty()){
 			boolean res=MessageDialog.openQuestion(shell, "Configuration is dirty", "Do you want to save the configuration and start the optimization");
 			if(res){
@@ -93,9 +99,9 @@ public class StartNeuralNetworkOptimizationHandler {
 		//logger.info("Start Train click!");
 		Stock stock=config.getParent();
 		
-		if(!stock.getNeuralNetwork().getConfiguration().areAllTimeSeriesAvailable()){
-			nnprovider.createAllValuePoints(stock.getNeuralNetwork().getConfiguration(),true);
-		}
+		//if(!stock.getNeuralNetwork().getConfiguration().areAllTimeSeriesAvailable()){
+		nnprovider.createAllValuePoints(stock.getNeuralNetwork().getConfiguration(),true);
+		//}
 		
 		Configuration config=stock.getNeuralNetwork().getConfiguration();
 		config.resetTrainingData();

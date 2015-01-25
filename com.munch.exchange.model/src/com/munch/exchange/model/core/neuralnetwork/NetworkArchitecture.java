@@ -467,6 +467,14 @@ public class NetworkArchitecture extends XmlParameterElement {
 	public double calculateNetworkOutput(double[] input,double[] weigths ){
 		if(!resultLoaded)this.loadResults();
 		
+		/*
+		logger.info("Network weigths size: "+network.getWeights().length+", Number of results: "+this.getResultsEntities().size());
+		logger.info("Best Results weigths size: "+weigths.length);
+		for(ResultEntity ent: this.getResultsEntities()){
+			logger.info("Ent weigths size: "+weigths.length+", Res: "+ent.getValue());
+		}
+		*/
+		
 		network.setWeights(weigths);
 		network.setInput(input);
 		network.calculate();
@@ -900,6 +908,11 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		return true;
 		
+	}
+	
+	public void sortResults(){
+		this.optResults.sort();
+		bestResultEntity=this.optResults.getBestResult();
 	}
 	
 	public ResultEntity getBestResultEntity(){

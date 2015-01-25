@@ -568,7 +568,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 					
 					
 					//Save the configuration
-					neuralNetworkProvider.save(stock);
+					configEditor.save();
 					
 				}
 			});

@@ -39,7 +39,10 @@ import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptM
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
+import com.munch.exchange.model.core.neuralnetwork.NnObjFunc;
 import com.munch.exchange.model.core.neuralnetwork.NNetwork.ConfigLinkInfo;
+import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkInputConfiguratorComposite;
 import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkTrainingDataComposite;
@@ -74,6 +77,8 @@ public class NeuralNetworkConfigEditor {
 	
 	//Gui loading reaction trigger
 	private LoadingStateChanger loadingChanger;
+	private OptResultsUpdater resultsUpdater;
+	private Cursor cursor;
 	
 	private Composite parent;
 	
@@ -181,15 +186,20 @@ public class NeuralNetworkConfigEditor {
 	public void save() {
 		
 		Cursor cursor_wait=new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
-		Cursor cursor_old=shell.getCursor();
+		cursor=shell.getCursor();
 		shell.setCursor(cursor_wait);
 		
-		
-		if(neuralNetworkProvider.save(stock))
-			setDirty(false);
-		
-		
-		shell.setCursor(cursor_old);
+		if(stock.getNeuralNetwork().getConfiguration().isResultsCalculationNeeded()){
+			if(resultsUpdater==null){
+				resultsUpdater=new OptResultsUpdater();
+			}
+			resultsUpdater.schedule();
+		}
+		else{
+			if(neuralNetworkProvider.save(stock))
+				setDirty(false);
+			shell.setCursor(cursor);
+		}
 	}
 	
 	private void setDirty(boolean dirtyState){
@@ -549,6 +559,49 @@ public class NeuralNetworkConfigEditor {
 	private class OptResultsUpdater extends Job{
 		
 		
+		private void stopCaller(){
+			Display.getDefault().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					inputConfigurator.getProgressBar().setVisible(false);
+					
+					if(neuralNetworkProvider.save(stock))
+						setDirty(false);
+					
+					shell.setCursor(cursor);
+					
+				}
+			});
+		}
+		
+		private void startCaller(){
+			Display.getDefault().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					
+					inputConfigurator.getProgressBar().setSelection(0);
+					inputConfigurator.getProgressBar().setMaximum(
+							stock.getNeuralNetwork().getConfiguration().getNetworkArchitectures().size());
+					
+					inputConfigurator.getProgressBar().setVisible(true);
+					
+				}
+			});
+		}
+		
+		private void newStepCaller(){
+			Display.getDefault().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					inputConfigurator.getProgressBar().setSelection(
+							inputConfigurator.getProgressBar().getSelection()+1);
+					
+				}
+			});
+		}
+		
+		
+		
 		public OptResultsUpdater() {
 			super("Update results");
 			//this.lblLoading=lblLoading;
@@ -562,6 +615,36 @@ public class NeuralNetworkConfigEditor {
 		
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
+			
+			
+			startCaller();
+			
+			for(NetworkArchitecture archi:stock.getNeuralNetwork().getConfiguration().getNetworkArchitectures()){
+				
+				if (monitor.isCanceled() ){
+					stopCaller();
+					return Status.CANCEL_STATUS;
+				}
+				
+				
+				NnObjFunc func=new NnObjFunc(archi, stock.getNeuralNetwork().getConfiguration().getTrainingDataSet());
+				for(ResultEntity ent:archi.getResultsEntities()){
+					//Recalculate the error
+					double error=func.calculateError(ent.getDoubleArray(), null);
+					ent.setValue(error);
+						
+				}
+				archi.getResultsEntities();
+				archi.clearResultsAndNetwork(true);
+				
+				newStepCaller();
+			}
+			
+			
+			stock.getNeuralNetwork().getConfiguration().setResultsCalculationNeeded(false);
+			stopCaller();
+			
+			return Status.OK_STATUS;
 			
 		}
 		

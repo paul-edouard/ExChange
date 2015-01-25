@@ -66,6 +66,10 @@ public class OptimizationResults extends XmlParameterElement implements Serializ
 		
 	}
 	
+	public void sort(){
+		Collections.sort(results);
+	}
+	
 	public ResultEntity getBestResult(){
 		if(results.isEmpty())return null;
 		return results.getFirst();
