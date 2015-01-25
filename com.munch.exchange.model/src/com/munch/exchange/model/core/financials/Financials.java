@@ -127,7 +127,22 @@ public class Financials extends ParameterElement {
 		return null;
 	}
 	
-	
+	public Calendar getNextExpectedDate(String periodType){
+		LinkedList<Calendar> allDates=getDateList(periodType);
+		Calendar expectedNextValue=Calendar.getInstance();
+		if(allDates.size()<2)return expectedNextValue;
+		
+		Long sum=0L;
+		for(int i=0;i<allDates.size()-1;i++){
+			sum=allDates.get(i+1).getTimeInMillis()-allDates.get(i).getTimeInMillis();
+		}
+		Long mid=sum/(allDates.size()-1);
+		
+		expectedNextValue.setTimeInMillis(allDates.getLast().getTimeInMillis()+mid);
+		
+		return expectedNextValue;
+		
+	}
 	
 	
 	public LinkedList<Calendar> getDateList(String periodType){

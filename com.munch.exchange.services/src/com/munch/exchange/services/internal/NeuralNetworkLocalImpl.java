@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.financials.FinancialPoint;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NNetwork;
@@ -303,6 +304,12 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			return;
 		}
 		
+		//Check if the Financial data are loaded
+		LinkedList<Calendar> financialsDates=stock.getFinancials().getDateList(FinancialPoint.PeriodeTypeQuaterly);
+		if(financialsDates.isEmpty()){
+			logger.error("No financial data found! Please load them first");
+			return;
+		}
 		
 		//TODO
 		
@@ -325,6 +332,13 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 				int nbOfValues=series.getNumberOfPastValues();
 				configuration.setLastInputPointDate(hisPointList.get(nbOfValues-1).getDate());
 			}
+			
+			//Financial series
+			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.FINANCIAL)){
+				int nbOfValues=series.getNumberOfPastValues();
+				configuration.setLastInputPointDate(financialsDates.get(nbOfValues-1));
+			}
+			
 			
 			//Target Output
 			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.TARGET_OUTPUT)){
@@ -365,11 +379,34 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 						+", Size:"+series.getInputValues().size());
 			}
 			//Financial Series
-			/*
+			
 			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.FINANCIAL)){
 				//series.adaptInputValuesToMasterValuePointList(masterValuePointList);
+				series.getInputValues().clear();
+				String key=series.getName().split(":")[1];
+				String sectorKey=series.getName().split(":")[1];
+				
+				int pos=1;
+				for(Calendar date:financialsDates){
+					double finVal=stock.getFinancials().getValue(FinancialPoint.PeriodeTypeQuaterly, date, key, sectorKey);
+					ValuePoint point=new ValuePoint(date,finVal);
+					
+					//======================================
+					//==Set the next value date:          ==
+					//======================================
+					Calendar expectedNextValue=Calendar.getInstance();
+					if(pos<financialsDates.size()){
+						Calendar nextDate=financialsDates.get(pos);
+						expectedNextValue.setTimeInMillis(nextDate.getTimeInMillis());
+						point.setNextValueDate(expectedNextValue);
+					}
+					else{
+						point.setNextValueDate(stock.getFinancials().getNextExpectedDate(FinancialPoint.PeriodeTypeQuaterly));
+					}
+					pos++;
+				}
 			}
-			*/
+			
 			
 			//Target Output
 			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.TARGET_OUTPUT)){

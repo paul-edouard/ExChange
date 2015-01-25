@@ -3,6 +3,8 @@ package com.munch.exchange.model.core.neuralnetwork.timeseries;
 import java.util.LinkedList;
 
 import com.munch.exchange.model.core.DatePoint;
+import com.munch.exchange.model.core.financials.Financials;
+import com.munch.exchange.model.core.financials.IncomeStatementPoint;
 
 public enum TimeSeriesCategory {
 	ROOT("Root"),
@@ -33,7 +35,8 @@ public enum TimeSeriesCategory {
 			serieNames.add(DatePoint.FIELD_Adj_Close);
 			break;
 		case FINANCIAL:
-			serieNames.add("no");
+			serieNames.add(Financials.FIELD_IncomeStatement+":"+IncomeStatementPoint.FIELD_TotalRevenue);
+			serieNames.add(Financials.FIELD_IncomeStatement+":"+IncomeStatementPoint.FIELD_NetIncome);
 			break;
 		case TARGET_OUTPUT:
 			serieNames.add("Desired Output");
