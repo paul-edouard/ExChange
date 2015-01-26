@@ -19,22 +19,28 @@ public class TimeSeries extends XmlParameterElement{
 	static final String FIELD_TimeRemainingActivated="TimeRemainingActivated";
 	public static final String FIELD_NumberOfPastValues="NumberOfPastValues";
 	static final String FIELD_InputValues="InputValues";
+	static final String FIELD_IsLowFrequency="IsLowFrequency";
 	
 	private String Name;
 	private String id;
 	private TimeSeriesCategory category;
+	private boolean isLowFrequency=false;
 	
 	private boolean timeRemainingActivated;
 	private int numberOfPastValues;
 	private Object parent;
 	
 	private ValuePointList inputValues=new ValuePointList();
+	private ValuePointList lowFrequencyValues=new ValuePointList();
+	
+	private min,max;
 	
 	public TimeSeries(){}
 	
 	public TimeSeries(String Name,TimeSeriesCategory category){
 		this.Name=Name;
-		this.category=category;
+		this.setCategory(category);
+		//this.category=category;
 		id="";
 		timeRemainingActivated=false;
 		numberOfPastValues=6;
@@ -115,12 +121,32 @@ public class TimeSeries extends XmlParameterElement{
 			ValuePoint point=inputValues.get(i);
 			if(point.getDate().getTimeInMillis()<lastInputPointDate.getTimeInMillis())continue;
 			
+			
+			
+			//Create the past values lists
 			for(int j=0;j<numberOfPastValues;j++){
-				doubleListList.get(j).add(inputValues.get(i-j).getValue());
+				if(isLowFrequency){
+					ValuePoint lowFreqPoint=searchLowFrequencyValuePoint(point.getDate(),j);
+					doubleListList.get(j).add(lowFreqPoint.getValue());
+				}
+				else{
+					doubleListList.get(j).add(inputValues.get(i-j).getValue());
+				}
 			}
 			
+			//Create the time remaining double list
 			if(this.isTimeRemainingActivated()){
-				doubleListList.getLast().add((double)point.getNextValueDate().getTimeInMillis()-point.getDate().getTimeInMillis());
+				if(isLowFrequency){
+					ValuePoint lowFreqPoint=searchLowFrequencyValuePoint(point.getDate(),0);
+					double abs=lowFreqPoint.getNextValueDate().getTimeInMillis()-lowFreqPoint.getDate().getTimeInMillis();
+					double rate=((double) point.getDate().getTimeInMillis())/abs;
+					doubleListList.getLast().add(rate);
+				}
+				else{
+					doubleListList.getLast().add(
+							(double)point.getNextValueDate().getTimeInMillis()-
+							point.getDate().getTimeInMillis());
+				}
 			}
 			
 		}
@@ -139,6 +165,34 @@ public class TimeSeries extends XmlParameterElement{
 		return doubleArrayList;
 		
 	}
+	
+	
+	
+	private ValuePoint searchLowFrequencyValuePoint(Calendar date, int pastNb){
+		for(int i=1;i<this.lowFrequencyValues.size();i++){
+			ValuePoint lowPoint=this.lowFrequencyValues.get(i);
+			ValuePoint lastlowPoint=this.lowFrequencyValues.get(i-1);
+			
+			if(i-1-pastNb<0)continue;
+			
+			ValuePoint searchlowPoint=this.lowFrequencyValues.get(i-1-pastNb);
+			
+			if(i-1==0 &&
+				date.getTimeInMillis()==lastlowPoint.getDate().getTimeInMillis())
+				return searchlowPoint;
+			
+			if(i==this.lowFrequencyValues.size()-1 &&
+					date.getTimeInMillis()>lowPoint.getDate().getTimeInMillis())
+				return this.lowFrequencyValues.get(i-pastNb);
+			
+			if(date.getTimeInMillis()>lastlowPoint.getDate().getTimeInMillis() 
+					&& date.getTimeInMillis()<= lowPoint.getDate().getTimeInMillis())
+				return searchlowPoint;
+			
+		}
+		return null;
+	}
+	
 	
 	public LinkedList<String> getInputNeuronNames(){
 		
@@ -173,7 +227,6 @@ public class TimeSeries extends XmlParameterElement{
 
 	public void setParent(Object parent) {this.parent = parent;}
 	
-
 	public String getName() {
 		return Name;
 	}
@@ -189,15 +242,17 @@ public class TimeSeries extends XmlParameterElement{
 	public void setId(String id) {
 	changes.firePropertyChange(FIELD_Id, this.id, this.id = id);}
 	
-
 	public TimeSeriesCategory getCategory() {
 		return category;
 	}
 
 	public void setCategory(TimeSeriesCategory category) {
-	changes.firePropertyChange(FIELD_Category, this.category, this.category = category);}
+		changes.firePropertyChange(FIELD_Category, this.category, this.category = category);
+		if(category.equals(TimeSeriesCategory.FINANCIAL)){
+			this.isLowFrequency=true;
+		}
+	}
 	
-
 	public boolean isTimeRemainingActivated() {
 		return timeRemainingActivated;
 	}
@@ -205,7 +260,22 @@ public class TimeSeries extends XmlParameterElement{
 	public void setTimeRemainingActivated(boolean timeRemainingActivated) {
 	changes.firePropertyChange(FIELD_TimeRemainingActivated, this.timeRemainingActivated, this.timeRemainingActivated = timeRemainingActivated);}
 	
+	public boolean isLowFrequency() {
+		return isLowFrequency;
+	}
 
+	public void setLowFrequency(boolean isLowFrequency) {
+		this.isLowFrequency = isLowFrequency;
+	}
+	
+	public ValuePointList getLowFrequencyValues() {
+		return lowFrequencyValues;
+	}
+
+	public void setLowFrequencyValues(ValuePointList lowFrequencyValues) {
+		this.lowFrequencyValues = lowFrequencyValues;
+	}
+	
 	public int getNumberOfPastValues() {
 		return numberOfPastValues;
 	}
@@ -213,6 +283,12 @@ public class TimeSeries extends XmlParameterElement{
 	public void setNumberOfPastValues(int numberOfPastValues) {
 	changes.firePropertyChange(FIELD_NumberOfPastValues, this.numberOfPastValues, this.numberOfPastValues = numberOfPastValues);}
 	
+	
+	
+	
+	//****************************************
+	//***             XML                 ****
+	//****************************************
 
 	@Override
 	protected void initAttribute(Element rootElement) {
@@ -221,6 +297,7 @@ public class TimeSeries extends XmlParameterElement{
 		this.setCategory(TimeSeriesCategory.fromString(rootElement.getAttribute(FIELD_Category)));
 		this.setNumberOfPastValues(Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfPastValues)));
 		this.setTimeRemainingActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_TimeRemainingActivated)));
+		this.setLowFrequency(Boolean.parseBoolean(rootElement.getAttribute(FIELD_IsLowFrequency)));
 		
 	}
 
@@ -234,6 +311,7 @@ public class TimeSeries extends XmlParameterElement{
 		rootElement.setAttribute(FIELD_Category,this.getCategory().getCategoryLabel());
 		rootElement.setAttribute(FIELD_NumberOfPastValues,String.valueOf(this.getNumberOfPastValues()));
 		rootElement.setAttribute(FIELD_TimeRemainingActivated,String.valueOf(this.isTimeRemainingActivated()));
+		rootElement.setAttribute(FIELD_IsLowFrequency,String.valueOf(this.isLowFrequency()));
 	}
 
 	@Override

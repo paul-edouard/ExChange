@@ -336,7 +336,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			//Financial series
 			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.FINANCIAL)){
 				int nbOfValues=series.getNumberOfPastValues();
-				configuration.setLastInputPointDate(financialsDates.get(nbOfValues-1));
+				configuration.setLastInputPointDate(financialsDates.get(financialsDates.size()-nbOfValues-1));
 			}
 			
 			
@@ -383,19 +383,31 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.FINANCIAL)){
 				//series.adaptInputValuesToMasterValuePointList(masterValuePointList);
 				series.getInputValues().clear();
+				series.getLowFrequencyValues().clear();
+				
+				//Save the input value dates
+				for(HistoricalPoint his_point:hisPointList){
+					ValuePoint point=new ValuePoint(his_point.getDate(), 0);
+					series.getInputValues().add(point);
+				}
+				
+				
 				String key=series.getName().split(":")[1];
-				String sectorKey=series.getName().split(":")[1];
+				String sectorKey=series.getName().split(":")[0];
 				
 				int pos=1;
-				for(Calendar date:financialsDates){
+				for(int k=financialsDates.size()-1;k>=0;k--){
+					Calendar date=financialsDates.get(k);
 					double finVal=stock.getFinancials().getValue(FinancialPoint.PeriodeTypeQuaterly, date, key, sectorKey);
-					ValuePoint point=new ValuePoint(date,finVal);
+					logger.info("Fin val: "+finVal);
+					ValuePoint point=new ValuePoint(
+							stock.getFinancials().getEffectiveDate(FinancialPoint.PeriodeTypeQuaterly, date),finVal);
 					
 					//======================================
 					//==Set the next value date:          ==
 					//======================================
-					Calendar expectedNextValue=Calendar.getInstance();
 					if(pos<financialsDates.size()){
+						Calendar expectedNextValue=Calendar.getInstance();
 						Calendar nextDate=financialsDates.get(pos);
 						expectedNextValue.setTimeInMillis(nextDate.getTimeInMillis());
 						point.setNextValueDate(expectedNextValue);
@@ -404,7 +416,19 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 						point.setNextValueDate(stock.getFinancials().getNextExpectedDate(FinancialPoint.PeriodeTypeQuaterly));
 					}
 					pos++;
+					
+					
+					series.getLowFrequencyValues().add(point);
+					
 				}
+				
+				
+				logger.info("Series: "+series.getName()
+						+", first point: "+DateTool.dateToDayString(series.getLowFrequencyValues().getFirst().getDate())
+						+", last point: "+DateTool.dateToDayString(series.getLowFrequencyValues().getLast().getDate())
+						+", Size:"+series.getInputValues().size());
+				
+				
 			}
 			
 			
