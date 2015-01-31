@@ -395,28 +395,30 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 				String key=series.getName().split(":")[1];
 				String sectorKey=series.getName().split(":")[0];
 				
-				int pos=1;
+				int pos=financialsDates.size()-2;
 				for(int k=financialsDates.size()-1;k>=0;k--){
 					Calendar date=financialsDates.get(k);
 					double finVal=stock.getFinancials().getValue(FinancialPoint.PeriodeTypeQuaterly, date, key, sectorKey);
-					logger.info("Fin val: "+finVal);
+					//logger.info("Fin val: "+finVal);
 					ValuePoint point=new ValuePoint(
 							stock.getFinancials().getEffectiveDate(FinancialPoint.PeriodeTypeQuaterly, date),finVal);
 					
 					//======================================
 					//==Set the next value date:          ==
 					//======================================
-					if(pos<financialsDates.size()){
+					if(pos>=0){
 						Calendar expectedNextValue=Calendar.getInstance();
 						Calendar nextDate=financialsDates.get(pos);
-						expectedNextValue.setTimeInMillis(nextDate.getTimeInMillis());
+						Calendar nextEffectivDate=stock.getFinancials().getEffectiveDate(FinancialPoint.PeriodeTypeQuaterly, nextDate);
+						expectedNextValue.setTimeInMillis(nextEffectivDate.getTimeInMillis());
 						point.setNextValueDate(expectedNextValue);
 					}
 					else{
 						point.setNextValueDate(stock.getFinancials().getNextExpectedDate(FinancialPoint.PeriodeTypeQuaterly));
 					}
-					pos++;
+					pos--;
 					
+					//logger.info("Financial Point: "+String.valueOf(point));
 					
 					series.getLowFrequencyValues().add(point);
 					
@@ -426,7 +428,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 				logger.info("Series: "+series.getName()
 						+", first point: "+DateTool.dateToDayString(series.getLowFrequencyValues().getFirst().getDate())
 						+", last point: "+DateTool.dateToDayString(series.getLowFrequencyValues().getLast().getDate())
-						+", Size:"+series.getInputValues().size());
+						+", Size:"+series.getLowFrequencyValues().size());
 				
 				
 			}

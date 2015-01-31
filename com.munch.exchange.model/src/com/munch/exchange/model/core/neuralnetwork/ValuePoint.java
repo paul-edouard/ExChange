@@ -67,7 +67,7 @@ public class ValuePoint extends XmlParameterElement implements Comparable<ValueP
 
 	@Override
 	public String toString() {
-		return "ValuePoint [date=" + date + ", nextValueDate=" + nextValueDate
+		return "ValuePoint [date=" + DateTool.dateToString(date) + ", nextValueDate=" + DateTool.dateToString(nextValueDate)
 				+ ", value=" + value + ", metaData=" + metaData + "]";
 	}
 

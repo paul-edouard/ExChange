@@ -134,11 +134,11 @@ public class Financials extends ParameterElement {
 		
 		Long sum=0L;
 		for(int i=0;i<allDates.size()-1;i++){
-			sum=allDates.get(i+1).getTimeInMillis()-allDates.get(i).getTimeInMillis();
+			sum+=Math.abs(allDates.get(i+1).getTimeInMillis()-allDates.get(i).getTimeInMillis());
 		}
 		Long mid=sum/(allDates.size()-1);
 		
-		expectedNextValue.setTimeInMillis(allDates.getLast().getTimeInMillis()+mid);
+		expectedNextValue.setTimeInMillis(getEffectiveDate(periodType, allDates.getFirst()).getTimeInMillis()+mid);
 		
 		return expectedNextValue;
 		

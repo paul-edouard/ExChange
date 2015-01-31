@@ -151,8 +151,14 @@ public class TimeSeries extends XmlParameterElement{
 			if(this.isTimeRemainingActivated()){
 				if(isLowFrequency){
 					ValuePoint lowFreqPoint=searchLowFrequencyValuePoint(point.getDate(),0,normalizedLowFrequencyValues);
-					double abs=lowFreqPoint.getNextValueDate().getTimeInMillis()-lowFreqPoint.getDate().getTimeInMillis();
-					double rate=((double) point.getDate().getTimeInMillis())/abs;
+					//logger.info("lowFreqPoint getDate: "+DateTool.dateToString(lowFreqPoint.getDate()));
+					//logger.info("lowFreqPoint getNextValueDate: "+DateTool.dateToString(lowFreqPoint.getNextValueDate()));
+					//double abs=lowFreqPoint.getNextValueDate().getTimeInMillis()-lowFreqPoint.getDate().getTimeInMillis();
+					//double rate=((double) point.getDate().getTimeInMillis())/abs;
+					
+					double rate=DateTool.calculateRelativePosition(
+							point.getDate(), lowFreqPoint.getDate(), lowFreqPoint.getNextValueDate(), true);
+					
 					doubleListList.getLast().add(rate);
 				}
 				else{
@@ -264,7 +270,9 @@ public class TimeSeries extends XmlParameterElement{
 		
 		for(ValuePoint point:in){
 			double n_val=2*(point.getValue()-minValue)/div_fac -1;
-			normalizedValues.add(new ValuePoint(point.getDate(), n_val));
+			ValuePoint n_point=new ValuePoint(point.getDate(), n_val);
+			n_point.setNextValueDate(point.getNextValueDate());
+			normalizedValues.add(n_point);
 		}
 		
 		return normalizedValues;
