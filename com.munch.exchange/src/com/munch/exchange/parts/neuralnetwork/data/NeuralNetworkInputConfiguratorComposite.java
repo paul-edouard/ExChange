@@ -56,6 +56,8 @@ import org.eclipse.wb.swt.ResourceManager;
 
 
 
+
+
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddTimeSeriesDialog;
 import com.munch.exchange.model.core.ExchangeRate;
@@ -63,6 +65,7 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
+import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkConfigEditor;
 import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkInputConfiguratorContentProvider.NeuralNetworkSerieCategory;
@@ -113,6 +116,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 	private Button btnActivateDayOf;
 	private Button btnCancel;
 	private ProgressBar progressBar;
+	private Button btnRefreshMinmax;
 	//private Point progressBarPoint;
 	
 	@Inject
@@ -135,7 +139,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		
 		compositeHeader = new Composite(grpInputConfiguration, SWT.NONE);
 		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		compositeHeader.setLayout(new GridLayout(3, false));
+		compositeHeader.setLayout(new GridLayout(4, false));
 		
 		btnEdit = new Button(compositeHeader, SWT.NONE);
 		btnEdit.setSize(32, 25);
@@ -167,6 +171,17 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		});
 		btnCancel.setText("Cancel");
 		btnCancel.setVisible(false);
+		
+		btnRefreshMinmax = new Button(compositeHeader, SWT.NONE);
+		btnRefreshMinmax.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				for(TimeSeries s:configLocal.getAllTimeSeries())
+					s.resetMinMaxValues(true);
+			}
+		});
+		btnRefreshMinmax.setEnabled(false);
+		btnRefreshMinmax.setText("Refresh MinMax");
 		
 		compositeMiddle = new Composite(grpInputConfiguration, SWT.NONE);
 		compositeMiddle.setLayout(new GridLayout(3, false));
@@ -246,6 +261,12 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		trclmnTimeLeft.setWidth(100);
 		trclmnTimeLeft.setText("Time left");
 		
+		TreeViewerColumn treeViewerColumnMinMax = new TreeViewerColumn(treeViewer, SWT.NONE);
+		treeViewerColumnMinMax.setLabelProvider(new MinMaxValuesLabelProvider());
+		TreeColumn trclmnMinMax = treeViewerColumnMinMax.getColumn();
+		trclmnMinMax.setWidth(100);
+		trclmnMinMax.setText("Min/Max");
+		
 		menu = new Menu(tree);
 		tree.setMenu(menu);
 		
@@ -302,6 +323,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		btnCancel.setVisible(true);
 		btnSave.setVisible(true);
 		btnEdit.setEnabled(false);
+		btnRefreshMinmax.setEnabled(true);
 		
 		configLocal=this.stock.getNeuralNetwork().getConfiguration().createCopy();
 		refreshTimeSeries();
@@ -315,6 +337,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		btnEdit.setEnabled(true);
 		btnCancel.setVisible(false);
 		btnSave.setVisible(false);
+		btnRefreshMinmax.setEnabled(false);
 		
 		configLocal=this.stock.getNeuralNetwork().getConfiguration();
 		refreshTimeSeries();
@@ -326,6 +349,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		btnEdit.setEnabled(true);
 		btnCancel.setVisible(false);
 		btnSave.setVisible(false);
+		btnRefreshMinmax.setEnabled(false);
 		
 		
 		//Start the Time Series Updater
@@ -346,6 +370,8 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			AddTimeSeriesDialog dialog=new AddTimeSeriesDialog(shell, category.name, configLocal);
 			if(dialog.open()==AddTimeSeriesDialog.OK && dialog.getSeries()!=null){
 				//TODO
+				
+				
 				configLocal.addTimeSeries(dialog.getSeries(),false);
 				refreshTimeSeries();
 				//neuralNetworkProvider.createAllInputPoints(stock);
@@ -551,6 +577,29 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		
 	}
 	
+	
+	class MinMaxValuesLabelProvider extends ColumnLabelProvider{
+
+		@Override
+		public String getText(Object element) {
+			if(element instanceof NeuralNetworkSerieCategory){
+				//NeuralNetworkSerieCategory el=(NeuralNetworkSerieCategory) element;
+				return "-";
+			}
+			else if(element instanceof TimeSeries){
+				TimeSeries el=(TimeSeries) element;
+				
+				String min=String.format("%.3f", el.getMinValue());
+				String max=String.format("%.3f", el.getMaxValue());
+				String date=DateTool.dateToString(el.getMinMaxLastRefreshDate());
+				
+				return "["+min+":"+max+"] "+date;
+			}
+			return super.getText(element);
+		}
+		
+	}
+	
 	//################################
 	//##             Job            ##
 	//################################
@@ -565,7 +614,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 					progressBar.setVisible(false);
 					parent.layout();
 					configEditor.refreshTrainingDataViewer();
-					
+					refreshTimeSeries();
 					
 					//Save the configuration
 					configEditor.save();
@@ -640,6 +689,10 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			configLocal.resetTrainingData();
 			neuralNetworkProvider.createAllValuePoints(configLocal,false);
 			configLocal.setResultsCalculationNeeded(true);
+			for(TimeSeries s:configLocal.getAllTimeSeries()){
+				s.resetMinMaxValues(false);
+			}
+			
 			
 			finilizeProgressBar();
 			

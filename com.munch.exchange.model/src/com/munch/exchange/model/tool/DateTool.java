@@ -17,6 +17,8 @@ public class DateTool {
 	}
 	
 	public static String dateToString(Calendar date){
+		if(date==null)return "No Date";
+		
 		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		return format.format(date.getTime());
 	}

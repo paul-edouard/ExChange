@@ -247,7 +247,7 @@ public class Configuration extends XmlParameterElement {
 		//logger.info("Diff: "+Arrays.toString(outputdiffFactor));
 		
 		//Normalize the training set
-		trainingSet.normalize(new RangeNormalizer(-1, 1));
+		//trainingSet.normalize(new RangeNormalizer(-1, 1));
 		
 		//Save the last input
 		DataSetRow raw=trainingSet.getRowAt(len-1);

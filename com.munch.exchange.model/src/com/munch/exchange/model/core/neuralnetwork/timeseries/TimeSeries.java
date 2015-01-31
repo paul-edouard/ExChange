@@ -3,14 +3,19 @@ package com.munch.exchange.model.core.neuralnetwork.timeseries;
 import java.util.Calendar;
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.ValuePoint;
 import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
+import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class TimeSeries extends XmlParameterElement{
+	
+	private static Logger logger = Logger.getLogger(TimeSeries.class);
 	
 	
 	static final String FIELD_Name="Name";
@@ -20,6 +25,10 @@ public class TimeSeries extends XmlParameterElement{
 	public static final String FIELD_NumberOfPastValues="NumberOfPastValues";
 	static final String FIELD_InputValues="InputValues";
 	static final String FIELD_IsLowFrequency="IsLowFrequency";
+	
+	static final String FIELD_MinValue="MinValue";
+	static final String FIELD_MaxValue="MaxValue";
+	static final String FIELD_MinMaxLastRefreshDate="MinMaxLastRefreshDate";
 	
 	private String Name;
 	private String id;
@@ -33,7 +42,9 @@ public class TimeSeries extends XmlParameterElement{
 	private ValuePointList inputValues=new ValuePointList();
 	private ValuePointList lowFrequencyValues=new ValuePointList();
 	
-	private min,max;
+	private double minValue=Double.NaN;
+	private double maxValue=Double.NaN;
+	private Calendar MinMaxLastRefreshDate=Calendar.getInstance();
 	
 	public TimeSeries(){}
 	
@@ -104,7 +115,6 @@ public class TimeSeries extends XmlParameterElement{
 		
 	}
 	
-	
 	public LinkedList<double[]> transformSeriesToDoubleArrayList(Calendar lastInputPointDate){
 		LinkedList<LinkedList<Double>> doubleListList=new LinkedList<LinkedList<Double>>();
 		
@@ -116,9 +126,12 @@ public class TimeSeries extends XmlParameterElement{
 			doubleListList.add(new LinkedList<Double>());
 		}
 		
+		ValuePointList normalizedInputValues=this.getNormalizedInputValues();
+		ValuePointList normalizedLowFrequencyValues=this.getNormalizedLowFrequencyValues();
+		
 		//Fill the lists
-		for(int i=0;i<inputValues.size();i++){
-			ValuePoint point=inputValues.get(i);
+		for(int i=0;i<normalizedInputValues.size();i++){
+			ValuePoint point=normalizedInputValues.get(i);
 			if(point.getDate().getTimeInMillis()<lastInputPointDate.getTimeInMillis())continue;
 			
 			
@@ -126,18 +139,18 @@ public class TimeSeries extends XmlParameterElement{
 			//Create the past values lists
 			for(int j=0;j<numberOfPastValues;j++){
 				if(isLowFrequency){
-					ValuePoint lowFreqPoint=searchLowFrequencyValuePoint(point.getDate(),j);
+					ValuePoint lowFreqPoint=searchLowFrequencyValuePoint(point.getDate(),j,normalizedLowFrequencyValues);
 					doubleListList.get(j).add(lowFreqPoint.getValue());
 				}
 				else{
-					doubleListList.get(j).add(inputValues.get(i-j).getValue());
+					doubleListList.get(j).add(normalizedInputValues.get(i-j).getValue());
 				}
 			}
 			
 			//Create the time remaining double list
 			if(this.isTimeRemainingActivated()){
 				if(isLowFrequency){
-					ValuePoint lowFreqPoint=searchLowFrequencyValuePoint(point.getDate(),0);
+					ValuePoint lowFreqPoint=searchLowFrequencyValuePoint(point.getDate(),0,normalizedLowFrequencyValues);
 					double abs=lowFreqPoint.getNextValueDate().getTimeInMillis()-lowFreqPoint.getDate().getTimeInMillis();
 					double rate=((double) point.getDate().getTimeInMillis())/abs;
 					doubleListList.getLast().add(rate);
@@ -166,24 +179,22 @@ public class TimeSeries extends XmlParameterElement{
 		
 	}
 	
-	
-	
-	private ValuePoint searchLowFrequencyValuePoint(Calendar date, int pastNb){
-		for(int i=1;i<this.lowFrequencyValues.size();i++){
-			ValuePoint lowPoint=this.lowFrequencyValues.get(i);
-			ValuePoint lastlowPoint=this.lowFrequencyValues.get(i-1);
+	private ValuePoint searchLowFrequencyValuePoint(Calendar date, int pastNb, ValuePointList lowFrequencyList){
+		for(int i=1;i<lowFrequencyList.size();i++){
+			ValuePoint lowPoint=lowFrequencyList.get(i);
+			ValuePoint lastlowPoint=lowFrequencyList.get(i-1);
 			
 			if(i-1-pastNb<0)continue;
 			
-			ValuePoint searchlowPoint=this.lowFrequencyValues.get(i-1-pastNb);
+			ValuePoint searchlowPoint=lowFrequencyList.get(i-1-pastNb);
 			
 			if(i-1==0 &&
 				date.getTimeInMillis()==lastlowPoint.getDate().getTimeInMillis())
 				return searchlowPoint;
 			
-			if(i==this.lowFrequencyValues.size()-1 &&
+			if(i==lowFrequencyList.size()-1 &&
 					date.getTimeInMillis()>lowPoint.getDate().getTimeInMillis())
-				return this.lowFrequencyValues.get(i-pastNb);
+				return lowFrequencyList.get(i-pastNb);
 			
 			if(date.getTimeInMillis()>lastlowPoint.getDate().getTimeInMillis() 
 					&& date.getTimeInMillis()<= lowPoint.getDate().getTimeInMillis())
@@ -192,7 +203,6 @@ public class TimeSeries extends XmlParameterElement{
 		}
 		return null;
 	}
-	
 	
 	public LinkedList<String> getInputNeuronNames(){
 		
@@ -210,12 +220,95 @@ public class TimeSeries extends XmlParameterElement{
 	}
 	
 	
-	//Use double parameters to save the indicator parameters
+	public void resetMinMaxValues(boolean forceResetting){
+		ValuePointList values=inputValues;
+		if(isLowFrequency){
+			logger.info("Low frequency!!");
+			values=lowFrequencyValues;
+		}
+		
+		if(values==null || values.isEmpty()){
+			logger.info("Cannot set the min and max values of series:"+this.Name+", Please load the the value points before");
+			return;
+		}
+		
+		if( Double.isNaN(minValue) || Double.isNaN(maxValue) ||
+				forceResetting){
+		
+		minValue=Double.POSITIVE_INFINITY;
+		maxValue=Double.NEGATIVE_INFINITY;
+		
+		for(ValuePoint point:values){
+			if(point.getValue()>maxValue)
+				maxValue=point.getValue();
+			
+			if(point.getValue()<minValue)
+				minValue=point.getValue();
+		}
+		
+		
+		MinMaxLastRefreshDate=Calendar.getInstance();
+		}
+		
+	}
+	
+	
+	private ValuePointList normalizeValuePointList(ValuePointList in){
+		if(Double.isNaN(minValue) || Double.isNaN(maxValue))return in;
+		
+		double div_fac=maxValue-minValue;
+		
+		if(div_fac==0)return in;
+		
+		ValuePointList normalizedValues=new ValuePointList();
+		
+		for(ValuePoint point:in){
+			double n_val=2*(point.getValue()-minValue)/div_fac -1;
+			normalizedValues.add(new ValuePoint(point.getDate(), n_val));
+		}
+		
+		return normalizedValues;
+		
+	}
+	
+	private ValuePointList getNormalizedInputValues(){
+		return normalizeValuePointList(inputValues);
+	}
+	
+	private ValuePointList getNormalizedLowFrequencyValues(){
+		return normalizeValuePointList(lowFrequencyValues);
+	}
+	
+	
+	//****************************************
+	//***      GETTER AND SETTER           ****
+	//****************************************
 	
 
 	public Object getParent() {
 		return parent;
 	}
+
+	public Calendar getMinMaxLastRefreshDate() {
+		return MinMaxLastRefreshDate;
+	}
+
+	public double getMinValue() {
+		return minValue;
+	}
+
+	public void setMinValue(double minValue) {
+	this.minValue = minValue;}
+	
+
+	public double getMaxValue() {
+		return maxValue;
+	}
+
+	public void setMaxValue(double maxValue) {
+	this.maxValue = maxValue;
+	}
+	
 
 	public ValuePointList getInputValues() {
 		return inputValues;
@@ -284,8 +377,6 @@ public class TimeSeries extends XmlParameterElement{
 	changes.firePropertyChange(FIELD_NumberOfPastValues, this.numberOfPastValues, this.numberOfPastValues = numberOfPastValues);}
 	
 	
-	
-	
 	//****************************************
 	//***             XML                 ****
 	//****************************************
@@ -298,6 +389,13 @@ public class TimeSeries extends XmlParameterElement{
 		this.setNumberOfPastValues(Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfPastValues)));
 		this.setTimeRemainingActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_TimeRemainingActivated)));
 		this.setLowFrequency(Boolean.parseBoolean(rootElement.getAttribute(FIELD_IsLowFrequency)));
+		
+		this.setMaxValue(Double.parseDouble(rootElement.getAttribute(FIELD_MaxValue)));
+		this.setMinValue(Double.parseDouble(rootElement.getAttribute(FIELD_MinValue)));
+		this.setMinValue(Double.parseDouble(rootElement.getAttribute(FIELD_MinValue)));
+		
+		
+		this.MinMaxLastRefreshDate=(DateTool.StringToDate(rootElement.getAttribute(FIELD_MinMaxLastRefreshDate)));
 		
 	}
 
@@ -312,6 +410,12 @@ public class TimeSeries extends XmlParameterElement{
 		rootElement.setAttribute(FIELD_NumberOfPastValues,String.valueOf(this.getNumberOfPastValues()));
 		rootElement.setAttribute(FIELD_TimeRemainingActivated,String.valueOf(this.isTimeRemainingActivated()));
 		rootElement.setAttribute(FIELD_IsLowFrequency,String.valueOf(this.isLowFrequency()));
+		
+		rootElement.setAttribute(FIELD_MaxValue,String.valueOf(this.getMaxValue()));
+		rootElement.setAttribute(FIELD_MinValue,String.valueOf(this.getMinValue()));
+		
+		rootElement.setAttribute(FIELD_MinMaxLastRefreshDate,DateTool.dateToString( this.getMinMaxLastRefreshDate()));
+		
 	}
 
 	@Override
@@ -320,11 +424,15 @@ public class TimeSeries extends XmlParameterElement{
 	@Override
 	public String toString() {
 		return "TimeSeries [Name=" + Name + ", id=" + id + ", category="
-				+ category + ", timeRemainingActivated="
-				+ timeRemainingActivated + ", numberOfPastValues="
-				+ numberOfPastValues + ", parent=" + parent + ", inputValues="
-				+ inputValues + "]";
+				+ category + ", isLowFrequency=" + isLowFrequency
+				+ ", timeRemainingActivated=" + timeRemainingActivated
+				+ ", numberOfPastValues=" + numberOfPastValues + ", parent="
+				+ parent + ", inputValues=" + inputValues
+				+ ", lowFrequencyValues=" + lowFrequencyValues + ", minValue="
+				+ minValue + ", maxValue=" + maxValue + "]";
 	}
+
+	
 	
 	
 	
