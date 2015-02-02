@@ -343,12 +343,16 @@ public class FinancialReportParserComposite extends Composite {
 		btnSendToTable.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				
+				
+				
+				
 			}
 		});
 		btnSendToTable.setText("Send to Table");
 		
 		treeViewer = new TreeViewer(compositeRight,  SWT.BORDER| SWT.MULTI
-				| SWT.V_SCROLL);
+				| SWT.V_SCROLL| SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(contentProvider);
 		treeViewer.setInput(contentProvider.getRoot());
 		treeViewer.expandToLevel(2);
