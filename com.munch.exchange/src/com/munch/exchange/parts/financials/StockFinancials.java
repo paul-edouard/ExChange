@@ -345,6 +345,7 @@ public class StockFinancials extends Composite {
 			
 			TreeColumn trclmn = dateColumn.getColumn();
 			//trclmn.setWidth(150);
+			
 			trclmn.setText(getColumnHeaderName(date));
 			
 			columns.add(dateColumn);
