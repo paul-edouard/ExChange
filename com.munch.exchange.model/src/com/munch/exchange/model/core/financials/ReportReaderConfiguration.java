@@ -1,5 +1,6 @@
 package com.munch.exchange.model.core.financials;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -7,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Parameter;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
@@ -33,6 +35,8 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	static final String FIELD_QuaterlySearchPeriodActivated="QuaterlySearchPeriodActivated";
 	static final String FIELD_AnnualySearchPeriodActivated="AnnualySearchPeriodActivated";
 	
+	public static final String FIELD_NextExpectedFinancialDate = "NextExpectedFinancialDate";
+	
 	
 	private String website;
 	//private String selectedPeriodType;
@@ -49,7 +53,19 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	private boolean quaterlySearchPeriodActivated;
 	private boolean annualySearchPeriodActivated;
 	
+	private Calendar nextExpectedFinancialDate=null;
+	
 	private HashMap<String, Long> keyValueMap=new HashMap<String, Long>();
+	
+	
+	public Calendar getNextExpectedFinancialDate() {
+		return nextExpectedFinancialDate;
+	}
+
+	public void setNextExpectedFinancialDate(Calendar nextExpectedFinancialDate) {
+		this.nextExpectedFinancialDate = nextExpectedFinancialDate;
+	}
+	
 	
 	public String getWebsite() {
 		return website;
@@ -214,6 +230,10 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		this.setAnnualySearchPeriodActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_AnnualySearchPeriodActivated)));
 		this.setQuaterlySearchPeriodActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_QuaterlySearchPeriodActivated)));
 		
+		if(rootElement.hasAttribute(FIELD_NextExpectedFinancialDate)){
+		this.setNextExpectedFinancialDate(DateTool.StringToDate(
+				rootElement.getAttribute(FIELD_NextExpectedFinancialDate)));
+		}
 		
 	}
 
@@ -238,6 +258,8 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		
 		rootElement.setAttribute(FIELD_AnnualySearchPeriodActivated,String.valueOf(this.isAnnualySearchPeriodActivated()));
 		rootElement.setAttribute(FIELD_QuaterlySearchPeriodActivated,String.valueOf(this.isQuaterlySearchPeriodActivated()));
+		
+		rootElement.setAttribute(FIELD_NextExpectedFinancialDate,DateTool.dateToString(this.getNextExpectedFinancialDate()));
 		
 	}
 

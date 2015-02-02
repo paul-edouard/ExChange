@@ -94,9 +94,10 @@ public class StockFinancialsEditingSupport extends EditingSupport {
 		}
 		
 		this.stockFinancials.getTreeViewer().refresh();
+		this.stockFinancials.getDirty().setDirty(true);
 		
-		this.stockFinancials.getBtnCancel().setEnabled(true);
-		this.stockFinancials.getBtnSave().setEnabled(true);
+		//this.stockFinancials.getBtnCancel().setEnabled(true);
+		//this.stockFinancials.getBtnSave().setEnabled(true);
 		
 		
 	  }

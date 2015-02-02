@@ -31,6 +31,7 @@ public class DateTool {
 	
 	
 	public static Calendar StringToDate(String dateStr){
+		if(dateStr.equals("No Date"))return null;
 		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		try {
 			Date d=format.parse(dateStr);
@@ -602,7 +603,7 @@ public class DateTool {
 	      if (feiertagsname != "")
 	      {
 	        keinFeiertag = false;
-	        System.out.println (jahr + ": " + feiertagsname);
+	       // System.out.println (jahr + ": " + feiertagsname);
 	        return true;
 	      }
 	        

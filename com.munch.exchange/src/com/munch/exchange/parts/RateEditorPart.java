@@ -13,6 +13,7 @@ import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
+import org.eclipse.e4.ui.model.application.ui.MDirtyable;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
@@ -20,6 +21,7 @@ import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -43,6 +45,7 @@ import com.munch.exchange.parts.financials.StockFinancials;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkComposite;
 import com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsPart;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.services.IFinancialsProvider;
 import com.munch.exchange.services.IKeyStatisticProvider;
 
 public class RateEditorPart {
@@ -55,17 +58,27 @@ public class RateEditorPart {
 	
 	public static final String RATE_EDITOR_ID="com.munch.exchange.partdescriptor.rateeditor";
 	
+	
+	
+	
 	@Inject
 	ExchangeRate rate;
+	
 	
 	@Inject
 	IEclipseContext context;
 	
+	
 	@Inject
 	IKeyStatisticProvider keyStatisticProvider; 
 	
+	
 	@Inject
 	IExchangeRateProvider exchangeRateProvider;
+	
+	@Inject
+	IFinancialsProvider financialsProvider;
+	
 	
 	@Inject
 	private EPartService partService;
@@ -76,6 +89,9 @@ public class RateEditorPart {
 	
 	@Inject
 	ESelectionService selectionService;
+	
+	@Inject
+	MDirtyable dirty;
 	
 	RateTitle titleComposite;
 	OverviewRateChart chartComposite;
@@ -339,7 +355,20 @@ public class RateEditorPart {
 	
 	@Persist
 	public void save() {
-		//TODO Your code here
+		
+		Cursor cursor_wait=new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+		Cursor cursor=shell.getCursor();
+		shell.setCursor(cursor_wait);
+		
+		//Save the Financials Changes
+		if(rate instanceof Stock){
+			financialsProvider.saveAll((Stock)rate);
+			
+		}
+		dirty.setDirty(false);
+		
+		shell.setCursor(cursor);
+		
 	}
 	
 }

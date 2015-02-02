@@ -414,7 +414,7 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 						point.setNextValueDate(expectedNextValue);
 					}
 					else{
-						point.setNextValueDate(stock.getFinancials().getNextExpectedDate(FinancialPoint.PeriodeTypeQuaterly));
+						point.setNextValueDate(stock.getFinancials().getNextExpectedFinancialDate(FinancialPoint.PeriodeTypeQuaterly));
 					}
 					pos--;
 					

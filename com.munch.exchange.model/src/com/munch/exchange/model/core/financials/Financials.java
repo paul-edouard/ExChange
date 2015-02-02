@@ -18,10 +18,13 @@ public class Financials extends ParameterElement {
 	public static final String FIELD_CashFlow = "CashFlow";
 	public static final String FIELD_ReportReaderConfiguration = "ReportReaderConfiguration";
 	
+	
 	private HistoricalBalanceSheet BalanceSheet=new HistoricalBalanceSheet();
 	private HistoricalIncomeStatement IncomeStatement=new HistoricalIncomeStatement();
 	private HistoricalCashFlow CashFlow=new HistoricalCashFlow();
 	private ReportReaderConfiguration reportReaderConfiguration=new ReportReaderConfiguration();
+	
+	
 	
 	
 	public ReportReaderConfiguration getReportReaderConfiguration() {
@@ -37,6 +40,7 @@ public class Financials extends ParameterElement {
 		changes.firePropertyChange(FIELD_BalanceSheet, BalanceSheet,
 				BalanceSheet = balanceSheet);
 	}
+	
 	public HistoricalIncomeStatement getIncomeStatement() {
 		return IncomeStatement;
 	}
@@ -44,6 +48,7 @@ public class Financials extends ParameterElement {
 		changes.firePropertyChange(FIELD_IncomeStatement, IncomeStatement,
 				IncomeStatement = incomeStatement);
 	}
+	
 	public HistoricalCashFlow getCashFlow() {
 		return CashFlow;
 	}
@@ -127,7 +132,15 @@ public class Financials extends ParameterElement {
 		return null;
 	}
 	
-	public Calendar getNextExpectedDate(String periodType){
+	public Calendar getNextExpectedFinancialDate(String periodType){
+		
+		if(reportReaderConfiguration!=null &&
+			reportReaderConfiguration.getNextExpectedFinancialDate()!=null && 
+			reportReaderConfiguration.getNextExpectedFinancialDate().after(Calendar.getInstance())){
+			return reportReaderConfiguration.getNextExpectedFinancialDate();
+		}
+		
+		
 		LinkedList<Calendar> allDates=getDateList(periodType);
 		Calendar expectedNextValue=Calendar.getInstance();
 		if(allDates.size()<2)return expectedNextValue;
@@ -143,6 +156,8 @@ public class Financials extends ParameterElement {
 		return expectedNextValue;
 		
 	}
+	
+	
 	
 	
 	public LinkedList<Calendar> getDateList(String periodType){
