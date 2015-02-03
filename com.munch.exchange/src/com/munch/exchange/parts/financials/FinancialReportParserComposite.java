@@ -563,7 +563,6 @@ public class FinancialReportParserComposite extends Composite {
 			}
 		}
 		
-		
 		treeViewer.refresh();
 	}
 	
