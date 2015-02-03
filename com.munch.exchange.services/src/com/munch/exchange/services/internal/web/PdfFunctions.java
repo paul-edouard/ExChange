@@ -1,6 +1,7 @@
 package com.munch.exchange.services.internal.web;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -13,6 +14,18 @@ public class PdfFunctions {
 			PDDocument document = PDDocument.load(filename);
 			PDFTextStripper s = new PDFTextStripper();
 			String content = s.getText(document);
+			
+			/*
+			String lines[] = content.split("\\r?\\n"); // give you all the lines separated by new line
+			for(int i=0;i<lines.length;i++){
+				String cols[] = lines[i].split("\\s+");
+				System.out.println(Arrays.toString(cols));
+			}
+			*/
+			// gives array separated by whitespaces
+			
+			
+			//content.replace("\t", "|\t");
 			
 			return content;
 			

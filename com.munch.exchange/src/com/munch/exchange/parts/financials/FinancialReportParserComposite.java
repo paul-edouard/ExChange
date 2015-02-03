@@ -33,6 +33,7 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.financials.FinancialPoint;
+import com.munch.exchange.model.core.financials.Financials;
 import com.munch.exchange.model.core.financials.ReportReaderConfiguration;
 import com.munch.exchange.model.core.financials.ReportReaderConfiguration.SearchKeyValEl;
 import com.munch.exchange.parts.financials.StockFinancialsContentProvider.FinancialElement;
@@ -58,6 +59,8 @@ public class FinancialReportParserComposite extends Composite {
 	private Stock stock;
 	
 	private ReportReaderConfiguration config;
+	
+	private Financials financials;
 	
 	private StockFinancialsContentProvider contentProvider=new StockFinancialsContentProvider();
 	
@@ -401,6 +404,12 @@ public class FinancialReportParserComposite extends Composite {
 		trclmnFactor.setWidth(100);
 		trclmnFactor.setText("Factor");
 		
+		TreeViewerColumn treeViewerColumnParsedValue = new TreeViewerColumn(treeViewer, SWT.NONE);
+		TreeColumn trclmnParsedValue =treeViewerColumnParsedValue.getColumn();
+		treeViewerColumnParsedValue.setLabelProvider(new ParsedValueColumnLabelProvider());
+		trclmnParsedValue.setWidth(100);
+		trclmnParsedValue.setText("Parsed Value");
+		
 		TreeViewerColumn treeViewerColumnValu = new TreeViewerColumn(treeViewer, SWT.NONE);
 		TreeColumn trclmnValue =treeViewerColumnValu.getColumn();
 		treeViewerColumnValu.setLabelProvider(new ValueColumnLabelProvider());
@@ -438,7 +447,7 @@ public class FinancialReportParserComposite extends Composite {
 		if (btnQuaterly.getSelection()) {
 			allFoundElts=config.parseQuaterlyDocument(lastContent);
 		} else {
-			allFoundElts=config.parseQuaterlyDocument(lastContent);
+			allFoundElts=config.parseAnnualyDocument(lastContent);
 		}
 		if(allFoundElts==null)return;
 
@@ -607,7 +616,7 @@ public class FinancialReportParserComposite extends Composite {
 		if(!isCompositeAbleToReact(rate_uuid))return;
 		
 		this.config=stock.getFinancials().getReportReaderConfiguration();
-		
+		this.financials=stock.getFinancials();
 		refresh();
 	}
 	
@@ -710,9 +719,50 @@ public class FinancialReportParserComposite extends Composite {
 	class ValueColumnLabelProvider extends ColumnLabelProvider {
 
 		public String getText(Object element) {
+			if(financials==null)return "";
 			if (element instanceof FinancialElement) {
 				FinancialElement entity = (FinancialElement) element;
 				if (btnQuaterly.getSelection()) {
+					Calendar date=null;
+					
+					if(period_qua==1){
+						date=financials.getQ1Date(period_year);
+					}
+					else if(period_qua==2){
+						date=financials.getQ2Date(period_year);
+					}
+					else if(period_qua==3){
+						date=financials.getQ3Date(period_year);
+					}
+					if(date==null)return "";
+					
+					//financials.getQ1Date(year)
+					long val=financials.getValue(FinancialPoint.PeriodeTypeQuaterly, date, entity.fieldKey, entity.sectorKey);
+					if(val!=Long.MIN_VALUE)
+						return String.valueOf(val);
+				} else {
+					
+					Calendar date=financials.getQ4Date(period_year);
+					if(date==null)return "";
+					
+					long val=financials.getValue(FinancialPoint.PeriodeTypeAnnual, date, entity.fieldKey, entity.sectorKey);
+					if(val!=Long.MIN_VALUE)
+						return String.valueOf(val);
+				}
+			}
+			return "";
+		}
+	}
+	
+	
+	class ParsedValueColumnLabelProvider extends ColumnLabelProvider {
+
+		public String getText(Object element) {
+			if (element instanceof FinancialElement) {
+				FinancialElement entity = (FinancialElement) element;
+				if (btnQuaterly.getSelection()) {
+					
+					
 					SearchKeyValEl el = config.getQuaterlySearchKeyValEl(
 							entity.fieldKey, entity.sectorKey);
 					if(el.value!=Long.MIN_VALUE)
@@ -729,5 +779,7 @@ public class FinancialReportParserComposite extends Composite {
 			return "";
 		}
 	}
+	
+	
 	
 }
