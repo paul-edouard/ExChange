@@ -753,7 +753,6 @@ public class FinancialReportParserComposite extends Composite {
 		}
 	}
 	
-	
 	class ParsedValueColumnLabelProvider extends ColumnLabelProvider {
 
 		public String getText(Object element) {
