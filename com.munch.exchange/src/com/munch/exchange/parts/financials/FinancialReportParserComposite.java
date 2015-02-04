@@ -56,6 +56,8 @@ public class FinancialReportParserComposite extends Composite {
 	@Inject
 	private IFinancialsProvider financialsProvider;
 	
+	
+	
 	private Stock stock;
 	
 	private ReportReaderConfiguration config;
@@ -84,6 +86,7 @@ public class FinancialReportParserComposite extends Composite {
 	private Button btnBack;
 	private Button btnNext;
 	private Text textPeriod;
+	private TreeColumn trclmnValue;
 	
 	
 	public Stock getStock() {
@@ -149,7 +152,9 @@ public class FinancialReportParserComposite extends Composite {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String content=financialsProvider.getHtmlContent(textCompanyWebsite.getText());
-				styledText.append("* * * COMPANY WEBSITE * * *\n"+content+"\n");
+				config.setWebsite(textCompanyWebsite.getText());
+				//styledText.append("* * * COMPANY WEBSITE * * *\n"+content+"\n");
+				eventBroker.send(IEventConstant.FINANCIAL_DATA_COMPANY_SIDE, stock.getUUID());
 			}
 		});
 		buttonCompWeb.setText(">>");
@@ -278,12 +283,10 @@ public class FinancialReportParserComposite extends Composite {
 					if(period_qua==0){
 						period_qua=3;period_year--;
 					}
-					textPeriod.setText("Q"+String.valueOf(period_qua)+"-"+String.valueOf(period_year));
 				}
-				else{
-					period_year--;
-					textPeriod.setText(String.valueOf(period_year));
-				}
+				else{period_year--;}
+				
+				refreshPeriod();
 			}
 		});
 		btnBack.setEnabled(false);
@@ -298,12 +301,11 @@ public class FinancialReportParserComposite extends Composite {
 					if(period_qua>3){
 						period_qua=1;period_year++;
 					}
-					textPeriod.setText("Q"+String.valueOf(period_qua)+"-"+String.valueOf(period_year));
 				}
-				else{
-					period_year++;
-					textPeriod.setText(String.valueOf(period_year));
-				}
+				else{period_year++;}
+				
+				refreshPeriod();
+				
 			}
 		});
 		btnNext.setEnabled(false);
@@ -411,7 +413,7 @@ public class FinancialReportParserComposite extends Composite {
 		trclmnParsedValue.setText("Parsed Value");
 		
 		TreeViewerColumn treeViewerColumnValu = new TreeViewerColumn(treeViewer, SWT.NONE);
-		TreeColumn trclmnValue =treeViewerColumnValu.getColumn();
+		trclmnValue =treeViewerColumnValu.getColumn();
 		treeViewerColumnValu.setLabelProvider(new ValueColumnLabelProvider());
 		trclmnValue.setWidth(100);
 		trclmnValue.setText("Value");
@@ -421,6 +423,23 @@ public class FinancialReportParserComposite extends Composite {
 		refresh();
 		
 	}
+	
+	
+	private void refreshPeriod(){
+		String periodString="";
+		if(btnQuaterly.getSelection()){
+			periodString="Q"+String.valueOf(period_qua)+"-"+String.valueOf(period_year);
+		}
+		else{
+			periodString=String.valueOf(period_year);
+		}
+		
+		textPeriod.setText(periodString);
+		trclmnValue.setText(periodString);
+		treeViewer.refresh();
+		
+	}
+	
 	
 	private void loadAndAnalyseDocument(){
 		if(comboDocuments.getItemCount()==1)
@@ -481,6 +500,7 @@ public class FinancialReportParserComposite extends Composite {
 		period_year=getExpectedYear();
 		period_qua=getExpectedQuartal();
 		
+		refreshPeriod();
 		
 		refreshAfterPeriod();
 		
@@ -516,8 +536,10 @@ public class FinancialReportParserComposite extends Composite {
 	public void refreshAfterPeriod(){
 		if(btnQuaterly.getSelection()){
 			
-			Calendar date = Calendar.getInstance();
-			period_year=date.get(Calendar.YEAR);
+			if(period_year==0){
+				Calendar date = Calendar.getInstance();
+				period_year=date.get(Calendar.YEAR);
+			}
 			
 			if(config.getQuaterlyReportWebsite()!=null)
 				txtReportwebsite.setText(config.getQuaterlyReportWebsite());
@@ -529,8 +551,11 @@ public class FinancialReportParserComposite extends Composite {
 				btnBack.setEnabled(btnPeriod.getSelection());
 				btnNext.setEnabled(btnPeriod.getSelection());
 			}
-			if(config.getQuaterlySearchPeriod()!=null && !config.getQuaterlySearchPeriod().isEmpty()){
+			if(config.getQuaterlySearchPeriod()!=null &&
+					!config.getQuaterlySearchPeriod().isEmpty() &&
+					period_year==0){
 				textPeriod.setText(config.getQuaterlySearchPeriod());
+				trclmnValue.setText(config.getQuaterlySearchPeriod());
 				String[] tockens=textPeriod.getText().split("-");
 				if(tockens.length==2){
 					period_qua=Integer.valueOf(tockens[0].replace("Q", ""));
@@ -539,6 +564,7 @@ public class FinancialReportParserComposite extends Composite {
 			}
 			else{
 				textPeriod.setText("Q"+String.valueOf(period_qua)+"-"+String.valueOf(period_year));
+				trclmnValue.setText("Q"+String.valueOf(period_qua)+"-"+String.valueOf(period_year));
 			}
 			
 			
@@ -554,12 +580,16 @@ public class FinancialReportParserComposite extends Composite {
 				btnBack.setEnabled(btnPeriod.getSelection());
 				btnNext.setEnabled(btnPeriod.getSelection());
 			}
-			if(config.getAnnualySearchPeriod()!=null && !config.getAnnualySearchPeriod().isEmpty()){
+			if(config.getAnnualySearchPeriod()!=null &&
+					!config.getAnnualySearchPeriod().isEmpty() &&
+					period_year==0){
 				textPeriod.setText(config.getAnnualySearchPeriod());
+				trclmnValue.setText(config.getAnnualySearchPeriod());
 				period_year=Integer.valueOf(textPeriod.getText());
 			}
 			else{
 				textPeriod.setText(String.valueOf(period_year));
+				trclmnValue.setText(String.valueOf(period_year));
 			}
 		}
 		

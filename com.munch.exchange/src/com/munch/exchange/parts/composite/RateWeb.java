@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.ProgressAdapter;
@@ -29,6 +31,7 @@ import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.Commodity;
 import com.munch.exchange.model.core.Currency;
 import com.munch.exchange.model.core.EconomicData;
@@ -36,6 +39,7 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.services.IExchangeRateProvider;
 
 public class RateWeb extends Composite {
 	
@@ -49,11 +53,17 @@ public class RateWeb extends Composite {
 	private Text textURI;
 	private ProgressBar progressBar;
 	private LinkedList<String> visitedWebSites=new LinkedList<String>();
+	ExchangeRate rate;
+	
+	@Inject
+	private IExchangeRateProvider exchangeRateProvider;
+	
 	
 	@Inject
 	public RateWeb(Composite parent,ExchangeRate rate) {
 		super(parent, SWT.NONE);
 		createWebSiteMap(rate);
+		this.rate=rate;
 		
 		GridLayout gridLayout = new GridLayout(1, false);
 		gridLayout.marginHeight = 0;
@@ -212,7 +222,6 @@ public class RateWeb extends Composite {
 		
 	}
 	
-	
 	private String getDiBaURL(ExchangeRate rate){
 		
 		if(rate.getISIN().isEmpty())return "";
@@ -278,5 +287,40 @@ public class RateWeb extends Composite {
 		return "";
 		
 	}
+	
+	
+	private boolean isCompositeAbleToReact(String rate_uuid){
+		if (this.isDisposed())
+			return false;
+		if (rate_uuid == null || rate_uuid.isEmpty())
+			return false;
+
+		ExchangeRate incoming = exchangeRateProvider.load(rate_uuid);
+		if (incoming == null || rate == null )
+			return false;
+		if (!incoming.getUUID().equals(rate.getUUID()))
+			return false;
+		
+		return true;
+	}
+	
+	
+	@Inject
+	private void financialCompanySide(
+			@Optional @UIEventTopic(IEventConstant.FINANCIAL_DATA_COMPANY_SIDE) String rate_uuid) {
+
+		if(!isCompositeAbleToReact(rate_uuid))return;
+		
+		if(rate instanceof Stock){
+			Stock stock=(Stock)rate;
+			String compWeb=stock.getFinancials().getReportReaderConfiguration().getWebsite();
+			
+			textURI.setText(compWeb);
+			browser.setUrl(textURI.getText());
+			
+		}
+	}
+	
+	
 
 }
