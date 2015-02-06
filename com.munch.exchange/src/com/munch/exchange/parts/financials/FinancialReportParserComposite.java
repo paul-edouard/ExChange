@@ -74,6 +74,8 @@ public class FinancialReportParserComposite extends Composite {
 	
 	private String lastContent;
 	
+	private LinkedList<SearchKeyValEl> allFoundElts=null;
+	
 	
 	private Text textCompanyWebsite;
 	private StyledText styledText;
@@ -89,6 +91,7 @@ public class FinancialReportParserComposite extends Composite {
 	private Button btnNext;
 	private Text textPeriod;
 	private TreeColumn trclmnValue;
+	private Button btnSendToTable;
 	
 	
 	public Stock getStock() {
@@ -342,24 +345,35 @@ public class FinancialReportParserComposite extends Composite {
 		});
 		btnReparse.setText("Reparse");
 		
-		Button btnSendToTable = new Button(composite_1, SWT.NONE);
+		btnSendToTable = new Button(composite_1, SWT.NONE);
 		btnSendToTable.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				if(allFoundElts==null)return;
 				
-				String
-				
-				if(btnQuaterly.getSelection()){
+				for(SearchKeyValEl el:allFoundElts){
+					if(el.value==Long.MIN_VALUE)continue;
 					
+					Calendar date=null;
+					if (btnQuaterly.getSelection())
+						date=getQuaterlyDate();
+					else
+						date=financials.getQ4Date(period_year);
+					
+					if(date==null)continue;
+					
+					long val=financials.getValue(FinancialPoint.PeriodeTypeQuaterly, date, el.fieldKey, el.sectorKey);
+					if(val==Long.MIN_VALUE || val!=Long.MIN_VALUE && val!=el.value){
+						financials.setValue(FinancialPoint.PeriodeTypeQuaterly, date, el.fieldKey, el.sectorKey, el.value);
+					}
 				}
 				
-				
-				config.parseAnnualyDocument(document)
-				
+				treeViewer.refresh();
 				
 			}
 		});
 		btnSendToTable.setText("Send to Table");
+		btnSendToTable.setEnabled(false);
 		
 		treeViewer = new TreeViewer(compositeRight,  SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL| SWT.FULL_SELECTION);
@@ -467,17 +481,20 @@ public class FinancialReportParserComposite extends Composite {
 	
 	private void parseDocument() {
 		// Analyze the document
-		LinkedList<SearchKeyValEl> allFoundElts = null;
+		allFoundElts = null;
 		if (btnQuaterly.getSelection()) {
 			allFoundElts=config.parseQuaterlyDocument(lastContent);
 		} else {
 			allFoundElts=config.parseAnnualyDocument(lastContent);
 		}
-		if(allFoundElts==null)return;
-
-		for (SearchKeyValEl el : allFoundElts) {
-				styledText.append(el+"\n");
+		if(allFoundElts==null){
+			btnSendToTable.setEnabled(false);
+			return;
 		}
+		btnSendToTable.setEnabled(true);
+		//for (SearchKeyValEl el : allFoundElts) {
+		//		styledText.append(el+"\n");
+		//}
 		//TODO
 		refreshAfterPeriod();
 	}
@@ -860,9 +877,9 @@ public class FinancialReportParserComposite extends Composite {
 					else if(val!=Long.MIN_VALUE && val!=el.value){
 						return new Color(getDisplay(), new RGB(0, 255, 255));
 					}
-					
-					
 				}
+				
+				
 			}
 			
 			
