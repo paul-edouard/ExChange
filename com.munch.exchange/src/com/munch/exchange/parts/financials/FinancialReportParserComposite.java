@@ -20,6 +20,8 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -201,10 +203,6 @@ public class FinancialReportParserComposite extends Composite {
 		new Label(compositeHeader, SWT.NONE);
 		
 		txtReportwebsite = new Text(compositeHeader, SWT.BORDER);
-		txtReportwebsite.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-			}
-		});
 		txtReportwebsite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Button btnRepweb = new Button(compositeHeader, SWT.NONE);
@@ -349,7 +347,14 @@ public class FinancialReportParserComposite extends Composite {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
+				String
 				
+				if(btnQuaterly.getSelection()){
+					
+				}
+				
+				
+				config.parseAnnualyDocument(document)
 				
 				
 			}
@@ -541,7 +546,7 @@ public class FinancialReportParserComposite extends Composite {
 				period_year=date.get(Calendar.YEAR);
 			}
 			
-			if(config.getQuaterlyReportWebsite()!=null)
+			if(config.getQuaterlyReportWebsite()!=null && txtReportwebsite.getText().isEmpty())
 				txtReportwebsite.setText(config.getQuaterlyReportWebsite());
 			if(config.getQuaterlyPattern()!=null)
 				textPattern.setText(config.getQuaterlyPattern());
@@ -570,7 +575,7 @@ public class FinancialReportParserComposite extends Composite {
 			
 		}
 		else{
-			if(config.getAnnualyReportWebsite()!=null)
+			if(config.getAnnualyReportWebsite()!=null && txtReportwebsite.getText().isEmpty())
 				txtReportwebsite.setText(config.getAnnualyReportWebsite());
 			if(config.getAnnualyPattern()!=null)
 				textPattern.setText(config.getAnnualyPattern());
@@ -752,17 +757,8 @@ public class FinancialReportParserComposite extends Composite {
 			if (element instanceof FinancialElement) {
 				FinancialElement entity = (FinancialElement) element;
 				if (btnQuaterly.getSelection()) {
-					Calendar date=null;
+					Calendar date=getQuaterlyDate();
 					
-					if(period_qua==1){
-						date=financials.getQ1Date(period_year);
-					}
-					else if(period_qua==2){
-						date=financials.getQ2Date(period_year);
-					}
-					else if(period_qua==3){
-						date=financials.getQ3Date(period_year);
-					}
 					if(date==null)return "";
 					
 					//financials.getQ1Date(year)
@@ -781,6 +777,25 @@ public class FinancialReportParserComposite extends Composite {
 			}
 			return "";
 		}
+		
+		
+	}
+	
+	
+	private Calendar getQuaterlyDate(){
+		Calendar date=null;
+		
+		if(period_qua==1){
+			date=financials.getQ1Date(period_year);
+		}
+		else if(period_qua==2){
+			date=financials.getQ2Date(period_year);
+		}
+		else if(period_qua==3){
+			date=financials.getQ3Date(period_year);
+		}
+		
+		return date;
 	}
 	
 	class ParsedValueColumnLabelProvider extends ColumnLabelProvider {
@@ -806,6 +821,58 @@ public class FinancialReportParserComposite extends Composite {
 			}
 			return "";
 		}
+		
+		
+		@Override
+		public Color getBackground(Object element) {
+			if (element instanceof FinancialElement) {
+				FinancialElement entity = (FinancialElement) element;
+				if (btnQuaterly.getSelection()) {
+					
+					SearchKeyValEl el = config.getQuaterlySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					if(el.value==Long.MIN_VALUE)return super.getBackground(element);
+					
+					Calendar date=getQuaterlyDate();
+					if(date==null)return super.getBackground(element);
+					
+					long val=financials.getValue(FinancialPoint.PeriodeTypeQuaterly, date, entity.fieldKey, entity.sectorKey);
+					if(val==Long.MIN_VALUE){
+						return new Color(getDisplay(), new RGB(0, 255, 0));
+					}
+					else if(val!=Long.MIN_VALUE && val!=el.value){
+						return new Color(getDisplay(), new RGB(0, 255, 255));
+					}
+			
+				}
+				 else {
+					SearchKeyValEl el = config.getAnnualySearchKeyValEl(
+							entity.fieldKey, entity.sectorKey);
+					if(el.value==Long.MIN_VALUE)return super.getBackground(element);
+						
+					Calendar date=financials.getQ4Date(period_year);
+					if(date==null)return super.getBackground(element);
+					
+					long val=financials.getValue(FinancialPoint.PeriodeTypeAnnual, date, entity.fieldKey, entity.sectorKey);
+					if(val==Long.MIN_VALUE){
+						return new Color(getDisplay(), new RGB(0, 255, 0));
+					}
+					else if(val!=Long.MIN_VALUE && val!=el.value){
+						return new Color(getDisplay(), new RGB(0, 255, 255));
+					}
+					
+					
+				}
+			}
+			
+			
+			
+			return super.getBackground(element);
+		}
+		
+		
+		
+		
 	}
 	
 	

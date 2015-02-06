@@ -390,35 +390,45 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		}
 		
 		public boolean searchValue(String content){
-			//TODO
-			//logger.info("Start: "+this.toString());
+			
+			
+			
+			
 			value=Long.MIN_VALUE;
 			boolean isActivated=false;
+			
+			
+			
 			String[] allLines=content.split("\n");
 			for(int i=0;i<allLines.length;i++){
 				String line=allLines[i];
-				if(line.contains(this.activation))isActivated=true;
+				if(this.activation.isEmpty()){
+					break;
+				}
+				
+				if(line.contains(this.activation)){
+					isActivated=true;
+				}
 				
 				if(!isActivated)continue;
 				
-				logger.info("Activated: "+line);
+				//logger.info("Activated: "+line);
 				
 				if(line.startsWith(this.startLineWith)){
+					logger.info("Activated: "+line);
+					
 					String newLine=line.replaceFirst(this.startLineWith, "");
 					while(newLine.contains("  ")){
 						newLine=newLine.replaceAll("  ", " ");
 					}
 					
 					String[] tockens=newLine.split(" ");
-					logger.info("Number of tockens: "+tockens.length);
-					if(tockens.length>this.position && !tockens[this.position].isEmpty()){
-						foundString=tockens[this.position];
-						try{
-							this.value=(long) (this.factor*Double.parseDouble(foundString.replace(",", "").replace("(", "-").replace(")", "")));
-						}
-						catch(Exception e){
-							this.value=Long.MIN_VALUE;
-						}
+					LinkedList<Long> longs=getLongsFromTockens(tockens);
+					//logger.info("Number of tockens: "+tockens.length);
+					if(longs.size()>this.position ){
+						this.value=longs.get(this.position);
+						//foundString=string.v;
+						
 					}
 					isActivated=false;
 				}
@@ -430,6 +440,32 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 			return value!=Long.MIN_VALUE;
 			
 		}
+		
+		private LinkedList<Long> getLongsFromTockens(String[] tockens){
+			LinkedList<Long> longs=new LinkedList<Long>();
+			for(int i=0;i<tockens.length;i++){
+				long value=Long.MIN_VALUE;
+				
+				try{
+					value=(long) (this.factor*Double.parseDouble(
+							tockens[i].replace(",", "").replace("(", "-").replace(")", "")));
+				}
+				catch(Exception e){
+					continue;
+				}
+				
+				if(value!=Long.MIN_VALUE){
+					longs.add(value);
+				}
+				
+			}
+			
+			
+			return longs;
+			
+		}
+		
+		
 
 		@Override
 		public String toString() {
