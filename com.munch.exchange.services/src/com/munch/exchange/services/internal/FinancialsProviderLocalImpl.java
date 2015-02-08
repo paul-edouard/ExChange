@@ -460,6 +460,44 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		
 	}
 	
+	public String[] searchAllMatchingDocuments(Stock stock, String pattern,boolean usePeriod){
+		if(stock==null)return null;
+		if(stock.getDataPath()==null)return null;
+		if(stock.getDataPath().isEmpty())return null;
+		if(stock.getFinancials().getReportReaderConfiguration()==null)
+			loadReportReaderConfiguration(stock);
+		
+		ReportReaderConfiguration config=stock.getFinancials().getReportReaderConfiguration();
+		
+		LinkedList<String> docs=new LinkedList<String>();
+		
+		String searchPeriod="";
+		if(usePeriod)
+			searchPeriod=config.getSelectedPeriod().toString();
+		
+		//Search all docs
+		for(String site:config.getReportWebsites()){
+			String content=getHtmlContent(site);
+			LinkedList<String> site_docs=ReportReaderConfiguration.searchDocuments(content, pattern, searchPeriod);
+			for(String doc:site_docs){
+				if(!docs.contains(doc))
+					docs.add(doc);
+			}
+			//docs.addAll(ReportReaderConfiguration.searchDocuments(content, pattern, searchPeriod));
+		}
+		
+		String[] docl=new String[docs.size()];
+		for(int i=0;i<docs.size();i++){
+			docl[i]=docs.get(i);
+		}
+		
+		return docl;
+		
+	}
+	
+	
+	
+	
 	
 	
 

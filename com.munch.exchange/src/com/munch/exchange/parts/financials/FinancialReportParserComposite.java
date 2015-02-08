@@ -84,7 +84,6 @@ public class FinancialReportParserComposite extends Composite {
 	
 	private Text textCompanyWebsite;
 	private StyledText styledText;
-	private Text txtReportwebsite;
 	private TreeViewer treeViewer;
 	private Tree tree;
 	private Button btnQuaterly;
@@ -97,6 +96,9 @@ public class FinancialReportParserComposite extends Composite {
 	private Text textPeriod;
 	private TreeColumn trclmnValue;
 	private Button btnSendToTable;
+	private Combo comboReportWebsites;
+	private Button btnAddWebsite;
+	private Button btnDeleteWebsite;
 	
 	
 	public Stock getStock() {
@@ -129,13 +131,15 @@ public class FinancialReportParserComposite extends Composite {
 		compositeLeft.setLayout(new GridLayout(1, false));
 		
 		Composite compositeHeader = new Composite(compositeLeft, SWT.NONE);
-		compositeHeader.setLayout(new GridLayout(2, false));
+		compositeHeader.setLayout(new GridLayout(4, false));
 		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 		compositeHeader.setBounds(0, 0, 64, 64);
 		
 		Label lblCompany = new Label(compositeHeader, SWT.NONE);
 		lblCompany.setSize(100, 15);
 		lblCompany.setText("Company Website:");
+		new Label(compositeHeader, SWT.NONE);
+		new Label(compositeHeader, SWT.NONE);
 		
 		Button btnSave = new Button(compositeHeader, SWT.NONE);
 		btnSave.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
@@ -154,6 +158,8 @@ public class FinancialReportParserComposite extends Composite {
 		});
 		textCompanyWebsite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		textCompanyWebsite.setSize(138, 21);
+		new Label(compositeHeader, SWT.NONE);
+		new Label(compositeHeader, SWT.NONE);
 		
 		Button buttonCompWeb = new Button(compositeHeader, SWT.NONE);
 		buttonCompWeb.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
@@ -168,12 +174,12 @@ public class FinancialReportParserComposite extends Composite {
 		});
 		buttonCompWeb.setText(">>");
 		
-		Composite composite = new Composite(compositeHeader, SWT.NONE);
-		composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		GridLayout gl_composite = new GridLayout(2, false);
-		composite.setLayout(gl_composite);
+		Composite compositeWebsites = new Composite(compositeHeader, SWT.NONE);
+		compositeWebsites.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		GridLayout gl_compositeWebsites = new GridLayout(2, false);
+		compositeWebsites.setLayout(gl_compositeWebsites);
 		
-		btnQuaterly = new Button(composite, SWT.RADIO);
+		btnQuaterly = new Button(compositeWebsites, SWT.RADIO);
 		btnQuaterly.setEnabled(false);
 		btnQuaterly.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -192,7 +198,7 @@ public class FinancialReportParserComposite extends Composite {
 		btnQuaterly.setSize(66, 16);
 		btnQuaterly.setText("Quaterly");
 		
-		btnAnnualy = new Button(composite, SWT.RADIO);
+		btnAnnualy = new Button(compositeWebsites, SWT.RADIO);
 		btnAnnualy.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -208,27 +214,33 @@ public class FinancialReportParserComposite extends Composite {
 		});
 		btnAnnualy.setText("Annualy");
 		new Label(compositeHeader, SWT.NONE);
-		
-		Label lblReportWebsite = new Label(compositeHeader, SWT.NONE);
-		lblReportWebsite.setText("Report Website:");
+		new Label(compositeHeader, SWT.NONE);
 		new Label(compositeHeader, SWT.NONE);
 		
-		txtReportwebsite = new Text(compositeHeader, SWT.BORDER);
-		txtReportwebsite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		Label lblReportWebsite = new Label(compositeHeader, SWT.NONE);
+		lblReportWebsite.setText("Report Websites:");
+		new Label(compositeHeader, SWT.NONE);
+		new Label(compositeHeader, SWT.NONE);
+		new Label(compositeHeader, SWT.NONE);
+		
+		comboReportWebsites = new Combo(compositeHeader, SWT.NONE);
+		comboReportWebsites.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Button btnRepweb = new Button(compositeHeader, SWT.NONE);
 		btnRepweb.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				String content=financialsProvider.getHtmlContent(txtReportwebsite.getText());
-				styledText.setText("");
-				styledText.append("* * * REPORT WEBSITE * * *\n"+content+"\n");
+				//String content=financialsProvider.getHtmlContent(txtReportwebsite.getText());
+				//styledText.setText("");
+				//styledText.append("* * * REPORT WEBSITE * * *\n"+content+"\n");
 				
 				comboDocuments.removeAll();
-				String searchPeriod="";
-				if(btnPeriod.getSelection())searchPeriod=textPeriod.getText();
+				String[] docs=financialsProvider.searchAllMatchingDocuments(stock, textPattern.getText(), btnPeriod.getSelection());
+				
+				//String searchPeriod="";
+				//if(btnPeriod.getSelection())searchPeriod=textPeriod.getText();
 					
-				String[] docs=ReportReaderConfiguration.searchDocuments(content, textPattern.getText(),searchPeriod);
+				//String[] docs=ReportReaderConfiguration.searchDocuments(content, textPattern.getText(),searchPeriod);
 				for(int i=0;i<docs.length;i++){
 					comboDocuments.add(docs[i]);
 					styledText.append("* * * DOC: "+docs[i]+"\n");
@@ -243,8 +255,42 @@ public class FinancialReportParserComposite extends Composite {
 				
 			}
 		});
-		btnRepweb.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
 		btnRepweb.setText(">>");
+		
+		btnAddWebsite = new Button(compositeHeader, SWT.NONE);
+		btnAddWebsite.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String webSite=comboReportWebsites.getText();
+				if(webSite.isEmpty())return;
+				if(config.getReportWebsites().contains(webSite))return;
+				
+				String content=financialsProvider.getHtmlContent(webSite);
+				if(content==null || content.isEmpty())return;
+				
+				//Add the new website
+				config.getReportWebsites().addFirst(webSite);
+				refreshComboReportWebsites();
+				
+			}
+		});
+		btnAddWebsite.setText("Add");
+		
+		btnDeleteWebsite = new Button(compositeHeader, SWT.NONE);
+		btnDeleteWebsite.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				
+				String webSite=comboReportWebsites.getText();
+				if(webSite.isEmpty())return;
+				if(!config.getReportWebsites().contains(webSite))return;
+				
+				config.getReportWebsites().remove(webSite);
+				refreshComboReportWebsites();
+				
+			}
+		});
+		btnDeleteWebsite.setText("Del");
 		
 		Group grpDocuments = new Group(compositeLeft, SWT.NONE);
 		grpDocuments.setFont(SWTResourceManager.getFont("Segoe UI", 7, SWT.NORMAL));
@@ -429,6 +475,21 @@ public class FinancialReportParserComposite extends Composite {
 		
 	}
 	
+	private void refreshComboReportWebsites(){
+		comboReportWebsites.removeAll();
+		if(this.config.getReportWebsites().isEmpty())return;
+		
+		
+		for(String site:this.config.getReportWebsites()){
+			comboReportWebsites.add(site);
+		}
+		
+		comboReportWebsites.setText(this.config.getReportWebsites().getFirst());
+		
+		
+	}
+	
+	
 	private void refreshPeriod(){
 		textPeriod.setText(config.getSelectedPeriod().toString());
 		trclmnValue.setText(config.getSelectedPeriod().toString());
@@ -502,6 +563,8 @@ public class FinancialReportParserComposite extends Composite {
 		
 		refreshAfterPeriod();
 		
+		refreshComboReportWebsites();
+		
 	}
 	
 	/*
@@ -537,8 +600,8 @@ public class FinancialReportParserComposite extends Composite {
 			//config.getSelectedPeriod().setType(PeriodType.QUATERLY);
 			
 			//Set the ReportWebsite
-			if(config.getQuaterlyReportWebsite()!=null && txtReportwebsite.getText().isEmpty())
-				txtReportwebsite.setText(config.getQuaterlyReportWebsite());
+			//if(config.getQuaterlyReportWebsite()!=null && txtReportwebsite.getText().isEmpty())
+			//	txtReportwebsite.setText(config.getQuaterlyReportWebsite());
 			
 			//Set the Pattern
 			if(config.getQuaterlyPattern()!=null)
@@ -575,8 +638,8 @@ public class FinancialReportParserComposite extends Composite {
 		else{
 			//period.setType(PeriodType.ANNUAL);
 			
-			if(config.getAnnualyReportWebsite()!=null && txtReportwebsite.getText().isEmpty())
-				txtReportwebsite.setText(config.getAnnualyReportWebsite());
+			//if(config.getAnnualyReportWebsite()!=null && txtReportwebsite.getText().isEmpty())
+			//	txtReportwebsite.setText(config.getAnnualyReportWebsite());
 			if(config.getAnnualyPattern()!=null)
 				textPattern.setText(config.getAnnualyPattern());
 			if(config.isAnnualySearchPeriodActivated()){
@@ -616,10 +679,10 @@ public class FinancialReportParserComposite extends Composite {
 		//	config.setSelectedPeriodType(FinancialPoint.PeriodeTypeAnnual);
 		
 		//Save the Report web site
-		if(btnQuaterly.getSelection())
-			config.setQuaterlyReportWebsite(txtReportwebsite.getText());
-		else
-			config.setAnnualyReportWebsite(txtReportwebsite.getText());
+		//if(btnQuaterly.getSelection())
+		//	config.setQuaterlyReportWebsite(txtReportwebsite.getText());
+		//else
+		//	config.setAnnualyReportWebsite(txtReportwebsite.getText());
 		
 		//Save the pattern
 		if(btnQuaterly.getSelection())

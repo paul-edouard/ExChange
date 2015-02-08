@@ -222,8 +222,6 @@ public class Financials extends ParameterElement {
 	}
 	
 	
-	
-	
 	public Calendar getEffectiveDate(String periodType,Calendar date){
 		for(DatePoint point:IncomeStatement.getPoints(periodType)){
 			FinancialPoint p=(FinancialPoint)point;

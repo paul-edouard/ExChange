@@ -1,5 +1,7 @@
 package com.munch.exchange.model.core.financials;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -8,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.financials.Period.PeriodType;
 import com.munch.exchange.model.core.keystat.KeyStatMap;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Parameter;
@@ -23,7 +26,9 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	static final String FIELD_SelectedPeriod="SelectedPeriod";
 	
 	static final String FIELD_QuaterlyReportWebsite="QuaterlyReportWebsite";
+	//static final String FIELD_QuaterlyReportWebsites="QuaterlyReportWebsites";
 	static final String FIELD_AnnualyReportWebsite="AnnualyReportWebsite";
+	//static final String FIELD_AnnualyReportWebsites="AnnualyReportWebsites";
 	
 	static final String FIELD_QuaterlyPattern="QuaterlyPattern";
 	static final String FIELD_AnnualyPattern="AnnualyPattern";
@@ -43,8 +48,12 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	private String website;
 	//private String selectedPeriodType;
 	
-	private String quaterlyReportWebsite;
-	private String annualyReportWebsite;
+	//private String quaterlyReportWebsite;
+	private LinkedList<String> quaterlyReportWebsites=new LinkedList<String>();
+	
+	//private String annualyReportWebsite;
+	private LinkedList<String> annualyReportWebsites=new LinkedList<String>();
+	
 	
 	private String quaterlyPattern;
 	private String annualyPattern;
@@ -75,7 +84,9 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	}
 	
 	
-	public static String[] searchDocuments(String content, String pattern,String searchPeriod){
+	
+	
+	public static LinkedList<String> searchDocuments(String content, String pattern,String searchPeriod){
 		LinkedList<String> docs=new LinkedList<String>();
 		String[] tockens=content.split("\n");
 		String[] ptockens=searchPeriod.split("-");
@@ -101,13 +112,17 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 				}
 			}
 		}
+		
+		return docs;
+		
+		/*
 		String[] docl=new String[docs.size()];
 		for(int i=0;i<docs.size();i++){
 			docl[i]=docs.get(i);
 		}
 		
 		return docl;
-		
+		*/
 	}
 	
 	
@@ -156,24 +171,6 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 
 	public void setSelectedPeriod(Period selectedPeriod) {
 	changes.firePropertyChange(FIELD_SelectedPeriod, this.selectedPeriod, this.selectedPeriod = selectedPeriod);}
-	
-	
-	
-	public String getQuaterlyReportWebsite() {
-		return quaterlyReportWebsite;
-	}
-
-
-	public void setQuaterlyReportWebsite(String quaterlyReportWebsite) {
-	changes.firePropertyChange(FIELD_QuaterlyReportWebsite, this.quaterlyReportWebsite, this.quaterlyReportWebsite = quaterlyReportWebsite);}
-	
-
-	public String getAnnualyReportWebsite() {
-		return annualyReportWebsite;
-	}
-
-	public void setAnnualyReportWebsite(String annualyReportWebsite) {
-	changes.firePropertyChange(FIELD_AnnualyReportWebsite, this.annualyReportWebsite, this.annualyReportWebsite = annualyReportWebsite);}
 	
 
 	public void setWebsite(String website) {
@@ -227,9 +224,29 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	changes.firePropertyChange(FIELD_AnnualySearchPeriodActivated, this.annualySearchPeriodActivated, this.annualySearchPeriodActivated = annualySearchPeriodActivated);}
 	
 	
+	public void setQuaterlyReportWebsites(LinkedList<String> quaterlyReportWebsites) {
+	changes.firePropertyChange(FIELD_QuaterlyReportWebsite, this.quaterlyReportWebsites, this.quaterlyReportWebsites = quaterlyReportWebsites);}
+	
+
+	public LinkedList<String> getReportWebsites() {
+		if(this.selectedPeriod.getType()==PeriodType.ANNUAL)
+			return annualyReportWebsites;
+		else{
+			return quaterlyReportWebsites;
+		}
+		
+	}
+
+	public void setAnnualyReportWebsites(LinkedList<String> annualyReportWebsites) {
+	changes.firePropertyChange(FIELD_AnnualyReportWebsite, this.annualyReportWebsites, this.annualyReportWebsites = annualyReportWebsites);}
+	
+	
+	
 	//****************************************
 	//***            SearchKeyValEl       ****
 	//****************************************
+	
+
 	
 
 	private HashMap<String, SearchKeyValEl> getAllSearchKeyValEl(String periodType){
@@ -306,7 +323,6 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	public LinkedList<SearchKeyValEl> parseAnnualyDocument(String document){
 		return parseDocument(document,FinancialPoint.PeriodeTypeAnnual);
 	}
-	
 	
 	
 	public class SearchKeyValEl{
@@ -464,9 +480,6 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	protected void initAttribute(Element rootElement) {
 		this.setWebsite((rootElement.getAttribute(FIELD_Website)));
 		
-		this.setAnnualyReportWebsite((rootElement.getAttribute(FIELD_AnnualyReportWebsite)));
-		this.setQuaterlyReportWebsite((rootElement.getAttribute(FIELD_QuaterlyReportWebsite)));
-		
 		this.setAnnualyPattern((rootElement.getAttribute(FIELD_AnnualyPattern)));
 		this.setQuaterlyPattern((rootElement.getAttribute(FIELD_QuaterlyPattern)));
 		
@@ -481,6 +494,11 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 				rootElement.getAttribute(FIELD_NextExpectedFinancialDate)));
 		}
 		
+		
+		
+		quaterlyReportWebsites.clear();
+		annualyReportWebsites.clear();
+		
 	}
 
 	@Override
@@ -491,16 +509,18 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 			p.init(childElement);
 			this.setSelectedPeriod(p);
 		}
+		else if(childElement.getTagName().equals(FIELD_AnnualyReportWebsite)){
+			annualyReportWebsites.add(childElement.getTextContent());
+		}
+		else if(childElement.getTagName().equals(FIELD_QuaterlyReportWebsite)){
+			quaterlyReportWebsites.add(childElement.getTextContent());
+		}
 	}
 	
-
 	@Override
 	protected void setAttribute(Element rootElement) {
 		
 		rootElement.setAttribute(FIELD_Website,this.getWebsite());
-		
-		rootElement.setAttribute(FIELD_AnnualyReportWebsite,this.getAnnualyReportWebsite());
-		rootElement.setAttribute(FIELD_QuaterlyReportWebsite,this.getQuaterlyReportWebsite());
 		
 		rootElement.setAttribute(FIELD_AnnualyPattern,this.getAnnualyPattern());
 		rootElement.setAttribute(FIELD_QuaterlyPattern,this.getQuaterlyPattern());
@@ -518,15 +538,23 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	@Override
 	protected void appendChild(Element rootElement, Document doc) {
 		rootElement.appendChild(this.getSelectedPeriod().toDomElement(doc));
+		
+		for(String site:annualyReportWebsites){
+			Element el=doc.createElement(FIELD_AnnualyReportWebsite);
+			el.setTextContent(site);
+			rootElement.appendChild(el);
+		}
+		
+		for(String site:quaterlyReportWebsites){
+			Element el=doc.createElement(FIELD_QuaterlyReportWebsite);
+			el.setTextContent(site);
+			rootElement.appendChild(el);
+		}
+		
+		
 	}
 	
 	
-	//****************************************
-	//***              STATIC             ****
-	//****************************************
-	public static String createPeriodString(int period_qua, int period_year){
-		return "Q"+String.valueOf(period_qua)+"-"+String.valueOf(period_year);
-	}
 	
 	
 	
