@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.keystat.KeyStatMap;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Parameter;
 import com.munch.exchange.model.xml.XmlParameterElement;
@@ -18,7 +19,8 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	private static Logger logger = Logger.getLogger(ReportReaderConfiguration.class);
 	
 	static final String FIELD_Website="Website";
-	static final String FIELD_SelectedPeriodType="SelectedPeriodType";
+	//static final String FIELD_SelectedPeriodType="SelectedPeriodType";
+	static final String FIELD_SelectedPeriod="SelectedPeriod";
 	
 	static final String FIELD_QuaterlyReportWebsite="QuaterlyReportWebsite";
 	static final String FIELD_AnnualyReportWebsite="AnnualyReportWebsite";
@@ -54,6 +56,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	private boolean annualySearchPeriodActivated;
 	
 	private Calendar nextExpectedFinancialDate=null;
+	private Period selectedPeriod=null;
 	
 	private HashMap<String, Long> keyValueMap=new HashMap<String, Long>();
 	
@@ -71,12 +74,6 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		return website;
 	}
 	
-	public String getSelectedPeriodType(){
-		return this.getStringParam(FIELD_SelectedPeriodType);
-	}
-	public void setSelectedPeriodType(String selectedPeriodType){
-		this.setParam(FIELD_SelectedPeriodType, selectedPeriodType);
-	}
 	
 	public static String[] searchDocuments(String content, String pattern,String searchPeriod){
 		LinkedList<String> docs=new LinkedList<String>();
@@ -145,9 +142,27 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	}
 	
 	
+	//****************************************
+	//***        Getter and Setter        ****
+	//****************************************
+	
+	
+	public Period getSelectedPeriod() {
+		if(selectedPeriod==null){
+			selectedPeriod=new Period();
+		}
+		return selectedPeriod;
+	}
+
+	public void setSelectedPeriod(Period selectedPeriod) {
+	changes.firePropertyChange(FIELD_SelectedPeriod, this.selectedPeriod, this.selectedPeriod = selectedPeriod);}
+	
+	
+	
 	public String getQuaterlyReportWebsite() {
 		return quaterlyReportWebsite;
 	}
+
 
 	public void setQuaterlyReportWebsite(String quaterlyReportWebsite) {
 	changes.firePropertyChange(FIELD_QuaterlyReportWebsite, this.quaterlyReportWebsite, this.quaterlyReportWebsite = quaterlyReportWebsite);}
@@ -164,8 +179,6 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	public void setWebsite(String website) {
 	changes.firePropertyChange(FIELD_Website, this.website, this.website = website);}
 	
-	
-
 	public String getQuaterlyPattern() {
 		return quaterlyPattern;
 	}
@@ -173,7 +186,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	public void setQuaterlyPattern(String quaterlyPattern) {
 	changes.firePropertyChange(FIELD_QuaterlyPattern, this.quaterlyPattern, this.quaterlyPattern = quaterlyPattern);}
 	
-
+	
 	public String getAnnualyPattern() {
 		return annualyPattern;
 	}
@@ -213,61 +226,12 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	public void setAnnualySearchPeriodActivated(boolean annualySearchPeriodActivated) {
 	changes.firePropertyChange(FIELD_AnnualySearchPeriodActivated, this.annualySearchPeriodActivated, this.annualySearchPeriodActivated = annualySearchPeriodActivated);}
 	
-
-	@Override
-	protected void initAttribute(Element rootElement) {
-		this.setWebsite((rootElement.getAttribute(FIELD_Website)));
-		
-		this.setAnnualyReportWebsite((rootElement.getAttribute(FIELD_AnnualyReportWebsite)));
-		this.setQuaterlyReportWebsite((rootElement.getAttribute(FIELD_QuaterlyReportWebsite)));
-		
-		this.setAnnualyPattern((rootElement.getAttribute(FIELD_AnnualyPattern)));
-		this.setQuaterlyPattern((rootElement.getAttribute(FIELD_QuaterlyPattern)));
-		
-		this.setAnnualySearchPeriod((rootElement.getAttribute(FIELD_AnnualySearchPeriod)));
-		this.setQuaterlySearchPeriod((rootElement.getAttribute(FIELD_QuaterlySearchPeriod)));
-		
-		this.setAnnualySearchPeriodActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_AnnualySearchPeriodActivated)));
-		this.setQuaterlySearchPeriodActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_QuaterlySearchPeriodActivated)));
-		
-		if(rootElement.hasAttribute(FIELD_NextExpectedFinancialDate)){
-		this.setNextExpectedFinancialDate(DateTool.StringToDate(
-				rootElement.getAttribute(FIELD_NextExpectedFinancialDate)));
-		}
-		
-	}
-
-	@Override
-	protected void initChild(Element childElement) {
-		
-	}
-
-	@Override
-	protected void setAttribute(Element rootElement) {
-		
-		rootElement.setAttribute(FIELD_Website,this.getWebsite());
-		
-		rootElement.setAttribute(FIELD_AnnualyReportWebsite,this.getAnnualyReportWebsite());
-		rootElement.setAttribute(FIELD_QuaterlyReportWebsite,this.getQuaterlyReportWebsite());
-		
-		rootElement.setAttribute(FIELD_AnnualyPattern,this.getAnnualyPattern());
-		rootElement.setAttribute(FIELD_QuaterlyPattern,this.getQuaterlyPattern());
-		
-		rootElement.setAttribute(FIELD_AnnualySearchPeriod,this.getAnnualySearchPeriod());
-		rootElement.setAttribute(FIELD_QuaterlySearchPeriod,this.getQuaterlySearchPeriod());
-		
-		rootElement.setAttribute(FIELD_AnnualySearchPeriodActivated,String.valueOf(this.isAnnualySearchPeriodActivated()));
-		rootElement.setAttribute(FIELD_QuaterlySearchPeriodActivated,String.valueOf(this.isQuaterlySearchPeriodActivated()));
-		
-		rootElement.setAttribute(FIELD_NextExpectedFinancialDate,DateTool.dateToString(this.getNextExpectedFinancialDate()));
-		
-	}
-
-	@Override
-	protected void appendChild(Element rootElement, Document doc) {
-		// TODO Auto-generated method stub
-	}
 	
+	//****************************************
+	//***            SearchKeyValEl       ****
+	//****************************************
+	
+
 	private HashMap<String, SearchKeyValEl> getAllSearchKeyValEl(String periodType){
 		HashMap<String, SearchKeyValEl> map=new HashMap<String, SearchKeyValEl>();
 		
@@ -311,6 +275,11 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		this.setParam(el.getKey(), el.getContent());
 	}
 	
+	
+	//****************************************
+	//***            PARSE Document       ****
+	//****************************************
+	
 	private LinkedList<SearchKeyValEl> parseDocument(String document,String periodType){
 		
 		LinkedList<SearchKeyValEl> allFoundElts=new LinkedList<SearchKeyValEl>();
@@ -330,7 +299,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		
 		return allFoundElts;
 	}
-	
+
 	public LinkedList<SearchKeyValEl> parseQuaterlyDocument(String document){
 		return parseDocument(document,FinancialPoint.PeriodeTypeQuaterly);
 	}
@@ -339,9 +308,6 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	}
 	
 	
-	//this.setParam(key, docs);
-	
-	//FinancialPoint.PeriodeTypeQuaterly
 	
 	public class SearchKeyValEl{
 		public String fieldKey;
@@ -412,25 +378,29 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 				
 				if(!isActivated)continue;
 				
-				//logger.info("Activated: "+line);
-				
-				if(line.startsWith(this.startLineWith)){
-					logger.info("Activated: "+line);
-					
-					String newLine=line.replaceFirst(this.startLineWith, "");
-					while(newLine.contains("  ")){
-						newLine=newLine.replaceAll("  ", " ");
+				// logger.info("Activated: "+line);
+				String[] startLineTockens = startLineWith.split(":");
+				for (int j = 0; j < startLineTockens.length; j++) {
+
+					if (line.startsWith(startLineTockens[j])) {
+						// logger.info("Activated: "+line);
+
+						String newLine = line.replaceFirst(this.startLineWith,
+								"");
+						while (newLine.contains("  ")) {
+							newLine = newLine.replaceAll("  ", " ");
+						}
+
+						String[] tockens = newLine.split(" ");
+						LinkedList<Long> longs = getLongsFromTockens(tockens);
+						// logger.info("Number of tockens: "+tockens.length);
+						if (longs.size() > this.position) {
+							this.value = longs.get(this.position);
+							// foundString=string.v;
+
+						}
+						isActivated = false;
 					}
-					
-					String[] tockens=newLine.split(" ");
-					LinkedList<Long> longs=getLongsFromTockens(tockens);
-					//logger.info("Number of tockens: "+tockens.length);
-					if(longs.size()>this.position ){
-						this.value=longs.get(this.position);
-						//foundString=string.v;
-						
-					}
-					isActivated=false;
 				}
 				
 				if(!isActivated)break;
@@ -440,6 +410,9 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 			return value!=Long.MIN_VALUE;
 			
 		}
+		
+		
+		
 		
 		private LinkedList<Long> getLongsFromTockens(String[] tockens){
 			LinkedList<Long> longs=new LinkedList<Long>();
@@ -481,5 +454,80 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		
 	}
 	
+	
+	
+	//****************************************
+	//***             XML                 ****
+	//****************************************
+	
+	@Override
+	protected void initAttribute(Element rootElement) {
+		this.setWebsite((rootElement.getAttribute(FIELD_Website)));
+		
+		this.setAnnualyReportWebsite((rootElement.getAttribute(FIELD_AnnualyReportWebsite)));
+		this.setQuaterlyReportWebsite((rootElement.getAttribute(FIELD_QuaterlyReportWebsite)));
+		
+		this.setAnnualyPattern((rootElement.getAttribute(FIELD_AnnualyPattern)));
+		this.setQuaterlyPattern((rootElement.getAttribute(FIELD_QuaterlyPattern)));
+		
+		this.setAnnualySearchPeriod((rootElement.getAttribute(FIELD_AnnualySearchPeriod)));
+		this.setQuaterlySearchPeriod((rootElement.getAttribute(FIELD_QuaterlySearchPeriod)));
+		
+		this.setAnnualySearchPeriodActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_AnnualySearchPeriodActivated)));
+		this.setQuaterlySearchPeriodActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_QuaterlySearchPeriodActivated)));
+		
+		if(rootElement.hasAttribute(FIELD_NextExpectedFinancialDate)){
+		this.setNextExpectedFinancialDate(DateTool.StringToDate(
+				rootElement.getAttribute(FIELD_NextExpectedFinancialDate)));
+		}
+		
+	}
 
+	@Override
+	protected void initChild(Element childElement) {
+		Period p=new Period();
+		
+		if(childElement.getTagName().equals(p.getTagName())){
+			p.init(childElement);
+			this.setSelectedPeriod(p);
+		}
+	}
+	
+
+	@Override
+	protected void setAttribute(Element rootElement) {
+		
+		rootElement.setAttribute(FIELD_Website,this.getWebsite());
+		
+		rootElement.setAttribute(FIELD_AnnualyReportWebsite,this.getAnnualyReportWebsite());
+		rootElement.setAttribute(FIELD_QuaterlyReportWebsite,this.getQuaterlyReportWebsite());
+		
+		rootElement.setAttribute(FIELD_AnnualyPattern,this.getAnnualyPattern());
+		rootElement.setAttribute(FIELD_QuaterlyPattern,this.getQuaterlyPattern());
+		
+		rootElement.setAttribute(FIELD_AnnualySearchPeriod,this.getAnnualySearchPeriod());
+		rootElement.setAttribute(FIELD_QuaterlySearchPeriod,this.getQuaterlySearchPeriod());
+		
+		rootElement.setAttribute(FIELD_AnnualySearchPeriodActivated,String.valueOf(this.isAnnualySearchPeriodActivated()));
+		rootElement.setAttribute(FIELD_QuaterlySearchPeriodActivated,String.valueOf(this.isQuaterlySearchPeriodActivated()));
+		
+		rootElement.setAttribute(FIELD_NextExpectedFinancialDate,DateTool.dateToString(this.getNextExpectedFinancialDate()));
+		
+	}
+
+	@Override
+	protected void appendChild(Element rootElement, Document doc) {
+		rootElement.appendChild(this.getSelectedPeriod().toDomElement(doc));
+	}
+	
+	
+	//****************************************
+	//***              STATIC             ****
+	//****************************************
+	public static String createPeriodString(int period_qua, int period_year){
+		return "Q"+String.valueOf(period_qua)+"-"+String.valueOf(period_year);
+	}
+	
+	
+	
 }

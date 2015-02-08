@@ -58,7 +58,7 @@ public class Financials extends ParameterElement {
 	
 	public void addPoint(String periodType){
 		Calendar lastpoint=getDateList(periodType).getLast();
-		logger.info("Last point:"+DateTool.dateToDayString(lastpoint));
+		//logger.info("Last point:"+DateTool.dateToDayString(lastpoint));
 		Calendar newpoint=Calendar.getInstance();
 		newpoint.setTimeInMillis(lastpoint.getTimeInMillis());
 		
@@ -71,22 +71,43 @@ public class Financials extends ParameterElement {
 			newpoint.add(Calendar.YEAR, -1);
 		}
 		
+		addDate(lastpoint,periodType);
+	}
+	
+	private void addDate(Calendar date, String periodType){
 		BalanceSheetPoint bs_point=new BalanceSheetPoint();
-		bs_point.setDate(newpoint);bs_point.setPeriodEnding(newpoint);
+		bs_point.setDate(date);bs_point.setPeriodEnding(date);
 		bs_point.setPeriodType(periodType);
 		BalanceSheet.addLast(bs_point);
+		BalanceSheet.sort();
 		
 		IncomeStatementPoint is_point=new IncomeStatementPoint();
-		is_point.setDate(newpoint);is_point.setPeriodEnding(newpoint);
+		is_point.setDate(date);is_point.setPeriodEnding(date);
 		is_point.setPeriodType(periodType);
 		IncomeStatement.addLast(is_point);
+		IncomeStatement.sort();
 		
 		CashFlowPoint cf_point=new CashFlowPoint();
-		cf_point.setDate(newpoint);cf_point.setPeriodEnding(newpoint);
+		cf_point.setDate(date);cf_point.setPeriodEnding(date);
 		cf_point.setPeriodType(periodType);
 		CashFlow.addLast(cf_point);
-		
+		CashFlow.sort();
 	}
+	
+	private void addDate(Period period){
+		switch(period.getType()){
+		case  QUATERLY:
+			addDate(period.getPeriodEndingDate(),FinancialPoint.PeriodeTypeQuaterly);
+			break;
+			
+		case ANNUAL:
+			addDate(period.getPeriodEndingDate(),FinancialPoint.PeriodeTypeAnnual);
+			break;
+		}
+	}
+	
+	
+	
 	
 	public Calendar getQ1Date(int year){
 		LinkedList<Calendar> dates=getDateList(FinancialPoint.PeriodeTypeQuaterly);
@@ -130,6 +151,25 @@ public class Financials extends ParameterElement {
 		}
 		
 		return null;
+	}
+	
+	public Calendar getDate(Period period){
+		switch (period.getType()) {
+		case ANNUAL:
+			return getQ4Date(period.getYear());
+
+		default:
+			if(period.getQuarter()==1)
+				return getQ1Date(period.getYear());
+			else if(period.getQuarter()==2)
+				return getQ2Date(period.getYear());
+			else if(period.getQuarter()==3)
+				return getQ3Date(period.getYear());
+			else
+				return getQ4Date(period.getYear());
+			
+		}
+		
 	}
 	
 	public Calendar getNextExpectedFinancialDate(String periodType){
@@ -181,6 +221,35 @@ public class Financials extends ParameterElement {
 		return list;
 	}
 	
+	
+	
+	
+	public Calendar getEffectiveDate(String periodType,Calendar date){
+		for(DatePoint point:IncomeStatement.getPoints(periodType)){
+			FinancialPoint p=(FinancialPoint)point;
+			if(!p.getDate().equals(date))continue;
+			
+			return p.getEffectiveDate();
+			
+		}
+		
+		return null;
+	}
+	
+	public void setEffectiveDate(String periodType,Calendar date,Calendar effectiveDate){
+		
+		for(DatePoint point:IncomeStatement.getPoints(periodType)){
+			FinancialPoint p=(FinancialPoint)point;
+			if(!p.getDate().equals(date))continue;
+			
+			p.setEffectiveDate(effectiveDate);
+			
+		}
+		
+	}
+	
+	
+	
 	public void setValue(String periodType,Calendar date,String key,String sectorKey,long value){
 		if(sectorKey.equals(FIELD_BalanceSheet)){
 			for(DatePoint point:BalanceSheet.getPoints(periodType)){
@@ -214,30 +283,37 @@ public class Financials extends ParameterElement {
 		
 	}
 	
-	
-	public Calendar getEffectiveDate(String periodType,Calendar date){
-		for(DatePoint point:IncomeStatement.getPoints(periodType)){
-			FinancialPoint p=(FinancialPoint)point;
-			if(!p.getDate().equals(date))continue;
-			
-			return p.getEffectiveDate();
-			
+	public void setValue(Period period,String key,String sectorKey,long value){
+		
+		//Search the corresponding date
+		Calendar date=this.getDate(period);
+		if(date==null){
+			logger.info("The period "+period+" cannot be found, try to create a new date");
+			addDate(period);
+			date=this.getDate(period);
 		}
 		
-		return null;
-	}
-	
-	public void setEffectiveDate(String periodType,Calendar date,Calendar effectiveDate){
-		
-		for(DatePoint point:IncomeStatement.getPoints(periodType)){
-			FinancialPoint p=(FinancialPoint)point;
-			if(!p.getDate().equals(date))continue;
-			
-			p.setEffectiveDate(effectiveDate);
-			
+		//Create the new Date
+		if(date==null){
+			logger.info("Error: Cannot set the value, the corresponding period "+period+" cannot be found!");
+			return;
 		}
 		
+		
+		//Set the value
+		switch(period.getType()){
+		case  QUATERLY:
+			setValue(FinancialPoint.PeriodeTypeQuaterly,date,key,sectorKey,value);
+			break;
+			
+		case ANNUAL:
+			setValue(FinancialPoint.PeriodeTypeAnnual,date,key,sectorKey,value);
+			break;
+		}
+		
+		
 	}
+	
 	
 	public long getValue(String periodType,Calendar date,String key,String sectorKey){
 		
@@ -281,7 +357,25 @@ public class Financials extends ParameterElement {
 	}
 	
 	
-	
+	public long getValue(Period period,String key,String sectorKey){
+		//Search the corresponding date
+		Calendar date=this.getDate(period);
+		if(date==null){
+			logger.info("The period "+period+" cannot be found, try to create a new date");
+			return Long.MIN_VALUE;
+		}
+		
+		switch(period.getType()){
+		case  QUATERLY:
+			return getValue(FinancialPoint.PeriodeTypeQuaterly,date,key,sectorKey);
+			
+		case ANNUAL:
+			return getValue(FinancialPoint.PeriodeTypeAnnual,date,key,sectorKey);
+		}
+		
+		return Long.MIN_VALUE;
+		
+	}
 	
 
 }
