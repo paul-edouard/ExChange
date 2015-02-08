@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import javax.crypto.spec.PSource;
 import javax.inject.Inject;
 
+import org.apache.log4j.Logger;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.UIEventTopic;
@@ -34,8 +35,10 @@ import org.eclipse.swt.widgets.TreeColumn;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.financials.CashFlowPoint;
 import com.munch.exchange.model.core.financials.FinancialPoint;
 import com.munch.exchange.model.core.financials.Financials;
+import com.munch.exchange.model.core.financials.IncomeStatementPoint;
 import com.munch.exchange.model.core.financials.Period;
 import com.munch.exchange.model.core.financials.ReportReaderConfiguration;
 import com.munch.exchange.model.core.financials.Period.PeriodType;
@@ -49,6 +52,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 public class FinancialReportParserComposite extends Composite {
+	
+	private static Logger logger = Logger.getLogger(FinancialReportParserComposite.class);
 	
 	
 	@Inject
@@ -374,7 +379,7 @@ public class FinancialReportParserComposite extends Composite {
 		
 		Composite composite_1 = new Composite(compositeRight, SWT.NONE);
 		composite_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-		composite_1.setLayout(new GridLayout(2, false));
+		composite_1.setLayout(new GridLayout(3, false));
 		
 		Button btnReparse = new Button(composite_1, SWT.NONE);
 		btnReparse.addSelectionListener(new SelectionAdapter() {
@@ -406,6 +411,57 @@ public class FinancialReportParserComposite extends Composite {
 		});
 		btnSendToTable.setText("Send to Table");
 		btnSendToTable.setEnabled(false);
+		
+		Button btnCalRelation = new Button(composite_1, SWT.NONE);
+		btnCalRelation.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(allFoundElts==null)return;
+				//Create the element map
+				HashMap<String , SearchKeyValEl> elMap=new HashMap<String , SearchKeyValEl>();
+				for(SearchKeyValEl el:allFoundElts){
+					elMap.put(el.sectorKey+"_"+el.fieldKey, el);
+					logger.info("Key"+el.sectorKey+"_"+el.fieldKey);
+				}
+				
+				//
+				String outShares=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_OutstandingShares;
+				SearchKeyValEl outSharesEl=elMap.get(outShares);
+				
+				String earnPerShare=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_EarningsPerShare;
+				SearchKeyValEl earnPerShareEl=elMap.get(earnPerShare);
+				
+				String netIncome1=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_NetIncome;
+				SearchKeyValEl netIncomeEl1=elMap.get(netIncome1);
+				
+				String netIncome2=Financials.FIELD_CashFlow+"_"+CashFlowPoint.FIELD_NetIncome;
+				SearchKeyValEl netIncomeEl2=elMap.get(netIncome2);
+				
+				//netIncome1 = outSharesKey * earnPerShare / 100
+				if(outSharesEl!=null && earnPerShareEl!=null && netIncomeEl1==null){
+					netIncomeEl1=config.new SearchKeyValEl(outSharesEl.periodType,
+							IncomeStatementPoint.FIELD_NetIncome, Financials.FIELD_IncomeStatement);
+
+					netIncomeEl1.value=outSharesEl.value * earnPerShareEl.value / 100;
+					netIncomeEl1.wasCalculated=true;
+					allFoundElts.add(netIncomeEl1);
+					logger.info("netIncomeEl1: Calculated");
+				}
+				
+				//netIncome2 = netIncome1
+				if(netIncomeEl1!=null && netIncomeEl2==null){
+					netIncomeEl2=config.new SearchKeyValEl(netIncomeEl1.periodType,
+							CashFlowPoint.FIELD_NetIncome, Financials.FIELD_CashFlow);
+					netIncomeEl2.value=netIncomeEl1.value;
+					netIncomeEl2.wasCalculated=true;
+					allFoundElts.add(netIncomeEl2);
+					logger.info("netIncomeEl2: Calculated");
+				}
+				
+				treeViewer.refresh();
+			}
+		});
+		btnCalRelation.setText("Cal. Relation");
 		
 		treeViewer = new TreeViewer(compositeRight,  SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL| SWT.FULL_SELECTION);
@@ -837,6 +893,23 @@ public class FinancialReportParserComposite extends Composite {
 		public String getText(Object element) {
 			if (element instanceof FinancialElement) {
 				FinancialElement entity = (FinancialElement) element;
+				
+				if(allFoundElts!=null){
+				String key="";
+				if (btnQuaterly.getSelection()) {
+					key=FinancialPoint.PeriodeTypeQuaterly+"_"+entity.fieldKey+"_"+entity.sectorKey;
+				} else {
+					key=FinancialPoint.PeriodeTypeAnnual+"_"+entity.fieldKey+"_"+entity.sectorKey;
+				}
+				
+				for(SearchKeyValEl el:allFoundElts){
+					if(el.getKey().equals(key)&& el.wasCalculated)
+						return String.valueOf(el.value);
+				}
+				}
+				
+				
+				
 				if (btnQuaterly.getSelection()) {
 					
 					
@@ -865,15 +938,35 @@ public class FinancialReportParserComposite extends Composite {
 				long elVal=Long.MIN_VALUE;
 				
 				if (btnQuaterly.getSelection()) {
-					SearchKeyValEl el = config.getQuaterlySearchKeyValEl(
+					String key=FinancialPoint.PeriodeTypeQuaterly+"_"+entity.fieldKey+"_"+entity.sectorKey;
+					SearchKeyValEl searchEl=null;
+					if(allFoundElts!=null){
+					for(SearchKeyValEl el:allFoundElts){
+						if(el.getKey().equals(key)&& el.wasCalculated){
+							searchEl=el;break;
+						}
+					}}
+					if(searchEl==null)
+						searchEl = config.getQuaterlySearchKeyValEl(
 							entity.fieldKey, entity.sectorKey);
-					elVal=el.value;
+					
+					elVal=searchEl.value;
 			
 				}
 				 else {
-					SearchKeyValEl el = config.getAnnualySearchKeyValEl(
+					String key=FinancialPoint.PeriodeTypeAnnual+"_"+entity.fieldKey+"_"+entity.sectorKey;
+					SearchKeyValEl searchEl=null;
+					if(allFoundElts!=null){
+					for(SearchKeyValEl el:allFoundElts){
+						if(el.getKey().equals(key)&& el.wasCalculated){
+							searchEl=el;break;
+						}
+					}}
+					if(searchEl==null)
+						searchEl= config.getAnnualySearchKeyValEl(
 							entity.fieldKey, entity.sectorKey);
-					elVal=el.value;
+					
+					elVal=searchEl.value;
 				}
 				
 				if(elVal==Long.MIN_VALUE)return super.getBackground(element);
@@ -892,6 +985,30 @@ public class FinancialReportParserComposite extends Composite {
 			
 			
 			return super.getBackground(element);
+		}
+
+
+		@Override
+		public Color getForeground(Object element) {
+			if(allFoundElts!=null){
+			if (element instanceof FinancialElement) {
+				FinancialElement entity = (FinancialElement) element;
+				String key="";
+				if (btnQuaterly.getSelection()) {
+					key=FinancialPoint.PeriodeTypeQuaterly+"_"+entity.fieldKey+"_"+entity.sectorKey;
+				} else {
+					key=FinancialPoint.PeriodeTypeAnnual+"_"+entity.fieldKey+"_"+entity.sectorKey;
+				}
+				
+				for(SearchKeyValEl el:allFoundElts){
+					if(el.getKey().equals(key)&& el.wasCalculated)
+						return new Color(getDisplay(), new RGB(150, 150, 150));
+				}
+				
+				
+			}
+			}
+			return super.getForeground(element);
 		}
 		
 		

@@ -1,7 +1,5 @@
 package com.munch.exchange.model.core.financials;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -11,7 +9,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.financials.Period.PeriodType;
-import com.munch.exchange.model.core.keystat.KeyStatMap;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Parameter;
 import com.munch.exchange.model.xml.XmlParameterElement;
@@ -99,7 +96,9 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 				boolean p_found=false;
 				if(ptockens.length==0)p_found=true;
 				if(ptockens.length==1)p_found=splits[j].contains(ptockens[0]);
-				if(ptockens.length==2)p_found=(splits[j].contains(ptockens[0]) && splits[j].contains(ptockens[1]));
+				if(ptockens.length==2)
+					p_found=(splits[j].contains(ptockens[0]) && splits[j].contains(ptockens[1])) || 
+					(splits[j].contains(ptockens[0].toLowerCase()) && splits[j].contains(ptockens[1]));
 				
 				if(!p_found)continue;
 				
@@ -288,6 +287,14 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		return new SearchKeyValEl(FinancialPoint.PeriodeTypeAnnual,fieldKey,sectorKey);
 	}
 	
+	public SearchKeyValEl getSearchKeyValEl(String periodType,String fieldKey,String sectorKey){
+		HashMap<String, SearchKeyValEl> map=getAllSearchKeyValEl(periodType);
+		if(map.containsKey(fieldKey+"_"+sectorKey)){
+			return map.get(fieldKey+"_"+sectorKey);
+		}
+		return new SearchKeyValEl(periodType,fieldKey,sectorKey);
+	}
+	
 	public void updateSearchKeyValEl(SearchKeyValEl el){
 		this.setParam(el.getKey(), el.getContent());
 	}
@@ -334,6 +341,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		public String startLineWith="";
 		public int position=0;
 		public int factor=1;
+		public boolean wasCalculated=false;
 		
 		public long value=Long.MIN_VALUE;
 		private String foundString="";
@@ -436,8 +444,23 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 				long value=Long.MIN_VALUE;
 				
 				try{
-					value=(long) (this.factor*Double.parseDouble(
-							tockens[i].replace(",", "").replace("(", "-").replace(")", "")));
+					String val_str=tockens[i];
+					val_str=val_str.replace("(", "-").replace(")", "");
+					if(val_str.contains(".") && val_str.contains(",")){
+						if(val_str.indexOf(",")<val_str.indexOf(".")){
+							val_str=val_str.replace(",", "");
+						}
+						else{
+							val_str=val_str.replace(".", "");
+							val_str=val_str.replace(",", ".");
+						}
+						
+					}
+					else if(val_str.contains(",")){
+						val_str=val_str.replace(",", ".");
+					}
+					
+					value=(long) (this.factor*Double.parseDouble(val_str));
 				}
 				catch(Exception e){
 					continue;

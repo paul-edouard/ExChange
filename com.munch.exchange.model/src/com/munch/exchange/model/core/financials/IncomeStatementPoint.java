@@ -42,10 +42,15 @@ public class IncomeStatementPoint extends FinancialPoint {
 	public static final String FIELD_EarningsPerShare = "EarningsPerShare";
 	public static final String FIELD_OutstandingShares  = "OutstandingShares";
 	
+	public static final String FIELD_EBIT  = "EBIT";
+	
+	
 	
 	//========================
 	//==    Added values    ==
 	//========================
+	private long EBIT;
+	
 	private long Employees;
 	private long EarningsPerShare;
 	private long OutstandingShares;
@@ -133,7 +138,12 @@ public class IncomeStatementPoint extends FinancialPoint {
 	//=======================
 	
 	
-	
+	public long getEBIT() {
+		return EBIT;
+	}
+	public void setEBIT(long eBIT) {
+		changes.firePropertyChange(FIELD_EBIT, this.EBIT, this.EBIT = eBIT);
+	}
 	public long getTotalRevenue() {
 		return TotalRevenue;
 	}
@@ -455,6 +465,7 @@ public class IncomeStatementPoint extends FinancialPoint {
 		if(fieldKey.equals(FIELD_Employees))return Employees;
 		if(fieldKey.equals(FIELD_EarningsPerShare))return EarningsPerShare;
 		if(fieldKey.equals(FIELD_OutstandingShares))return OutstandingShares;
+		if(fieldKey.equals(FIELD_EBIT))return EBIT;
 	
 		return 0;
 	}
@@ -487,6 +498,7 @@ public class IncomeStatementPoint extends FinancialPoint {
 		if(fieldKey.equals(FIELD_Employees)) Employees=value;
 		if(fieldKey.equals(FIELD_EarningsPerShare)) EarningsPerShare=value;
 		if(fieldKey.equals(FIELD_OutstandingShares)) OutstandingShares=value;
+		if(fieldKey.equals(FIELD_EBIT)) EBIT=value;
 		
 	}
 	
