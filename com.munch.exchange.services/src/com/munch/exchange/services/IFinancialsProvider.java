@@ -52,7 +52,7 @@ public interface IFinancialsProvider {
 	String loadReportDocument(Stock stock,String url);
 	
 	
-	String[] searchAllMatchingDocuments(Stock stock, String pattern,boolean usePeriod);
+	String[] searchAllMatchingDocuments(Stock stock);
 	
 	String getHtmlContent(String url);
 	LinkedList<String> findPDFDocument(String url);

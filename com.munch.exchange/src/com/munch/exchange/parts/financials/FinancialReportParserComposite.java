@@ -82,11 +82,6 @@ public class FinancialReportParserComposite extends Composite {
 	//private Period period;
 	
 	
-	private String lastContent;
-	
-	private LinkedList<SearchKeyValEl> allFoundElts=null;
-	
-	
 	private Text textCompanyWebsite;
 	private StyledText styledText;
 	private TreeViewer treeViewer;
@@ -104,6 +99,7 @@ public class FinancialReportParserComposite extends Composite {
 	private Combo comboReportWebsites;
 	private Button btnAddWebsite;
 	private Button btnDeleteWebsite;
+	private Combo comboFileType;
 	
 	
 	public Stock getStock() {
@@ -136,38 +132,31 @@ public class FinancialReportParserComposite extends Composite {
 		compositeLeft.setLayout(new GridLayout(1, false));
 		
 		Composite compositeHeader = new Composite(compositeLeft, SWT.NONE);
-		compositeHeader.setLayout(new GridLayout(4, false));
+		compositeHeader.setLayout(new GridLayout(1, false));
 		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 		compositeHeader.setBounds(0, 0, 64, 64);
 		
 		Label lblCompany = new Label(compositeHeader, SWT.NONE);
 		lblCompany.setSize(100, 15);
 		lblCompany.setText("Company Website:");
-		new Label(compositeHeader, SWT.NONE);
-		new Label(compositeHeader, SWT.NONE);
 		
-		Button btnSave = new Button(compositeHeader, SWT.NONE);
-		btnSave.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
-		btnSave.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				save();
-			}
-		});
-		btnSave.setText("Save");
+		Composite composite_4 = new Composite(compositeHeader, SWT.NONE);
+		composite_4.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		GridLayout gl_composite_4 = new GridLayout(2, false);
+		gl_composite_4.marginHeight = 0;
+		gl_composite_4.verticalSpacing = 0;
+		gl_composite_4.marginWidth = 0;
+		composite_4.setLayout(gl_composite_4);
 		
-		textCompanyWebsite = new Text(compositeHeader, SWT.BORDER);
+		textCompanyWebsite = new Text(composite_4, SWT.BORDER);
+		textCompanyWebsite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		textCompanyWebsite.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 			}
 		});
-		textCompanyWebsite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		textCompanyWebsite.setSize(138, 21);
-		new Label(compositeHeader, SWT.NONE);
-		new Label(compositeHeader, SWT.NONE);
 		
-		Button buttonCompWeb = new Button(compositeHeader, SWT.NONE);
-		buttonCompWeb.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
+		Button buttonCompWeb = new Button(composite_4, SWT.NONE);
 		buttonCompWeb.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -218,29 +207,28 @@ public class FinancialReportParserComposite extends Composite {
 			}
 		});
 		btnAnnualy.setText("Annualy");
-		new Label(compositeHeader, SWT.NONE);
-		new Label(compositeHeader, SWT.NONE);
-		new Label(compositeHeader, SWT.NONE);
 		
 		Label lblReportWebsite = new Label(compositeHeader, SWT.NONE);
 		lblReportWebsite.setText("Report Websites:");
-		new Label(compositeHeader, SWT.NONE);
-		new Label(compositeHeader, SWT.NONE);
-		new Label(compositeHeader, SWT.NONE);
 		
 		comboReportWebsites = new Combo(compositeHeader, SWT.NONE);
 		comboReportWebsites.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
-		Button btnRepweb = new Button(compositeHeader, SWT.NONE);
+		Composite composite = new Composite(compositeHeader, SWT.NONE);
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		composite.setLayout(new GridLayout(3, false));
+		
+		Button btnRepweb = new Button(composite, SWT.NONE);
 		btnRepweb.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				//String content=financialsProvider.getHtmlContent(txtReportwebsite.getText());
 				//styledText.setText("");
 				//styledText.append("* * * REPORT WEBSITE * * *\n"+content+"\n");
+				config.setPattern(textPattern.getText());
 				
 				comboDocuments.removeAll();
-				String[] docs=financialsProvider.searchAllMatchingDocuments(stock, textPattern.getText(), btnPeriod.getSelection());
+				String[] docs=financialsProvider.searchAllMatchingDocuments(stock);
 				
 				//String searchPeriod="";
 				//if(btnPeriod.getSelection())searchPeriod=textPeriod.getText();
@@ -262,7 +250,7 @@ public class FinancialReportParserComposite extends Composite {
 		});
 		btnRepweb.setText(">>");
 		
-		btnAddWebsite = new Button(compositeHeader, SWT.NONE);
+		btnAddWebsite = new Button(composite, SWT.NONE);
 		btnAddWebsite.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -281,7 +269,7 @@ public class FinancialReportParserComposite extends Composite {
 		});
 		btnAddWebsite.setText("Add");
 		
-		btnDeleteWebsite = new Button(compositeHeader, SWT.NONE);
+		btnDeleteWebsite = new Button(composite, SWT.NONE);
 		btnDeleteWebsite.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -311,6 +299,8 @@ public class FinancialReportParserComposite extends Composite {
 		btnPeriod.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				
+				config.setUsePeriod(btnPeriod.getSelection());
 				
 				textPeriod.setEnabled(btnPeriod.getSelection());
 				btnBack.setEnabled(btnPeriod.getSelection());
@@ -359,7 +349,26 @@ public class FinancialReportParserComposite extends Composite {
 		
 		Composite composite_3 = new Composite(grpDocuments, SWT.NONE);
 		composite_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		composite_3.setLayout(new GridLayout(2, false));
+		composite_3.setLayout(new GridLayout(4, false));
+		
+		Label lblFileType = new Label(composite_3, SWT.NONE);
+		lblFileType.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblFileType.setText("File Type:");
+		
+		comboFileType = new Combo(composite_3, SWT.NONE);
+		comboFileType.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				config.setDocumentType(comboFileType.getText());	
+			}
+		});
+		comboFileType.setItems(new String[] {
+				ReportReaderConfiguration.DocumentType_PDF, 
+				ReportReaderConfiguration.DocumentType_XLS, 
+				ReportReaderConfiguration.DocumentType_CSV,
+				ReportReaderConfiguration.DocumentType_TXT});
+		comboFileType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboFileType.setText("PDF");
 		
 		Label lblPattern = new Label(composite_3, SWT.NONE);
 		lblPattern.setText("Pattern: ");
@@ -368,6 +377,12 @@ public class FinancialReportParserComposite extends Composite {
 		textPattern.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		comboDocuments = new Combo(grpDocuments, SWT.NONE);
+		comboDocuments.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				loadSelectedDocument();
+			}
+		});
 		comboDocuments.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		styledText = new StyledText(compositeLeft, SWT.BORDER| SWT.H_SCROLL | SWT.V_SCROLL);
@@ -380,6 +395,15 @@ public class FinancialReportParserComposite extends Composite {
 		Composite composite_1 = new Composite(compositeRight, SWT.NONE);
 		composite_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 		composite_1.setLayout(new GridLayout(3, false));
+		
+		Button btnSave = new Button(composite_1, SWT.NONE);
+		btnSave.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				save();
+			}
+		});
+		btnSave.setText("Save");
 		
 		Button btnReparse = new Button(composite_1, SWT.NONE);
 		btnReparse.addSelectionListener(new SelectionAdapter() {
@@ -394,9 +418,9 @@ public class FinancialReportParserComposite extends Composite {
 		btnSendToTable.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if(allFoundElts==null)return;
+				if(config.getAllFoundElts()==null)return;
 				
-				for(SearchKeyValEl el:allFoundElts){
+				for(SearchKeyValEl el:config.getAllFoundElts()){
 					if(el.value==Long.MIN_VALUE)continue;
 					
 					long val=financials.getValue(config.getSelectedPeriod(), el.fieldKey, el.sectorKey);
@@ -411,57 +435,6 @@ public class FinancialReportParserComposite extends Composite {
 		});
 		btnSendToTable.setText("Send to Table");
 		btnSendToTable.setEnabled(false);
-		
-		Button btnCalRelation = new Button(composite_1, SWT.NONE);
-		btnCalRelation.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if(allFoundElts==null)return;
-				//Create the element map
-				HashMap<String , SearchKeyValEl> elMap=new HashMap<String , SearchKeyValEl>();
-				for(SearchKeyValEl el:allFoundElts){
-					elMap.put(el.sectorKey+"_"+el.fieldKey, el);
-					logger.info("Key"+el.sectorKey+"_"+el.fieldKey);
-				}
-				
-				//
-				String outShares=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_OutstandingShares;
-				SearchKeyValEl outSharesEl=elMap.get(outShares);
-				
-				String earnPerShare=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_EarningsPerShare;
-				SearchKeyValEl earnPerShareEl=elMap.get(earnPerShare);
-				
-				String netIncome1=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_NetIncome;
-				SearchKeyValEl netIncomeEl1=elMap.get(netIncome1);
-				
-				String netIncome2=Financials.FIELD_CashFlow+"_"+CashFlowPoint.FIELD_NetIncome;
-				SearchKeyValEl netIncomeEl2=elMap.get(netIncome2);
-				
-				//netIncome1 = outSharesKey * earnPerShare / 100
-				if(outSharesEl!=null && earnPerShareEl!=null && netIncomeEl1==null){
-					netIncomeEl1=config.new SearchKeyValEl(outSharesEl.periodType,
-							IncomeStatementPoint.FIELD_NetIncome, Financials.FIELD_IncomeStatement);
-
-					netIncomeEl1.value=outSharesEl.value * earnPerShareEl.value / 100;
-					netIncomeEl1.wasCalculated=true;
-					allFoundElts.add(netIncomeEl1);
-					logger.info("netIncomeEl1: Calculated");
-				}
-				
-				//netIncome2 = netIncome1
-				if(netIncomeEl1!=null && netIncomeEl2==null){
-					netIncomeEl2=config.new SearchKeyValEl(netIncomeEl1.periodType,
-							CashFlowPoint.FIELD_NetIncome, Financials.FIELD_CashFlow);
-					netIncomeEl2.value=netIncomeEl1.value;
-					netIncomeEl2.wasCalculated=true;
-					allFoundElts.add(netIncomeEl2);
-					logger.info("netIncomeEl2: Calculated");
-				}
-				
-				treeViewer.refresh();
-			}
-		});
-		btnCalRelation.setText("Cal. Relation");
 		
 		treeViewer = new TreeViewer(compositeRight,  SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL| SWT.FULL_SELECTION);
@@ -531,6 +504,8 @@ public class FinancialReportParserComposite extends Composite {
 		
 	}
 	
+	
+
 	private void refreshComboReportWebsites(){
 		comboReportWebsites.removeAll();
 		if(this.config.getReportWebsites().isEmpty())return;
@@ -560,35 +535,35 @@ public class FinancialReportParserComposite extends Composite {
 			return;
 		}
 		
-		String url=textCompanyWebsite.getText()+comboDocuments.getItem(0);
+		loadSelectedDocument();
+		
+	}
+	
+	private void loadSelectedDocument(){
+		String url=textCompanyWebsite.getText()+comboDocuments.getText();
 		String document=financialsProvider.loadReportDocument(stock, url);
 		
 		styledText.setText("");
 		styledText.append("* * * DOC:\n"+document+"\n");
-		lastContent=document;
+		config.setDocumentContent(document);
 		
 		parseDocument();
-		
 	}
+	
 	
 	private void parseDocument() {
 		// Analyze the document
-		allFoundElts = null;
-		if (btnQuaterly.getSelection()) {
-			allFoundElts=config.parseQuaterlyDocument(lastContent);
-		} else {
-			allFoundElts=config.parseAnnualyDocument(lastContent);
-		}
-		if(allFoundElts==null){
+		config.parseDocument();
+		
+		if(config.getAllFoundElts()==null){
 			btnSendToTable.setEnabled(false);
 			return;
 		}
 		btnSendToTable.setEnabled(true);
-		//for (SearchKeyValEl el : allFoundElts) {
-		//		styledText.append(el+"\n");
-		//}
-		//TODO
+		
+		
 		refreshAfterPeriod();
+		
 	}
 	
 	public void init(){
@@ -598,6 +573,8 @@ public class FinancialReportParserComposite extends Composite {
 		
 		if(config.getWebsite()!=null)
 			textCompanyWebsite.setText(config.getWebsite());
+		
+		btnPeriod.setSelection(config.isUsePeriod());
 		
 		switch (config.getSelectedPeriod().getType()) {
 		case ANNUAL:
@@ -651,6 +628,8 @@ public class FinancialReportParserComposite extends Composite {
 	*/
 	public void refreshAfterPeriod(){
 		
+		if(config.getPattern()!=null)
+		textPattern.setText(config.getPattern());
 		
 		if(btnQuaterly.getSelection()){
 			//config.getSelectedPeriod().setType(PeriodType.QUATERLY);
@@ -660,8 +639,8 @@ public class FinancialReportParserComposite extends Composite {
 			//	txtReportwebsite.setText(config.getQuaterlyReportWebsite());
 			
 			//Set the Pattern
-			if(config.getQuaterlyPattern()!=null)
-				textPattern.setText(config.getQuaterlyPattern());
+			//if(config.getQuaterlyPattern()!=null)
+			//	textPattern.setText(config.getQuaterlyPattern());
 			
 			
 			if(config.isQuaterlySearchPeriodActivated()){
@@ -696,8 +675,8 @@ public class FinancialReportParserComposite extends Composite {
 			
 			//if(config.getAnnualyReportWebsite()!=null && txtReportwebsite.getText().isEmpty())
 			//	txtReportwebsite.setText(config.getAnnualyReportWebsite());
-			if(config.getAnnualyPattern()!=null)
-				textPattern.setText(config.getAnnualyPattern());
+			//if(config.getAnnualyPattern()!=null)
+			//	textPattern.setText(config.getAnnualyPattern());
 			if(config.isAnnualySearchPeriodActivated()){
 				btnPeriod.setSelection(config.isAnnualySearchPeriodActivated());
 				textPeriod.setEnabled(btnPeriod.getSelection());
@@ -894,7 +873,7 @@ public class FinancialReportParserComposite extends Composite {
 			if (element instanceof FinancialElement) {
 				FinancialElement entity = (FinancialElement) element;
 				
-				if(allFoundElts!=null){
+				if(config.getAllFoundElts()!=null){
 				String key="";
 				if (btnQuaterly.getSelection()) {
 					key=FinancialPoint.PeriodeTypeQuaterly+"_"+entity.fieldKey+"_"+entity.sectorKey;
@@ -902,7 +881,7 @@ public class FinancialReportParserComposite extends Composite {
 					key=FinancialPoint.PeriodeTypeAnnual+"_"+entity.fieldKey+"_"+entity.sectorKey;
 				}
 				
-				for(SearchKeyValEl el:allFoundElts){
+				for(SearchKeyValEl el:config.getAllFoundElts()){
 					if(el.getKey().equals(key)&& el.wasCalculated)
 						return String.valueOf(el.value);
 				}
@@ -940,8 +919,8 @@ public class FinancialReportParserComposite extends Composite {
 				if (btnQuaterly.getSelection()) {
 					String key=FinancialPoint.PeriodeTypeQuaterly+"_"+entity.fieldKey+"_"+entity.sectorKey;
 					SearchKeyValEl searchEl=null;
-					if(allFoundElts!=null){
-					for(SearchKeyValEl el:allFoundElts){
+					if(config.getAllFoundElts()!=null){
+					for(SearchKeyValEl el:config.getAllFoundElts()){
 						if(el.getKey().equals(key)&& el.wasCalculated){
 							searchEl=el;break;
 						}
@@ -956,8 +935,8 @@ public class FinancialReportParserComposite extends Composite {
 				 else {
 					String key=FinancialPoint.PeriodeTypeAnnual+"_"+entity.fieldKey+"_"+entity.sectorKey;
 					SearchKeyValEl searchEl=null;
-					if(allFoundElts!=null){
-					for(SearchKeyValEl el:allFoundElts){
+					if(config.getAllFoundElts()!=null){
+					for(SearchKeyValEl el:config.getAllFoundElts()){
 						if(el.getKey().equals(key)&& el.wasCalculated){
 							searchEl=el;break;
 						}
@@ -990,7 +969,7 @@ public class FinancialReportParserComposite extends Composite {
 
 		@Override
 		public Color getForeground(Object element) {
-			if(allFoundElts!=null){
+			if(config.getAllFoundElts()!=null){
 			if (element instanceof FinancialElement) {
 				FinancialElement entity = (FinancialElement) element;
 				String key="";
@@ -1000,7 +979,7 @@ public class FinancialReportParserComposite extends Composite {
 					key=FinancialPoint.PeriodeTypeAnnual+"_"+entity.fieldKey+"_"+entity.sectorKey;
 				}
 				
-				for(SearchKeyValEl el:allFoundElts){
+				for(SearchKeyValEl el:config.getAllFoundElts()){
 					if(el.getKey().equals(key)&& el.wasCalculated)
 						return new Color(getDisplay(), new RGB(150, 150, 150));
 				}

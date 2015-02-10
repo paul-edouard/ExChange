@@ -208,6 +208,20 @@ public class Period extends XmlParameterElement{
 	}
 	
 	
+	
+	public String getOldPeriodString(){
+		switch(type){
+		case  QUATERLY:
+			return FinancialPoint.PeriodeTypeQuaterly;
+			
+		case ANNUAL:
+			return FinancialPoint.PeriodeTypeQuaterly;
+			
+		default:
+			return FinancialPoint.PeriodeTypeNone;
+		}
+	}
+	
 	//****************************************
 	//***             XML                 ****
 	//****************************************

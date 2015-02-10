@@ -460,7 +460,7 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		
 	}
 	
-	public String[] searchAllMatchingDocuments(Stock stock, String pattern,boolean usePeriod){
+	public String[] searchAllMatchingDocuments(Stock stock){
 		if(stock==null)return null;
 		if(stock.getDataPath()==null)return null;
 		if(stock.getDataPath().isEmpty())return null;
@@ -471,14 +471,10 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		
 		LinkedList<String> docs=new LinkedList<String>();
 		
-		String searchPeriod="";
-		if(usePeriod)
-			searchPeriod=config.getSelectedPeriod().toString();
-		
 		//Search all docs
 		for(String site:config.getReportWebsites()){
 			String content=getHtmlContent(site);
-			LinkedList<String> site_docs=ReportReaderConfiguration.searchDocuments(content, pattern, searchPeriod);
+			LinkedList<String> site_docs=config.searchDocuments(content);
 			for(String doc:site_docs){
 				if(!docs.contains(doc))
 					docs.add(doc);

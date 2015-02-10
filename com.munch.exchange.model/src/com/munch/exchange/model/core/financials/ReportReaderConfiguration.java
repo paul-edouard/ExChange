@@ -21,11 +21,10 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	static final String FIELD_Website="Website";
 	//static final String FIELD_SelectedPeriodType="SelectedPeriodType";
 	static final String FIELD_SelectedPeriod="SelectedPeriod";
+	static final String FIELD_UsePeriod="UsePeriod";
 	
 	static final String FIELD_QuaterlyReportWebsite="QuaterlyReportWebsite";
-	//static final String FIELD_QuaterlyReportWebsites="QuaterlyReportWebsites";
 	static final String FIELD_AnnualyReportWebsite="AnnualyReportWebsite";
-	//static final String FIELD_AnnualyReportWebsites="AnnualyReportWebsites";
 	
 	static final String FIELD_QuaterlyPattern="QuaterlyPattern";
 	static final String FIELD_AnnualyPattern="AnnualyPattern";
@@ -40,6 +39,13 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	static final String FIELD_AnnualySearchPeriodActivated="AnnualySearchPeriodActivated";
 	
 	public static final String FIELD_NextExpectedFinancialDate = "NextExpectedFinancialDate";
+	public static final String FIELD_DocumentType="DocumentType";
+	
+	public static final String DocumentType_PDF="PDF";
+	public static final String DocumentType_TXT="TXT";
+	public static final String DocumentType_CSV="CSV";
+	public static final String DocumentType_XLS="XLS";
+	
 	
 	
 	private String website;
@@ -63,8 +69,16 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	
 	private Calendar nextExpectedFinancialDate=null;
 	private Period selectedPeriod=null;
+	private boolean usePeriod=true;
+	
+	private String DocumentType=DocumentType_PDF;
 	
 	private HashMap<String, Long> keyValueMap=new HashMap<String, Long>();
+	
+	
+	private LinkedList<SearchKeyValEl> allFoundElts=null;
+	private String documentContent;
+	
 	
 	
 	public Calendar getNextExpectedFinancialDate() {
@@ -80,13 +94,17 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		return website;
 	}
 	
-	
-	
-	
-	public static LinkedList<String> searchDocuments(String content, String pattern,String searchPeriod){
+
+	public  LinkedList<String> searchDocuments(String content){
 		LinkedList<String> docs=new LinkedList<String>();
 		String[] tockens=content.split("\n");
-		String[] ptockens=searchPeriod.split("-");
+		
+		//Period
+		String[] ptockens=null;
+		if(this.usePeriod)ptockens=selectedPeriod.toString().split("-");
+		
+		//Pattern
+		String pattern=this.getPattern();
 		
 		for(int i=0;i<tockens.length;i++){
 			String[] splits=tockens[i].split("\"");
@@ -94,14 +112,17 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 			for(int j=0;j<splits.length;j++){
 				//Test the searchPeriod
 				boolean p_found=false;
+				if(ptockens==null)continue;
 				if(ptockens.length==0)p_found=true;
-				if(ptockens.length==1)p_found=splits[j].contains(ptockens[0]);
-				if(ptockens.length==2)
+				else if(ptockens.length==1)p_found=splits[j].contains(ptockens[0]);
+				else if(ptockens.length==2)
 					p_found=(splits[j].contains(ptockens[0]) && splits[j].contains(ptockens[1])) || 
 					(splits[j].contains(ptockens[0].toLowerCase()) && splits[j].contains(ptockens[1]));
 				
 				if(!p_found)continue;
 				
+				//Test the file type
+				if(!splits[j].endsWith(this.getDocumentTypeSuffix()))continue;
 				
 				//Test the pattern
 				if(splits[j].matches(pattern)){
@@ -156,10 +177,108 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	}
 	
 	
+	public String getDocumentTypeSuffix(){
+		if(DocumentType.equals(DocumentType_PDF)){
+			return ".pdf";
+		}
+		else if(DocumentType.equals(DocumentType_TXT)){
+			return ".txt";
+		}
+		else if(DocumentType.equals(DocumentType_CSV)){
+			return ".csv";
+		}
+		else if(DocumentType.equals(DocumentType_XLS)){
+			return ".xlsx";
+		}
+		return "";
+	}
+	
+	
+	public void increaseFoundEltsWithValidRelations(){
+		if(allFoundElts==null)return;
+		//Create the element map
+		HashMap<String , SearchKeyValEl> elMap=new HashMap<String , SearchKeyValEl>();
+		for(SearchKeyValEl el:allFoundElts){
+			elMap.put(el.sectorKey+"_"+el.fieldKey, el);
+			logger.info("Key"+el.sectorKey+"_"+el.fieldKey);
+		}
+		
+		//
+		String outShares=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_OutstandingShares;
+		SearchKeyValEl outSharesEl=elMap.get(outShares);
+		
+		String earnPerShare=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_EarningsPerShare;
+		SearchKeyValEl earnPerShareEl=elMap.get(earnPerShare);
+		
+		String netIncome1=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_NetIncome;
+		SearchKeyValEl netIncomeEl1=elMap.get(netIncome1);
+		
+		String netIncome2=Financials.FIELD_CashFlow+"_"+CashFlowPoint.FIELD_NetIncome;
+		SearchKeyValEl netIncomeEl2=elMap.get(netIncome2);
+		
+		//netIncome1 = outSharesKey * earnPerShare / 100
+		if(outSharesEl!=null && earnPerShareEl!=null && netIncomeEl1==null){
+			netIncomeEl1=new SearchKeyValEl(outSharesEl.periodType,
+					IncomeStatementPoint.FIELD_NetIncome, Financials.FIELD_IncomeStatement);
+
+			netIncomeEl1.value=outSharesEl.value * earnPerShareEl.value / 100;
+			netIncomeEl1.wasCalculated=true;
+			allFoundElts.add(netIncomeEl1);
+			logger.info("netIncomeEl1: Calculated");
+		}
+		
+		//netIncome2 = netIncome1
+		if(netIncomeEl1!=null && netIncomeEl2==null){
+			netIncomeEl2=new SearchKeyValEl(netIncomeEl1.periodType,
+					CashFlowPoint.FIELD_NetIncome, Financials.FIELD_CashFlow);
+			netIncomeEl2.value=netIncomeEl1.value;
+			netIncomeEl2.wasCalculated=true;
+			allFoundElts.add(netIncomeEl2);
+			logger.info("netIncomeEl2: Calculated");
+		}
+	}
+	
 	//****************************************
 	//***        Getter and Setter        ****
 	//****************************************
 	
+	
+	public boolean isUsePeriod() {
+		return usePeriod;
+	}
+
+	public void setUsePeriod(boolean usePeriod) {
+	this.usePeriod = usePeriod;
+	}
+	
+	
+	public LinkedList<SearchKeyValEl> getAllFoundElts() {
+		return allFoundElts;
+	}
+
+	
+
+	public void setAllFoundElts(LinkedList<SearchKeyValEl> allFoundElts) {
+	this.allFoundElts = allFoundElts;
+	}
+	
+	public String getDocumentContent() {
+		return documentContent;
+	}
+
+	public void setDocumentContent(String lastContent) {
+	this.documentContent = lastContent;
+	}
+	
+	
+	public String getDocumentType() {
+		return DocumentType;
+	}
+
+	public void setDocumentType(String documentType) {
+		changes.firePropertyChange(FIELD_DocumentType, this.DocumentType,
+				this.DocumentType = documentType);
+	}
 	
 	public Period getSelectedPeriod() {
 		if(selectedPeriod==null){
@@ -168,12 +287,28 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		return selectedPeriod;
 	}
 
+	
 	public void setSelectedPeriod(Period selectedPeriod) {
 	changes.firePropertyChange(FIELD_SelectedPeriod, this.selectedPeriod, this.selectedPeriod = selectedPeriod);}
 	
 
 	public void setWebsite(String website) {
 	changes.firePropertyChange(FIELD_Website, this.website, this.website = website);}
+	
+	
+	public void setPattern(String pattern){
+		if(this.selectedPeriod.getType()==PeriodType.ANNUAL)
+			setAnnualyPattern(pattern);
+		else
+			setQuaterlyPattern(pattern);
+	}
+	
+	public String getPattern(){
+		if(this.selectedPeriod.getType()==PeriodType.ANNUAL)
+			return getAnnualyPattern();
+		else
+			return getQuaterlyPattern();
+	}
 	
 	public String getQuaterlyPattern() {
 		return quaterlyPattern;
@@ -304,6 +439,26 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	//***            PARSE Document       ****
 	//****************************************
 	
+	public void parseDocument(){
+		allFoundElts=new LinkedList<SearchKeyValEl>();
+		this.keyValueMap.clear();
+		HashMap<String, SearchKeyValEl> map =getAllSearchKeyValEl(selectedPeriod.getOldPeriodString());
+		if (map == null)
+			return ;
+
+		for (String key : map.keySet()) {
+			SearchKeyValEl el = map.get(key);
+			if(el.searchValue(documentContent)){
+				allFoundElts.add(el);
+				this.keyValueMap.put(el.getKey(), el.value);
+			}
+		}
+		
+		increaseFoundEltsWithValidRelations();
+		
+	}
+	
+	/*
 	private LinkedList<SearchKeyValEl> parseDocument(String document,String periodType){
 		
 		LinkedList<SearchKeyValEl> allFoundElts=new LinkedList<SearchKeyValEl>();
@@ -330,7 +485,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	public LinkedList<SearchKeyValEl> parseAnnualyDocument(String document){
 		return parseDocument(document,FinancialPoint.PeriodeTypeAnnual);
 	}
-	
+	*/
 	
 	public class SearchKeyValEl{
 		public String fieldKey;
@@ -447,7 +602,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 					String val_str=tockens[i];
 					val_str=val_str.replace("(", "-").replace(")", "");
 					if(val_str.contains(".") && val_str.contains(",")){
-						if(val_str.indexOf(",")<val_str.indexOf(".")){
+						if(val_str.indexOf(",")>val_str.indexOf(".")){
 							val_str=val_str.replace(",", "");
 						}
 						else{
@@ -517,6 +672,13 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 				rootElement.getAttribute(FIELD_NextExpectedFinancialDate)));
 		}
 		
+		if(rootElement.hasAttribute(FIELD_DocumentType)){
+			this.setDocumentType(rootElement.getAttribute(FIELD_DocumentType));
+		}
+		if(rootElement.hasAttribute(FIELD_UsePeriod)){
+			this.setUsePeriod(Boolean.getBoolean(rootElement.getAttribute(FIELD_UsePeriod)));
+		}
+		
 		
 		
 		quaterlyReportWebsites.clear();
@@ -556,6 +718,10 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		
 		rootElement.setAttribute(FIELD_NextExpectedFinancialDate,DateTool.dateToString(this.getNextExpectedFinancialDate()));
 		
+		rootElement.setAttribute(FIELD_DocumentType,String.valueOf(this.getDocumentType()));
+		rootElement.setAttribute(FIELD_UsePeriod,String.valueOf(this.isUsePeriod()));
+		
+		
 	}
 
 	@Override
@@ -576,6 +742,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		
 		
 	}
+	
 	
 	
 	
