@@ -112,8 +112,8 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 			for(int j=0;j<splits.length;j++){
 				//Test the searchPeriod
 				boolean p_found=false;
-				if(ptockens==null)continue;
-				if(ptockens.length==0)p_found=true;
+				if(ptockens==null)p_found=true;
+				else if(ptockens.length==0)p_found=true;
 				else if(ptockens.length==1)p_found=splits[j].contains(ptockens[0]);
 				else if(ptockens.length==2)
 					p_found=(splits[j].contains(ptockens[0]) && splits[j].contains(ptockens[1])) || 
@@ -601,17 +601,19 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 				try{
 					String val_str=tockens[i];
 					val_str=val_str.replace("(", "-").replace(")", "");
-					if(val_str.contains(".") && val_str.contains(",")){
-						if(val_str.indexOf(",")>val_str.indexOf(".")){
-							val_str=val_str.replace(",", "");
-						}
-						else{
-							val_str=val_str.replace(".", "");
-							val_str=val_str.replace(",", ".");
-						}
-						
+					
+					String regex_1="^-{0,1}[0-9]{1,3},[0-9]{3}.{0,1}[0-9]{0,2}";
+					String regex_2="^-{0,1}[0-9]{1,3}.[0-9]{3},{0,1}[0-9]{0,2}";
+					String regex_3="^-{0,1}[0-9]{1,3},[0-9]{0,2}";
+					
+					if(val_str.matches(regex_1)){
+						val_str=val_str.replace(",", "");
 					}
-					else if(val_str.contains(",")){
+					else if(val_str.matches(regex_2)){
+						val_str=val_str.replace(".", "");
+						val_str=val_str.replace(",", ".");
+					}
+					else if(val_str.matches(regex_3)){
 						val_str=val_str.replace(",", ".");
 					}
 					
@@ -745,7 +747,24 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	
 	
 	
-	
+	public static void main(String[] args){
+		
+		//String regex="^[0-9]+,[0-9]{3}.[0-9]{1,2}";
+		String regex="^-{0,1}[0-9]{1,3},[0-9]{3}[.0-9]{0,3}";
+		
+		String test="-333,123.3";
+		
+		System.out.println("Regex: "+regex);
+		System.out.println("Test str: "+test);
+		
+		
+		if(test.matches(regex)){
+			System.out.println("Regex match!");
+		}
+		else
+			System.out.println("Regex no match!");
+		
+	}
 	
 	
 }

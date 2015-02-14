@@ -75,6 +75,10 @@ public class Financials extends ParameterElement {
 	}
 	
 	private void addDate(Calendar date, String periodType){
+		
+		logger.info("Addinf a finacial date: "+DateTool.dateToString(date)+", Period: "+periodType);
+		
+		
 		BalanceSheetPoint bs_point=new BalanceSheetPoint();
 		bs_point.setDate(date);bs_point.setPeriodEnding(date);
 		bs_point.setPeriodType(periodType);
@@ -222,6 +226,18 @@ public class Financials extends ParameterElement {
 	}
 	
 	
+	public Calendar getEffectiveDate(Period period){
+		//Search the corresponding date
+		Calendar date=this.getDate(period);
+		return getEffectiveDate(period.getOldPeriodString(),date);
+	}
+	
+	public void setEffectiveDate(Period period,Calendar effectiveDate){
+		//Search the corresponding date
+		Calendar date=this.getDate(period);
+		setEffectiveDate(period.getOldPeriodString(),date,effectiveDate);
+	}
+	
 	public Calendar getEffectiveDate(String periodType,Calendar date){
 		for(DatePoint point:IncomeStatement.getPoints(periodType)){
 			FinancialPoint p=(FinancialPoint)point;
@@ -245,8 +261,6 @@ public class Financials extends ParameterElement {
 		}
 		
 	}
-	
-	
 	
 	public void setValue(String periodType,Calendar date,String key,String sectorKey,long value){
 		if(sectorKey.equals(FIELD_BalanceSheet)){
@@ -301,6 +315,7 @@ public class Financials extends ParameterElement {
 		//Set the value
 		switch(period.getType()){
 		case  QUATERLY:
+			logger.info("Set the quaterly "+period+" cannot be found!");
 			setValue(FinancialPoint.PeriodeTypeQuaterly,date,key,sectorKey,value);
 			break;
 			

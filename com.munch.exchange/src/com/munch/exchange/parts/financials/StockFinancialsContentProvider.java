@@ -84,6 +84,8 @@ IStructuredContentProvider, ITreeContentProvider{
 		FinancialElement earningPerShare=new FinancialElement(is,"Earnings Per Share",IncomeStatementPoint.FIELD_EarningsPerShare,Financials.FIELD_IncomeStatement);
 		new FinancialElement(earningPerShare,"Outstanding Shares",IncomeStatementPoint.FIELD_OutstandingShares,Financials.FIELD_IncomeStatement);
 		
+		new FinancialElement(is,"EBIT",IncomeStatementPoint.FIELD_EBIT,Financials.FIELD_IncomeStatement);
+		
 		FinancialElement totalRevenu=new FinancialElement(is,"Total Revenue",IncomeStatementPoint.FIELD_TotalRevenue,Financials.FIELD_IncomeStatement);
 		new FinancialElement(totalRevenu,"Cost of Revenue",IncomeStatementPoint.FIELD_CostofRevenue,Financials.FIELD_IncomeStatement);
 		new FinancialElement(is,"Gross Profit",IncomeStatementPoint.FIELD_GrossProfit,Financials.FIELD_IncomeStatement);

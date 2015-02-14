@@ -43,6 +43,7 @@ import com.munch.exchange.model.core.financials.Period;
 import com.munch.exchange.model.core.financials.ReportReaderConfiguration;
 import com.munch.exchange.model.core.financials.Period.PeriodType;
 import com.munch.exchange.model.core.financials.ReportReaderConfiguration.SearchKeyValEl;
+import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.financials.StockFinancialsContentProvider.FinancialElement;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IFinancialsProvider;
@@ -495,6 +496,8 @@ public class FinancialReportParserComposite extends Composite {
 		TreeViewerColumn treeViewerColumnValu = new TreeViewerColumn(treeViewer, SWT.NONE);
 		trclmnValue =treeViewerColumnValu.getColumn();
 		treeViewerColumnValu.setLabelProvider(new ValueColumnLabelProvider());
+		treeViewerColumnValu.setEditingSupport(
+				new FinancialReportEditingSupport(this, FinancialReportEditingSupport.FIELD_EffectiveDate));
 		trclmnValue.setWidth(100);
 		trclmnValue.setText("Value");
 		sashForm.setWeights(new int[] {266, 271});
@@ -739,6 +742,7 @@ public class FinancialReportParserComposite extends Composite {
 		
 		
 		financialsProvider.saveReportReaderConfiguration(stock);
+		financialsProvider.saveAll(stock);
 	}
 	
 	@Inject
@@ -854,6 +858,13 @@ public class FinancialReportParserComposite extends Composite {
 			if(financials==null)return "";
 			if (element instanceof FinancialElement) {
 				FinancialElement entity = (FinancialElement) element;
+				
+				if(entity.fieldKey.equals(FinancialPoint.FIELD_EffectiveDate)){
+					String savedValue=DateTool.dateToString(stock.getFinancials().getEffectiveDate(config.getSelectedPeriod()));
+					return savedValue;
+				}
+				
+				
 				long val=financials.getValue(config.getSelectedPeriod(),entity.fieldKey, entity.sectorKey);
 				if(val!=Long.MIN_VALUE)
 					return String.valueOf(val);

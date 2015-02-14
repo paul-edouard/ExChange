@@ -395,6 +395,8 @@ public class IncomeStatementPoint extends FinancialPoint {
 			this.setEarningsPerShare(Long.parseLong(rootElement.getAttribute(FIELD_EarningsPerShare)));
 		if(rootElement.hasAttribute(FIELD_OutstandingShares))
 			this.setOutstandingShares(Long.parseLong(rootElement.getAttribute(FIELD_OutstandingShares)));
+		if(rootElement.hasAttribute(FIELD_EBIT))
+			this.setOutstandingShares(Long.parseLong(rootElement.getAttribute(FIELD_EBIT)));
 		
 		
 
@@ -431,6 +433,7 @@ public class IncomeStatementPoint extends FinancialPoint {
 		rootElement.setAttribute(FIELD_Employees,String.valueOf(this.getEmployees()));
 		rootElement.setAttribute(FIELD_EarningsPerShare,String.valueOf(this.getEarningsPerShare()));
 		rootElement.setAttribute(FIELD_OutstandingShares,String.valueOf(this.getOutstandingShares()));
+		rootElement.setAttribute(FIELD_EBIT,String.valueOf(this.getEBIT()));
 		
 		
 		

@@ -1,11 +1,17 @@
 package com.munch.exchange.parts.financials;
 
+import java.util.Calendar;
+
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TextCellEditor;
 
+import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.financials.FinancialPoint;
+import com.munch.exchange.model.core.financials.ReportReaderConfiguration;
 import com.munch.exchange.model.core.financials.ReportReaderConfiguration.SearchKeyValEl;
+import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.financials.StockFinancialsContentProvider.FinancialElement;
 
 public class FinancialReportEditingSupport extends EditingSupport {
@@ -15,6 +21,7 @@ public class FinancialReportEditingSupport extends EditingSupport {
 	public static final String FIELD_StartLineWith="StartLineWith";
 	public static final String FIELD_Position="Position";
 	public static final String FIELD_Factor="Factor";
+	public static final String FIELD_EffectiveDate="Effective Date";
 	
 	
 	private final CellEditor editor;
@@ -35,12 +42,26 @@ public class FinancialReportEditingSupport extends EditingSupport {
 
 	@Override
 	protected boolean canEdit(Object element) {
+		FinancialElement entity = (FinancialElement) element;
+		if(modus.equals(FIELD_EffectiveDate)){
+			return entity.fieldKey.equals(FinancialPoint.FIELD_EffectiveDate);
+		}
 		return true;
 	}
 
 	@Override
 	protected Object getValue(Object element) {
 		FinancialElement entity = (FinancialElement) element;
+		if(modus.equals(FIELD_EffectiveDate)){
+			if(entity.fieldKey.equals(FinancialPoint.FIELD_EffectiveDate)){
+				Stock stock=financialReportParserComposite.getStock();
+				ReportReaderConfiguration config=financialReportParserComposite.getConfig();
+				String savedValue=DateTool.dateToString(stock.getFinancials().getEffectiveDate(config.getSelectedPeriod()));
+				return savedValue;
+			}
+		}
+		
+		
 		SearchKeyValEl el=null;
 		if(financialReportParserComposite.getBtnQuaterly().getSelection()){
 			el=financialReportParserComposite.getConfig().getQuaterlySearchKeyValEl(entity.fieldKey, entity.sectorKey);
@@ -71,6 +92,22 @@ public class FinancialReportEditingSupport extends EditingSupport {
 	protected void setValue(Object element, Object value) {
 		
 		FinancialElement entity = (FinancialElement) element;
+		
+		if(modus.equals(FIELD_EffectiveDate)){
+			if(entity.fieldKey.equals(FinancialPoint.FIELD_EffectiveDate)){
+				Stock stock=financialReportParserComposite.getStock();
+				ReportReaderConfiguration config=financialReportParserComposite.getConfig();
+				Calendar date= DateTool.StringToDate((String) value);
+				if(date==null)return;
+				stock.getFinancials().setEffectiveDate(config.getSelectedPeriod(),date);
+				
+				this.financialReportParserComposite.getTreeViewer().refresh();
+				return;
+			}
+		}
+		
+		
+		
 		SearchKeyValEl el=null;
 		if(financialReportParserComposite.getBtnQuaterly().getSelection()){
 			el=financialReportParserComposite.getConfig().getQuaterlySearchKeyValEl(entity.fieldKey, entity.sectorKey);

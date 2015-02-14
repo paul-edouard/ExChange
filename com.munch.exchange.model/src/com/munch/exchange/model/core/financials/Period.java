@@ -73,7 +73,7 @@ public class Period extends XmlParameterElement{
 	
 	public Calendar getPeriodEndingDate(){
 		Calendar date=Calendar.getInstance();
-		date.set(Calendar.HOUR, 23);
+		date.set(Calendar.HOUR_OF_DAY, 23);
 		date.set(Calendar.MINUTE, 59);
 		date.set(Calendar.SECOND, 59);
 		date.set(Calendar.MILLISECOND, 0);
