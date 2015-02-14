@@ -396,7 +396,7 @@ public class IncomeStatementPoint extends FinancialPoint {
 		if(rootElement.hasAttribute(FIELD_OutstandingShares))
 			this.setOutstandingShares(Long.parseLong(rootElement.getAttribute(FIELD_OutstandingShares)));
 		if(rootElement.hasAttribute(FIELD_EBIT))
-			this.setOutstandingShares(Long.parseLong(rootElement.getAttribute(FIELD_EBIT)));
+			this.setEBIT(Long.parseLong(rootElement.getAttribute(FIELD_EBIT)));
 		
 		
 
