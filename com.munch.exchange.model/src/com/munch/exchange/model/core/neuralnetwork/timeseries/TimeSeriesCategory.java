@@ -35,6 +35,8 @@ public enum TimeSeriesCategory {
 			serieNames.add(DatePoint.FIELD_Adj_Close);
 			break;
 		case FINANCIAL:
+			serieNames.add(Financials.FIELD_IncomeStatement+":"+IncomeStatementPoint.FIELD_EarningsPerShare);
+			serieNames.add(Financials.FIELD_IncomeStatement+":"+IncomeStatementPoint.FIELD_EBIT);
 			serieNames.add(Financials.FIELD_IncomeStatement+":"+IncomeStatementPoint.FIELD_TotalRevenue);
 			serieNames.add(Financials.FIELD_IncomeStatement+":"+IncomeStatementPoint.FIELD_NetIncome);
 			break;

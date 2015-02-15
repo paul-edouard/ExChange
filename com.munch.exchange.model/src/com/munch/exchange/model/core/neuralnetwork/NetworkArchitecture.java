@@ -567,34 +567,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		double[] profit=ProfitUtils.calculateArray(output, changes);
 		double[] desiredProfit=ProfitUtils.calculateArray(desiredOutput, changes);
 		
-		//logger.info("Output: "+Arrays.toString(output));
-		/*
-		double BUY_LIMIT=0.5;
 		
-		double sum_pro=0;
-		for(int i=0;i<output.length;i++){
-			double val=Double.NaN;
-			double nextVal=Double.NaN;
-			double lastVal=Double.NaN;
-			
-			val=output[i];
-			
-			if(i>0)lastVal=output[i-1];
-			
-			if(i<output.length-1)nextVal=output[i+1];
-			
-			if(val>BUY_LIMIT){
-				sum_pro+=outputdiff[i];
-				if(Double.isNaN(lastVal) || lastVal <=BUY_LIMIT )
-					sum_pro-=penalty*startVal[i];
-				if(Double.isNaN(nextVal) || nextVal <=BUY_LIMIT )
-					sum_pro-=penalty*endVal[i];
-			}
-			
-			profit[i]=sum_pro;
-			
-		}
-		*/
 		double[][] n_outputs={output, desiredOutput, outputdiff, startVal, endVal,profit,desiredProfit };
 		
 		return n_outputs;

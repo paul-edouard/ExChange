@@ -3,6 +3,7 @@ package com.munch.exchange.parts.neuralnetwork.results;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import javax.inject.Inject;
 import javax.annotation.PostConstruct;
@@ -33,6 +34,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -46,6 +48,8 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
+import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlock;
+import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlocks;
 import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.InfoPart;
@@ -59,6 +63,8 @@ import org.goataa.impl.utils.Constants;
 import org.neuroph.core.data.DataSet;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.window.ToolTip;
+import org.eclipse.swt.widgets.Button;
 
 public class NeuralNetworkResultsPart {
 	
@@ -72,6 +78,9 @@ public class NeuralNetworkResultsPart {
 	private Tree tree;
 	private TreeViewer treeViewer;
 	private TreeNNResultViewerComparator comparator=new TreeNNResultViewerComparator();
+	
+	private LinkedList<TreeColumn> optColumns=new LinkedList<TreeColumn>();
+	private LinkedList<TreeColumn> trainColumns=new LinkedList<TreeColumn>();
 	
 	private ResultsLoader resultLoader=new ResultsLoader();
 	
@@ -98,12 +107,42 @@ public class NeuralNetworkResultsPart {
 		
 		Composite compositeHeader = new Composite(parent, SWT.NONE);
 		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		compositeHeader.setLayout(new GridLayout(1, false));
+		compositeHeader.setLayout(new GridLayout(3, false));
 		
 		lblSelectedConfig = new Label(compositeHeader, SWT.NONE);
 		lblSelectedConfig.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		lblSelectedConfig.setBounds(0, 0, 81, 25);
 		lblSelectedConfig.setText("Selected Config:");
+		
+		btnOptInfo = new Button(compositeHeader, SWT.CHECK);
+		btnOptInfo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int width=0;
+				if(btnOptInfo.getSelection())width=100;
+				
+				for(TreeColumn col:optColumns){
+					col.setWidth(width);
+				}
+				
+			}
+		});
+		btnOptInfo.setText("Opt. Info");
+		
+		btnTrainInfo = new Button(compositeHeader, SWT.CHECK);
+		btnTrainInfo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int width=0;
+				if(btnTrainInfo.getSelection())width=100;
+				
+				for(TreeColumn col:trainColumns){
+					col.setWidth(width);
+				}
+			}
+		});
+		btnTrainInfo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		btnTrainInfo.setText("Train Info");
 		
 		treeViewer = new TreeViewer(parent, SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL | SWT.FULL_SELECTION );
@@ -124,6 +163,7 @@ public class NeuralNetworkResultsPart {
 		treeViewer.setAutoExpandLevel(1);
 		treeViewer.setContentProvider(new TreeNNResultsContentProvider());
 		treeViewer.setComparator(comparator);
+		ColumnViewerToolTipSupport.enableFor(treeViewer, ToolTip.NO_RECREATE); 
 		
 		tree = treeViewer.getTree();
 		tree.setHeaderVisible(true);
@@ -134,21 +174,21 @@ public class NeuralNetworkResultsPart {
 		addColumn("Inner Neurons",50,new InnerNeuronsLabelProvider(),1);
 		addColumn("Best Result",100,new BestResultsLabelProvider(),2);
 		
-		addColumn("Best Opt. Rate",100,new BestOptimizationRateLabelProvider(),3);
-		addColumn("Middle Opt. Rate",100,new MiddleOptimizationRateLabelProvider(),4);
-		addColumn("Nb. Of Opt.",50,new NbOfOptimizationRateLabelProvider(),5);
-		addColumn("Last Opt.",100,new LastOptimizationLabelProvider(),9);
+		optColumns.add(addColumn("Best Opt. Rate",0,new BestOptimizationRateLabelProvider(),3));
+		optColumns.add(addColumn("Middle Opt. Rate",0,new MiddleOptimizationRateLabelProvider(),4));
+		optColumns.add(addColumn("Nb. Of Opt.",0,new NbOfOptimizationRateLabelProvider(),5));
+		optColumns.add(addColumn("Last Opt.",0,new LastOptimizationLabelProvider(),9));
 		
-		addColumn("Best Tr. Rate",100,new BestTrainingRateLabelProvider(),6);
-		addColumn("Middle Tr. Rate",100,new MiddleTrainingRateLabelProvider(),7);
-		addColumn("Nb. Of Tr.",50,new NbOfTrainingRateLabelProvider(),8);
-		addColumn("Last Tr.",100,new LastTrainingLabelProvider(),10);
+		trainColumns.add(addColumn("Best Tr. Rate",0,new BestTrainingRateLabelProvider(),6));
+		trainColumns.add(addColumn("Middle Tr. Rate",0,new MiddleTrainingRateLabelProvider(),7));
+		trainColumns.add(addColumn("Nb. Of Tr.",0,new NbOfTrainingRateLabelProvider(),8));
+		trainColumns.add(addColumn("Last Tr.",0,new LastTrainingLabelProvider(),10));
 		
 		addColumn("Prediction",100,new PredictionLabelProvider(),11);
 		
-		addColumn("Tot. Profit",100,new TotalProfitLabelProvider(),12);
-		addColumn("Train. Profit",100,new TrainProfitLabelProvider(),13);
-		addColumn("Val. Profit",100,new ValidateProfitLabelProvider(),14);
+		addColumn("Tot. Profit %",100,new TotalProfitLabelProvider(),12);
+		addColumn("Train. Profit %",100,new TrainProfitLabelProvider(),13);
+		addColumn("Val. Profit %",100,new ValidateProfitLabelProvider(),14);
 		
 		tree.setSortColumn(firstColumn);
 	    tree.setSortDirection(1);
@@ -470,15 +510,26 @@ public class NeuralNetworkResultsPart {
 		public String getText(Object element) {
 			if(element instanceof NetworkArchitecture){
 				NetworkArchitecture el=(NetworkArchitecture) element;
-				double pro=getResultsInfo(el).totalProfit;
-				return String.format("%.2f", pro);
+				return getResultsInfo(el).getTotalProfitString();
 			}
 			if(element instanceof ResultEntity){
 				ResultEntity el=(ResultEntity) element;
-				double pro=getResultsInfo(el).totalProfit;
-				return String.format("%.2f", pro);
+				return getResultsInfo(el).getTotalProfitString();
 			}
 			return super.getText(element);
+		}
+		
+		@Override
+		public String getToolTipText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				return getResultsInfo(el).getTotalProfitToolTip();
+			}
+			if(element instanceof ResultEntity){
+				ResultEntity el=(ResultEntity) element;
+				return getResultsInfo(el).getTotalProfitToolTip();
+			}
+			return super.getToolTipText(element);
 		}
 
 		
@@ -490,17 +541,28 @@ public class NeuralNetworkResultsPart {
 		public String getText(Object element) {
 			if(element instanceof NetworkArchitecture){
 				NetworkArchitecture el=(NetworkArchitecture) element;
-				double pro=getResultsInfo(el).trainProfit;
-				return String.format("%.2f", pro);
+				return getResultsInfo(el).getTrainProfitString();
 			}
 			if(element instanceof ResultEntity){
 				ResultEntity el=(ResultEntity) element;
-				double pro=getResultsInfo(el).trainProfit;
-				return String.format("%.2f", pro);
+				return getResultsInfo(el).getTrainProfitString();
 			}
 			return super.getText(element);
 		}
-
+		
+		
+		@Override
+		public String getToolTipText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				return getResultsInfo(el).getTrainProfitToolTip();
+			}
+			if(element instanceof ResultEntity){
+				ResultEntity el=(ResultEntity) element;
+				return getResultsInfo(el).getTrainProfitToolTip();
+			}
+			return super.getToolTipText(element);
+		}
 		
 	}
 	
@@ -510,16 +572,29 @@ public class NeuralNetworkResultsPart {
 		public String getText(Object element) {
 			if(element instanceof NetworkArchitecture){
 				NetworkArchitecture el=(NetworkArchitecture) element;
-				double pro=getResultsInfo(el).validateProfit;
-				return String.format("%.2f", pro);
+				return getResultsInfo(el).getValidateProfitString();
 			}
 			if(element instanceof ResultEntity){
 				ResultEntity el=(ResultEntity) element;
-				double pro=getResultsInfo(el).validateProfit;
-				return String.format("%.2f", pro);
+				return getResultsInfo(el).getValidateProfitString();
 			}
 			return super.getText(element);
 		}
+
+		@Override
+		public String getToolTipText(Object element) {
+			if(element instanceof NetworkArchitecture){
+				NetworkArchitecture el=(NetworkArchitecture) element;
+				return getResultsInfo(el).getValidateProfitToolTip();
+			}
+			if(element instanceof ResultEntity){
+				ResultEntity el=(ResultEntity) element;
+				return getResultsInfo(el).getValidateProfitToolTip();
+			}
+			return super.getToolTipText(element);
+		}
+		
+		
 
 		
 	}
@@ -549,6 +624,8 @@ public class NeuralNetworkResultsPart {
 	//#######################################	
 	
 	private HashMap<String, ResultsInfo> resultsInfoMap=new HashMap<String, ResultsInfo>();
+	private Button btnOptInfo;
+	private Button btnTrainInfo;
 	
 	private synchronized ResultsInfo getResultsInfo(NetworkArchitecture archi){
 		if(!resultsInfoMap.containsKey(archi.getId()))
@@ -568,8 +645,47 @@ public class NeuralNetworkResultsPart {
 	class ResultsInfo{
 		public double prediction=Double.NaN;
 		public double totalProfit=Double.NaN;
+		public double totalProfitTarget=Double.NaN;
+		
 		public double trainProfit=Double.NaN;
+		public double trainProfitTarget=Double.NaN;
+		
 		public double validateProfit=Double.NaN;
+		public double validateProfitTarget=Double.NaN;
+		
+		
+		private String getProfitString(double profit,double profitTarget){
+			String per=String.format("%.1f",profit/profitTarget*100);
+			return per;
+		}
+		
+		private String getProfitTooltip(double profit,double profitTarget){
+			String pro=String.format("%.1f",profit);
+			String proTarget=String.format("%.1f",profitTarget);
+			
+			return "["+pro+"/"+proTarget+"]";
+		}
+		
+		public String getTotalProfitString(){
+			return getProfitString(totalProfit,totalProfitTarget);
+		}
+		public String getTotalProfitToolTip(){
+			return getProfitTooltip(totalProfit,totalProfitTarget);
+		}
+		
+		public String getTrainProfitString(){
+			return getProfitString(trainProfit,trainProfitTarget);
+		}
+		public String getTrainProfitToolTip(){
+			return getProfitTooltip(trainProfit,trainProfitTarget);
+		}
+		
+		public String getValidateProfitString(){
+			return getProfitString(validateProfit,validateProfitTarget);
+		}
+		public String getValidateProfitToolTip(){
+			return getProfitTooltip(validateProfit,validateProfitTarget);
+		}
 		
 	}
 	
@@ -592,26 +708,20 @@ public class NeuralNetworkResultsPart {
 			
 			if (monitor.isCanceled())return Status.CANCEL_STATUS;
 			
-			//TODO don't save the output list
-			//ValuePointList l=nn_provider.calculateMaxProfitOutputList(stock,RateChart.PENALTY);
-			//config.setOutputPointList(l);
 			
-			if (monitor.isCanceled())return Status.CANCEL_STATUS;
 			
-			//if(!config.areAllTimeSeriesAvailable()){
-				nn_provider.createAllValuePoints(config,false);
-			//}
-			
+			nn_provider.createAllValuePoints(config,false);
 			
 			double[] input=config.getLastInput();
 			DataSet dataset=config.getDataSet();
-			DataSet trainSet=config.getTrainingDataSet();
-			DataSet valSet=config.getValidateDataSet();
+			//DataSet trainSet=config.getTrainingDataSet();
+			//DataSet valSet=config.getValidateDataSet();
 			
 			//RateChart.PENALTY;
 			
 			for(NetworkArchitecture archi:config.getNetworkArchitecturesCopy()){
 				boolean wasLoaded=false;
+				
 				if(archi.isResultLoaded() && loadResultsEntities){
 					logger.info("Results here!!"+archi.getId());
 					wasLoaded=true;
@@ -624,34 +734,27 @@ public class NeuralNetworkResultsPart {
 						double pred=archi.calculateNetworkOutput(input, ent.getDoubleArray());
 						info.prediction=pred;
 						
-						//Total Profit
-						double[][] outputs=archi.calculateNetworkOutputsAndProfit(dataset, ent.getDoubleArray(), ProfitUtils.PENALTY);
-						if(outputs==null)continue;
-						double[] profit=outputs[5];
-						info.totalProfit=profit[profit.length-1];
-						
-						//Train Profit
-						outputs=archi.calculateNetworkOutputsAndProfit(trainSet, ent.getDoubleArray(), ProfitUtils.PENALTY);
-						if(outputs==null)continue;profit=outputs[5];
-						info.trainProfit=profit[profit.length-1];
-						
-						//Validate Profit
-						if(valSet==null)continue;
-						outputs=archi.calculateNetworkOutputsAndProfit(valSet, ent.getDoubleArray(), ProfitUtils.PENALTY);
-						if(outputs==null)continue;profit=outputs[5];
-						info.validateProfit=profit[profit.length-1];
+						//Profit
+						calculateProfits(info,archi,dataset,ent.getDoubleArray());
 						
 					}
 				}
+				
 				
 				if (monitor.isCanceled())return Status.CANCEL_STATUS;
 				
 				ResultsInfo info=getResultsInfo(archi);
 				
+				if(archi.getBestResultEntity()==null)continue;
+				
 				//Prediction
 				double pred=archi.calculateNetworkOutputFromBestResult(input);
 				info.prediction=pred;
 				
+				calculateProfits(info,archi,dataset,archi.getBestResultEntity().getDoubleArray());
+				
+				
+				/*
 				//Total Profit
 				double[][] outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset, ProfitUtils.PENALTY);
 				if(outputs==null)continue;
@@ -668,6 +771,9 @@ public class NeuralNetworkResultsPart {
 				outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(valSet,  ProfitUtils.PENALTY);
 				if(outputs==null)continue;profit=outputs[5];
 				info.validateProfit=profit[profit.length-1];
+				*/
+				
+				
 				if(!wasLoaded)
 					archi.clearResultsAndNetwork(false);
 			}
@@ -678,6 +784,45 @@ public class NeuralNetworkResultsPart {
 			
 			return Status.OK_STATUS;
 		}
+		
+		
+		private void calculateProfits(ResultsInfo info,NetworkArchitecture archi,DataSet dataset, double[] weigths){
+			
+			//Calculate the outputs
+			double[][] outputs=archi.calculateNetworkOutputsAndProfit(dataset, weigths, ProfitUtils.PENALTY);
+			if(outputs==null)return;
+			
+			double[] profit=outputs[5];
+			double[] targetProfit=outputs[6];
+			
+			info.totalProfit=0;info.totalProfitTarget=0;
+			info.validateProfit=0;info.validateProfitTarget=0;
+			info.trainProfit=0;info.trainProfitTarget=0;
+			
+			TrainingBlocks tb=archi.getParent().getTrainingBlocks();
+			for(TrainingBlock block:tb.getBlocks()){
+    			for(int i=block.getStart();i<=block.getEnd();i++){
+    				double diff=profit[i]-info.totalProfit;
+    				double diffTarget=targetProfit[i]-info.totalProfitTarget;
+    				
+    				info.totalProfit+=diff;
+    				info.totalProfitTarget+=diffTarget;
+    				
+    				
+    				if(block.isTraining()){
+    					info.trainProfit+=diff;
+    					info.trainProfitTarget+=diffTarget;
+    				}
+    				else{
+    					info.validateProfit+=diff;
+    					info.validateProfitTarget+=diffTarget;
+    				}
+    			}
+    		}
+			
+		}
+		
+		
 		
 	}
 	
@@ -780,49 +925,7 @@ public class NeuralNetworkResultsPart {
     	
     }
 	
-	/*
 	
-	//ARCHITECTURE
-	@Inject
-	private void networkArchitectureAllTopic(@Optional @UIEventTopic(IEventConstant.NETWORK_ARCHITECTURE_OPTIMIZATION_ALLTOPICS) OptInfo info){
-		if(info==null)return;
-		if(info.getConfiguration()!=this.config)return;
-		if (!isCompositeAbleToReact())return;
-		
-		//InfoPart.postInfoText(eventBroker, "NETWORK_ARCHITECTURE_OPTIMIZATION_ALLTOPICS recieved!");
-		
-		treeViewer.setInput(config);
-		treeViewer.refresh();
-		
-	}
-	
-	//OPTIMIZATION
-	
-	@Inject
-	private void networkOptimizationAllTopic(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_ALLTOPICS) NetworkArchitectureOptInfo info){
-		if(info==null)return;
-		if(info.getConfiguration()!=this.config)return;
-		if (!isCompositeAbleToReact())return;
-		
-		//InfoPart.postInfoText(eventBroker, "NETWORK_OPTIMIZATION_ALLTOPICS recieved!");
-		
-		
-		//treeViewer.setInput(config);
-		treeViewer.refresh();
-	}
-	
-	
-	//LEARNING
-	
-	@Inject
-	private void networkOptimizationLeaning(@Optional @UIEventTopic(IEventConstant.NETWORK_LEARNING_STARTED) NetworkArchitectureOptInfo info){
-		if(info==null)return;
-		if(info.getConfiguration()!=this.config)return;
-		if (!isCompositeAbleToReact())return;
-		
-		treeViewer.refresh();
-	}
-	*/
 		
 	
 	

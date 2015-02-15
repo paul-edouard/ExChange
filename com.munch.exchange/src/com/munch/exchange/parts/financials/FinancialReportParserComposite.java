@@ -385,6 +385,16 @@ public class FinancialReportParserComposite extends Composite {
 		lblPattern.setText("Pattern: ");
 		
 		textPattern = new Text(composite_3, SWT.BORDER);
+		textPattern.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				if(!isInitiated)return;
+				config.setPattern(textPattern.getText());
+				
+				loadAndAnalyseDocument();
+				
+				dirty.setDirty(true);
+			}
+		});
 		textPattern.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {

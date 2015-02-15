@@ -135,7 +135,17 @@ public class TreeNNResultViewerComparator extends ViewerComparator {
 				rc = 1;
 			else if(p2.getLastTraining().getTimeInMillis() < p1.getLastTraining().getTimeInMillis())
 				rc = -1;
-			break;			
+			break;
+			
+		// Last Training
+		case 12:
+			if(p2.getLastTraining().getTimeInMill
+					is() > p1.getLastTraining().getTimeInMillis())
+					rc = 1;
+			else if(p2.getLastTraining().getTimeInMillis() < p1.getLastTraining().getTimeInMillis())
+					rc = -1;
+			break;
+		
 							
 
 		default:
