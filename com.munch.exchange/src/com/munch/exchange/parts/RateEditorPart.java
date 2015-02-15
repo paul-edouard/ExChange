@@ -363,6 +363,7 @@ public class RateEditorPart {
 		//Save the Financials Changes
 		if(rate instanceof Stock){
 			financialsProvider.saveAll((Stock)rate);
+			financialsProvider.saveReportReaderConfiguration((Stock)rate);
 			
 		}
 		dirty.setDirty(false);

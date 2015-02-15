@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.financials;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -21,7 +22,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	static final String FIELD_Website="Website";
 	//static final String FIELD_SelectedPeriodType="SelectedPeriodType";
 	static final String FIELD_SelectedPeriod="SelectedPeriod";
-	static final String FIELD_UsePeriod="UsePeriod";
+	//static final String FIELD_UsePeriod="UsePeriod";
 	
 	static final String FIELD_QuaterlyReportWebsite="QuaterlyReportWebsite";
 	static final String FIELD_AnnualyReportWebsite="AnnualyReportWebsite";
@@ -69,7 +70,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	
 	private Calendar nextExpectedFinancialDate=null;
 	private Period selectedPeriod=null;
-	private boolean usePeriod=true;
+	//private boolean usePeriod=true;
 	
 	private String DocumentType=DocumentType_PDF;
 	
@@ -79,102 +80,84 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	private LinkedList<SearchKeyValEl> allFoundElts=null;
 	private String documentContent;
 	
-	
-	
-	public Calendar getNextExpectedFinancialDate() {
-		return nextExpectedFinancialDate;
-	}
 
-	public void setNextExpectedFinancialDate(Calendar nextExpectedFinancialDate) {
-		this.nextExpectedFinancialDate = nextExpectedFinancialDate;
+	//****************************************
+	//***            Documents            ****
+	//****************************************
+	
+	private LinkedList<String> savedDocs=new LinkedList<String>();
+	
+	public void clearSavedDocs(){
+		savedDocs.clear();
 	}
 	
-	
-	public String getWebsite() {
-		return website;
+	public boolean noSavedDocs(){
+		return savedDocs.isEmpty();
 	}
 	
-
-	public  LinkedList<String> searchDocuments(String content){
+	public void searchAllDocumentsOfSelectedType(String content){
 		LinkedList<String> docs=new LinkedList<String>();
 		String[] tockens=content.split("\n");
-		
-		//Period
-		String[] ptockens=null;
-		if(this.usePeriod)ptockens=selectedPeriod.toString().split("-");
-		
-		//Pattern
-		String pattern=this.getPattern();
-		
 		for(int i=0;i<tockens.length;i++){
 			String[] splits=tockens[i].split("\"");
 			
 			for(int j=0;j<splits.length;j++){
-				//Test the searchPeriod
-				boolean p_found=false;
-				if(ptockens==null)p_found=true;
-				else if(ptockens.length==0)p_found=true;
-				else if(ptockens.length==1)p_found=splits[j].contains(ptockens[0]);
-				else if(ptockens.length==2)
-					p_found=(splits[j].contains(ptockens[0]) && splits[j].contains(ptockens[1])) || 
-					(splits[j].contains(ptockens[0].toLowerCase()) && splits[j].contains(ptockens[1]));
-				
-				if(!p_found)continue;
 				
 				//Test the file type
 				if(!splits[j].endsWith(this.getDocumentTypeSuffix()))continue;
 				
+				
+				if(!docs.contains(splits[j]))
+					docs.add(splits[j]);
+				
+			}
+		}
+		
+		for(String doc:docs){
+			if(!savedDocs.contains(doc))
+				savedDocs.add(doc);
+		}
+		
+		Collections.sort(savedDocs);
+		
+	}
+	
+	
+	public  LinkedList<String> searchDocumentsMatchingPeriodAndPattern(){
+		LinkedList<String> docs=new LinkedList<String>();
+		
+		//Period
+		String[] ptockens=null;
+		if(this.isUsePeriod())ptockens=selectedPeriod.toString().split("-");
+		
+		//Pattern
+		String pattern=this.getPattern();
+		
+		for(String doc :savedDocs){
+			
+				//Test the searchPeriod
+				boolean p_found=false;
+				if(ptockens==null)p_found=true;
+				else if(ptockens.length==0)p_found=true;
+				else if(ptockens.length==1)p_found=doc.contains(ptockens[0]);
+				else if(ptockens.length==2)
+					p_found=(doc.contains(ptockens[0]) && doc.contains(ptockens[1])) || 
+					(doc.contains(ptockens[0].toLowerCase()) && doc.contains(ptockens[1]));
+				
+				if(!p_found)continue;
+				
 				//Test the pattern
-				if(splits[j].matches(pattern)){
-					if(!docs.contains(splits[j]))
-						docs.add(splits[j]);
+				if(doc.matches(pattern)){
+					if(!docs.contains(doc))
+						docs.add(doc);
 					
 				}
-			}
 		}
 		
 		return docs;
 		
-		/*
-		String[] docl=new String[docs.size()];
-		for(int i=0;i<docs.size();i++){
-			docl[i]=docs.get(i);
-		}
-		
-		return docl;
-		*/
 	}
 	
-	
-	private String[] getLastDocuments(String key){
-		String docs=this.getStringParam(key);
-		return docs.split(";");
-	}
-	
-	public String[] getLastQuaterlyDocuments(){
-		return getLastDocuments(FIELD_QuaterlyDocuments);
-	}
-	public String[] getLastAnnualyDocuments(){
-		return getLastDocuments(FIELD_AnnualyDocuments);
-	}
-	
-	public void setLastDocuments(String[] documents,String key){
-		String docs="";
-		for(int i =0;i<documents.length;i++){
-			if(i==docs.length()-1)
-				docs+=documents[i];
-			else
-				docs+=documents[i]+";";
-		}
-		this.setParam(key, docs);
-	}
-	
-	public void setLastQuaterlyDocuments(String[] documents){
-		setLastDocuments(documents,FIELD_QuaterlyDocuments);
-	}
-	public void setLastAnnualyDocuments(String[] documents){
-		setLastDocuments(documents,FIELD_AnnualyDocuments);
-	}
 	
 	
 	public String getDocumentTypeSuffix(){
@@ -194,61 +177,48 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	}
 	
 	
-	public void increaseFoundEltsWithValidRelations(){
-		if(allFoundElts==null)return;
-		//Create the element map
-		HashMap<String , SearchKeyValEl> elMap=new HashMap<String , SearchKeyValEl>();
-		for(SearchKeyValEl el:allFoundElts){
-			elMap.put(el.sectorKey+"_"+el.fieldKey, el);
-			logger.info("Key"+el.sectorKey+"_"+el.fieldKey);
-		}
-		
-		//
-		String outShares=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_OutstandingShares;
-		SearchKeyValEl outSharesEl=elMap.get(outShares);
-		
-		String earnPerShare=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_EarningsPerShare;
-		SearchKeyValEl earnPerShareEl=elMap.get(earnPerShare);
-		
-		String netIncome1=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_NetIncome;
-		SearchKeyValEl netIncomeEl1=elMap.get(netIncome1);
-		
-		String netIncome2=Financials.FIELD_CashFlow+"_"+CashFlowPoint.FIELD_NetIncome;
-		SearchKeyValEl netIncomeEl2=elMap.get(netIncome2);
-		
-		//netIncome1 = outSharesKey * earnPerShare / 100
-		if(outSharesEl!=null && earnPerShareEl!=null && netIncomeEl1==null){
-			netIncomeEl1=new SearchKeyValEl(outSharesEl.periodType,
-					IncomeStatementPoint.FIELD_NetIncome, Financials.FIELD_IncomeStatement);
-
-			netIncomeEl1.value=outSharesEl.value * earnPerShareEl.value / 100;
-			netIncomeEl1.wasCalculated=true;
-			allFoundElts.add(netIncomeEl1);
-			logger.info("netIncomeEl1: Calculated");
-		}
-		
-		//netIncome2 = netIncome1
-		if(netIncomeEl1!=null && netIncomeEl2==null){
-			netIncomeEl2=new SearchKeyValEl(netIncomeEl1.periodType,
-					CashFlowPoint.FIELD_NetIncome, Financials.FIELD_CashFlow);
-			netIncomeEl2.value=netIncomeEl1.value;
-			netIncomeEl2.wasCalculated=true;
-			allFoundElts.add(netIncomeEl2);
-			logger.info("netIncomeEl2: Calculated");
-		}
-	}
+	
 	
 	//****************************************
 	//***        Getter and Setter        ****
 	//****************************************
 	
+	public String getWebsite() {
+		return website;
+	}
+	
+	
+	public Calendar getNextExpectedFinancialDate() {
+		return nextExpectedFinancialDate;
+	}
+
+	public void setNextExpectedFinancialDate(Calendar nextExpectedFinancialDate) {
+		this.nextExpectedFinancialDate = nextExpectedFinancialDate;
+	}
+	
 	
 	public boolean isUsePeriod() {
-		return usePeriod;
+		switch (this.selectedPeriod.getType()) {
+		case ANNUAL:
+			return annualySearchPeriodActivated;
+
+		default:
+			return quaterlySearchPeriodActivated;
+		}
+		
 	}
 
 	public void setUsePeriod(boolean usePeriod) {
-	this.usePeriod = usePeriod;
+		switch (this.selectedPeriod.getType()) {
+		case ANNUAL:
+			annualySearchPeriodActivated=usePeriod;
+			break;
+
+		default:
+			quaterlySearchPeriodActivated=usePeriod;
+			break;
+		}
+	
 	}
 	
 	
@@ -276,6 +246,7 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	}
 
 	public void setDocumentType(String documentType) {
+		clearSavedDocs();
 		changes.firePropertyChange(FIELD_DocumentType, this.DocumentType,
 				this.DocumentType = documentType);
 	}
@@ -310,19 +281,19 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 			return getQuaterlyPattern();
 	}
 	
-	public String getQuaterlyPattern() {
+	private String getQuaterlyPattern() {
 		return quaterlyPattern;
 	}
 
-	public void setQuaterlyPattern(String quaterlyPattern) {
+	private void setQuaterlyPattern(String quaterlyPattern) {
 	changes.firePropertyChange(FIELD_QuaterlyPattern, this.quaterlyPattern, this.quaterlyPattern = quaterlyPattern);}
 	
 	
-	public String getAnnualyPattern() {
+	private String getAnnualyPattern() {
 		return annualyPattern;
 	}
 
-	public void setAnnualyPattern(String annualyPattern) {
+	private void setAnnualyPattern(String annualyPattern) {
 	changes.firePropertyChange(FIELD_AnnualyPattern, this.annualyPattern, this.annualyPattern = annualyPattern);}
 	
 
@@ -342,21 +313,6 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	changes.firePropertyChange(FIELD_AnnualySearchPeriod, this.annualySearchPeriod, this.annualySearchPeriod = annualySearchPeriod);}
 	
 
-	public boolean isQuaterlySearchPeriodActivated() {
-		return quaterlySearchPeriodActivated;
-	}
-
-	public void setQuaterlySearchPeriodActivated(boolean quaterlySearchPeriodActivated) {
-	changes.firePropertyChange(FIELD_QuaterlySearchPeriodActivated, this.quaterlySearchPeriodActivated, this.quaterlySearchPeriodActivated = quaterlySearchPeriodActivated);}
-	
-
-	public boolean isAnnualySearchPeriodActivated() {
-		return annualySearchPeriodActivated;
-	}
-
-	public void setAnnualySearchPeriodActivated(boolean annualySearchPeriodActivated) {
-	changes.firePropertyChange(FIELD_AnnualySearchPeriodActivated, this.annualySearchPeriodActivated, this.annualySearchPeriodActivated = annualySearchPeriodActivated);}
-	
 	
 	public void setQuaterlyReportWebsites(LinkedList<String> quaterlyReportWebsites) {
 	changes.firePropertyChange(FIELD_QuaterlyReportWebsite, this.quaterlyReportWebsites, this.quaterlyReportWebsites = quaterlyReportWebsites);}
@@ -380,9 +336,6 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	//***            SearchKeyValEl       ****
 	//****************************************
 	
-
-	
-
 	private HashMap<String, SearchKeyValEl> getAllSearchKeyValEl(String periodType){
 		HashMap<String, SearchKeyValEl> map=new HashMap<String, SearchKeyValEl>();
 		
@@ -432,6 +385,51 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	
 	public void updateSearchKeyValEl(SearchKeyValEl el){
 		this.setParam(el.getKey(), el.getContent());
+	}
+	
+	
+	public void increaseFoundEltsWithValidRelations(){
+		if(allFoundElts==null)return;
+		//Create the element map
+		HashMap<String , SearchKeyValEl> elMap=new HashMap<String , SearchKeyValEl>();
+		for(SearchKeyValEl el:allFoundElts){
+			elMap.put(el.sectorKey+"_"+el.fieldKey, el);
+			logger.info("Key"+el.sectorKey+"_"+el.fieldKey);
+		}
+		
+		//
+		String outShares=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_OutstandingShares;
+		SearchKeyValEl outSharesEl=elMap.get(outShares);
+		
+		String earnPerShare=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_EarningsPerShare;
+		SearchKeyValEl earnPerShareEl=elMap.get(earnPerShare);
+		
+		String netIncome1=Financials.FIELD_IncomeStatement+"_"+IncomeStatementPoint.FIELD_NetIncome;
+		SearchKeyValEl netIncomeEl1=elMap.get(netIncome1);
+		
+		String netIncome2=Financials.FIELD_CashFlow+"_"+CashFlowPoint.FIELD_NetIncome;
+		SearchKeyValEl netIncomeEl2=elMap.get(netIncome2);
+		
+		//netIncome1 = outSharesKey * earnPerShare / 100
+		if(outSharesEl!=null && earnPerShareEl!=null && netIncomeEl1==null){
+			netIncomeEl1=new SearchKeyValEl(outSharesEl.periodType,
+					IncomeStatementPoint.FIELD_NetIncome, Financials.FIELD_IncomeStatement);
+
+			netIncomeEl1.value=outSharesEl.value * earnPerShareEl.value / 100;
+			netIncomeEl1.wasCalculated=true;
+			allFoundElts.add(netIncomeEl1);
+			logger.info("netIncomeEl1: Calculated");
+		}
+		
+		//netIncome2 = netIncome1
+		if(netIncomeEl1!=null && netIncomeEl2==null){
+			netIncomeEl2=new SearchKeyValEl(netIncomeEl1.periodType,
+					CashFlowPoint.FIELD_NetIncome, Financials.FIELD_CashFlow);
+			netIncomeEl2.value=netIncomeEl1.value;
+			netIncomeEl2.wasCalculated=true;
+			allFoundElts.add(netIncomeEl2);
+			logger.info("netIncomeEl2: Calculated");
+		}
 	}
 	
 	
@@ -666,8 +664,8 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		this.setAnnualySearchPeriod((rootElement.getAttribute(FIELD_AnnualySearchPeriod)));
 		this.setQuaterlySearchPeriod((rootElement.getAttribute(FIELD_QuaterlySearchPeriod)));
 		
-		this.setAnnualySearchPeriodActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_AnnualySearchPeriodActivated)));
-		this.setQuaterlySearchPeriodActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_QuaterlySearchPeriodActivated)));
+		this.annualySearchPeriodActivated=Boolean.parseBoolean(rootElement.getAttribute(FIELD_AnnualySearchPeriodActivated));
+		this.quaterlySearchPeriodActivated=Boolean.parseBoolean(rootElement.getAttribute(FIELD_QuaterlySearchPeriodActivated));
 		
 		if(rootElement.hasAttribute(FIELD_NextExpectedFinancialDate)){
 		this.setNextExpectedFinancialDate(DateTool.StringToDate(
@@ -677,10 +675,6 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		if(rootElement.hasAttribute(FIELD_DocumentType)){
 			this.setDocumentType(rootElement.getAttribute(FIELD_DocumentType));
 		}
-		if(rootElement.hasAttribute(FIELD_UsePeriod)){
-			this.setUsePeriod(Boolean.getBoolean(rootElement.getAttribute(FIELD_UsePeriod)));
-		}
-		
 		
 		
 		quaterlyReportWebsites.clear();
@@ -715,13 +709,12 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 		rootElement.setAttribute(FIELD_AnnualySearchPeriod,this.getAnnualySearchPeriod());
 		rootElement.setAttribute(FIELD_QuaterlySearchPeriod,this.getQuaterlySearchPeriod());
 		
-		rootElement.setAttribute(FIELD_AnnualySearchPeriodActivated,String.valueOf(this.isAnnualySearchPeriodActivated()));
-		rootElement.setAttribute(FIELD_QuaterlySearchPeriodActivated,String.valueOf(this.isQuaterlySearchPeriodActivated()));
+		rootElement.setAttribute(FIELD_AnnualySearchPeriodActivated,String.valueOf(this.annualySearchPeriodActivated));
+		rootElement.setAttribute(FIELD_QuaterlySearchPeriodActivated,String.valueOf(this.quaterlySearchPeriodActivated));
 		
 		rootElement.setAttribute(FIELD_NextExpectedFinancialDate,DateTool.dateToString(this.getNextExpectedFinancialDate()));
 		
 		rootElement.setAttribute(FIELD_DocumentType,String.valueOf(this.getDocumentType()));
-		rootElement.setAttribute(FIELD_UsePeriod,String.valueOf(this.isUsePeriod()));
 		
 		
 	}

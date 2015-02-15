@@ -469,18 +469,20 @@ public class FinancialsProviderLocalImpl implements IFinancialsProvider {
 		
 		ReportReaderConfiguration config=stock.getFinancials().getReportReaderConfiguration();
 		
-		LinkedList<String> docs=new LinkedList<String>();
+		
 		
 		//Search all docs
+		if(config.noSavedDocs()){
 		for(String site:config.getReportWebsites()){
 			String content=getHtmlContent(site);
-			LinkedList<String> site_docs=config.searchDocuments(content);
-			for(String doc:site_docs){
-				if(!docs.contains(doc))
-					docs.add(doc);
-			}
+			config.searchAllDocumentsOfSelectedType(content);
+			
 			//docs.addAll(ReportReaderConfiguration.searchDocuments(content, pattern, searchPeriod));
 		}
+		}
+		
+		LinkedList<String> docs=config.searchDocumentsMatchingPeriodAndPattern();
+		
 		
 		String[] docl=new String[docs.size()];
 		for(int i=0;i<docs.size();i++){
