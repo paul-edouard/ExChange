@@ -941,6 +941,17 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return optResults.getResults();
 	}
 	
+	public int getResultPosition(ResultEntity ent){
+		int pos=0;
+		for(ResultEntity res:getResultsEntities()){
+			if(res.getId().equals(ent.getId())){
+				return pos;
+			}
+			pos++;
+		}
+		return 0;
+	}
+	
 	public void setOptResuts(OptimizationResults optResuts) {
 		this.optResults = optResuts;
 		for(ResultEntity resultEntity:optResults.getResults()){
@@ -1153,6 +1164,20 @@ public class NetworkArchitecture extends XmlParameterElement {
 	//****************************************
 	//***      GETTER AND SETTER          ****
 	//****************************************
+	
+	public int getSelfIndex(){
+		if(this.parent==null)return 0;
+		if(this.parent.getNetworkArchitectures()==null)return 0;
+		
+		int i=0;
+		for(NetworkArchitecture archi:this.parent.getNetworkArchitectures()){
+			if(archi.getId().equals(this.getId()))return i;
+			i++;
+		}
+		
+		return 0;
+	}
+	
 	
 	public int getDimension(){
 		return this.actConsArray.length;

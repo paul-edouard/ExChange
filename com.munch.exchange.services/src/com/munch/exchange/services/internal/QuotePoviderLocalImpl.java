@@ -95,23 +95,23 @@ public class QuotePoviderLocalImpl implements IQuoteProvider {
 	
 	
 	@Override
-	public boolean load(ExchangeRate rate) {
+	public synchronized boolean  load(ExchangeRate rate) {
 		if(rate==null)return false;
 		if(rate.getDataPath()==null)return false;
 		if(rate.getDataPath().isEmpty())return false;
 		
 		// load from local
-		RecordedQuote LocalQuotes=loadLocalData(rate);
-		if(LocalQuotes!=null){
-			//logger.info("Quotes localy found for \""+rate.getFullName());
-			rate.setRecordedQuote(LocalQuotes);
-			update(rate);
-			return true;
+		if(rate.getRecordedQuote().isEmpty()){
+			RecordedQuote LocalQuotes=loadLocalData(rate);
+			if(LocalQuotes!=null){
+				//logger.info("Quotes localy found for \""+rate.getFullName());
+				rate.setRecordedQuote(LocalQuotes);
+				
+			}
 		}
 		
 		update(rate);
-		
-		return false;
+		return true;
 	}
 	
 	@Override

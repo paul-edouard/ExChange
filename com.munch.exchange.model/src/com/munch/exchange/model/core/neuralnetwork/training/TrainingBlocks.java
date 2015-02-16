@@ -45,13 +45,19 @@ public class TrainingBlocks extends XmlParameterElement {
 			if(i>=(k*midBlockLength) && lastRow.getDesiredOutput()[0]!=row.getDesiredOutput()[0]){
 				block.setEnd(i);
 				blocks.add(block);
+				if(i+1==dataset.size()){
+					block=null;
+					break;
+				}
 				block=new TrainingBlock();
+				block.setStart(i+1);
 				k++;
 			}
 		}
-		block.setEnd(i-1);
-		blocks.add(block);
-		
+		if(block!=null){
+			block.setEnd(dataset.size()-1);
+			blocks.add(block);
+		}
 		setTrainingStateOfBlocks();
 		
 	//	System.out.println(this);

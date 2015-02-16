@@ -191,7 +191,7 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 	
 	private void adaptTrainingBlocks(){
 		
-		int nbOfRows=config.getDataSet().getRows().size();
+		int nbOfRows=config.getDataSet().size();
 		TrainingBlock block=config.getTrainingBlocks().getBlocks().getLast();
 		
 		if(block.getEnd()!=nbOfRows-1){

@@ -77,7 +77,7 @@ public class NeuralNetworkResultsPart {
 	private Label lblSelectedConfig;
 	private Tree tree;
 	private TreeViewer treeViewer;
-	private TreeNNResultViewerComparator comparator=new TreeNNResultViewerComparator();
+	private TreeNNResultViewerComparator comparator;
 	
 	private LinkedList<TreeColumn> optColumns=new LinkedList<TreeColumn>();
 	private LinkedList<TreeColumn> trainColumns=new LinkedList<TreeColumn>();
@@ -101,7 +101,7 @@ public class NeuralNetworkResultsPart {
 	@PostConstruct
 	public void postConstruct(Composite parent) {
 		
-		comparator=new TreeNNResultViewerComparator();
+		comparator=new TreeNNResultViewerComparator(resultsInfoMap);
 		
 		parent.setLayout(new GridLayout(1, false));
 		
@@ -170,7 +170,7 @@ public class NeuralNetworkResultsPart {
 		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 		
-		TreeColumn firstColumn=addColumn("Id",50,new IdLabelProvider(),0);
+		TreeColumn firstColumn=addColumn("Ent. Id",100,new IdLabelProvider(),0);
 		addColumn("Inner Neurons",50,new InnerNeuronsLabelProvider(),1);
 		addColumn("Best Result",100,new BestResultsLabelProvider(),2);
 		
@@ -241,6 +241,8 @@ public class NeuralNetworkResultsPart {
 		this.stock = stock;
 		config=stock.getNeuralNetwork().getConfiguration();
 		
+		comparator.setStock(stock);
+		
 		if (!isCompositeAbleToReact())return;
 		refresh();
 	}
@@ -252,11 +254,15 @@ public class NeuralNetworkResultsPart {
 		public String getText(Object element) {
 			if(element instanceof NetworkArchitecture){
 				NetworkArchitecture el=(NetworkArchitecture) element;
-				return String.valueOf(el.getId());
+				//el.getParent().getNetworkArchitectures().indexOf(el)
+				return "Archi: "+String.valueOf(el.getSelfIndex());
 			}
 			if(element instanceof ResultEntity){
 				ResultEntity res=(ResultEntity) element;
-				return res.getId()+"["+res.getStringParam(ResultEntity.GENERATED_FROM)+"]";
+				NetworkArchitecture archi=config.searchArchitecture(res.getParentId());
+				if(archi==null)return "-";
+				
+				return "Result: "+String.valueOf(archi.getResultPosition(res))/*+"["+res.getStringParam(ResultEntity.GENERATED_FROM)+"]"*/;
 			}
 			return super.getText(element);
 		}
@@ -642,49 +648,90 @@ public class NeuralNetworkResultsPart {
 	}
 	
 	
-	class ResultsInfo{
+	public class ResultsInfo{
+		
+		public final String PREDICTION="prediction";
+		public final String TOTAL_PROFIT="total profit";
+		public final String TRAIN_PROFIT="train profit";
+		public final String VALIDATE_PROFIT="validate profit";
+		
+		
 		public double prediction=Double.NaN;
+		
 		public double totalProfit=Double.NaN;
 		public double totalProfitTarget=Double.NaN;
+		public double totalProfitKeepAndOld=Double.NaN;
 		
 		public double trainProfit=Double.NaN;
 		public double trainProfitTarget=Double.NaN;
+		public double trainProfitKeepAndOld=Double.NaN;
 		
 		public double validateProfit=Double.NaN;
 		public double validateProfitTarget=Double.NaN;
+		public double validateProfitKeepAndOld=Double.NaN;
+		
+		public double getValue(String value_name){
+			if(value_name.equals(PREDICTION)){
+				return prediction;
+			}
+			else if(value_name.equals(TOTAL_PROFIT)){
+				return totalProfit;
+			}
+			else if(value_name.equals(TRAIN_PROFIT)){
+				return trainProfit;
+			}
+			else if(value_name.equals(VALIDATE_PROFIT)){
+				return validateProfit;
+			}
+			return Double.NaN;
+		}
 		
 		
 		private String getProfitString(double profit,double profitTarget){
-			String per=String.format("%.1f",profit/profitTarget*100);
+			String per=String.format("%3.1f",profit/profitTarget*100);
+			if(per.length()<4)
+				per=" "+per;
 			return per;
 		}
 		
-		private String getProfitTooltip(double profit,double profitTarget){
+		private String getProfitTooltip(double profit,double profitTarget,double profitKeepAndOld){
+			
 			String pro=String.format("%.1f",profit);
+			String proPer=String.format("%.1f",profit/profitTarget*100);
+			if(proPer.length()<3)
+				proPer=" "+proPer;
+			
 			String proTarget=String.format("%.1f",profitTarget);
 			
-			return "["+pro+"/"+proTarget+"]";
+			String keep=String.format("%.1f",profitKeepAndOld);
+			String keepPer=String.format("%.1f",profitKeepAndOld/profitTarget*100);
+			if(keepPer.length()<3)
+				keepPer=" "+keepPer;
+			
+			
+			
+			return "Profit:\t\t"+proPer+"% ["+pro+"/"+proTarget+"]\nKeep and old:\t"+keepPer+"% ["+keep+"/"+proTarget+"]";
 		}
 		
 		public String getTotalProfitString(){
 			return getProfitString(totalProfit,totalProfitTarget);
 		}
 		public String getTotalProfitToolTip(){
-			return getProfitTooltip(totalProfit,totalProfitTarget);
+			return getProfitTooltip(totalProfit,totalProfitTarget,totalProfitKeepAndOld);
 		}
 		
 		public String getTrainProfitString(){
 			return getProfitString(trainProfit,trainProfitTarget);
 		}
 		public String getTrainProfitToolTip(){
-			return getProfitTooltip(trainProfit,trainProfitTarget);
+			return getProfitTooltip(trainProfit,trainProfitTarget,trainProfitKeepAndOld);
 		}
 		
 		public String getValidateProfitString(){
 			return getProfitString(validateProfit,validateProfitTarget);
 		}
 		public String getValidateProfitToolTip(){
-			return getProfitTooltip(validateProfit,validateProfitTarget);
+			return getProfitTooltip(validateProfit,validateProfitTarget,validateProfitKeepAndOld);
 		}
 		
 	}
@@ -794,10 +841,11 @@ public class NeuralNetworkResultsPart {
 			
 			double[] profit=outputs[5];
 			double[] targetProfit=outputs[6];
+			double[] outputDiff=outputs[2];
 			
-			info.totalProfit=0;info.totalProfitTarget=0;
-			info.validateProfit=0;info.validateProfitTarget=0;
-			info.trainProfit=0;info.trainProfitTarget=0;
+			info.totalProfit=0;info.totalProfitTarget=0;info.totalProfitKeepAndOld=0;
+			info.validateProfit=0;info.validateProfitTarget=0;info.validateProfitKeepAndOld=0;
+			info.trainProfit=0;info.trainProfitTarget=0;info.trainProfitKeepAndOld=0;
 			
 			TrainingBlocks tb=archi.getParent().getTrainingBlocks();
 			for(TrainingBlock block:tb.getBlocks()){
@@ -807,15 +855,18 @@ public class NeuralNetworkResultsPart {
     				
     				info.totalProfit+=diff;
     				info.totalProfitTarget+=diffTarget;
+    				info.totalProfitKeepAndOld+=outputDiff[i];
     				
     				
     				if(block.isTraining()){
     					info.trainProfit+=diff;
     					info.trainProfitTarget+=diffTarget;
+    					info.trainProfitKeepAndOld+=outputDiff[i];
     				}
     				else{
     					info.validateProfit+=diff;
     					info.validateProfitTarget+=diffTarget;
+    					info.validateProfitKeepAndOld+=outputDiff[i];
     				}
     			}
     		}

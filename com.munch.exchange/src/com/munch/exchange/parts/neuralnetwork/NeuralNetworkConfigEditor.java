@@ -36,6 +36,7 @@ import com.munch.exchange.job.FinancialDataLoader;
 import com.munch.exchange.job.HistoricalDataLoader;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkDataLoader;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptManagerInfo;
+import com.munch.exchange.job.quote.QuoteSingleLoader;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
@@ -73,6 +74,8 @@ public class NeuralNetworkConfigEditor {
 	private HistoricalDataLoader historicalDataLoader;
 	private FinancialDataLoader financialDataLoader;
 	private NeuralNetworkDataLoader neuralNetworkDataloader;
+	private QuoteSingleLoader quoteLoader;
+	
 	private boolean[] dataLoadingStates={false,false,false};
 	
 	//Gui loading reaction trigger
@@ -150,6 +153,9 @@ public class NeuralNetworkConfigEditor {
 		historicalDataLoader=ContextInjectionFactory.make( HistoricalDataLoader.class,context);
 		financialDataLoader=ContextInjectionFactory.make( FinancialDataLoader.class,context);
 		neuralNetworkDataloader=ContextInjectionFactory.make( NeuralNetworkDataLoader.class,context);
+		quoteLoader=ContextInjectionFactory.make( QuoteSingleLoader.class,context);
+		
+		
 		
 		loadingChanger=new LoadingStateChanger();
 		
@@ -163,6 +169,7 @@ public class NeuralNetworkConfigEditor {
 			eventBroker.send(IEventConstant.HISTORICAL_DATA_LOADED,stock.getUUID());
 			eventBroker.send(IEventConstant.OPTIMIZATION_RESULTS_LOADED,stock.getUUID());
 		}
+		
 		//Financial
 		financialDataLoader.schedule();
 		neuralNetworkDataloader.schedule();

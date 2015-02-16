@@ -39,7 +39,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.IImageKeys;
-import com.munch.exchange.job.QuoteLoader;
+import com.munch.exchange.job.quote.QuoteLoader;
 import com.munch.exchange.model.core.Commodity;
 import com.munch.exchange.model.core.Currency;
 import com.munch.exchange.model.core.ExchangeRate;

@@ -336,7 +336,10 @@ public class NeuralNetworkLocalImpl implements INeuralNetworkProvider {
 			//Financial series
 			for(TimeSeries series:configuration.getTimeSeriesFromCategory(TimeSeriesCategory.FINANCIAL)){
 				int nbOfValues=series.getNumberOfPastValues();
-				configuration.setLastInputPointDate(financialsDates.get(financialsDates.size()-nbOfValues-1));
+				Calendar date=financialsDates.get(financialsDates.size()-nbOfValues-1);
+				//stock.getFinancials().getEffectiveDate(FinancialPoint.PeriodeTypeQuaterly, date)
+				configuration.setLastInputPointDate(
+						stock.getFinancials().getEffectiveDate(FinancialPoint.PeriodeTypeQuaterly, date));
 			}
 			
 			

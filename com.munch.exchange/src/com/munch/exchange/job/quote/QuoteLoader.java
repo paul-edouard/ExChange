@@ -1,4 +1,4 @@
-package com.munch.exchange.job;
+package com.munch.exchange.job.quote;
 
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -28,6 +28,7 @@ public class QuoteLoader extends Job {
 	public static final int RESTART_TIMEOUT=20000;
 	
 	private int currentRestartTimeout=RESTART_TIMEOUT;
+	
 	
 	@Inject
 	IQuoteProvider quoteProvider;

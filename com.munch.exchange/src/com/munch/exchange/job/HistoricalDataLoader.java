@@ -22,6 +22,7 @@ import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IHistoricalDataProvider;
 import com.munch.exchange.services.IOptimizationResultsProvider;
+import com.munch.exchange.services.IQuoteProvider;
 
 public class HistoricalDataLoader extends Job {
 	
@@ -40,6 +41,8 @@ public class HistoricalDataLoader extends Job {
 	@Inject
 	private IEventBroker eventBroker;
 	
+	@Inject
+	IQuoteProvider quoteProvider;
 	
 	private ExchangeRate rate;
 	
@@ -92,6 +95,9 @@ public class HistoricalDataLoader extends Job {
 		}
 		
 		if(!rate.getHistoricalData().isEmpty()){
+			if(rate.getRecordedQuote().isEmpty()){
+				quoteProvider.load(rate);
+			}
 			 HistoricalPoint point=rate.getRecordedQuote().createLastHistoricalPoint();
 			 if(point!=null){
 				 rate.getHistoricalData().setLastHisPointFromQuote(point);
