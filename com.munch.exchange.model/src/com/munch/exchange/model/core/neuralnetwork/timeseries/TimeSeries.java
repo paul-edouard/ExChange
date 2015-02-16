@@ -115,6 +115,21 @@ public class TimeSeries extends XmlParameterElement{
 		
 	}
 	
+	
+	public LinkedList<Calendar> getAllDatesFrom(Calendar lastInputPointDate){
+		
+		LinkedList<Calendar> dates=new LinkedList<Calendar>();
+		
+		for(int i=0;i<this.getInputValues().size();i++){
+			ValuePoint point=this.getInputValues().get(i);
+			if(point.getDate().getTimeInMillis()<lastInputPointDate.getTimeInMillis())continue;
+			
+			dates.add(point.getDate());
+		}
+		
+		return dates;
+	}
+	
 	public LinkedList<double[]> transformSeriesToDoubleArrayList(Calendar lastInputPointDate){
 		LinkedList<LinkedList<Double>> doubleListList=new LinkedList<LinkedList<Double>>();
 		

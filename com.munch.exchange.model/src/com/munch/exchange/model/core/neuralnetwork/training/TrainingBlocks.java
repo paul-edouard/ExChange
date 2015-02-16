@@ -22,7 +22,25 @@ public class TrainingBlocks extends XmlParameterElement {
 	private int nbOfBlocks=0;
 	
 	
+	public void addLast(TrainingBlock block){
+		blocks.addLast(block);
+	}
 	
+	public void reduceBlocksTo(int lastId){
+		LinkedList<TrainingBlock> redBlocks=new LinkedList<TrainingBlock>();
+		for(TrainingBlock block:blocks){
+			if(block.getEnd()<=lastId){
+				redBlocks.add(block);
+			}
+			else{
+				block.setEnd(lastId);
+				redBlocks.add(block);
+				break;
+			}
+		}
+		blocks=redBlocks;
+		nbOfBlocks=blocks.size();
+	}
 	
 	public void createBlocks(DataSet dataset){
 		blocks.clear();

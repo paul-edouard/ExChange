@@ -199,8 +199,16 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		comboPeriod.setText("DAY");
 		
 		btnActivateDayOf = new Button(compositeMiddle, SWT.CHECK);
+		btnActivateDayOf.setSelection(configLocal.isDayOfWeekActivated());
+		btnActivateDayOf.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				configLocal.setDayOfWeekActivated(btnActivateDayOf.getSelection());
+			}
+		});
 		btnActivateDayOf.setEnabled(false);
 		btnActivateDayOf.setText("Day of week");
+		
 		
 		compositeBottom = new Composite(grpInputConfiguration, SWT.NONE);
 		compositeBottom.setLayout(new GridLayout(1, false));
@@ -308,7 +316,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 
 	private void refreshTimeSeries(){
 		contentProvider.refreshCategories(configLocal);
-		
+		btnActivateDayOf.setSelection(configLocal.isDayOfWeekActivated());
 		treeViewer.refresh();
 		treeViewer.expandAll();
 	}
@@ -324,6 +332,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		btnSave.setVisible(true);
 		btnEdit.setEnabled(false);
 		btnRefreshMinmax.setEnabled(true);
+		btnActivateDayOf.setEnabled(true);
 		
 		configLocal=this.stock.getNeuralNetwork().getConfiguration().createCopy();
 		refreshTimeSeries();
@@ -338,6 +347,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		btnCancel.setVisible(false);
 		btnSave.setVisible(false);
 		btnRefreshMinmax.setEnabled(false);
+		btnActivateDayOf.setEnabled(false);
 		
 		configLocal=this.stock.getNeuralNetwork().getConfiguration();
 		refreshTimeSeries();
@@ -350,7 +360,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		btnCancel.setVisible(false);
 		btnSave.setVisible(false);
 		btnRefreshMinmax.setEnabled(false);
-		
+		btnActivateDayOf.setEnabled(false);
 		
 		//Start the Time Series Updater
 		timeSeriesUpdater.schedule();

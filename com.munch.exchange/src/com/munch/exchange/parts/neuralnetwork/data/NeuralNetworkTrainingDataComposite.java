@@ -28,7 +28,9 @@ import org.neuroph.core.data.DataSetRow;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.neuralnetwork.NNDataSetRaw;
 import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlock;
+import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.services.INeuralNetworkProvider;
 
@@ -195,20 +197,24 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 		TrainingBlock block=config.getTrainingBlocks().getBlocks().getLast();
 		
 		if(block.getEnd()!=nbOfRows-1){
-			if(block.getStart()<=nbOfRows-1){
-				block.setEnd(nbOfRows-1);
+			
+			if(nbOfRows-1>block.getEnd()){
+				if(block.isTraining()){
+					TrainingBlock lastBlock=new TrainingBlock(block.getEnd()+1,nbOfRows-1);
+					config.getTrainingBlocks().addLast(lastBlock);
+				}
+				else{
+					block.setEnd(nbOfRows-1);
+				}
 			}
 			else{
-				config.getTrainingBlocks().createBlocks(config.getDataSet());
+				config.getTrainingBlocks().reduceBlocksTo(nbOfRows-1);
+				config.setResultsCalculationNeeded(true);
 			}
-			
 			config.setDirty(true);
-			config.setResultsCalculationNeeded(true);
 			eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_DIRTY,config);
+		
 		}
-		
-		
-		
 	}
 	
 	
@@ -304,11 +310,15 @@ public class NeuralNetworkTrainingDataComposite extends Composite{
 				
 				return el.getLabel();
 			}
-			if(element instanceof DataSetRow){
+			else if(element instanceof NNDataSetRaw){
+				NNDataSetRaw el=(NNDataSetRaw) element;
+				return DateTool.dateToDayString(el.getDate());
+			}
+			else if(element instanceof DataSetRow){
 				DataSetRow el=(DataSetRow) element;
 				return "raw";
 			}
-			if(element instanceof double[]){
+			else if(element instanceof double[]){
 				return "Last Input: ";
 			}
 			

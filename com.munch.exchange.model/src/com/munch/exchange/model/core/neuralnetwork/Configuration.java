@@ -196,6 +196,9 @@ public class Configuration extends XmlParameterElement {
 			doubleArrayList.addAll(d_array_list);
 		}
 		
+		//All Dates
+		LinkedList<Calendar> dates=sortedTimeSeries.getFirst().getAllDatesFrom(lastInputPointDate);
+		
 		//int len=Math.min(doubleArrayList.get(0).length,500);
 		if(doubleArrayList.size()==0)return;
 		int len=doubleArrayList.get(0).length;
@@ -239,7 +242,7 @@ public class Configuration extends XmlParameterElement {
 			//if(i<len-1)
 			//	outputdiffFactor[i]=outputs[1][i];
 			
-			NNDataSetRaw raw=new NNDataSetRaw(input, output, diff, startVal, endVal);
+			NNDataSetRaw raw=new NNDataSetRaw(input, output, diff, startVal, endVal,dates.get(i));
 			
 			trainingSet.addRow(raw);
 		}
@@ -270,6 +273,7 @@ public class Configuration extends XmlParameterElement {
 			double dayofWeek=(double)point.getDate().get(Calendar.DAY_OF_WEEK);
 			dayOfWeekSerie.getInputValues().add(new ValuePoint(point.getDate(), dayofWeek));
 		}
+		dayOfWeekSerie.resetMinMaxValues(true);
 		sortedTimeSeries.addFirst(dayOfWeekSerie);
 	}
 	
@@ -354,6 +358,7 @@ public class Configuration extends XmlParameterElement {
 		copy.allTimeSeries=this.createCopyOfTimeSeries();
 		copy.Name=this.Name;
 		copy.parent=this.parent;
+		copy.dayOfWeekActivated=this.dayOfWeekActivated;
 		
 		//TODO copy the rest of attributes
 		
@@ -386,6 +391,7 @@ public class Configuration extends XmlParameterElement {
 		for(TimeSeries series:config.allTimeSeries){
 			this.allTimeSeries.add(series.createCopy());
 		}
+		this.dayOfWeekActivated=config.dayOfWeekActivated;
 	}
 	
 	//*************************
@@ -581,7 +587,8 @@ public class Configuration extends XmlParameterElement {
 	}
 
 	public void setDayOfWeekActivated(boolean dayOfWeekActivated) {
-	changes.firePropertyChange(FIELD_DayOfWeekActivated, this.dayOfWeekActivated, this.dayOfWeekActivated = dayOfWeekActivated);}
+		this.dayOfWeekActivated=dayOfWeekActivated;
+	}
 	
 
 	public PeriodType getPeriod() {
@@ -747,7 +754,9 @@ public class Configuration extends XmlParameterElement {
 		this.setLastUpdate(DateTool.StringToDate(rootElement.getAttribute(FIELD_LastUpdate)));
 		
 		this.setPeriod(PeriodType.fromString((rootElement.getAttribute(FIELD_Period))));
-		this.setDayOfWeekActivated(Boolean.getBoolean(rootElement.getAttribute(FIELD_DayOfWeekActivated)));
+		this.setDayOfWeekActivated(rootElement.getAttribute(FIELD_DayOfWeekActivated).equals("true"));
+		
+		//logger.info("Is Activated: "+this.isDayOfWeekActivated()+", XML value: "+rootElement.getAttribute(FIELD_DayOfWeekActivated);
 		
 		allTimeSeries.clear();
 		networkArchitectures.clear();

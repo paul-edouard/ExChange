@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.neuralnetwork;
 
 import java.util.Arrays;
+import java.util.Calendar;
 
 import org.neuroph.core.data.DataSetRow;
 
@@ -14,12 +15,14 @@ public class NNDataSetRaw extends DataSetRow {
 	private double[] diff;
 	private double[] startVal;
 	private double[] endVal;
+	private Calendar date;
 	
-	public NNDataSetRaw(double[] input, double[] desiredOutput, double[] diff, double[] startVal, double[] endVal) {
+	public NNDataSetRaw(double[] input, double[] desiredOutput, double[] diff, double[] startVal, double[] endVal,Calendar date) {
 		super(input, desiredOutput);
 		this.diff=diff;
 		this.startVal=startVal;
 		this.endVal=endVal;
+		this.date=date;
 	}
 
 	public double[] getDiff() {
@@ -34,6 +37,11 @@ public class NNDataSetRaw extends DataSetRow {
 		return endVal;
 	}
 	
+	
+
+	public Calendar getDate() {
+		return date;
+	}
 
 	@Override
 	public String toString() {
