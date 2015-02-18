@@ -7,3 +7,6 @@ Inetractive Borkers
 fxcm
 
 extrade
+
+utilization of Standard deviation to calculate the reaction of a brain of new condition.
+The standard deviation should be minimized
