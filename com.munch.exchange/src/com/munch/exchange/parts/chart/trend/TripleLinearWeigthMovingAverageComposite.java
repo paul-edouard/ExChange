@@ -22,6 +22,7 @@ public class TripleLinearWeigthMovingAverageComposite  extends IndicatorComposit
 	
 	private XYSeries series;
 	
+	
 	@Inject
 	public TripleLinearWeigthMovingAverageComposite( Composite parent) {
 		super(TLWMA, parent);
