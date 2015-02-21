@@ -69,6 +69,7 @@ public abstract class IndicatorComposite extends Composite {
 	
 	//the period
 	private int[] period=new int[2];
+	
 	//The renderers
 	protected XYLineAndShapeRenderer mainPlotRenderer;
 	protected XYLineAndShapeRenderer secondPlotrenderer;

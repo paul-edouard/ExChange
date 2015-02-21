@@ -40,6 +40,12 @@ public interface IImageKeys {
 	public static final String QUOTE_UP = "icons/32/Stock-Index-Up-icon.png";
 	public static final String QUOTE_DOWN = "icons/32/Stock-Index-Down-icon.png";
 	
+	
+	
+	//Normal
+	public static final String TICK = "icons/tick.png";
+	public static final String CANCEL = "icons/cancel.png";
+	
 	/*
 	public static final String GROUP = "icons/package_obj.gif";
 	public static final String AWAY = "icons/away.gif";

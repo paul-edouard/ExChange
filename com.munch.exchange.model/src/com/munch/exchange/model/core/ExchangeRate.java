@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.optimization.OptimizationResultsMap;
@@ -56,10 +57,22 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	
 	protected String uuid=UUID.randomUUID().toString();
 	
+	protected ChartIndicatorGroup indicatorGroup=ChartIndicatorGroup.createRoot();
 	
 	
 	
 	
+	
+	
+ 	public ChartIndicatorGroup getIndicatorGroup() {
+		return indicatorGroup;
+	}
+
+	public void setIndicatorGroup(ChartIndicatorGroup indicatorGroup) {
+	 this.indicatorGroup = indicatorGroup;
+	}
+	
+
 	public String getISIN() {
 		return ISIN;
 	}
@@ -197,15 +210,12 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	public String getStockExchange() {
 		return stockExchange;
 	}
+	
 	public void setStockExchange(String stockExchange) {
 		changes.firePropertyChange(FIELD_Stock_Exchange, this.stockExchange, this.stockExchange = stockExchange);
 		
 	}
 	
-	
-	
-	
-
 	public Calendar getLastUpdate() {
 		return lastUpdate;
 	}
@@ -253,6 +263,9 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		}
 		return true;
 	}
+	
+	
+	
 	/***********************************
 	 *                                 *
 	 *		       XML                 *
@@ -277,8 +290,15 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		
 		this.setStockExchange(rootElement.getAttribute(FIELD_Stock_Exchange));
 	}
-	protected void initChild(Element childElement){}
 	
+
+	protected void initChild(Element childElement){
+		if(childElement.getTagName().equals(indicatorGroup.getTagName())){
+			indicatorGroup.init(childElement);
+			//ChartIndicatorGroup.addNewIndicators(indicatorGroup);
+		}
+	}
+
 	protected void setAttribute(Element rootElement){
 		
 		rootElement.setAttribute(FIELD_End,DateTool.dateToString( this.getEnd()));
@@ -295,7 +315,11 @@ public abstract class ExchangeRate extends XmlParameterElement {
 		
 		rootElement.setAttribute(FIELD_Stock_Exchange, this.getStockExchange());
 	}
+	
+	
 	protected void appendChild(Element rootElement,Document doc){
+		
+		rootElement.appendChild(indicatorGroup.toDomElement(doc));
 	}
 	
 	

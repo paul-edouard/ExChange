@@ -61,6 +61,7 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
+import com.munch.exchange.parts.chart.ChartTreeComposite;
 import com.munch.exchange.parts.chart.IndicatorComposite;
 import com.munch.exchange.parts.chart.trend.AdaptiveMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.AverageDirectionalMovementIndexComposite;
@@ -148,7 +149,7 @@ public class RateChart extends Composite {
 	private float keepAndOld=0;
 	
 	
-	//Period Composite
+	//Indicator Composite
 	IndicatorComposite adaptiveMovingAverageComposite;
 	IndicatorComposite simpleMovingAverageComposite;
 	IndicatorComposite exponentialMovingAverageComposite;
@@ -164,6 +165,8 @@ public class RateChart extends Composite {
 	IndicatorComposite envelopesComposite;
 	
 	//TODO
+	//Chart Tree
+	ChartTreeComposite treeComposite;
 	
 	//Period Composite
 	RateChartPeriodComposite periodComposite;
@@ -171,17 +174,6 @@ public class RateChart extends Composite {
 	//Low & Hight
 	RateChartLawAndHightComposite lawAndHightComposite;
 	
-	//Moving Average
-	//RateChartMovingAverageComposite movingAverageComposite;
-	
-	//NMAW
-	//NMAWComposite NMAWComposite;
-	
-	//EMA
-	//RateChartEMAComposite emaComposite;
-	
-	//MACD
-	//RateChartMACDComposite macdComposite;
 	
 	//Bollinger Bands
 	RateChartBollingerBandsComposite bollingerBandsComposite2;
@@ -234,7 +226,7 @@ public class RateChart extends Composite {
 		ExpandBar expandBarControl=createExpandBar("Control",tabFolder);
 		ExpandBar expandBarTrend =createExpandBar("Trend",tabFolder);
 		ExpandBar expandBarMomentum =createExpandBar("Momentum",tabFolder);
-		ExpandBar expandBarVolume =createExpandBar("Volume",tabFolder);
+		//ExpandBar expandBarVolume =createExpandBar("Volume",tabFolder);
 		ExpandBar expandBarVolatility =createExpandBar("Volatility",tabFolder);
 		
 		
@@ -245,10 +237,24 @@ public class RateChart extends Composite {
 		localContextTrend.set(Composite.class, expandBarTrend);
 		IEclipseContext localContextMomentum=context.createChild();
 		localContextMomentum.set(Composite.class, expandBarMomentum);
-		IEclipseContext localContextVolume=context.createChild();
-		localContextVolume.set(Composite.class, expandBarVolume);
+		//IEclipseContext localContextVolume=context.createChild();
+		//localContextVolume.set(Composite.class, expandBarVolume);
 		IEclipseContext localContextVolatility=context.createChild();
 		localContextVolatility.set(Composite.class, expandBarVolatility);
+		
+		
+		//==============    Tree Composite   ===============
+		
+		IEclipseContext treeContextControl=context.createChild();
+		treeContextControl.set(Composite.class, tabFolder);
+		
+		
+		TabItem treetbtm = new TabItem(tabFolder, SWT.NONE);
+		treetbtm.setText("Tree");
+		treeComposite=ContextInjectionFactory.make( ChartTreeComposite.class,treeContextControl);
+		treetbtm.setControl(treeComposite);
+		
+		
 		
 		//==================================================
 		//========             PERIOD                =======    
@@ -313,104 +319,7 @@ public class RateChart extends Composite {
 		
 		//TODO
 		
-		//=============================================
-		//======        MOVING AVERAGE           ======    
-		//=============================================
 		
-		
-		/*
-		ExpandItem xpndtmMovingAvg = new ExpandItem(expandBarTrend, SWT.NONE);
-		xpndtmMovingAvg.setExpanded(true);
-		xpndtmMovingAvg.setText("Moving Average");
-		//xpndtmMovingAvg.setHeight(110);
-			
-		movingAverageComposite=ContextInjectionFactory.make( RateChartMovingAverageComposite.class,localContextTrend);
-		xpndtmMovingAvg.setControl(movingAverageComposite);
-		xpndtmMovingAvg.setHeight(movingAverageComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-		
-		
-		movingAverageComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
-		movingAverageComposite.setSeriesCollections(mainCollection, secondCollection);
-		movingAverageComposite.setPeriodandMaxProfit(period, maxProfit);
-		movingAverageComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
-			@Override
-			public void CollectionRemoved() {
-				refreshPeriod();
-			}
-		});
-		*/
-		
-		//=============================================
-		//======              NMAW               ======    
-		//=============================================
-		
-		/*
-		ExpandItem xpndtmNMAW = new ExpandItem(expandBarTrend, SWT.NONE);
-		xpndtmNMAW.setExpanded(true);
-		xpndtmNMAW.setText("NMAW");
-		//xpndtmMovingAvg.setHeight(110);
-			
-		NMAWComposite=ContextInjectionFactory.make( NMAWComposite.class,localContextTrend);
-		xpndtmNMAW.setControl(NMAWComposite);
-		xpndtmNMAW.setHeight(NMAWComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-		
-		
-		NMAWComposite.setRenderers(mainPlotRenderer, deviationPercentPlotRenderer,percentPlotrenderer,secondPlotrenderer);
-		NMAWComposite.setSeriesCollections(mainCollection, deviationPercentCollection,percentCollection,secondCollection);
-		NMAWComposite.setPeriodandMaxProfit(period, maxProfit);
-		NMAWComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
-			@Override
-			public void CollectionRemoved() {
-				refreshPeriod();
-			}
-		});
-		*/
-		//=============================================
-		//==== EMA (Exponential Moving Average)  ======    
-		//=============================================
-		/*
-		ExpandItem xpndtmEma = new ExpandItem(expandBarTrend, SWT.NONE);
-		xpndtmEma.setText("EMA (Exponential Moving Average)");
-		xpndtmEma.setExpanded(true);
-		
-		emaComposite=ContextInjectionFactory.make( RateChartEMAComposite.class,localContextTrend);
-		xpndtmEma.setControl(emaComposite);
-		xpndtmEma.setHeight(emaComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-		
-		
-		emaComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
-		emaComposite.setSeriesCollections(mainCollection, secondCollection);
-		emaComposite.setPeriodandMaxProfit(period, maxProfit);
-		emaComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
-			@Override
-			public void CollectionRemoved() {
-				refreshPeriod();
-			}
-		});
-		*/
-		//==================================================
-		//== MACD (Moving Average Convergence/Divergence) ==    
-		//==================================================
-		/*
-		ExpandItem xpndtmMacd = new ExpandItem(expandBarTrend, SWT.NONE);
-		xpndtmMacd.setExpanded(true);
-		xpndtmMacd.setText("MACD (Moving Average Convergence/Divergence)");
-		
-		macdComposite=ContextInjectionFactory.make( RateChartMACDComposite.class,localContextTrend);
-		xpndtmMacd.setControl(macdComposite);
-		xpndtmMacd.setHeight(macdComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-		
-		
-		macdComposite.setRenderers(mainPlotRenderer, secondPlotrenderer);
-		macdComposite.setSeriesCollections(mainCollection, secondCollection);
-		macdComposite.setPeriodandMaxProfit(period, maxProfit);
-		macdComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
-			@Override
-			public void CollectionRemoved() {
-				refreshPeriod();
-			}
-		});
-		*/
 		//==================================================
 		//==              Bollinger Bands                 ==    
 		//==================================================
