@@ -5,7 +5,7 @@ import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartParameter;
 import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
 import com.munch.exchange.model.core.chart.ChartSerie;
-import com.munch.exchange.model.core.chart.ChartSerie.SerieType;
+import com.munch.exchange.model.core.chart.ChartSerie.RendererType;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 
@@ -32,7 +32,7 @@ public class ChartSimpleMovingAverage extends ChartIndicator {
 	@Override
 	public void createSeries() {
 		int[] color={50,44,89};
-		ChartSerie serie=new ChartSerie(SMA,SerieType.MAIN,true,false,color);
+		ChartSerie serie=new ChartSerie(SMA,RendererType.MAIN,true,false,color);
 		this.chartSeries.add(serie);
 
 	}

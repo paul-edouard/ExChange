@@ -14,10 +14,13 @@ import com.munch.exchange.model.core.chart.ChartSerie;
 public class ChartTreeColorEditingSupport extends EditingSupport {
 	
 	TreeViewer viewer;
+	ChartTreeComposite parent;
 	
-	public ChartTreeColorEditingSupport(TreeViewer viewer) {
+	
+	public ChartTreeColorEditingSupport(TreeViewer viewer,ChartTreeComposite parent) {
 		super(viewer);
 		this.viewer=viewer;
+		this.parent=parent;
 	}
 
 	@Override
@@ -52,6 +55,7 @@ public class ChartTreeColorEditingSupport extends EditingSupport {
 		serie.getColor()[2]=color.blue;
 		
 		viewer.update(element, null);
+		parent.refresh();
 	}
 
 }

@@ -7,16 +7,18 @@ import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 
+import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartSerie;
 
 public class ChartTreeActivatedEditingSupport extends EditingSupport {
 	
 	TreeViewer viewer;
-	
+	ChartTreeComposite parent;
 
-	public ChartTreeActivatedEditingSupport(TreeViewer viewer) {
+	public ChartTreeActivatedEditingSupport(TreeViewer viewer,ChartTreeComposite parent) {
 		super(viewer);
 		this.viewer=viewer;
+		this.parent=parent;
 	}
 
 	@Override
@@ -29,6 +31,9 @@ public class ChartTreeActivatedEditingSupport extends EditingSupport {
 		if(element instanceof ChartSerie){
 			return true;
 		}
+		else if(element instanceof ChartIndicator){
+			return true;
+		}
 		return false;
 	}
 
@@ -38,15 +43,26 @@ public class ChartTreeActivatedEditingSupport extends EditingSupport {
 			ChartSerie el=(ChartSerie) element;
 			return el.isActivated();
 		}
+		else if(element instanceof ChartIndicator){
+			ChartIndicator el=(ChartIndicator) element;
+			return el.isActivated();
+		}
 		return null;
 	}
 
 	@Override
 	protected void setValue(Object element, Object value) {
-		ChartSerie el=(ChartSerie) element;
-		el.setActivated((Boolean) value);
+		if(element instanceof ChartSerie){
+			ChartSerie el=(ChartSerie) element;
+			el.setActivated((Boolean) value);
+		}
+		else if(element instanceof ChartIndicator){
+			ChartIndicator el=(ChartIndicator) element;
+			el.setActivated((Boolean) value);
+		}
 		
 		 viewer.update(element, null);
+		 parent.refresh();
 	}
 
 }

@@ -18,7 +18,7 @@ public class ChartSerie extends XmlParameterElement{
 	static final String FIELD_ColorRed="ColorRed";
 	static final String FIELD_ColorGreen="ColorGreen";
 	static final String FIELD_ColorBlue="ColorBlue";
-	static final String FIELD_Type="Type";
+	static final String FIELD_RendererType="Type";
 	
 	
 	
@@ -28,21 +28,21 @@ public class ChartSerie extends XmlParameterElement{
 	private boolean isMain=false;
 	private boolean isActivated=false;
 	private int[] color=new int[3];
-	private SerieType type;
+	private RendererType rendererType;
 	
 	
-	public enum SerieType { NONE(-1), MAIN(0), SECOND(1), PERCENT(2), ERROR(3), DEVIATION(4), DEVIATION_PERCENT(5);
+	public enum RendererType { NONE(-1), MAIN(0), SECOND(1), PERCENT(2), ERROR(3), DEVIATION(4), DEVIATION_PERCENT(5);
 		
 		private int val;
 	
-	private SerieType(int val) {
+	private RendererType(int val) {
 		this.val = val;
 	}
 	public int getValue() {
 		return this.val;
 	}
 	
-	public static SerieType fromString(String input){
+	public static RendererType fromString(String input){
 		try {
 			int invalue=Integer.parseInt(input);
 			if(invalue==0)
@@ -65,7 +65,7 @@ public class ChartSerie extends XmlParameterElement{
 		
 	}
 	
-	public static String toString(SerieType type){
+	public static String toString(RendererType type){
 		switch (type) {
 		case MAIN:
 			return String.valueOf(0);
@@ -92,13 +92,13 @@ public class ChartSerie extends XmlParameterElement{
 		
 	}
 	
-	public ChartSerie(String name,SerieType type,boolean isMain, boolean isActivated,int[] color ){
+	public ChartSerie(String name,RendererType type,boolean isMain, boolean isActivated,int[] color ){
 		this.name=name;
 		
 		this.isMain=isMain;
 		this.isActivated=isActivated;
 		this.color=color;
-		this.type=type;
+		this.rendererType=type;
 	
 	}
 	
@@ -158,12 +158,12 @@ public class ChartSerie extends XmlParameterElement{
 	changes.firePropertyChange(FIELD_Color, this.color, this.color = color);}
 	
 
-	public SerieType getType() {
-		return type;
+	public RendererType getRendererType() {
+		return rendererType;
 	}
 
-	public void setType(SerieType type) {
-	changes.firePropertyChange(FIELD_Type, this.type, this.type = type);
+	public void setRendererType(RendererType type) {
+	changes.firePropertyChange(FIELD_RendererType, this.rendererType, this.rendererType = type);
 	}
 	
 
@@ -183,7 +183,7 @@ public class ChartSerie extends XmlParameterElement{
 		color[1]=Integer.parseInt(rootElement.getAttribute(FIELD_ColorGreen));
 		color[2]=Integer.parseInt(rootElement.getAttribute(FIELD_ColorBlue));
 		
-		this.setType(SerieType.fromString(rootElement.getAttribute(FIELD_Type)));
+		this.setRendererType(RendererType.fromString(rootElement.getAttribute(FIELD_RendererType)));
 		
 	}
 
@@ -205,7 +205,7 @@ public class ChartSerie extends XmlParameterElement{
 		rootElement.setAttribute(FIELD_ColorGreen,String.valueOf(color[1]));
 		rootElement.setAttribute(FIELD_ColorBlue,String.valueOf(color[2]));
 		
-		rootElement.setAttribute(FIELD_Type,SerieType.toString(this.getType()));
+		rootElement.setAttribute(FIELD_RendererType,RendererType.toString(this.getRendererType()));
 
 	}
 

@@ -45,6 +45,9 @@ public interface IImageKeys {
 	//Normal
 	public static final String TICK = "icons/tick.png";
 	public static final String CANCEL = "icons/cancel.png";
+	public static final String CHECK_BOX_48 = "icons/48/check-box-outline-48.png";
+	public static final String CHECKED = "icons/checked.gif";
+	public static final String UNCHECKED = "icons/unchecked.gif";
 	
 	/*
 	public static final String GROUP = "icons/package_obj.gif";

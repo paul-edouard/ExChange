@@ -254,7 +254,15 @@ public class RateChart extends Composite {
 		treeComposite=ContextInjectionFactory.make( ChartTreeComposite.class,treeContextControl);
 		treetbtm.setControl(treeComposite);
 		
-		
+		treeComposite.setRenderers(mainPlotRenderer, secondPlotrenderer, percentPlotrenderer, errorPlotRenderer, deviationPercentPlotRenderer, deviationRenderer);
+		treeComposite.setSeriesCollections(mainCollection, secondCollection, percentCollection, errorCollection, deviationPercentCollection, deviationCollection);
+		treeComposite.setPeriod(period);
+		treeComposite.addCollectionRemovedListener(new CollectionRemovedListener() {
+			@Override
+			public void CollectionRemoved() {
+				refreshPeriod();
+			}
+		});	
 		
 		//==================================================
 		//========             PERIOD                =======    
@@ -541,6 +549,9 @@ public class RateChart extends Composite {
 		averageDirectionalMovementIndexComposite.setPeriod(period);
 		bollingerBandsComposite.setPeriod(period);
 		envelopesComposite.setPeriod(period);
+		
+		
+		treeComposite.setPeriod(period);
 		
 		//TODO Set period
 		
