@@ -19,6 +19,7 @@ public class ChartParameter extends XmlParameterElement {
 	private ParameterType type;
 	private String name;
 	private double value;
+	private double defaultValue;
 	private double minValue;
 	private double maxValue;
 	private int scalarFactor;
@@ -73,6 +74,7 @@ public class ChartParameter extends XmlParameterElement {
 	
 	public ChartParameter(ChartIndicator parent,String name,ParameterType type,  double val, double minValue, double maxValue, int  scalarFac){
 		this.value=val;
+		this.defaultValue=val;
 		this.maxValue=maxValue;
 		this.minValue=minValue;
 		this.type=type;
@@ -82,7 +84,9 @@ public class ChartParameter extends XmlParameterElement {
 		this.scalarFactor=scalarFac;
 	}
 	
-	
+	public void resetDefault(){
+		this.setValue(this.defaultValue);
+	}
 	
 	
 	

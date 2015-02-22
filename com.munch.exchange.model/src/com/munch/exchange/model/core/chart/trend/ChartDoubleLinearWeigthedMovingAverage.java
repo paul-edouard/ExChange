@@ -1,41 +1,43 @@
 package com.munch.exchange.model.core.chart.trend;
 
+import com.munch.exchange.model.analytic.indicator.trend.DoubleMovingAverage;
 import com.munch.exchange.model.analytic.indicator.trend.MovingAverage;
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
 import com.munch.exchange.model.core.chart.ChartParameter;
-import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
 import com.munch.exchange.model.core.chart.ChartSerie;
+import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
 import com.munch.exchange.model.core.chart.ChartSerie.RendererType;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 
-public class ChartSimpleMovingAverage extends ChartIndicator {
+public class ChartDoubleLinearWeigthedMovingAverage extends ChartIndicator {
 	
-	public static final String SMA="SMA";
-	public static final String PERIOD="Period";
+	public static final String DLWMA="DLWMA";
+	
+	public static final String PERIOD="PERIOD";
 
-	public ChartSimpleMovingAverage(ChartIndicatorGroup parent) {
+	public ChartDoubleLinearWeigthedMovingAverage(ChartIndicatorGroup parent) {
 		super(parent);
-		this.name="Simple Moving Average";
+		this.name="Double Linear Weigthed Moving Average";
 	}
 
 	@Override
 	public void compute(HistoricalData hisData) {
 		double[] prices=hisData.getPrices(HistoricalPoint.Type.CLOSE);
-		double[] sma=MovingAverage.SMA(prices,
+		double[] computed=DoubleMovingAverage.computeLWMA(prices,
 				this.getChartParameter(PERIOD).getIntegerValue());
 		
-		this.getChartSerie(SMA).setValues(sma);
+		this.getChartSerie(DLWMA).setValues(computed);
 		
 		setDirty(false);
-		
+
 	}
 
 	@Override
 	public void createSeries() {
-		int[] color={50,44,89};
-		ChartSerie serie=new ChartSerie(this,SMA,RendererType.MAIN,true,false,color);
+		int[] color={50,200,89};
+		ChartSerie serie=new ChartSerie(this,DLWMA,RendererType.MAIN,true,false,color);
 		this.chartSeries.add(serie);
 
 	}
@@ -44,9 +46,6 @@ public class ChartSimpleMovingAverage extends ChartIndicator {
 	public void createParameters() {
 		ChartParameter param=new ChartParameter(this, PERIOD, ParameterType.INTEGER, 12, 1, 200, 0);
 		this.chartParameters.add(param);
-		
 	}
-	
-	
 
 }

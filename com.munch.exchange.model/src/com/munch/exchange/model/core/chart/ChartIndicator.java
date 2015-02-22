@@ -44,7 +44,12 @@ public abstract class ChartIndicator extends XmlParameterElement {
 	public abstract void createSeries();
 	
 	public abstract void createParameters();
-		
+	
+	public void resetDefault(){
+		for(ChartParameter p:chartParameters){
+			p.resetDefault();
+		}
+	}
 	
 	
 	/***********************************
@@ -78,7 +83,12 @@ public abstract class ChartIndicator extends XmlParameterElement {
 	}
 
 	public void setActivated(boolean isActivated) {
-	changes.firePropertyChange(FIELD_IsActivated, this.isActivated, this.isActivated = isActivated);}
+	changes.firePropertyChange(FIELD_IsActivated, this.isActivated, this.isActivated = isActivated);
+	for(ChartSerie serie:chartSeries){
+		serie.setActivated(serie.isMain());
+	}
+	
+	}
 	
 	
 	public ChartParameter getChartParameter(String paramName){
@@ -117,8 +127,8 @@ public abstract class ChartIndicator extends XmlParameterElement {
 		this.setActivated(rootElement.getAttribute(FIELD_IsActivated).equals("true"));
 		
 		
-		chartSeries.clear();
-		chartParameters.clear();
+		//chartSeries.clear();
+		//chartParameters.clear();
 	}
 
 	@Override
@@ -127,11 +137,23 @@ public abstract class ChartIndicator extends XmlParameterElement {
 		ChartParameter param=new ChartParameter(this);
 		if(childElement.getTagName().equals(serie.getTagName())){
 			serie.init(childElement);
-			chartSeries.add(serie);
+			for(ChartSerie s:chartSeries){
+				if(s.getName().equals(serie.getName())){
+					s.init(childElement);
+				}
+			}
+			
 		}
 		else if(childElement.getTagName().equals(param.getTagName())){
 			param.init(childElement);
-			chartParameters.add(param);
+			for(ChartParameter p:chartParameters){
+				if(p.getName().equals(param.getName())){
+					p.init(childElement);
+				}
+			}
+			
+			
+			//chartParameters.add(param);
 		}
 		
 		

@@ -7,6 +7,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Slider;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 
 public class Test extends Composite {
 	private Text txtMyText;
@@ -30,6 +33,16 @@ public class Test extends Composite {
 		
 		Slider slider = new Slider(this, SWT.NONE);
 		slider.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Button btnReset = new Button(this, SWT.NONE);
+		btnReset.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+		btnReset.setText("Reset");
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
 
 	}
 

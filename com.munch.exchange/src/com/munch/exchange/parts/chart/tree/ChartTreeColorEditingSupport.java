@@ -56,6 +56,7 @@ public class ChartTreeColorEditingSupport extends EditingSupport {
 		
 		viewer.update(element, null);
 		parent.refresh();
+		parent.setDity();
 	}
 
 }

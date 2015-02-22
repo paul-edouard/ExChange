@@ -347,11 +347,6 @@ public class Configuration extends XmlParameterElement {
 	//*************************
 	// Time Series
 	//*************************
-	
-
-
-	
-	
 
 	public Configuration createCopy(){
 		Configuration copy=new Configuration();

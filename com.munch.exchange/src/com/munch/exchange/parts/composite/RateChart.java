@@ -151,13 +151,13 @@ public class RateChart extends Composite {
 	
 	
 	//Indicator Composite
-	IndicatorComposite adaptiveMovingAverageComposite;
-	IndicatorComposite simpleMovingAverageComposite;
+	//IndicatorComposite adaptiveMovingAverageComposite;
+	//IndicatorComposite simpleMovingAverageComposite;
 	IndicatorComposite exponentialMovingAverageComposite;
 	IndicatorComposite smoothedMovingAverageComposite;
 	IndicatorComposite linearWeightedMovingAverageComposite;
 	IndicatorComposite doubleExponentialMovingAverageComposite;
-	IndicatorComposite doubleLinearWeigthedMovingAverageComposite;
+	//IndicatorComposite doubleLinearWeigthedMovingAverageComposite;
 	IndicatorComposite tripleLinearWeigthedMovingAverageComposite;
 	IndicatorComposite fractalAdaptiveMovingAverageComposite;
 	IndicatorComposite averageDirectionalMovementIndexWilderComposite;
@@ -311,17 +311,17 @@ public class RateChart extends Composite {
 		//=============================================
 		//======   Adaptive Moving Average      ======    
 		//=============================================
-		adaptiveMovingAverageComposite=addIndicator(expandBarTrend, "Adaptive Moving Average", AdaptiveMovingAverageComposite.class, localContextTrend);
+		//adaptiveMovingAverageComposite=addIndicator(expandBarTrend, "Adaptive Moving Average", AdaptiveMovingAverageComposite.class, localContextTrend);
 		averageDirectionalMovementIndexComposite=addIndicator(expandBarTrend, "Average Directional Movement Index", AverageDirectionalMovementIndexComposite.class, localContextTrend);
 		averageDirectionalMovementIndexWilderComposite=addIndicator(expandBarTrend, "Average Directional Movement Index Wilder", AverageDirectionalMovementIndexWilderComposite.class, localContextTrend);
 		bollingerBandsComposite=addIndicator(expandBarTrend, "Bollinger Bands", BollingerBandsComposite.class, localContextTrend);
 		doubleExponentialMovingAverageComposite=addIndicator(expandBarTrend, "Double Exponential Moving Average", DoubleExponentialMovingAverageComposite.class, localContextTrend);
-		doubleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Double Linear Weigth Moving Average", DoubleLinearWeigthedMovingAverageComposite.class, localContextTrend);
+		//doubleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Double Linear Weigth Moving Average", DoubleLinearWeigthedMovingAverageComposite.class, localContextTrend);
 		exponentialMovingAverageComposite=addIndicator(expandBarTrend, "Exponential Moving Average", ExponentialMovingAverageComposite.class, localContextTrend);
 		envelopesComposite=addIndicator(expandBarTrend, "Envelopes", EnvelopesComposite.class, localContextTrend);
 		fractalAdaptiveMovingAverageComposite=addIndicator(expandBarTrend, "Fractal Adaptive Moving Average", FractalAdaptiveMovingAverageComposite.class, localContextTrend);
 		linearWeightedMovingAverageComposite=addIndicator(expandBarTrend, "Linear Weighted Moving Average", LinearWeightedMovingAverageComposite.class, localContextTrend);
-		simpleMovingAverageComposite=addIndicator(expandBarTrend, "Simple Moving Average", SimpleMovingAverageComposite.class, localContextTrend);
+		//simpleMovingAverageComposite=addIndicator(expandBarTrend, "Simple Moving Average", SimpleMovingAverageComposite.class, localContextTrend);
 		smoothedMovingAverageComposite=addIndicator(expandBarTrend, "Smoothed Moving Average", SmoothedMovingAverageComposite.class, localContextTrend);
 		tripleLinearWeigthedMovingAverageComposite=addIndicator(expandBarTrend, "Triple Linear Weigth Moving Average", TripleLinearWeigthMovingAverageComposite.class, localContextTrend);
 		
@@ -539,13 +539,13 @@ public class RateChart extends Composite {
 		relativeStrengthIndexComposite.setPeriodandMaxProfit(period, maxProfit);
 		//NMAWComposite.setPeriodandMaxProfit(period, maxProfit);
 		
-		adaptiveMovingAverageComposite.setPeriod(period);
-		simpleMovingAverageComposite.setPeriod(period);
+		//adaptiveMovingAverageComposite.setPeriod(period);
+		//simpleMovingAverageComposite.setPeriod(period);
 		exponentialMovingAverageComposite.setPeriod(period);
 		smoothedMovingAverageComposite.setPeriod(period);
 		linearWeightedMovingAverageComposite.setPeriod(period);
 		doubleExponentialMovingAverageComposite.setPeriod(period);
-		doubleLinearWeigthedMovingAverageComposite.setPeriod(period);
+		//doubleLinearWeigthedMovingAverageComposite.setPeriod(period);
 		tripleLinearWeigthedMovingAverageComposite.setPeriod(period);
 		fractalAdaptiveMovingAverageComposite.setPeriod(period);
 		averageDirectionalMovementIndexWilderComposite.setPeriod(period);

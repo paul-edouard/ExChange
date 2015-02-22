@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.chart.trend.ChartAdaptiveMovingAverage;
+import com.munch.exchange.model.core.chart.trend.ChartDoubleLinearWeigthedMovingAverage;
 import com.munch.exchange.model.core.chart.trend.ChartSimpleMovingAverage;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
@@ -69,6 +71,9 @@ public class ChartIndicatorGroup extends XmlParameterElement{
 	 *		       XML                 *
 	 ***********************************/
 	
+	
+	
+	
 	protected void initAttribute(Element rootElement) {
 		this.setName(rootElement.getAttribute(FIELD_Name));
 		
@@ -80,7 +85,7 @@ public class ChartIndicatorGroup extends XmlParameterElement{
 
 	@Override
 	public String getTagName() {
-		return this.name;
+		return this.name.replace(" ", "_");
 	}
 
 	@Override
@@ -130,18 +135,18 @@ public class ChartIndicatorGroup extends XmlParameterElement{
 		
 		//TREND
 		ChartIndicatorGroup trend=new ChartIndicatorGroup(root,"Trend");
-		new ChartSimpleMovingAverage(trend);
+		
+		ChartIndicatorGroup movingAverage=new ChartIndicatorGroup(trend,"Moving Average");
+		new ChartSimpleMovingAverage(movingAverage);
+		new ChartDoubleLinearWeigthedMovingAverage(movingAverage);
+		new ChartAdaptiveMovingAverage(movingAverage);
 		
 		
 		
 		return root;
 	}
 	
-	/*
-	public static void addNewIndicators(ChartIndicatorGroup group){
-		//TODO
-	}
-	*/
+	
 	
 	
 	

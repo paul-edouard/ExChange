@@ -365,6 +365,10 @@ public class RateEditorPart {
 			financialsProvider.saveReportReaderConfiguration((Stock)rate);
 			
 		}
+		
+		exchangeRateProvider.save(rate);
+		
+		
 		dirty.setDirty(false);
 		
 		shell.setCursor(cursor);

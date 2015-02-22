@@ -60,10 +60,6 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	protected ChartIndicatorGroup indicatorGroup=ChartIndicatorGroup.createRoot();
 	
 	
-	
-	
-	
-	
  	public ChartIndicatorGroup getIndicatorGroup() {
 		return indicatorGroup;
 	}

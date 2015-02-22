@@ -63,8 +63,9 @@ public class ChartTreeActivatedEditingSupport extends EditingSupport {
 			parent.getEventBroker().post(IEventConstant.CHART_INDICATOR_ACTIVATION_CHANGED, el);
 		}
 		
-		 viewer.update(element, null);
+		 viewer.refresh();
 		 parent.refresh();
+		 parent.setDity();
 	}
 
 }

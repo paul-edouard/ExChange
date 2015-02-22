@@ -18,7 +18,11 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.model.application.ui.MDirtyable;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
@@ -44,7 +48,9 @@ import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
 import com.munch.exchange.model.core.chart.ChartSerie;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
+import com.munch.exchange.parts.chart.parameter.ChartParameterEditorPart;
 import com.munch.exchange.parts.composite.CollectionRemovedListener;
+import com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsPart;
 import com.munch.exchange.services.IBundleResourceLoader;
 
 
@@ -65,6 +71,9 @@ public class ChartTreeComposite extends Composite {
 	
 	@Inject
 	private IEventBroker eventBroker;
+	
+	@Inject
+	MDirtyable dirty;
 	
 	//the period
 	private int[] period=new int[2];
@@ -89,7 +98,7 @@ public class ChartTreeComposite extends Composite {
 	
 	
 	@Inject
-	public ChartTreeComposite(Composite parent,ExchangeRate rate,IBundleResourceLoader loader) {
+	public ChartTreeComposite(Composite parent,ExchangeRate rate,IBundleResourceLoader loader,EPartService partService) {
 		super(parent, SWT.NONE);
 		
 		this.rate=rate;
@@ -101,6 +110,7 @@ public class ChartTreeComposite extends Composite {
 			public void propertyChange(PropertyChangeEvent arg0) {
 				if(arg0.getPropertyName().equals(ChartIndicatorGroup.FIELD_IsDirty)){
 					if((boolean)arg0.getNewValue()){
+						dirty.setDirty(true);
 						refresh();
 					}
 					//logger.info("Root Chart Indicator is dirty:"+arg0.getNewValue());
@@ -111,7 +121,7 @@ public class ChartTreeComposite extends Composite {
 		
 		setLayout(new GridLayout(1, false));
 		treeViewer = new TreeViewer(this,  SWT.BORDER| SWT.MULTI
-				| SWT.V_SCROLL );
+				| SWT.V_SCROLL | SWT.FULL_SELECTION);
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				
@@ -130,7 +140,7 @@ public class ChartTreeComposite extends Composite {
 		});
 		treeViewer.setContentProvider(new ChartTreeContentProvider());
 		treeViewer.setInput(this.rate.getIndicatorGroup());
-		treeViewer.setAutoExpandLevel(1);
+		treeViewer.setAutoExpandLevel(2);
 		
 		ColumnViewerToolTipSupport.enableFor(treeViewer, ToolTip.NO_RECREATE); 
 		
@@ -143,6 +153,10 @@ public class ChartTreeComposite extends Composite {
 		addColumn("C",30,new ColorLabelProvider(), new ChartTreeColorEditingSupport(treeViewer,this));
 		
 		treeViewer.refresh();
+		
+		MPart part=partService.findPart(ChartParameterEditorPart.CHART_PARAMETER_EDITOR_ID);
+		if(part!=null)
+			partService.showPart(part, PartState.CREATE);
 		
 	}
 	
@@ -213,12 +227,17 @@ public class ChartTreeComposite extends Composite {
 	public IEventBroker getEventBroker() {
 		return eventBroker;
 	}
+	
+	public void setDity(){
+		dirty.setDirty(true);
+	}
+	
 	//################################
 	//##     Series operations      ##
 	//################################
 	
 
-	private void createSeries(){
+ 	private void createSeries(){
 		for(ChartSerie serie:searchSeriesToAdd(this.rate.getIndicatorGroup()))
 			addSerie(serie);
 	}
@@ -275,7 +294,7 @@ public class ChartTreeComposite extends Composite {
 		
 		for(ChartIndicator indicator:group.getIndicators()){
 			if(!indicator.isActivated())continue;
-			
+			if(rate.getHistoricalData().isEmpty())continue;
 			//Compute the series
 			indicator.compute(rate.getHistoricalData());
 			
@@ -290,7 +309,7 @@ public class ChartTreeComposite extends Composite {
 	}
 	
 	private XYSeries  createXYSerie(ChartSerie serie){
-		logger.info("Serie Name: "+serie.getName());
+		//logger.info("Serie Name: "+serie.getName());
 		
 		
 		XYSeries r_series =new XYSeries(serie.getName());
