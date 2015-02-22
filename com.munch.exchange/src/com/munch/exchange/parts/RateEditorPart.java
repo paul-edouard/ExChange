@@ -224,7 +224,6 @@ public class RateEditorPart {
 		//////////////////////////////////
 		rateChart=ContextInjectionFactory.make( RateChart.class,localContact);
 		rateChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		
 	}
 	
 	//stockFInancials

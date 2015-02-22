@@ -1,4 +1,4 @@
-package com.munch.exchange.parts.chart;
+package com.munch.exchange.parts.chart.tree;
 
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColorCellEditor;

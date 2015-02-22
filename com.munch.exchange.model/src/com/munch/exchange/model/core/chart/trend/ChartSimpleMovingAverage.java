@@ -2,6 +2,7 @@ package com.munch.exchange.model.core.chart.trend;
 
 import com.munch.exchange.model.analytic.indicator.trend.MovingAverage;
 import com.munch.exchange.model.core.chart.ChartIndicator;
+import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
 import com.munch.exchange.model.core.chart.ChartParameter;
 import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
 import com.munch.exchange.model.core.chart.ChartSerie;
@@ -14,8 +15,8 @@ public class ChartSimpleMovingAverage extends ChartIndicator {
 	public static final String SMA="SMA";
 	public static final String PERIOD="Period";
 
-	public ChartSimpleMovingAverage() {
-		super();
+	public ChartSimpleMovingAverage(ChartIndicatorGroup parent) {
+		super(parent);
 		this.name="Moving Average";
 	}
 
@@ -27,20 +28,23 @@ public class ChartSimpleMovingAverage extends ChartIndicator {
 		
 		this.getChartSerie(SMA).setValues(sma);
 		
+		setDirty(false);
+		
 	}
 
 	@Override
 	public void createSeries() {
 		int[] color={50,44,89};
-		ChartSerie serie=new ChartSerie(SMA,RendererType.MAIN,true,false,color);
+		ChartSerie serie=new ChartSerie(this,SMA,RendererType.MAIN,true,false,color);
 		this.chartSeries.add(serie);
 
 	}
 
 	@Override
 	public void createParameters() {
-		ChartParameter param=new ChartParameter(PERIOD, ParameterType.INTEGER, 12, 1, 200, 0);
+		ChartParameter param=new ChartParameter(this, PERIOD, ParameterType.INTEGER, 12, 1, 200, 0);
 		this.chartParameters.add(param);
+		
 	}
 	
 	

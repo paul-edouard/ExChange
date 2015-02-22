@@ -23,6 +23,8 @@ public class ChartParameter extends XmlParameterElement {
 	private double maxValue;
 	private int scalarFactor;
 	
+	private ChartIndicator parent;
+	
 	
 	public enum ParameterType {DOUBLE(1), INTEGER(2), NONE(0);
 		
@@ -64,15 +66,18 @@ public class ChartParameter extends XmlParameterElement {
 	}
 
 	
-	public ChartParameter(){}
+	public ChartParameter(ChartIndicator parent){
+		this.parent=parent;
+	}
 			
 	
-	public ChartParameter(String name,ParameterType type,  double val, double minValue, double maxValue, int  scalarFac){
+	public ChartParameter(ChartIndicator parent,String name,ParameterType type,  double val, double minValue, double maxValue, int  scalarFac){
 		this.value=val;
 		this.maxValue=maxValue;
 		this.minValue=minValue;
 		this.type=type;
 		this.name=name;
+		this.parent=parent;
 		
 		this.scalarFactor=scalarFac;
 	}
@@ -87,9 +92,13 @@ public class ChartParameter extends XmlParameterElement {
 	 *	    GETTER AND SETTER          *
 	 ***********************************/	
 	
+	
+	
+	
 	public String getName() {
 		return name;
 	}
+
 
 	public void setName(String name) {
 	changes.firePropertyChange(FIELD_Name, this.name, this.name = name);
@@ -115,7 +124,13 @@ public class ChartParameter extends XmlParameterElement {
 	
 
 	public void setValue(double value) {
-	changes.firePropertyChange(FIELD_Value, this.value, this.value = value);}
+	changes.firePropertyChange(FIELD_Value, this.value, this.value = value);
+	
+	if(this.parent!=null){
+		this.parent.setDirty(true);
+		//System.out.println("Indicator: "+this.parent.getName() +" is dirty!");
+	}
+	}
 	
 
 	public double getMinValue() {

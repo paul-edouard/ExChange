@@ -2,6 +2,7 @@ package com.munch.exchange.model.core.chart;
 
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -10,20 +11,32 @@ import com.munch.exchange.model.xml.XmlParameterElement;
 
 public abstract class ChartIndicator extends XmlParameterElement {
 	
+	private static Logger logger = Logger.getLogger(ChartIndicator.class);
+	
 	static final String FIELD_Name="Name";
 	static final String FIELD_IsActivated="IsActivated";
+	static final String FIELD_IsDirty="IsDirty";
 	
 	protected String name;
 	private boolean isActivated=false;
+	private boolean isDirty=false;
 	
 	protected LinkedList<ChartSerie> chartSeries=new LinkedList<ChartSerie>();
 	protected LinkedList<ChartParameter> chartParameters=new LinkedList<ChartParameter>();
 	
+	private ChartIndicatorGroup parent;
 	
-	public ChartIndicator() {
+	
+	public ChartIndicator(ChartIndicatorGroup parent) {
 		super();
+		
+		this.parent=parent;
+		if(this.parent!=null)
+		this.parent.getIndicators().add(this);
+		
 		createSeries();
 		createParameters();
+		
 	}
 
 	public abstract void compute(HistoricalData hisData);
@@ -31,15 +44,29 @@ public abstract class ChartIndicator extends XmlParameterElement {
 	public abstract void createSeries();
 	
 	public abstract void createParameters();
+		
 	
 	
 	/***********************************
 	 *	    GETTER AND SETTER          *
 	 ***********************************/	
 	
+	
+	
 	public String getName() {
 		return name;
 	}
+
+	public void setDirty(boolean isDirty) {
+		changes.firePropertyChange(FIELD_IsDirty, this.isDirty, this.isDirty = isDirty);
+		if(this.parent!=null)
+			this.parent.setDirty(isDirty);
+	}
+	
+	public void setParent(ChartIndicatorGroup parent) {
+		this.parent = parent;
+	}
+	
 
 	public void setName(String name) {
 	changes.firePropertyChange(FIELD_Name, this.name, this.name = name);
@@ -96,8 +123,8 @@ public abstract class ChartIndicator extends XmlParameterElement {
 
 	@Override
 	protected void initChild(Element childElement) {
-		ChartSerie serie=new ChartSerie();
-		ChartParameter param=new ChartParameter();
+		ChartSerie serie=new ChartSerie(this);
+		ChartParameter param=new ChartParameter(this);
 		if(childElement.getTagName().equals(serie.getTagName())){
 			serie.init(childElement);
 			chartSeries.add(serie);

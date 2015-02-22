@@ -17,6 +17,7 @@ import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -61,8 +62,8 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
-import com.munch.exchange.parts.chart.ChartTreeComposite;
 import com.munch.exchange.parts.chart.IndicatorComposite;
+import com.munch.exchange.parts.chart.tree.ChartTreeComposite;
 import com.munch.exchange.parts.chart.trend.AdaptiveMovingAverageComposite;
 import com.munch.exchange.parts.chart.trend.AverageDirectionalMovementIndexComposite;
 import com.munch.exchange.parts.chart.trend.AverageDirectionalMovementIndexWilderComposite;
@@ -436,6 +437,8 @@ public class RateChart extends Composite {
 		
 		return indicatorComposite;
 	}
+	
+
 	
 	
 	/////////////////////////////

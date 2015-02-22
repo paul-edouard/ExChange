@@ -13,16 +13,40 @@ public class ChartIndicatorGroup extends XmlParameterElement{
 	static final String ROOT="ROOT";
 	
 	static final String FIELD_Name="Name";
+	public static final String FIELD_IsDirty="IsDirty";
 	
 	private String name;
+	private boolean isDirty=false;
 	
 	LinkedList<ChartIndicatorGroup> subGroups=new LinkedList<ChartIndicatorGroup>();
 	LinkedList<ChartIndicator> indicators=new LinkedList<ChartIndicator>();
 	
+	private ChartIndicatorGroup parent;
 	
+	public ChartIndicatorGroup(ChartIndicatorGroup parent,String name){
+		this.parent=parent;
+		this.name=name;
+		
+		if(this.parent!=null)
+			this.parent.getSubGroups().add(this);
+	}
+	
+	
+	
+	
+
+
+
+
 	/***********************************
 	 *	    GETTER AND SETTER          *
 	 ***********************************/	
+	
+	public void setDirty(boolean isDirty) {
+	changes.firePropertyChange(FIELD_IsDirty, this.isDirty, this.isDirty = isDirty);
+	if(this.parent!=null)
+		this.parent.setDirty(isDirty);
+	}
 	
 	public String getName() {
 		return name;
@@ -102,15 +126,11 @@ public class ChartIndicatorGroup extends XmlParameterElement{
 	 ***********************************/
 	
 	public static ChartIndicatorGroup createRoot(){
-		ChartIndicatorGroup root=new ChartIndicatorGroup();
-		root.setName(ROOT);
+		ChartIndicatorGroup root=new ChartIndicatorGroup(null,ROOT);
 		
 		//TREND
-		ChartIndicatorGroup trend=new ChartIndicatorGroup();
-		trend.setName("Trend");
-		root.getSubGroups().add(trend);
-		
-		trend.getIndicators().add(new ChartSimpleMovingAverage());
+		ChartIndicatorGroup trend=new ChartIndicatorGroup(root,"Trend");
+		new ChartSimpleMovingAverage(trend);
 		
 		
 		

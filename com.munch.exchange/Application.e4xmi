@@ -60,6 +60,7 @@
                 </toolbar>
               </children>
               <children xsi:type="basic:Part" xmi:id="_rGWQEI6mEeSBTbBmTuUumA" elementId="com.munch.exchange.part.resultschart" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsChartPart" label="Results Chart" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png"/>
+              <children xsi:type="basic:Part" xmi:id="_4m99QLpoEeS1apWxmHY8yw" elementId="com.munch.exchange.part.chart.parameter.editor" accessibilityPhrase="Edit the paramters of the selected chart indicator" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.chart.parameter.ChartParameterEditorPart" label="Chart Parameters" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/configs.gif"/>
             </children>
           </children>
         </children>

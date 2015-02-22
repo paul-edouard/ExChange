@@ -1,6 +1,8 @@
-package com.munch.exchange.parts.chart;
+package com.munch.exchange.parts.chart.tree;
 
 import java.awt.BasicStroke;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,10 +17,16 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.window.ToolTip;
@@ -29,11 +37,13 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeriesCollection;
 
+import com.munch.exchange.IEventConstant;
 import com.munch.exchange.IImageKeys;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
 import com.munch.exchange.model.core.chart.ChartSerie;
+import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.parts.composite.CollectionRemovedListener;
 import com.munch.exchange.services.IBundleResourceLoader;
 
@@ -51,6 +61,10 @@ public class ChartTreeComposite extends Composite {
 	
 	protected ExchangeRate rate;
 	
+	//ESelectionService rootSelectionService;
+	
+	@Inject
+	private IEventBroker eventBroker;
 	
 	//the period
 	private int[] period=new int[2];
@@ -81,10 +95,39 @@ public class ChartTreeComposite extends Composite {
 		this.rate=rate;
 		this.loader=loader;
 		
+		this.rate.getIndicatorGroup().addPropertyChangeListener(new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent arg0) {
+				if(arg0.getPropertyName().equals(ChartIndicatorGroup.FIELD_IsDirty)){
+					if((boolean)arg0.getNewValue()){
+						refresh();
+					}
+					//logger.info("Root Chart Indicator is dirty:"+arg0.getNewValue());
+				}
+				
+			}
+		});
+		
 		setLayout(new GridLayout(1, false));
 		treeViewer = new TreeViewer(this,  SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL );
-		
+		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
+				
+				ISelection selection=event.getSelection();
+				if(selection instanceof IStructuredSelection){
+					IStructuredSelection sel=(IStructuredSelection) selection;
+					if(sel.size()==1 && sel.getFirstElement() instanceof ChartIndicator){
+						ChartIndicator selInd=(ChartIndicator) sel.getFirstElement();
+						//logger.info("Chart indicator selected");
+						eventBroker.post(IEventConstant.CHART_INDICATOR_SELECTED, selInd);
+							
+					}
+				}
+				
+			}
+		});
 		treeViewer.setContentProvider(new ChartTreeContentProvider());
 		treeViewer.setInput(this.rate.getIndicatorGroup());
 		treeViewer.setAutoExpandLevel(1);
@@ -167,11 +210,14 @@ public class ChartTreeComposite extends Composite {
 		createSeries();
 	}
 	
-	
+	public IEventBroker getEventBroker() {
+		return eventBroker;
+	}
 	//################################
 	//##     Series operations      ##
 	//################################
 	
+
 	private void createSeries(){
 		for(ChartSerie serie:searchSeriesToAdd(this.rate.getIndicatorGroup()))
 			addSerie(serie);
@@ -395,6 +441,13 @@ public class ChartTreeComposite extends Composite {
 			
 			if(element instanceof ChartSerie){
 				ChartSerie el=(ChartSerie) element;
+				if(el.isActivated())
+					return loader.loadImage(getClass(),IImageKeys.CHECKED );
+				else
+					return loader.loadImage(getClass(),IImageKeys.UNCHECKED );
+			}
+			else if(element instanceof ChartIndicator){
+				ChartIndicator el=(ChartIndicator) element;
 				if(el.isActivated())
 					return loader.loadImage(getClass(),IImageKeys.CHECKED );
 				else

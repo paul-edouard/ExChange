@@ -30,6 +30,8 @@ public class ChartSerie extends XmlParameterElement{
 	private int[] color=new int[3];
 	private RendererType rendererType;
 	
+	private ChartIndicator parent;
+	
 	
 	public enum RendererType { NONE(-1), MAIN(0), SECOND(1), PERCENT(2), ERROR(3), DEVIATION(4), DEVIATION_PERCENT(5);
 		
@@ -88,17 +90,19 @@ public class ChartSerie extends XmlParameterElement{
 	};
 	
 	
-	public ChartSerie(){
-		
+	public ChartSerie(ChartIndicator parent){
+		this.parent=parent;
 	}
 	
-	public ChartSerie(String name,RendererType type,boolean isMain, boolean isActivated,int[] color ){
+	public ChartSerie(ChartIndicator parent,String name,RendererType type,boolean isMain, boolean isActivated,int[] color ){
 		this.name=name;
 		
 		this.isMain=isMain;
 		this.isActivated=isActivated;
 		this.color=color;
 		this.rendererType=type;
+		
+		this.parent=parent;
 	
 	}
 	

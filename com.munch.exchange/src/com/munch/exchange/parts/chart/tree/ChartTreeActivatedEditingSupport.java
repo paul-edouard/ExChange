@@ -1,4 +1,4 @@
-package com.munch.exchange.parts.chart;
+package com.munch.exchange.parts.chart.tree;
 
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
@@ -7,6 +7,7 @@ import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 
+import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartSerie;
 
@@ -59,6 +60,7 @@ public class ChartTreeActivatedEditingSupport extends EditingSupport {
 		else if(element instanceof ChartIndicator){
 			ChartIndicator el=(ChartIndicator) element;
 			el.setActivated((Boolean) value);
+			parent.getEventBroker().post(IEventConstant.CHART_INDICATOR_ACTIVATION_CHANGED, el);
 		}
 		
 		 viewer.update(element, null);
