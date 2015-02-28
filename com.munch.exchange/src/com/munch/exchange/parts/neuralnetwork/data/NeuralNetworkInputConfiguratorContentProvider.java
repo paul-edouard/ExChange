@@ -7,10 +7,8 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import com.munch.exchange.model.core.Stock;
-import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
-import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesCategory;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesGroup;
 
 public class NeuralNetworkInputConfiguratorContentProvider implements
 		IStructuredContentProvider, ITreeContentProvider {
@@ -18,6 +16,7 @@ public class NeuralNetworkInputConfiguratorContentProvider implements
 	
 	private static Logger logger = Logger.getLogger(NeuralNetworkInputConfiguratorContentProvider.class);
 	
+	/*
 	private NeuralNetworkSerieCategory root=
 			new NeuralNetworkSerieCategory(null, TimeSeriesCategory.ROOT);
 	
@@ -26,17 +25,19 @@ public class NeuralNetworkInputConfiguratorContentProvider implements
 	private NeuralNetworkSerieCategory rateCategory;
 	private NeuralNetworkSerieCategory financialCategory;
 	private NeuralNetworkSerieCategory OutputCategory;
-	
+	*/
 	public NeuralNetworkInputConfiguratorContentProvider(){
 		//this.stock=stock;
 		
-		buildNeuralNetworkSerieCategories();
-		refreshCategories(null);
+		//buildNeuralNetworkSerieCategories();
+		//refreshCategories(null);
 	}
 	
+	/*
 	public NeuralNetworkSerieCategory getRoot() {
 		return root;
 	}
+	*/
 
 	@Override
 	public void dispose() {
@@ -52,20 +53,29 @@ public class NeuralNetworkInputConfiguratorContentProvider implements
 
 	@Override
 	public Object[] getChildren(Object parentElement) {
+		/*
 		if(parentElement instanceof NeuralNetworkSerieCategory){
 			NeuralNetworkSerieCategory el=(NeuralNetworkSerieCategory)parentElement;
 			return el.childs.toArray();
+		}
+		else */if(parentElement instanceof TimeSeriesGroup){
+			TimeSeriesGroup group=(TimeSeriesGroup) parentElement;
+			LinkedList<Object> objList=new LinkedList<Object>();
+			objList.addAll(group.getSubGroups());
+			objList.addAll(group.getTimeSeriesList());
+			
+			return objList.toArray();
 		}
 		return null;
 	}
 
 	@Override
 	public Object getParent(Object element) {
-		if(element instanceof NeuralNetworkSerieCategory){
+		/*if(element instanceof NeuralNetworkSerieCategory){
 			NeuralNetworkSerieCategory el=(NeuralNetworkSerieCategory)element;
 			return el.parent;
 		}
-		else if(element instanceof TimeSeries){
+		else*/ if(element instanceof TimeSeries){
 			TimeSeries el=(TimeSeries)element;
 			return el.getParent();
 		}
@@ -74,27 +84,37 @@ public class NeuralNetworkInputConfiguratorContentProvider implements
 
 	@Override
 	public boolean hasChildren(Object element) {
-		if(element instanceof NeuralNetworkSerieCategory){
+		/*if(element instanceof NeuralNetworkSerieCategory){
 			NeuralNetworkSerieCategory el=(NeuralNetworkSerieCategory)element;
 			return el.childs.size()>0;
+		}
+		else */if(element instanceof TimeSeriesGroup){
+			TimeSeriesGroup group=(TimeSeriesGroup) element;
+			return group.getSubGroups().size()>0 || group.getTimeSeriesList().size()>0;
+			
 		}
 		return false;
 	}
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-		if(inputElement instanceof NeuralNetworkSerieCategory){
+		/*if(inputElement instanceof NeuralNetworkSerieCategory){
+			return this.getChildren(inputElement);
+		}
+		else */if(inputElement instanceof TimeSeriesGroup){
 			return this.getChildren(inputElement);
 		}
 		return null;
 	}
 	
+	/*
 	private void buildNeuralNetworkSerieCategories(){
 		rateCategory=new NeuralNetworkSerieCategory(this.root,TimeSeriesCategory.RATE);
 		financialCategory=new NeuralNetworkSerieCategory(this.root,TimeSeriesCategory.FINANCIAL);
 		OutputCategory=new NeuralNetworkSerieCategory(this.root,TimeSeriesCategory.TARGET_OUTPUT);
 	}
-	
+	*/
+	/*
 	public void refreshCategories(Configuration config){
 		if(config==null)return;
 		
@@ -122,7 +142,8 @@ public class NeuralNetworkInputConfiguratorContentProvider implements
 		//logger.info("******* Number of childs: "+rateCategory.childs.size());
 		
 	}
-	
+	*/
+	/*
 	public class NeuralNetworkSerieCategory{
 		
 		public NeuralNetworkSerieCategory parent;
@@ -161,5 +182,5 @@ public class NeuralNetworkInputConfiguratorContentProvider implements
 		}
 		
 	}
-
+	*/
 }

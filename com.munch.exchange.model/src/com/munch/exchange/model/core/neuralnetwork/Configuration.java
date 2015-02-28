@@ -24,6 +24,7 @@ import org.w3c.dom.Element;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesCategory;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesGroup;
 import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlock;
 import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlocks;
 import com.munch.exchange.model.core.optimization.AlgorithmParameters;
@@ -43,7 +44,8 @@ public class Configuration extends XmlParameterElement {
 	static final String FIELD_Name="Name";
 	static final String FIELD_Id="Id";
 	static final String FIELD_LastUpdate="LastUpdate";
-	static final String FIELD_AllTimeSeries="AllTimeSeries";
+	//static final String FIELD_AllTimeSeries="AllTimeSeries";
+	//static final String FIELD_AllTimeSeries="TimeSeries";
 	static final String FIELD_OutputPointList="OutputPointList";
 	static final String FIELD_LastInputPointDate="LastInputPointDate";
 	static final String FIELD_OptLearnParam="OptLearnParam";
@@ -67,8 +69,9 @@ public class Configuration extends XmlParameterElement {
 	private TrainingBlocks trainingBlocks=new TrainingBlocks();
 	
 	//Time Series
-	private LinkedList<TimeSeries> allTimeSeries=new LinkedList<TimeSeries>();
+	//private LinkedList<TimeSeries> allTimeSeries=new LinkedList<TimeSeries>();
 	private Calendar lastInputPointDate=null;
+	private TimeSeriesGroup rootTimeSeriesGroup=null;
 	
 	//Optimization Parameters
 	private AlgorithmParameters<double[]> optLearnParam=new AlgorithmParameters<double[]>("Optimization_learn_parameters");
@@ -110,7 +113,7 @@ public class Configuration extends XmlParameterElement {
 		if(dayOfWeekActivated){
 			names.add(FIELD_DayOfWeek);
 		}
-		for(TimeSeries series:this.getSortedTimeSeries()){
+		for(TimeSeries series:this.getRootTimeSeriesGroup().getAllTimeSeries()){
 			names.addAll(series.getInputNeuronNames());
 		}
 		
@@ -185,7 +188,7 @@ public class Configuration extends XmlParameterElement {
 		
 		//Create the input arrays
 		LinkedList<double[]> doubleArrayList=new LinkedList<double[]>();
-		LinkedList<TimeSeries> sortedTimeSeries=this.getSortedTimeSeries();
+		LinkedList<TimeSeries> sortedTimeSeries=this.rootTimeSeriesGroup.getAllTimeSeries();
 		if(dayOfWeekActivated){
 			createDayOfWeekSeries(sortedTimeSeries);
 		}
@@ -194,6 +197,11 @@ public class Configuration extends XmlParameterElement {
 			//TODO Series zero
 			LinkedList<double[]> d_array_list=series.transformSeriesToDoubleArrayList(lastInputPointDate);
 			doubleArrayList.addAll(d_array_list);
+		}
+		
+		if(sortedTimeSeries.size()==0){
+			logger.info("Create Training Data ERROR: the time series are not available");
+			return;
 		}
 		
 		//All Dates
@@ -267,7 +275,7 @@ public class Configuration extends XmlParameterElement {
 	}
 	
 	private void createDayOfWeekSeries(LinkedList<TimeSeries> sortedTimeSeries){
-		TimeSeries dayOfWeekSerie=new TimeSeries(FIELD_DayOfWeek, TimeSeriesCategory.RATE);
+		TimeSeries dayOfWeekSerie=new TimeSeries(FIELD_DayOfWeek/*, TimeSeriesCategory.RATE*/);
 		dayOfWeekSerie.setNumberOfPastValues(1);
 		for(ValuePoint point:sortedTimeSeries.getFirst().getInputValues()){
 			double dayofWeek=(double)point.getDate().get(Calendar.DAY_OF_WEEK);
@@ -350,7 +358,8 @@ public class Configuration extends XmlParameterElement {
 
 	public Configuration createCopy(){
 		Configuration copy=new Configuration();
-		copy.allTimeSeries=this.createCopyOfTimeSeries();
+		copy.rootTimeSeriesGroup=this.rootTimeSeriesGroup.createCopy();
+		//copy.allTimeSeries=this.createCopyOfTimeSeries();
 		copy.Name=this.Name;
 		copy.parent=this.parent;
 		copy.dayOfWeekActivated=this.dayOfWeekActivated;
@@ -365,13 +374,14 @@ public class Configuration extends XmlParameterElement {
 	 * @return
 	 */
 	public boolean areAllTimeSeriesAvailable(){
-		for(TimeSeries series:this.getAllTimeSeries()){
+		for(TimeSeries series:this.rootTimeSeriesGroup.getAllTimeSeries()){
 			if(series.getInputValues().isEmpty())return false;
 		}
 		
 		return true;
 	}
 	
+	/*
 	private LinkedList<TimeSeries> createCopyOfTimeSeries(){
 		LinkedList<TimeSeries> copy=new LinkedList<TimeSeries>();
 		for(TimeSeries series:this.allTimeSeries){
@@ -380,19 +390,35 @@ public class Configuration extends XmlParameterElement {
 		
 		return copy;
 	}
+	*/
 	
 	public void copyTimeSeriesFrom(Configuration config){
-		this.allTimeSeries.clear();
+		//this.allTimeSeries.clear();
+		/*
 		for(TimeSeries series:config.allTimeSeries){
 			this.allTimeSeries.add(series.createCopy());
 		}
+		*/
+		this.rootTimeSeriesGroup=config.rootTimeSeriesGroup.createCopy();
 		this.dayOfWeekActivated=config.dayOfWeekActivated;
 	}
+	
+	public TimeSeriesGroup getRootTimeSeriesGroup() {
+		if(rootTimeSeriesGroup==null && this.getParent()!=null)
+			rootTimeSeriesGroup=TimeSeriesGroup.createRoot(this.getParent());
+		return rootTimeSeriesGroup;
+	}
+	
+	
 	
 	//*************************
 	// Architecture
 	//*************************
 	
+	
+
+
+
 	public synchronized NetworkArchitecture searchArchitecture(String id){
 		for(NetworkArchitecture architecture :networkArchitectures){
 			if(architecture.getId().equals(id))return architecture;
@@ -608,11 +634,12 @@ public class Configuration extends XmlParameterElement {
 	public void setLastUpdate(Calendar lastUpdate) {
 	changes.firePropertyChange(FIELD_LastUpdate, this.lastUpdate, this.lastUpdate = lastUpdate);}
 	
-	
+	/*
 	public LinkedList<TimeSeries> getAllTimeSeries() {
 		return allTimeSeries;
 	}
-	
+	*/
+	/*
 	public LinkedList<TimeSeries> getSortedTimeSeries(){
 		LinkedList<TimeSeries> list=new LinkedList<TimeSeries>();
 		for(TimeSeries series:this.getTimeSeriesFromCategory(TimeSeriesCategory.RATE)){
@@ -626,7 +653,9 @@ public class Configuration extends XmlParameterElement {
 		}
 		return list;
 	}
+	*/
 	
+	/*
 	public LinkedList<TimeSeries> getTimeSeriesFromCategory(TimeSeriesCategory category){
 		LinkedList<TimeSeries> list=new LinkedList<TimeSeries>();
 		for(TimeSeries series:allTimeSeries){
@@ -636,8 +665,9 @@ public class Configuration extends XmlParameterElement {
 		
 		return list;
 	}
+	*/
 	
-	
+	/*
 	public void addTimeSeries(TimeSeries series, boolean fireTimeSeriesChanged){
 		if(fireTimeSeriesChanged){
 		series.addPropertyChangeListener(new PropertyChangeListener() {
@@ -656,22 +686,27 @@ public class Configuration extends XmlParameterElement {
 			fireTimeSeriesChanged();
 		}
 	}
+	*/
 	
 	/*
 	public void addTimeSeries(TimeSeries series){
 		addTimeSeries(series,false);
 	}
 	*/
-	
+
+	/*
 	public void removeTimeSeries(TimeSeries series){
 		//series.removePropertyChangeListener(l);
 		allTimeSeries.remove(series);
 		fireTimeSeriesChanged();
 	}
+	*/
 	
 	public int getNumberOfTimeSeries(){
-		if(this.allTimeSeries==null)return 0;
-		return this.allTimeSeries.size();
+		return this.rootTimeSeriesGroup.getAllTimeSeries().size();
+		
+		//if(this.allTimeSeries==null)return 0;
+		//return this.allTimeSeries.size();
 	}
 	
 	
@@ -753,25 +788,32 @@ public class Configuration extends XmlParameterElement {
 		
 		//logger.info("Is Activated: "+this.isDayOfWeekActivated()+", XML value: "+rootElement.getAttribute(FIELD_DayOfWeekActivated);
 		
-		allTimeSeries.clear();
+		//allTimeSeries.clear();
 		networkArchitectures.clear();
 		netArchiOptResultMap.clear();
 	}
 
 	@Override
 	protected void initChild(Element childElement) {
-		TimeSeries ent=new TimeSeries();
+		//TimeSeries ent=new TimeSeries();
 		NetworkArchitecture arch=new NetworkArchitecture();
 		OptimizationResults results=new OptimizationResults();
+		TimeSeriesGroup group=new TimeSeriesGroup(null, "root", false);
+		/*
 		if(childElement.getTagName().equals(ent.getTagName())){
 			ent.init(childElement);
 			addTimeSeries(ent,false);
 		}
+		*/
 		/*
 		else if(childElement.getTagName().equals(outputPointList.getTagName())){
 			outputPointList.init(childElement);
 		}
 		*/
+		if(childElement.getTagName().equals(group.getTagName())){
+			rootTimeSeriesGroup=group;
+			rootTimeSeriesGroup.init(childElement);
+		}
 		else if(childElement.getTagName().equals(optLearnParam.getTagName())){
 			optLearnParam.init(childElement);
 		}
@@ -811,14 +853,15 @@ public class Configuration extends XmlParameterElement {
 
 	@Override
 	protected void appendChild(Element rootElement, Document doc) {
-		for(TimeSeries ent:allTimeSeries){
-			rootElement.appendChild(ent.toDomElement(doc));
-		}
+		//for(TimeSeries ent:allTimeSeries){
+		//	rootElement.appendChild(ent.toDomElement(doc));
+		//}
 		//rootElement.appendChild(outputPointList.toDomElement(doc));
 		rootElement.appendChild(optLearnParam.toDomElement(doc));
 		rootElement.appendChild(learnParam.toDomElement(doc));
 		rootElement.appendChild(optArchitectureParam.toDomElement(doc));
 		rootElement.appendChild(trainingBlocks.toDomElement(doc));
+		rootElement.appendChild(rootTimeSeriesGroup.toDomElement(doc));
 		
 		for(NetworkArchitecture ent:networkArchitectures){
 			rootElement.appendChild(ent.toDomElement(doc));

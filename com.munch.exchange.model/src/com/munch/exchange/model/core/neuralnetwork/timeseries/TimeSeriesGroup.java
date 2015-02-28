@@ -5,18 +5,30 @@ import java.util.LinkedList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
+import com.munch.exchange.model.core.financials.Financials;
+import com.munch.exchange.model.core.financials.IncomeStatementPoint;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class TimeSeriesGroup extends XmlParameterElement {
 	
 	static final String ROOT="ROOT";
+	static final String BASE="this";
 	
 	static final String FIELD_Name="Name";
 	static final String FIELD_Level="Level";
 	static final String FIELD_ReferencedRateUUID="ReferencedRateUUID";
+	
+	
+	public static final String GROUP_RATE="Rate";
+	public static final String GROUP_FINANCIAL="Financial";
+	public static final String GROUP_INDICATOR="Indicator";
+	public static final String GROUP_TARGET_OUTPUT="Target Output";
+	
+	
 	
 	private String name;
 	private int level;
@@ -27,8 +39,13 @@ public class TimeSeriesGroup extends XmlParameterElement {
 	LinkedList<TimeSeriesGroup> subGroups=new LinkedList<TimeSeriesGroup>();
 	LinkedList<TimeSeries> timeSeriesList=new LinkedList<TimeSeries>();
 	
-	public TimeSeriesGroup(TimeSeriesGroup parent, boolean addToParentchildren){
+	public TimeSeriesGroup(){
+		
+	}
+	
+	public TimeSeriesGroup(TimeSeriesGroup parent,String name, boolean addToParentchildren){
 		this.parent=parent;
+		this.name=name;
 		this.level=0;
 		
 		if(this.parent!=null)
@@ -72,15 +89,16 @@ public class TimeSeriesGroup extends XmlParameterElement {
 		
 		TimeSeriesGroup root=searchRoot();
 		//Base
-		TimeSeriesGroup baseGroup=new TimeSeriesGroup(root, true);
-		baseGroup.setName(rate.getFullName());
+		TimeSeriesGroup baseGroup=new TimeSeriesGroup(root,rate.getFullName(), true);
 		baseGroup.setReferencedRateUUID(rate.getUUID());
 		
-		//Rate
-		
+		//Stock
 		if(rate instanceof Stock){
-			TimeSeriesGroup rateGroup=new TimeSeriesGroup(baseGroup, true);
-			
+			addStockGroups((Stock) rate,baseGroup);
+		}
+		//Rate
+		else{
+			addRateGroups(rate, baseGroup);
 		}
 		
 	}
@@ -89,6 +107,26 @@ public class TimeSeriesGroup extends XmlParameterElement {
 	/***********************************
 	 *	    GETTER AND SETTER          *
 	 ***********************************/
+	
+	public TimeSeriesGroup createCopy(){
+		TimeSeriesGroup copy=new TimeSeriesGroup();
+		copy.name=this.name;
+		copy.level=this.level;
+		copy.referencedRateUUID=this.referencedRateUUID;
+		
+		for(TimeSeriesGroup child:subGroups){
+			TimeSeriesGroup child_copy=child.createCopy();
+			child_copy.parent=copy;
+			copy.subGroups.add(child_copy);
+		}
+		for(TimeSeries series:timeSeriesList){
+			TimeSeries series_copy=series.createCopy();
+			series_copy.setParentGroup(copy);
+			copy.timeSeriesList.add(series_copy);
+		}
+		
+		return copy;
+	}
 	
 	
 	public String getName() {
@@ -100,8 +138,10 @@ public class TimeSeriesGroup extends XmlParameterElement {
 	}
 	
 
-	
-	
+	public TimeSeriesGroup getParent() {
+		return parent;
+	}
+
 	public int getLevel() {
 		return level;
 	}
@@ -125,6 +165,21 @@ public class TimeSeriesGroup extends XmlParameterElement {
 	public LinkedList<TimeSeries> getTimeSeriesList() {
 		return timeSeriesList;
 	}
+	
+	public LinkedList<TimeSeries> getAllTimeSeries(){
+		LinkedList<TimeSeries> list=new LinkedList<TimeSeries>();
+		list.addAll(timeSeriesList);
+		for(TimeSeriesGroup subGroup:subGroups)
+			list.addAll(subGroup.getAllTimeSeries());
+			
+		return list;
+	}
+	
+	
+	public void addTimeSeries(TimeSeries serie){
+		timeSeriesList.add(serie);
+		serie.setParentGroup(this);
+		}
 
 	/***********************************
 	 *		       XML                 *
@@ -142,7 +197,7 @@ public class TimeSeriesGroup extends XmlParameterElement {
 
 	@Override
 	protected void initChild(Element childElement) {
-		TimeSeriesGroup group=new TimeSeriesGroup(this,false);
+		TimeSeriesGroup group=new TimeSeriesGroup(this,ROOT,false);
 		TimeSeries serie=new TimeSeries();
 		if(childElement.getTagName().equals(group.getTagName())){
 			group.init(childElement);
@@ -177,8 +232,61 @@ public class TimeSeriesGroup extends XmlParameterElement {
 	}
 	
 	/***********************************
-	 *		       XML                 *
+	 *		       STATIC              *
 	 ***********************************/
+	
+	public static TimeSeriesGroup createRoot(Stock stock){
+		TimeSeriesGroup root=new TimeSeriesGroup(null,ROOT, false);
+		root.setName(ROOT);
+		root.setLevel(0);
+		//root.setReferencedRateUUID(stock.getUUID());
+		
+		//Base
+		TimeSeriesGroup baseGroup=new TimeSeriesGroup(root,"this", true);
+		baseGroup.setReferencedRateUUID(stock.getUUID());
+		
+		addStockGroups(stock,baseGroup);
+		
+		new TimeSeriesGroup(baseGroup,GROUP_TARGET_OUTPUT, true);
+		
+		return root;
+	}
+	
+	public static void addStockGroups(Stock stock,TimeSeriesGroup baseGroup){
+		new TimeSeriesGroup(baseGroup,GROUP_RATE, true);
+		new TimeSeriesGroup(baseGroup,GROUP_FINANCIAL, true);
+		new TimeSeriesGroup(baseGroup,GROUP_INDICATOR, true);
+	}
+	
+	public static void addRateGroups(ExchangeRate rate,TimeSeriesGroup baseGroup){
+		new TimeSeriesGroup(baseGroup,GROUP_INDICATOR, true);
+	}
+	
+	
+	public static LinkedList<String> getAvailableSerieNames(TimeSeriesGroup group){
+		LinkedList<String> serieNames=new LinkedList<String>();
+		
+		if(group.getName().equals(GROUP_RATE)){
+			serieNames.add(DatePoint.FIELD_Close);
+			serieNames.add(DatePoint.FIELD_High);
+			serieNames.add(DatePoint.FIELD_Low);
+			serieNames.add(DatePoint.FIELD_Open);
+			serieNames.add(DatePoint.FIELD_Volume);
+			serieNames.add(DatePoint.FIELD_Adj_Close);
+		}
+		else if(group.getName().equals(GROUP_FINANCIAL)){
+			serieNames.add(Financials.FIELD_IncomeStatement+":"+IncomeStatementPoint.FIELD_EarningsPerShare);
+			serieNames.add(Financials.FIELD_IncomeStatement+":"+IncomeStatementPoint.FIELD_EBIT);
+			serieNames.add(Financials.FIELD_IncomeStatement+":"+IncomeStatementPoint.FIELD_TotalRevenue);
+			serieNames.add(Financials.FIELD_IncomeStatement+":"+IncomeStatementPoint.FIELD_NetIncome);
+			
+		}
+		else if(group.getName().equals(GROUP_TARGET_OUTPUT)){
+			serieNames.add("Desired Output");
+		}
+		
+		return serieNames;
+	}
 
 
 }

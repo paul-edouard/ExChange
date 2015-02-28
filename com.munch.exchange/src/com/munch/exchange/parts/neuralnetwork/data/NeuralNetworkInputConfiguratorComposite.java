@@ -43,21 +43,6 @@ import org.apache.log4j.Logger;
 
 import org.eclipse.wb.swt.ResourceManager;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddTimeSeriesDialog;
 import com.munch.exchange.model.core.ExchangeRate;
@@ -65,10 +50,10 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesGroup;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.InfoPart;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkConfigEditor;
-import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkInputConfiguratorContentProvider.NeuralNetworkSerieCategory;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
 
@@ -176,7 +161,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		btnRefreshMinmax.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				for(TimeSeries s:configLocal.getAllTimeSeries())
+				for(TimeSeries s:configLocal.getRootTimeSeriesGroup().getAllTimeSeries())
 					s.resetMinMaxValues(true);
 			}
 		});
@@ -199,6 +184,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		comboPeriod.setText("DAY");
 		
 		btnActivateDayOf = new Button(compositeMiddle, SWT.CHECK);
+		if(configLocal!=null)
 		btnActivateDayOf.setSelection(configLocal.isDayOfWeekActivated());
 		btnActivateDayOf.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -218,7 +204,8 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		treeViewer = new TreeViewer(compositeBottom, SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(contentProvider);
-		treeViewer.setInput(contentProvider.getRoot());
+		if(configLocal!=null)
+		treeViewer.setInput(configLocal.getRootTimeSeriesGroup());
 		
 		tree = treeViewer.getTree();
 		tree.addMouseListener(new MouseAdapter() {
@@ -227,9 +214,14 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 				if(!isEditing)return;
 				if(e.button==3 && tree.getSelection().length==1){
 					TreeItem item=tree.getSelection()[0];
-					if(item.getData() instanceof NeuralNetworkSerieCategory){
+					if(item.getData() instanceof TimeSeriesGroup){
+						TimeSeriesGroup group = (TimeSeriesGroup) item.getData();
+						if(		group.getName().equals(TimeSeriesGroup.GROUP_RATE) || 
+								group.getName().equals(TimeSeriesGroup.GROUP_FINANCIAL) ||  
+								group.getName().equals(TimeSeriesGroup.GROUP_TARGET_OUTPUT)){
 						mntmAddSerie.setEnabled(true);
 						mntmRemove.setEnabled(false);
+						}
 					}
 					else if(item.getData() instanceof TimeSeries){
 						mntmAddSerie.setEnabled(false);
@@ -315,7 +307,8 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 	}
 
 	private void refreshTimeSeries(){
-		contentProvider.refreshCategories(configLocal);
+		//contentProvider.refreshCategories(configLocal);
+		treeViewer.setInput(configLocal.getRootTimeSeriesGroup());
 		btnActivateDayOf.setSelection(configLocal.isDayOfWeekActivated());
 		treeViewer.refresh();
 		treeViewer.expandAll();
@@ -374,15 +367,13 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		public void widgetSelected(SelectionEvent e) {
 			//logger.info("Add serie selected");
 			TreeItem item=tree.getSelection()[0];
-			NeuralNetworkSerieCategory category=(NeuralNetworkSerieCategory) item.getData();
+			TimeSeriesGroup group=(TimeSeriesGroup) item.getData();
 			//Configuration config=stock.getNeuralNetwork().getConfiguration();
 			
-			AddTimeSeriesDialog dialog=new AddTimeSeriesDialog(shell, category.name, configLocal);
+			AddTimeSeriesDialog dialog=new AddTimeSeriesDialog(shell, group, configLocal);
 			if(dialog.open()==AddTimeSeriesDialog.OK && dialog.getSeries()!=null){
 				//TODO
-				
-				
-				configLocal.addTimeSeries(dialog.getSeries(),false);
+				//configLocal.addTimeSeries(dialog.getSeries(),false);
 				refreshTimeSeries();
 				//neuralNetworkProvider.createAllInputPoints(stock);
 				
@@ -396,7 +387,9 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			TreeItem item=tree.getSelection()[0];
 			TimeSeries series=(TimeSeries) item.getData();
 			
-			configLocal.removeTimeSeries(series);
+			series.getParentGroup().getAllTimeSeries().remove(series);
+			
+			//configLocal.removeTimeSeries(series);
 			tree.removeAll();
 			
 			refreshTimeSeries();
@@ -540,13 +533,13 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 
 		@Override
 		public String getText(Object element) {
-			if(element instanceof NeuralNetworkSerieCategory){
-				NeuralNetworkSerieCategory el=(NeuralNetworkSerieCategory) element;
-				return el.name.getCategoryLabel();
-			}
-			else if(element instanceof TimeSeries){
+			if(element instanceof TimeSeries){
 				TimeSeries el=(TimeSeries) element;
 				return String.valueOf(el.getName());
+			}
+			else if(element instanceof TimeSeriesGroup){
+				TimeSeriesGroup group=(TimeSeriesGroup) element;
+				return group.getName();
 			}
 			return super.getText(element);
 		}
@@ -557,13 +550,13 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 
 		@Override
 		public String getText(Object element) {
-			if(element instanceof NeuralNetworkSerieCategory){
-				//NeuralNetworkSerieCategory el=(NeuralNetworkSerieCategory) element;
-				return "-";
-			}
-			else if(element instanceof TimeSeries){
+			
+			if(element instanceof TimeSeries){
 				TimeSeries el=(TimeSeries) element;
 				return String.valueOf(el.getNumberOfPastValues());
+			}
+			else if(element instanceof TimeSeriesGroup){
+				return "-";
 			}
 			return super.getText(element);
 		}
@@ -574,8 +567,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 
 		@Override
 		public String getText(Object element) {
-			if(element instanceof NeuralNetworkSerieCategory){
-				//NeuralNetworkSerieCategory el=(NeuralNetworkSerieCategory) element;
+			if(element instanceof TimeSeriesGroup){
 				return "-";
 			}
 			else if(element instanceof TimeSeries){
@@ -592,8 +584,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 
 		@Override
 		public String getText(Object element) {
-			if(element instanceof NeuralNetworkSerieCategory){
-				//NeuralNetworkSerieCategory el=(NeuralNetworkSerieCategory) element;
+			if(element instanceof TimeSeriesGroup){
 				return "-";
 			}
 			else if(element instanceof TimeSeries){
@@ -670,7 +661,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			int[] minMax=stock.getNeuralNetwork().getConfiguration().getMinMaxInnerNeurons();
 			
 			//Copy the time Series from the local one to the current configuration
-			for(TimeSeries s:configLocal.getAllTimeSeries())
+			for(TimeSeries s:configLocal.getRootTimeSeriesGroup().getAllTimeSeries())
 				InfoPart.postInfoText(eventBroker, "Series: "+s);
 			stock.getNeuralNetwork().getConfiguration().copyTimeSeriesFrom(configLocal);
 			configLocal=stock.getNeuralNetwork().getConfiguration();
@@ -699,7 +690,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 			configLocal.resetTrainingData();
 			neuralNetworkProvider.createAllValuePoints(configLocal,false);
 			configLocal.setResultsCalculationNeeded(true);
-			for(TimeSeries s:configLocal.getAllTimeSeries()){
+			for(TimeSeries s:configLocal.getRootTimeSeriesGroup().getAllTimeSeries()){
 				s.resetMinMaxValues(false);
 			}
 			

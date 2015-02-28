@@ -16,12 +16,13 @@ import org.eclipse.swt.widgets.Shell;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesCategory;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesGroup;
 
 public class AddTimeSeriesDialog extends TitleAreaDialog {
 	private Combo comboTimeSeries;
 	
 	
-	private TimeSeriesCategory category;
+	private TimeSeriesGroup group;
 	private Configuration config;
 	private TimeSeries series=null;
 	
@@ -29,9 +30,9 @@ public class AddTimeSeriesDialog extends TitleAreaDialog {
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public AddTimeSeriesDialog(Shell parentShell,TimeSeriesCategory category,Configuration config) {
+	public AddTimeSeriesDialog(Shell parentShell,TimeSeriesGroup group,Configuration config) {
 		super(parentShell);
-		this.category=category;
+		this.group=group;
 		this.config=config;
 	}
 
@@ -57,11 +58,10 @@ public class AddTimeSeriesDialog extends TitleAreaDialog {
 	}
 	
 	private void fillComboTimeSerie(){
-		LinkedList<String> allSeries=this.category.getAvailableSerieNames();
+		LinkedList<String> allSeries=TimeSeriesGroup.getAvailableSerieNames(group);
 		if(allSeries.size()==0)return;
 		
-		for(TimeSeries series:this.config.getAllTimeSeries()){
-			if(series.getCategory()!=this.category)continue;
+		for(TimeSeries series:group.getTimeSeriesList()){
 			allSeries.remove(series.getName());
 		}
 		
@@ -98,7 +98,8 @@ public class AddTimeSeriesDialog extends TitleAreaDialog {
 	protected void okPressed() {
 		
 		if(comboTimeSeries.getItemCount()>0){
-			series=new TimeSeries(comboTimeSeries.getText(), this.category);
+			series=new TimeSeries(comboTimeSeries.getText());
+			group.addTimeSeries(series);
 			//config.setDirty(true);
 			//config.addTimeSeries(series);
 		}

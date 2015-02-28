@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.ValuePoint;
 import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
 import com.munch.exchange.model.tool.DateTool;
@@ -20,7 +19,7 @@ public class TimeSeries extends XmlParameterElement{
 	
 	static final String FIELD_Name="Name";
 	static final String FIELD_Id="Id";
-	static final String FIELD_Category="Category";
+	//static final String FIELD_Category="Category";
 	static final String FIELD_TimeRemainingActivated="TimeRemainingActivated";
 	public static final String FIELD_NumberOfPastValues="NumberOfPastValues";
 	static final String FIELD_InputValues="InputValues";
@@ -32,12 +31,13 @@ public class TimeSeries extends XmlParameterElement{
 	
 	private String Name;
 	private String id;
-	private TimeSeriesCategory category;
+	//private TimeSeriesCategory category;
 	private boolean isLowFrequency=false;
 	
 	private boolean timeRemainingActivated;
 	private int numberOfPastValues;
 	private Object parent;
+	private TimeSeriesGroup parentGroup;
 	
 	private ValuePointList inputValues=new ValuePointList();
 	private ValuePointList lowFrequencyValues=new ValuePointList();
@@ -48,9 +48,9 @@ public class TimeSeries extends XmlParameterElement{
 	
 	public TimeSeries(){}
 	
-	public TimeSeries(String Name,TimeSeriesCategory category){
+	public TimeSeries(String Name/*,TimeSeriesCategory category*/){
 		this.Name=Name;
-		this.setCategory(category);
+		//this.setCategory(category);
 		//this.category=category;
 		id="";
 		timeRemainingActivated=false;
@@ -58,11 +58,16 @@ public class TimeSeries extends XmlParameterElement{
 	}
 	
 	public TimeSeries createCopy(){
-		TimeSeries copy = new TimeSeries(Name, category.createCopy());
+		TimeSeries copy = new TimeSeries(Name/*, category.createCopy()*/);
 		copy.id=this.id;
 		copy.timeRemainingActivated=this.timeRemainingActivated;
 		copy.numberOfPastValues=this.numberOfPastValues;
-
+		copy.isLowFrequency=this.isLowFrequency;
+		
+		copy.minValue=this.minValue;
+		copy.maxValue=this.maxValue;
+		copy.MinMaxLastRefreshDate=this.MinMaxLastRefreshDate;
+		
 		return copy;
 	}
 	
@@ -230,14 +235,26 @@ public class TimeSeries extends XmlParameterElement{
 		LinkedList<String> names=new LinkedList<String>();
 		
 		for(int j=0;j<numberOfPastValues;j++){
-			names.add(this.category.name()+"_"+this.Name+"_"+String.valueOf(j+1));
+			names.add(this.getNamePrefix()+"_"+this.Name+"_"+String.valueOf(j+1));
 		}
 		
 		if(this.isTimeRemainingActivated()){
-			names.add(this.category.name()+"_"+this.Name+"_TimeRemaining");
+			names.add(this.getNamePrefix()+"_"+this.Name+"_TimeRemaining");
 		}
 		return names;
 		
+	}
+	
+	private String getNamePrefix(){
+		String prefix="";
+		
+		if(this.parentGroup!=null && this.parentGroup.getParent()!=null)
+			prefix=this.parentGroup.getParent().getName()+"_"+this.parentGroup.getName();
+		else if(this.parentGroup!=null){
+			prefix=this.parentGroup.getName();
+		}
+		
+		return prefix;
 	}
 	
 	
@@ -312,6 +329,15 @@ public class TimeSeries extends XmlParameterElement{
 		return parent;
 	}
 
+	public TimeSeriesGroup getParentGroup() {
+		return parentGroup;
+	}
+
+	public void setParentGroup(TimeSeriesGroup parentGroup) {
+	this.parentGroup = parentGroup;
+	}
+	
+
 	public Calendar getMinMaxLastRefreshDate() {
 		return MinMaxLastRefreshDate;
 	}
@@ -341,7 +367,12 @@ public class TimeSeries extends XmlParameterElement{
 	changes.firePropertyChange(FIELD_InputValues, this.inputValues, this.inputValues = inputValues);}
 	
 
-	public void setParent(Object parent) {this.parent = parent;}
+	public void setParent(Object parent) {
+		this.parent = parent;
+		if(this.parentGroup.getName().equals(TimeSeriesGroup.GROUP_FINANCIAL)){
+			this.isLowFrequency=true;
+		}
+	}
 	
 	public String getName() {
 		return Name;
@@ -357,17 +388,7 @@ public class TimeSeries extends XmlParameterElement{
 
 	public void setId(String id) {
 	changes.firePropertyChange(FIELD_Id, this.id, this.id = id);}
-	
-	public TimeSeriesCategory getCategory() {
-		return category;
-	}
 
-	public void setCategory(TimeSeriesCategory category) {
-		changes.firePropertyChange(FIELD_Category, this.category, this.category = category);
-		if(category.equals(TimeSeriesCategory.FINANCIAL)){
-			this.isLowFrequency=true;
-		}
-	}
 	
 	public boolean isTimeRemainingActivated() {
 		return timeRemainingActivated;
@@ -408,7 +429,7 @@ public class TimeSeries extends XmlParameterElement{
 	protected void initAttribute(Element rootElement) {
 		this.setName(rootElement.getAttribute(FIELD_Name));
 		this.setId(rootElement.getAttribute(FIELD_Id));
-		this.setCategory(TimeSeriesCategory.fromString(rootElement.getAttribute(FIELD_Category)));
+		//this.setCategory(TimeSeriesCategory.fromString(rootElement.getAttribute(FIELD_Category)));
 		this.setNumberOfPastValues(Integer.parseInt(rootElement.getAttribute(FIELD_NumberOfPastValues)));
 		this.setTimeRemainingActivated(Boolean.parseBoolean(rootElement.getAttribute(FIELD_TimeRemainingActivated)));
 		this.setLowFrequency(Boolean.parseBoolean(rootElement.getAttribute(FIELD_IsLowFrequency)));
@@ -429,7 +450,7 @@ public class TimeSeries extends XmlParameterElement{
 	protected void setAttribute(Element rootElement) {
 		rootElement.setAttribute(FIELD_Name,this.getName());
 		rootElement.setAttribute(FIELD_Id,this.getId());
-		rootElement.setAttribute(FIELD_Category,this.getCategory().getCategoryLabel());
+		//rootElement.setAttribute(FIELD_Category,this.getCategory().getCategoryLabel());
 		rootElement.setAttribute(FIELD_NumberOfPastValues,String.valueOf(this.getNumberOfPastValues()));
 		rootElement.setAttribute(FIELD_TimeRemainingActivated,String.valueOf(this.isTimeRemainingActivated()));
 		rootElement.setAttribute(FIELD_IsLowFrequency,String.valueOf(this.isLowFrequency()));
@@ -446,8 +467,8 @@ public class TimeSeries extends XmlParameterElement{
 
 	@Override
 	public String toString() {
-		return "TimeSeries [Name=" + Name + ", id=" + id + ", category="
-				+ category + ", isLowFrequency=" + isLowFrequency
+		return "TimeSeries [Name=" + Name + ", id=" + id + 
+				", isLowFrequency=" + isLowFrequency
 				+ ", timeRemainingActivated=" + timeRemainingActivated
 				+ ", numberOfPastValues=" + numberOfPastValues + ", parent="
 				+ parent + ", inputValues=" + inputValues

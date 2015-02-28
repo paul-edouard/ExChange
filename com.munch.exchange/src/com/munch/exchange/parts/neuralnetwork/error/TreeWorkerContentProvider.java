@@ -8,8 +8,6 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkInputConfiguratorContentProvider;
-import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkInputConfiguratorContentProvider.NeuralNetworkSerieCategory;
 
 public class TreeWorkerContentProvider implements IStructuredContentProvider,
 		ITreeContentProvider {
@@ -18,9 +16,7 @@ public class TreeWorkerContentProvider implements IStructuredContentProvider,
 	
 	private Workers workers;
 	
-	
-	
-	
+
 	public TreeWorkerContentProvider(String workersGroup) {
 		super();
 		this.workers = new Workers(workersGroup);

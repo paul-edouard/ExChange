@@ -14,7 +14,6 @@ import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
 
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
-import com.munch.exchange.parts.neuralnetwork.data.NeuralNetworkInputConfiguratorContentProvider.NeuralNetworkSerieCategory;
 
 public class NeuralNetworkTrainingDataContentProvider implements
 		IStructuredContentProvider, ITreeContentProvider {
