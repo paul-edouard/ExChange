@@ -113,8 +113,11 @@ public class TimeSeriesGroup extends XmlParameterElement {
 		
 	}
 	
-	
 	public void searchLastAvailableInputPointDate(ExchangeRate rate, Configuration configuration){
+		for(TimeSeriesGroup subGoup:subGroups){
+			subGoup.searchLastAvailableInputPointDate(rate, configuration);
+		}
+		
 		if(!rate.getUUID().equals(referencedRateUUID)){
 			logger.info("Error: searchLastAvailableInputPointDate, the wrong rate is used! Expected is "+referencedRateUUID);
 			return ;
@@ -161,14 +164,15 @@ public class TimeSeriesGroup extends XmlParameterElement {
 			//TODO
 		}
 		
-		for(TimeSeriesGroup subGoup:subGroups){
-			subGoup.searchLastAvailableInputPointDate(rate, configuration);
-		}
+		
 		
 	}
 	
-	
 	public void createInputValueLists(ExchangeRate rate, Configuration configuration){
+		for(TimeSeriesGroup subGoup:subGroups){
+			subGoup.createInputValueLists(rate, configuration);
+		}
+		
 		if(!rate.getUUID().equals(referencedRateUUID)){
 			logger.info("Error: createInputValueLists, the wrong rate is used! Expected is "+referencedRateUUID);
 			return ;
@@ -190,10 +194,6 @@ public class TimeSeriesGroup extends XmlParameterElement {
 		//
 		else if(this.name.equals(GROUP_INDICATOR)){
 			createIndicatorInputValueLists(rate,configuration);
-		}
-		
-		for(TimeSeriesGroup subGoup:subGroups){
-			subGoup.createInputValueLists(rate, configuration);
 		}
 		
 	}

@@ -415,8 +415,6 @@ public class Configuration extends XmlParameterElement {
 	// Architecture
 	//*************************
 	
-	
-
 
 
 	public synchronized NetworkArchitecture searchArchitecture(String id){
