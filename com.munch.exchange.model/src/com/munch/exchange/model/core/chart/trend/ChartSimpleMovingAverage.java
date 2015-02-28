@@ -9,15 +9,19 @@ import com.munch.exchange.model.core.chart.ChartSerie;
 import com.munch.exchange.model.core.chart.ChartSerie.RendererType;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 
 public class ChartSimpleMovingAverage extends ChartIndicator {
 	
 	public static final String SMA="SMA";
 	public static final String PERIOD="Period";
 
+	public ChartSimpleMovingAverage(TimeSeries series) {
+		super(series);
+	}
+	
 	public ChartSimpleMovingAverage(ChartIndicatorGroup parent) {
 		super(parent);
-		this.name="Simple Moving Average";
 	}
 
 	@Override
@@ -45,6 +49,11 @@ public class ChartSimpleMovingAverage extends ChartIndicator {
 		ChartParameter param=new ChartParameter(this, PERIOD, ParameterType.INTEGER, 12, 1, 200, 0);
 		this.chartParameters.add(param);
 		
+	}
+
+	@Override
+	public void initName() {
+		this.name="Simple Moving Average";
 	}
 	
 	

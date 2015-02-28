@@ -126,7 +126,12 @@ public class ChartParameter extends XmlParameterElement {
 		return (int) value;
 	}
 	
-
+	
+	
+	public void setValue(String value){
+		setValue(Double.parseDouble(value));
+	}
+	
 	public void setValue(double value) {
 	changes.firePropertyChange(FIELD_Value, this.value, this.value = value);
 	

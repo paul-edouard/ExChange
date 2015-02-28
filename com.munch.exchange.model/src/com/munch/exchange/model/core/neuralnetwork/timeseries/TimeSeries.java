@@ -7,6 +7,8 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.chart.ChartIndicator;
+import com.munch.exchange.model.core.chart.ChartIndicatorFactory;
 import com.munch.exchange.model.core.neuralnetwork.ValuePoint;
 import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
 import com.munch.exchange.model.tool.DateTool;
@@ -38,6 +40,7 @@ public class TimeSeries extends XmlParameterElement{
 	private int numberOfPastValues;
 	private Object parent;
 	private TimeSeriesGroup parentGroup;
+	private ChartIndicator indicator=null;
 	
 	private ValuePointList inputValues=new ValuePointList();
 	private ValuePointList lowFrequencyValues=new ValuePointList();
@@ -46,7 +49,11 @@ public class TimeSeries extends XmlParameterElement{
 	private double maxValue=Double.NaN;
 	private Calendar MinMaxLastRefreshDate=Calendar.getInstance();
 	
-	public TimeSeries(){}
+	public TimeSeries(){
+		id="";
+		timeRemainingActivated=false;
+		numberOfPastValues=4;
+	}
 	
 	public TimeSeries(String Name/*,TimeSeriesCategory category*/){
 		this.Name=Name;
@@ -54,7 +61,7 @@ public class TimeSeries extends XmlParameterElement{
 		//this.category=category;
 		id="";
 		timeRemainingActivated=false;
-		numberOfPastValues=6;
+		numberOfPastValues=4;
 	}
 	
 	public TimeSeries createCopy(){
@@ -324,10 +331,20 @@ public class TimeSeries extends XmlParameterElement{
 	//***      GETTER AND SETTER           ****
 	//****************************************
 	
+	public ChartIndicator getIndicator() {
+		return indicator;
+	}
+
+	public void setIndicator(ChartIndicator indicator) {
+		this.indicator = indicator;
+	}
+	
 
 	public Object getParent() {
 		return parent;
 	}
+
+	
 
 	public TimeSeriesGroup getParentGroup() {
 		return parentGroup;
@@ -444,7 +461,15 @@ public class TimeSeries extends XmlParameterElement{
 	}
 
 	@Override
-	protected void initChild(Element childElement) {}
+	protected void initChild(Element childElement) {
+		ChartIndicator ind=ChartIndicatorFactory.createChartIndicator(
+				childElement.getTagName(), this);
+		
+		if(ind!=null){
+			this.indicator=ind;
+		}
+		
+	}
 
 	@Override
 	protected void setAttribute(Element rootElement) {
@@ -463,7 +488,10 @@ public class TimeSeries extends XmlParameterElement{
 	}
 
 	@Override
-	protected void appendChild(Element rootElement, Document doc) {}
+	protected void appendChild(Element rootElement, Document doc) {
+		if(indicator!=null)
+			rootElement.appendChild(indicator.toDomElement(doc));
+	}
 
 	@Override
 	public String toString() {

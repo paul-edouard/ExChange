@@ -5,6 +5,9 @@ package com.munch.exchange.parts.neuralnetwork.data;
 import javax.inject.Inject;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -53,6 +56,7 @@ import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesGroup;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.InfoPart;
+import com.munch.exchange.parts.RatesTreeDragSourceListener;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkConfigEditor;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
@@ -106,7 +110,8 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 	
 	@Inject
 	public NeuralNetworkInputConfiguratorComposite(Composite parent,ExchangeRate rate,
-			INeuralNetworkProvider nnProvider, NeuralNetworkConfigEditor configEditor) {
+			INeuralNetworkProvider nnProvider, NeuralNetworkConfigEditor configEditor,
+			IExchangeRateProvider exchangeRateProvider) {
 		super(parent, SWT.NONE);
 		this.configEditor=configEditor;
 		this.parent=parent;
@@ -207,6 +212,12 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		if(configLocal!=null)
 		treeViewer.setInput(configLocal.getRootTimeSeriesGroup());
 		
+		//Add Drop Support
+		int operations = DND.DROP_COPY| DND.DROP_MOVE;
+		Transfer[] transferTypes = new Transfer[]{TextTransfer.getInstance()};
+		treeViewer.addDropSupport(operations, transferTypes,
+				new NeuralNetworkInputConfiguratorDropListener(this,exchangeRateProvider));
+		
 		tree = treeViewer.getTree();
 		tree.addMouseListener(new MouseAdapter() {
 			@Override
@@ -239,6 +250,8 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		tree.setHeaderVisible(true);
 		tree.setLinesVisible(true);
+		
+		//tree.setDragDetect(true);
 		
 		
 		TreeViewerColumn treeViewerColumnInputSeries = new TreeViewerColumn(treeViewer, SWT.NONE);
@@ -306,7 +319,7 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 		return progressBar;
 	}
 
-	private void refreshTimeSeries(){
+	public void refreshTimeSeries(){
 		//contentProvider.refreshCategories(configLocal);
 		treeViewer.setInput(configLocal.getRootTimeSeriesGroup());
 		btnActivateDayOf.setSelection(configLocal.isDayOfWeekActivated());
@@ -316,6 +329,17 @@ public class NeuralNetworkInputConfiguratorComposite extends Composite {
 	
 	
 	
+	public boolean isEditing() {
+		return isEditing;
+	}
+
+
+	public TreeViewer getTreeViewer() {
+		return treeViewer;
+	}
+
+
+
 	//################################
 	//##       Button Actions       ##
 	//################################		

@@ -1,7 +1,6 @@
 package com.munch.exchange.model.core.chart.trend;
 
 import com.munch.exchange.model.analytic.indicator.trend.DoubleMovingAverage;
-import com.munch.exchange.model.analytic.indicator.trend.MovingAverage;
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
 import com.munch.exchange.model.core.chart.ChartParameter;
@@ -10,6 +9,7 @@ import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
 import com.munch.exchange.model.core.chart.ChartSerie.RendererType;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 
 public class ChartDoubleLinearWeigthedMovingAverage extends ChartIndicator {
 	
@@ -17,9 +17,13 @@ public class ChartDoubleLinearWeigthedMovingAverage extends ChartIndicator {
 	
 	public static final String PERIOD="PERIOD";
 
+	
+	public ChartDoubleLinearWeigthedMovingAverage(TimeSeries series) {
+		super(series);
+	}
+	
 	public ChartDoubleLinearWeigthedMovingAverage(ChartIndicatorGroup parent) {
 		super(parent);
-		this.name="Double Linear Weigthed Moving Average";
 	}
 
 	@Override
@@ -46,6 +50,11 @@ public class ChartDoubleLinearWeigthedMovingAverage extends ChartIndicator {
 	public void createParameters() {
 		ChartParameter param=new ChartParameter(this, PERIOD, ParameterType.INTEGER, 12, 1, 200, 0);
 		this.chartParameters.add(param);
+	}
+	
+	@Override
+	public void initName() {
+		this.name="Double Linear Weigthed Moving Average";
 	}
 
 }

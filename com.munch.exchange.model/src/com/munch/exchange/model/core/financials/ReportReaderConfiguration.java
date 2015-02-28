@@ -96,6 +96,10 @@ public class ReportReaderConfiguration extends XmlParameterElement {
 	}
 	
 	public void searchAllDocumentsOfSelectedType(String content){
+		if(content==null || content.isEmpty()){
+			return;
+		}
+				
 		LinkedList<String> docs=new LinkedList<String>();
 		String[] tockens=content.split("\n");
 		for(int i=0;i<tockens.length;i++){

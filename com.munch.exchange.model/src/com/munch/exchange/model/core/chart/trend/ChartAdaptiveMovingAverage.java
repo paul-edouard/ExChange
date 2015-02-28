@@ -1,7 +1,6 @@
 package com.munch.exchange.model.core.chart.trend;
 
 import com.munch.exchange.model.analytic.indicator.trend.AdaptiveMovingAverage;
-import com.munch.exchange.model.analytic.indicator.trend.MovingAverage;
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
 import com.munch.exchange.model.core.chart.ChartParameter;
@@ -10,6 +9,7 @@ import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
 import com.munch.exchange.model.core.chart.ChartSerie.RendererType;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 
 public class ChartAdaptiveMovingAverage extends ChartIndicator {
 	
@@ -20,9 +20,13 @@ public class ChartAdaptiveMovingAverage extends ChartIndicator {
 	public static final String SLOW_MEA="Slow MEA";
 	public static final String FAST_EMA="Fast MEA";
 	
+	public ChartAdaptiveMovingAverage(TimeSeries series) {
+		super(series);
+	}
+	
+	
 	public ChartAdaptiveMovingAverage(ChartIndicatorGroup parent) {
 		super(parent);
-		this.name="Adaptive Moving Average";
 	}
 	
 	
@@ -61,6 +65,11 @@ public class ChartAdaptiveMovingAverage extends ChartIndicator {
 		this.chartParameters.add(p2);
 		this.chartParameters.add(p3);
 		
+	}
+	
+	@Override
+	public void initName() {
+		this.name="Adaptive Moving Average";
 	}
 
 	

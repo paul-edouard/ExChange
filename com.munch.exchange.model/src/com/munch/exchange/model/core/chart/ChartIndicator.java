@@ -7,6 +7,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.historical.HistoricalData;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public abstract class ChartIndicator extends XmlParameterElement {
@@ -25,6 +26,16 @@ public abstract class ChartIndicator extends XmlParameterElement {
 	protected LinkedList<ChartParameter> chartParameters=new LinkedList<ChartParameter>();
 	
 	private ChartIndicatorGroup parent;
+	private TimeSeries series;
+	
+	public ChartIndicator(TimeSeries series){
+		super();
+		this.series=series;
+		
+		initName();
+		createSeries();
+		createParameters();
+	}
 	
 	
 	public ChartIndicator(ChartIndicatorGroup parent) {
@@ -34,10 +45,13 @@ public abstract class ChartIndicator extends XmlParameterElement {
 		if(this.parent!=null)
 		this.parent.getIndicators().add(this);
 		
+		initName();
 		createSeries();
 		createParameters();
 		
 	}
+	
+	public abstract void initName();
 
 	public abstract void compute(HistoricalData hisData);
 	
@@ -50,6 +64,15 @@ public abstract class ChartIndicator extends XmlParameterElement {
 			p.resetDefault();
 		}
 	}
+	
+	public String toCsvString(){
+		String csv=this.getClass().getSimpleName();
+		for(ChartParameter param:chartParameters){
+			csv+=";"+String.valueOf(param.getValue());
+		}
+		return csv;
+	}
+	
 	
 	
 	/***********************************

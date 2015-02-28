@@ -16,6 +16,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.ui.MDirtyable;
@@ -141,6 +144,12 @@ public class ChartTreeComposite extends Composite {
 		treeViewer.setContentProvider(new ChartTreeContentProvider());
 		treeViewer.setInput(this.rate.getIndicatorGroup());
 		treeViewer.setAutoExpandLevel(2);
+		
+		//Add Drag Support
+		int operations = DND.DROP_COPY| DND.DROP_MOVE;
+		Transfer[] transferTypes = new Transfer[]{TextTransfer.getInstance()};
+		treeViewer.addDragSupport(operations, transferTypes , new ChartTreeDragSourceListener(treeViewer,this.rate));
+
 		
 		ColumnViewerToolTipSupport.enableFor(treeViewer, ToolTip.NO_RECREATE); 
 		

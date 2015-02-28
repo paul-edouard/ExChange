@@ -83,6 +83,23 @@ public class TimeSeriesGroup extends XmlParameterElement {
 		return root;
 	}
 	
+	public TimeSeriesGroup searchIndicatorGroupOf(ExchangeRate rate){
+		addNewBranch(rate);
+		TimeSeriesGroup root=searchRoot();
+		for(TimeSeriesGroup baseGroup:root.getSubGroups()){
+			if(baseGroup.getReferencedRateUUID().equals(rate.getUUID())){
+				for(TimeSeriesGroup g:baseGroup.getSubGroups()){
+					if(g.getName().equals(GROUP_FINANCIAL))
+						return g;
+				}
+				
+			}
+		}
+		
+		return null;
+	}
+	
+	
 	private boolean isBranched(ExchangeRate rate){
 		TimeSeriesGroup root=searchRoot();
 		for(TimeSeriesGroup c:root.getSubGroups()){
