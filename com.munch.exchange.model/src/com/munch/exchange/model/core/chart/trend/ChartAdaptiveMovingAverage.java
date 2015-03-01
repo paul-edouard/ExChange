@@ -9,6 +9,7 @@ import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
 import com.munch.exchange.model.core.chart.ChartSerie.RendererType;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 
 public class ChartAdaptiveMovingAverage extends ChartIndicator {
@@ -32,14 +33,17 @@ public class ChartAdaptiveMovingAverage extends ChartIndicator {
 	
 	@Override
 	public void compute(HistoricalData hisData) {
-		double[] prices=hisData.getPrices(HistoricalPoint.Type.CLOSE);
+		//double[] prices=hisData.getPrices(HistoricalPoint.Type.CLOSE);
 		
-		double[] ama=AdaptiveMovingAverage.compute(prices,
+		ValuePointList pricesList=hisData.getPricesAsValuePointList(HistoricalPoint.Type.CLOSE);
+		
+		double[] ama=AdaptiveMovingAverage.compute(pricesList.toDoubleArray(),
 				this.getChartParameter(PERIOD).getIntegerValue(),
 				this.getChartParameter(SLOW_MEA).getIntegerValue(),
 				this.getChartParameter(FAST_EMA).getIntegerValue());
 		
-		this.getChartSerie(AMA).setValues(ama);
+		this.getChartSerie(AMA).setValues(pricesList,ama);
+		this.getChartSerie(AMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
 		
 		setDirty(false);
 		

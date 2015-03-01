@@ -75,6 +75,8 @@ public class TimeSeries extends XmlParameterElement{
 		copy.maxValue=this.maxValue;
 		copy.MinMaxLastRefreshDate=this.MinMaxLastRefreshDate;
 		
+		copy.indicator=this.indicator;
+		
 		return copy;
 	}
 	

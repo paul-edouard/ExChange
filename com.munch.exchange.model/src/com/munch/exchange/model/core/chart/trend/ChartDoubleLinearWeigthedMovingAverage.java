@@ -9,6 +9,7 @@ import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
 import com.munch.exchange.model.core.chart.ChartSerie.RendererType;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
+import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 
 public class ChartDoubleLinearWeigthedMovingAverage extends ChartIndicator {
@@ -28,12 +29,16 @@ public class ChartDoubleLinearWeigthedMovingAverage extends ChartIndicator {
 
 	@Override
 	public void compute(HistoricalData hisData) {
-		double[] prices=hisData.getPrices(HistoricalPoint.Type.CLOSE);
-		double[] computed=DoubleMovingAverage.computeLWMA(prices,
+		//double[] prices=hisData.getPrices(HistoricalPoint.Type.CLOSE);
+		
+		ValuePointList pricesList=hisData.getPricesAsValuePointList(HistoricalPoint.Type.CLOSE);
+		
+		
+		double[] computed=DoubleMovingAverage.computeLWMA(pricesList.toDoubleArray(),
 				this.getChartParameter(PERIOD).getIntegerValue());
 		
-		this.getChartSerie(DLWMA).setValues(computed);
-		
+		this.getChartSerie(DLWMA).setValues(pricesList,computed);
+		this.getChartSerie(DLWMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
 		setDirty(false);
 
 	}

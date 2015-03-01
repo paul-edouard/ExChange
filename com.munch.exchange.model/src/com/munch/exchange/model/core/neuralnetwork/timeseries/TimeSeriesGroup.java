@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.analytic.indicator.Indicator;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
@@ -89,7 +90,7 @@ public class TimeSeriesGroup extends XmlParameterElement {
 		for(TimeSeriesGroup baseGroup:root.getSubGroups()){
 			if(baseGroup.getReferencedRateUUID().equals(rate.getUUID())){
 				for(TimeSeriesGroup g:baseGroup.getSubGroups()){
-					if(g.getName().equals(GROUP_FINANCIAL))
+					if(g.getName().equals(GROUP_INDICATOR))
 						return g;
 				}
 				
@@ -97,6 +98,10 @@ public class TimeSeriesGroup extends XmlParameterElement {
 		}
 		
 		return null;
+	}
+	
+	private boolean isRoot(){
+		return name.equals(ROOT);
 	}
 	
 	
@@ -130,13 +135,22 @@ public class TimeSeriesGroup extends XmlParameterElement {
 		
 	}
 	
+	/**
+	 * in order to prepare the input values for the training of neural network
+	 *  the last available input point date have to be calculated
+	 * 
+	 * @param rate
+	 * @param configuration
+	 */
 	public void searchLastAvailableInputPointDate(ExchangeRate rate, Configuration configuration){
 		for(TimeSeriesGroup subGoup:subGroups){
 			subGoup.searchLastAvailableInputPointDate(rate, configuration);
 		}
 		
+		if(isRoot())return;
+		
 		if(!rate.getUUID().equals(referencedRateUUID)){
-			logger.info("Error: searchLastAvailableInputPointDate, the wrong rate is used! Expected is "+referencedRateUUID);
+			logger.info("Error: createInputValueLists, the wrong rate is used! Expected is "+referencedRateUUID+"for group "+this.getFullName());
 			return ;
 		}
 		//Rate Series
@@ -177,21 +191,43 @@ public class TimeSeriesGroup extends XmlParameterElement {
 		}
 		//Indicators
 		else if(this.name.equals(GROUP_INDICATOR)){
-			logger.info("Please implements this section! searchLastAvailableInputPointDate");
-			//TODO
+			//logger.info("Please implements this section! searchLastAvailableInputPointDate");
+			for(TimeSeries series:this.timeSeriesList){
+				int nbOfValues=series.getNumberOfPastValues();
+				if(series.getIndicator()==null)continue;
+				
+				if(configuration.getPeriod()==PeriodType.DAY){
+					LinkedList<HistoricalPoint> hisPointList=rate.getHistoricalData().getNoneEmptyPoints();
+					series.getIndicator().compute(rate.getHistoricalData());
+					int total=nbOfValues+series.getIndicator().getMainChartSerie().getValidAtPosition();
+					configuration.setLastInputPointDate(hisPointList.get(total-1).getDate());
+					
+					logger.info(GROUP_INDICATOR+", Last input point Date: "+DateTool.dateToDayString(configuration.getLastInputPointDate()));
+				}
+				
+			}
 		}
 		
 		
 		
 	}
 	
+	/**
+	 * creates the input value of all attached time series
+	 *  to prepare the training of the neural networks
+	 * 
+	 * @param rate
+	 * @param configuration
+	 */
 	public void createInputValueLists(ExchangeRate rate, Configuration configuration){
 		for(TimeSeriesGroup subGoup:subGroups){
 			subGoup.createInputValueLists(rate, configuration);
 		}
 		
+		if(isRoot())return;
+		
 		if(!rate.getUUID().equals(referencedRateUUID)){
-			logger.info("Error: createInputValueLists, the wrong rate is used! Expected is "+referencedRateUUID);
+			logger.info("Error: createInputValueLists, the wrong rate is used! Expected is "+referencedRateUUID+"for group "+this.getFullName());
 			return ;
 		}
 		//Rate Series
@@ -251,6 +287,8 @@ public class TimeSeriesGroup extends XmlParameterElement {
 			//series.adaptInputValuesToMasterValuePointList(masterValuePointList);
 			series.getInputValues().clear();
 			series.getLowFrequencyValues().clear();
+			
+			series.setLowFrequency(true);
 			
 			//Save the input value dates
 			for(HistoricalPoint his_point:hisPointList){
@@ -340,8 +378,41 @@ public class TimeSeriesGroup extends XmlParameterElement {
 	
 	private void createIndicatorInputValueLists(ExchangeRate rate, Configuration configuration){
 		//TODO
+		//logger.info("Warning implements this section! createIndicatorInputValueLists");
 		
-		logger.info("Please implements this section! createIndicatorInputValueLists");
+		if(configuration.getPeriod()==PeriodType.DAY){
+			//LinkedList<HistoricalPoint> hisPointList=rate.getHistoricalData().getNoneEmptyPoints();
+			for(TimeSeries series:this.timeSeriesList){
+				
+				series.getInputValues().clear();
+				if(series.getIndicator()==null){
+					logger.info("Indicator is null for serie: "+series.getName());
+					continue;
+				}
+			
+				series.getIndicator().compute(rate.getHistoricalData());
+				for(ValuePoint v_point:series.getIndicator().getMainChartSerie().getValuePointList()){
+					
+					//======================================
+					//==Set the next value date: + 1 DAY  ==
+					//======================================
+					Calendar expectedNextValue=Calendar.getInstance();
+					expectedNextValue.setTimeInMillis(v_point.getDate().getTimeInMillis()+PeriodType.DAY.getPeriod());
+					v_point.setNextValueDate(expectedNextValue);
+					
+					series.getInputValues().add(v_point);
+				}
+				
+				logger.info("Series: "+series.getName()
+						+", first point: "+DateTool.dateToDayString(series.getInputValues().getFirst().getDate())
+						+", last point: "+DateTool.dateToDayString(series.getInputValues().getLast().getDate())
+						+", Size:"+series.getInputValues().size());
+				
+				
+			}
+			
+		}
+		
 	}
 	
 	
@@ -373,6 +444,18 @@ public class TimeSeriesGroup extends XmlParameterElement {
 	public String getName() {
 		return name;
 	}
+	
+	public String getFullName(){
+		String name=this.getName();
+		TimeSeriesGroup parent=this.getParent();
+		while(parent!=null){
+			name=parent.getName()+";"+name;
+			parent=parent.getParent();
+		}
+		
+		return name;
+	}
+	
 
 	public void setName(String name) {
 	changes.firePropertyChange(FIELD_Name, this.name, this.name = name);

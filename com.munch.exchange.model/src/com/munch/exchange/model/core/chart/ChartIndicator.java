@@ -132,6 +132,13 @@ public abstract class ChartIndicator extends XmlParameterElement {
 		return null;
 	}
 	
+	public ChartSerie getMainChartSerie(){
+		for(ChartSerie serie:chartSeries){
+			if(serie.isMain())return serie;
+		}
+		return null;
+	}
+	
 
 	public LinkedList<ChartSerie> getChartSeries() {
 		return chartSeries;

@@ -1,13 +1,18 @@
 package com.munch.exchange.model.core.chart;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
+import com.munch.exchange.model.core.neuralnetwork.ValuePoint;
+import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
+import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesGroup;
 import com.munch.exchange.model.xml.XmlParameterElement;
 
 public class ChartSerie extends XmlParameterElement{
 	
+	private static Logger logger = Logger.getLogger(ChartSerie.class);
 	
 	static final String FIELD_Name="Name";
 	static final String FIELD_Values="Values";
@@ -24,6 +29,7 @@ public class ChartSerie extends XmlParameterElement{
 	
 	private String name;
 	private double[] values;
+	private ValuePointList valuePointList=new ValuePointList();
 	private int validAtPosition=0;
 	private boolean isMain=false;
 	private boolean isActivated=false;
@@ -111,6 +117,10 @@ public class ChartSerie extends XmlParameterElement{
 	 *	    GETTER AND SETTER          *
 	 ***********************************/	
 	
+	public ValuePointList getValuePointList() {
+		return valuePointList;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -124,8 +134,20 @@ public class ChartSerie extends XmlParameterElement{
 		return values;
 	}
 
-	public void setValues(double[] values) {
-		changes.firePropertyChange(FIELD_Values, this.values, this.values = values);
+	public void setValues(ValuePointList interval, double[] values) {
+		if(interval.size()!=values.length){
+			logger.info("Warning the input value point list and the values don't have the sane length!");
+			return;
+		}
+		
+		valuePointList.clear();
+		for(int i=0;i<values.length;i++){
+			ValuePoint point=new ValuePoint(interval.get(i).getDate(), values[i]);
+			valuePointList.add(point);
+		}
+		
+		this.values=valuePointList.toDoubleArray();
+		
 	}
 	
 

@@ -21,6 +21,8 @@ import org.jfree.data.xy.YIntervalSeries;
 import com.munch.exchange.model.core.DatePoint;
 import com.munch.exchange.model.core.DatePointList;
 import com.munch.exchange.model.core.historical.HistoricalPoint.Type;
+import com.munch.exchange.model.core.neuralnetwork.ValuePoint;
+import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
 
 public class HistoricalData extends DatePointList<HistoricalPoint>  {
 	
@@ -181,6 +183,17 @@ public class HistoricalData extends DatePointList<HistoricalPoint>  {
 		 
 		 return prices;
 		
+	}
+	
+	public ValuePointList getPricesAsValuePointList(Type type){
+		LinkedList<HistoricalPoint> pointList= getNoneEmptyPoints();
+		ValuePointList list=new ValuePointList();
+		for(HistoricalPoint h_point:pointList){
+			ValuePoint point=new ValuePoint(h_point.getDate(), h_point.getDouble(type));
+			list.add(point);
+		}
+		
+		return list;
 	}
 	
 	
