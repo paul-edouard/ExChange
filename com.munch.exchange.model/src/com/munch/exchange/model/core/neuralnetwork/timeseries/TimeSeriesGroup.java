@@ -178,7 +178,7 @@ public class TimeSeriesGroup extends XmlParameterElement {
 		//Target Output
 		else if(this.name.equals(GROUP_TARGET_OUTPUT) &&
 				configuration.getOutputPointList()!=null &&
-				 configuration.getOutputPointList().isEmpty()){
+				!configuration.getOutputPointList().isEmpty()){
 			
 			for(TimeSeries series:this.timeSeriesList){
 				int nbOfValues=series.getNumberOfPastValues();
@@ -239,10 +239,12 @@ public class TimeSeriesGroup extends XmlParameterElement {
 			createFinancialInputValueLists((Stock)rate,configuration );
 		}
 		//Target Output
-		else if(this.name.equals(GROUP_TARGET_OUTPUT) &&
-						configuration.getOutputPointList()!=null &&
-						 configuration.getOutputPointList().isEmpty()){
-			createTargetOutputInputValueLists((Stock)rate,configuration);
+		else if(this.name.equals(GROUP_TARGET_OUTPUT)){
+			if(configuration.getOutputPointList()!=null &&
+						 !configuration.getOutputPointList().isEmpty()){
+			
+				createTargetOutputInputValueLists((Stock)rate,configuration);
+			}
 		}
 		//
 		else if(this.name.equals(GROUP_INDICATOR)){
@@ -341,6 +343,7 @@ public class TimeSeriesGroup extends XmlParameterElement {
 		for(TimeSeries series:this.timeSeriesList){
 			series.getInputValues().clear();
 			ValuePoint lastPoint=null;
+			//logger.info("Number of OutputPoints: "+configuration.getOutputPointList().size());
 			for(ValuePoint point:configuration.getOutputPointList()){
 				if(lastPoint!=null){
 					ValuePoint outputPoint=new ValuePoint(point.getDate(), lastPoint.getValue());

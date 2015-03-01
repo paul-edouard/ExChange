@@ -374,6 +374,8 @@ public class Configuration extends XmlParameterElement {
 	 * @return
 	 */
 	public boolean areAllTimeSeriesAvailable(){
+		if(this.rootTimeSeriesGroup==null)return false;
+		
 		for(TimeSeries series:this.rootTimeSeriesGroup.getAllTimeSeries()){
 			if(series.getInputValues().isEmpty())return false;
 		}
