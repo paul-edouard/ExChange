@@ -355,6 +355,7 @@ public class TimeSeriesGroup extends XmlParameterElement {
 					expectedNextValue.setTimeInMillis(point.getDate().getTimeInMillis()+PeriodType.DAY.getPeriod());
 					outputPoint.setNextValueDate(expectedNextValue);
 					
+					
 					series.getInputValues().add(outputPoint);
 				}
 				lastPoint=point;
