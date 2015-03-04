@@ -65,6 +65,8 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 
 public class NeuralNetworkResultsPart {
 	
@@ -104,107 +106,138 @@ public class NeuralNetworkResultsPart {
 		comparator=new TreeNNResultViewerComparator(resultsInfoMap);
 		
 		parent.setLayout(new GridLayout(1, false));
-		
-		Composite compositeHeader = new Composite(parent, SWT.NONE);
-		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		compositeHeader.setLayout(new GridLayout(3, false));
-		
-		lblSelectedConfig = new Label(compositeHeader, SWT.NONE);
-		lblSelectedConfig.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		lblSelectedConfig.setBounds(0, 0, 81, 25);
-		lblSelectedConfig.setText("Selected Config:");
-		
-		btnOptInfo = new Button(compositeHeader, SWT.CHECK);
-		btnOptInfo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				int width=0;
-				if(btnOptInfo.getSelection())width=100;
-				
-				for(TreeColumn col:optColumns){
-					col.setWidth(width);
-				}
-				
-			}
-		});
-		btnOptInfo.setText("Opt. Info");
-		
-		btnTrainInfo = new Button(compositeHeader, SWT.CHECK);
-		btnTrainInfo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				int width=0;
-				if(btnTrainInfo.getSelection())width=100;
-				
-				for(TreeColumn col:trainColumns){
-					col.setWidth(width);
-				}
-			}
-		});
-		btnTrainInfo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		btnTrainInfo.setText("Train Info");
-		
-		treeViewer = new TreeViewer(parent, SWT.BORDER| SWT.MULTI
-				| SWT.V_SCROLL | SWT.FULL_SELECTION );
-		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			public void selectionChanged(SelectionChangedEvent event) {
-				
-				ISelection selection=event.getSelection();
-				if(selection instanceof IStructuredSelection){
-					IStructuredSelection sel=(IStructuredSelection) selection;
-					if(sel.size()==1 && sel.getFirstElement() instanceof NetworkArchitecture){
-						NetworkArchitecture selArchi=(NetworkArchitecture) sel.getFirstElement();
-						selectionService.setSelection(selArchi);
-					}
-				}
-				
-			}
-		});
-		treeViewer.setAutoExpandLevel(1);
-		treeViewer.setContentProvider(new TreeNNResultsContentProvider());
-		treeViewer.setComparator(comparator);
-		ColumnViewerToolTipSupport.enableFor(treeViewer, ToolTip.NO_RECREATE); 
-		
-		tree = treeViewer.getTree();
-		tree.setHeaderVisible(true);
-		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		
-		
-		TreeColumn firstColumn=addColumn("Ent. Id",100,new IdLabelProvider(),0);
-		addColumn("Inner Neurons",50,new InnerNeuronsLabelProvider(),1);
-		addColumn("Best Result",100,new BestResultsLabelProvider(),2);
-		
-		optColumns.add(addColumn("Best Opt. Rate",0,new BestOptimizationRateLabelProvider(),3));
-		optColumns.add(addColumn("Middle Opt. Rate",0,new MiddleOptimizationRateLabelProvider(),4));
-		optColumns.add(addColumn("Nb. Of Opt.",0,new NbOfOptimizationRateLabelProvider(),5));
-		optColumns.add(addColumn("Last Opt.",0,new LastOptimizationLabelProvider(),9));
-		
-		trainColumns.add(addColumn("Best Tr. Rate",0,new BestTrainingRateLabelProvider(),6));
-		trainColumns.add(addColumn("Middle Tr. Rate",0,new MiddleTrainingRateLabelProvider(),7));
-		trainColumns.add(addColumn("Nb. Of Tr.",0,new NbOfTrainingRateLabelProvider(),8));
-		trainColumns.add(addColumn("Last Tr.",0,new LastTrainingLabelProvider(),10));
-		
-		addColumn("Prediction",100,new PredictionLabelProvider(),11);
-		
-		addColumn("Tot. Profit %",100,new TotalProfitLabelProvider(),12);
-		addColumn("Train. Profit %",100,new TrainProfitLabelProvider(),13);
-		addColumn("Val. Profit %",100,new ValidateProfitLabelProvider(),14);
-		
-		tree.setSortColumn(firstColumn);
+	    
+	    tabFolder = new TabFolder(parent, SWT.BOTTOM);
+	    tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	    
+	    tbtmTable = new TabItem(tabFolder, SWT.NONE);
+	    tbtmTable.setText("Table");
+	    
+	    compositeTable = new Composite(tabFolder, SWT.NONE);
+	    tbtmTable.setControl(compositeTable);
+	    compositeTable.setLayout(new GridLayout(1, false));
+	    
+	    Composite compositeHeader = new Composite(compositeTable, SWT.NONE);
+	    compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	    compositeHeader.setSize(603, 35);
+	    compositeHeader.setLayout(new GridLayout(3, false));
+	    
+	    lblSelectedConfig = new Label(compositeHeader, SWT.NONE);
+	    lblSelectedConfig.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	    lblSelectedConfig.setBounds(0, 0, 81, 25);
+	    lblSelectedConfig.setText("Selected Config:");
+	    
+	    btnOptInfo = new Button(compositeHeader, SWT.CHECK);
+	    btnOptInfo.addSelectionListener(new SelectionAdapter() {
+	    	@Override
+	    	public void widgetSelected(SelectionEvent e) {
+	    		int width=0;
+	    		if(btnOptInfo.getSelection())width=100;
+	    		
+	    		for(TreeColumn col:optColumns){
+	    			col.setWidth(width);
+	    		}
+	    		
+	    	}
+	    });
+	    btnOptInfo.setText("Opt. Info");
+	    
+	    btnTrainInfo = new Button(compositeHeader, SWT.CHECK);
+	    btnTrainInfo.addSelectionListener(new SelectionAdapter() {
+	    	@Override
+	    	public void widgetSelected(SelectionEvent e) {
+	    		int width=0;
+	    		if(btnTrainInfo.getSelection())width=100;
+	    		
+	    		for(TreeColumn col:trainColumns){
+	    			col.setWidth(width);
+	    		}
+	    	}
+	    });
+	    btnTrainInfo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+	    btnTrainInfo.setText("Train Info");
+	    
+	    
+	    
+	    treeViewer = new TreeViewer(compositeTable, SWT.BORDER| SWT.MULTI
+	    		| SWT.V_SCROLL | SWT.FULL_SELECTION );
+	    treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+	    	public void selectionChanged(SelectionChangedEvent event) {
+	    		
+	    		ISelection selection=event.getSelection();
+	    		if(selection instanceof IStructuredSelection){
+	    			IStructuredSelection sel=(IStructuredSelection) selection;
+	    			if(sel.size()==1 && sel.getFirstElement() instanceof NetworkArchitecture){
+	    				NetworkArchitecture selArchi=(NetworkArchitecture) sel.getFirstElement();
+	    				selArchi.setSelectedResultEntity(null);
+	    				selectionService.setSelection(selArchi);
+	    				//selectionService.setPostSelection(null);
+	    			}
+	    			else if(sel.size()==1 && sel.getFirstElement() instanceof ResultEntity){
+	    				
+	    				selectionService.setSelection(null);
+	    				ResultEntity ent=(ResultEntity)sel.getFirstElement();
+	    				NetworkArchitecture selArchi=config.searchArchitecture(ent.getParentId());
+	    				if(selArchi==null)return;
+	    				selArchi.setSelectedResultEntity(ent);
+	    				selectionService.setSelection(selArchi);
+	    				
+	    			}
+	    		}
+	    		
+	    	}
+	    });
+	    treeViewer.setAutoExpandLevel(1);
+	    treeViewer.setContentProvider(new TreeNNResultsContentProvider());
+	    treeViewer.setComparator(comparator);
+	    ColumnViewerToolTipSupport.enableFor(treeViewer, ToolTip.NO_RECREATE);
+	    
+	    TreeColumn firstColumn=addColumn("Ent. Id",100,new IdLabelProvider(),0);
+	    addColumn("Inner Neurons",50,new InnerNeuronsLabelProvider(),1);
+	    addColumn("Best Result",100,new BestResultsLabelProvider(),2);
+	    
+	    optColumns.add(addColumn("Best Opt. Rate",0,new BestOptimizationRateLabelProvider(),3));
+	    optColumns.add(addColumn("Middle Opt. Rate",0,new MiddleOptimizationRateLabelProvider(),4));
+	    optColumns.add(addColumn("Nb. Of Opt.",0,new NbOfOptimizationRateLabelProvider(),5));
+	    optColumns.add(addColumn("Last Opt.",0,new LastOptimizationLabelProvider(),9));
+	    
+	    trainColumns.add(addColumn("Best Tr. Rate",0,new BestTrainingRateLabelProvider(),6));
+	    trainColumns.add(addColumn("Middle Tr. Rate",0,new MiddleTrainingRateLabelProvider(),7));
+	    trainColumns.add(addColumn("Nb. Of Tr.",0,new NbOfTrainingRateLabelProvider(),8));
+	    trainColumns.add(addColumn("Last Tr.",0,new LastTrainingLabelProvider(),10));
+	    
+	    addColumn("Prediction",100,new PredictionLabelProvider(),11);
+	    addColumn("Tot. Profit %",100,new TotalProfitLabelProvider(),12);
+	    addColumn("Train. Profit %",100,new TrainProfitLabelProvider(),13);
+	    addColumn("Val. Profit %",100,new ValidateProfitLabelProvider(),14);
+	    
+	    
+	    tree = treeViewer.getTree();
+	    tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+	    tree.setHeaderVisible(true);
+	    tree.setSortColumn(firstColumn);
 	    tree.setSortDirection(1);
+	    
+	    
+	    tbtmGraph = new TabItem(tabFolder, SWT.NONE);
+	    tbtmGraph.setText("Graph");
+	    
+	    compositeGraph = new Composite(tabFolder, SWT.NONE);
+	    tbtmGraph.setControl(compositeGraph);
+	    compositeGraph.setLayout(new GridLayout(1, false));
 		
 		refresh();
 	}
 	
 	private TreeColumn addColumn(String columnName, int width, CellLabelProvider cellLabelProvider, int columnId ){
 		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
-		treeViewerColumn.setLabelProvider(cellLabelProvider);
-		TreeColumn trclmnId = treeViewerColumn.getColumn();
-		trclmnId.setWidth(width);
-		trclmnId.setText(columnName);
-		trclmnId.addSelectionListener(getSelectionAdapter(trclmnId, columnId));
-		
-		return trclmnId;
+	    treeViewerColumn.setLabelProvider(cellLabelProvider);
+	    TreeColumn trclmnId = treeViewerColumn.getColumn();
+	    trclmnId.setWidth(width);
+	    trclmnId.setText(columnName);
+	    trclmnId.addSelectionListener(getSelectionAdapter(trclmnId, columnId));
+	    
+	    return trclmnId;
 	}
 	
 	
@@ -219,7 +252,6 @@ public class NeuralNetworkResultsPart {
 	public void preDestroy() {
 		//TODO Your code here
 	}
-	
 	
 	@Focus
 	public void onFocus() {
@@ -310,8 +342,8 @@ public class NeuralNetworkResultsPart {
 		}
 		
 	}
-	
-	
+
+	//Optimization
 	class BestOptimizationRateLabelProvider extends ColumnLabelProvider{
 		
 		@Override
@@ -389,7 +421,7 @@ public class NeuralNetworkResultsPart {
 		
 	}
 	
-	
+	//Training
 	class BestTrainingRateLabelProvider extends ColumnLabelProvider{
 
 		@Override
@@ -466,7 +498,7 @@ public class NeuralNetworkResultsPart {
 		
 	}
 	
-	
+	//Prediction & Profits
 	class PredictionLabelProvider extends ColumnLabelProvider{
 
 		@Override
@@ -508,7 +540,6 @@ public class NeuralNetworkResultsPart {
 		}
 		
 	}
-	
 	
 	class TotalProfitLabelProvider extends ColumnLabelProvider{
 
@@ -606,9 +637,6 @@ public class NeuralNetworkResultsPart {
 	}
 	
 	
-	
-	
-	
 	private SelectionAdapter getSelectionAdapter(final  TreeColumn  column,
 		      final int index) {
 		    SelectionAdapter selectionAdapter = new SelectionAdapter() {
@@ -632,6 +660,11 @@ public class NeuralNetworkResultsPart {
 	private HashMap<String, ResultsInfo> resultsInfoMap=new HashMap<String, ResultsInfo>();
 	private Button btnOptInfo;
 	private Button btnTrainInfo;
+	private TabFolder tabFolder;
+	private TabItem tbtmTable;
+	private TabItem tbtmGraph;
+	private Composite compositeTable;
+	private Composite compositeGraph;
 	
 	private synchronized ResultsInfo getResultsInfo(NetworkArchitecture archi){
 		if(!resultsInfoMap.containsKey(archi.getId()))
@@ -928,7 +961,6 @@ public class NeuralNetworkResultsPart {
 		resultLoader.schedule();
 	}
 	
-	
 	@Inject
 	private void neuralNetworkResutsLoadingCalled(
 			@Optional @UIEventTopic(IEventConstant.NEURAL_NETWORK_CONFIG_RESULTS_LOADING_CALLED) NetworkArchitecture archi) {
@@ -961,7 +993,6 @@ public class NeuralNetworkResultsPart {
     	resultLoader.setLoadResultsEntities(false);
 	}
     
-	
 	
 	@Inject
     private void optimizationFinished(@Optional @UIEventTopic(IEventConstant.NETWORK_OPTIMIZATION_MANAGER_FINISHED) NNOptManagerInfo info){

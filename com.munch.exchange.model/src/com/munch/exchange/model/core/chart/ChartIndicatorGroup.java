@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.analytic.indicator.signals.SimpleDerivate;
+import com.munch.exchange.model.core.chart.signals.ChartSimpleDerivate;
 import com.munch.exchange.model.core.chart.trend.ChartAdaptiveMovingAverage;
 import com.munch.exchange.model.core.chart.trend.ChartDoubleLinearWeigthedMovingAverage;
 import com.munch.exchange.model.core.chart.trend.ChartSimpleMovingAverage;
@@ -126,25 +128,7 @@ public class ChartIndicatorGroup extends XmlParameterElement{
 	}
 	
 	
-	/***********************************
-	 *		       STATIC              *
-	 ***********************************/
 	
-	public static ChartIndicatorGroup createRoot(){
-		ChartIndicatorGroup root=new ChartIndicatorGroup(null,ROOT);
-		
-		//TREND
-		ChartIndicatorGroup trend=new ChartIndicatorGroup(root,"Trend");
-		
-		ChartIndicatorGroup movingAverage=new ChartIndicatorGroup(trend,"Moving Average");
-		new ChartSimpleMovingAverage(movingAverage);
-		new ChartDoubleLinearWeigthedMovingAverage(movingAverage);
-		new ChartAdaptiveMovingAverage(movingAverage);
-		
-		
-		
-		return root;
-	}
 	
 	
 	

@@ -267,8 +267,14 @@ public class ChartTreeComposite extends Composite {
 			}
 			break;
 		case SECOND:
+			secondCollection.addSeries(xySerie);
 			pos=secondCollection.indexOf(serie.getName());
-			if(pos>=0)secondCollection.removeSeries(pos);
+			if(pos>=0){
+				secondPlotrenderer.setSeriesShapesVisible(pos, false);
+				secondPlotrenderer.setSeriesLinesVisible(pos, true);
+				secondPlotrenderer.setSeriesStroke(pos,new BasicStroke(2.0f));
+				secondPlotrenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor()[0], serie.getColor()[1], serie.getColor()[2]));
+			}
 			break;
 		case PERCENT:
 			pos=percentCollection.indexOf(serie.getName());

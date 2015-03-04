@@ -104,6 +104,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	static final String FIELD_BestResultEntity="BestResultEntity";
 	private ResultEntity bestResultEntity=null;
+	private ResultEntity selectedResultEntity=null;
 	
 	
 	private NeuralNetwork network=new NeuralNetwork();
@@ -841,6 +842,20 @@ public class NetworkArchitecture extends XmlParameterElement {
 	private boolean resultLoaded=false;
 	private boolean resultLocked=false;
 	
+	
+	
+	
+	public ResultEntity getSelectedResultEntity() {
+		return selectedResultEntity;
+	}
+
+	public void setSelectedResultEntity(ResultEntity selectedResultEntity) {
+	this.selectedResultEntity = selectedResultEntity;
+	}
+	
+	
+	
+
 	/**
 	 * Add a result untity to the current list and save the best value
 	 * @param ent

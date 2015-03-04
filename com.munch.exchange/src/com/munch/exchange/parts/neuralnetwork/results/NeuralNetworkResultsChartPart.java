@@ -201,7 +201,7 @@ public class NeuralNetworkResultsChartPart {
     	if(archi.getParent().getParent()==null)return;
     	
     	Configuration config=archi.getParent();
-    	Stock stock=archi.getParent().getParent();
+    	//Stock stock=archi.getParent().getParent();
     	
 		
 		if(!archi.getParent().areAllTimeSeriesAvailable()){
@@ -211,8 +211,12 @@ public class NeuralNetworkResultsChartPart {
 		//double[] input=config.getLastInput();
 		DataSet dataset=config.getDataSet();
 		
-    
-		outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset,ProfitUtils.PENALTY);
+		if(archi.getSelectedResultEntity()!=null)
+			outputs=archi.calculateNetworkOutputsAndProfit(dataset, archi.getSelectedResultEntity().getDoubleArray(), ProfitUtils.PENALTY);
+		else
+			outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset,ProfitUtils.PENALTY);
+		//outputs=archi.cal
+		
 		if(outputs==null)return;
 		
 		updateSeries();
@@ -522,11 +526,18 @@ public class NeuralNetworkResultsChartPart {
     @Inject
 	public void analyseSelection( @Optional  @Named(IServiceConstants.ACTIVE_SELECTION) 
 	NetworkArchitecture selArchi){
+    	if(selArchi==null)return;
     	archi=selArchi;
-    	if(isCompositeAbleToReact())
+    	
+    	if(isCompositeAbleToReact()){
+    		//if(archi.getSelectedResultEntity()!=null)
+    		//logger.info("New Achi selected: "+archi.getId()+", selected Ent: "+archi.getSelectedResultEntity().getId());
     		updateDataSet();
+    	}
     	
 	}
+    
+    
 	
 	
 }

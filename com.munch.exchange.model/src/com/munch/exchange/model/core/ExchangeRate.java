@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.munch.exchange.model.core.chart.ChartIndicatorFactory;
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
 import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
@@ -57,7 +58,7 @@ public abstract class ExchangeRate extends XmlParameterElement {
 	
 	protected String uuid=UUID.randomUUID().toString();
 	
-	protected ChartIndicatorGroup indicatorGroup=ChartIndicatorGroup.createRoot();
+	protected ChartIndicatorGroup indicatorGroup=ChartIndicatorFactory.createRoot();
 	
 	
  	public ChartIndicatorGroup getIndicatorGroup() {
