@@ -1,4 +1,7 @@
-package com.munch.exchange;
+package com.munch.exchange.parts.neuralnetwork.results;
+
+
+
 
 /* ===========================================================
  * JFreeChart : a free chart library for the Java(tm) platform
@@ -97,7 +100,6 @@ import java.util.ResourceBundle;
 
 import javax.swing.event.EventListenerList;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.DisposeEvent;
@@ -109,7 +111,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseTrackListener;
-import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -153,13 +154,10 @@ import org.jfree.experimental.swt.SWTUtils;
  * component of the chart.  The chart is redrawn automatically whenever this
  * notification is received.
  */
-public class ExchangeChartComposite extends Composite implements ChartChangeListener,
+public class NeuralNetworkResultChartComposite extends Composite implements ChartChangeListener,
         ChartProgressListener, PaintListener, SelectionListener,
-        MouseListener, MouseMoveListener, Printable , MouseWheelListener, MouseTrackListener{
+        MouseListener, MouseMoveListener, Printable {
 
-	
-	private static Logger logger = Logger.getLogger(ExchangeChartComposite.class);
-	
     /** Default setting for buffer usage. */
     public static final boolean DEFAULT_BUFFER_USED = false;
 
@@ -369,7 +367,7 @@ public class ExchangeChartComposite extends Composite implements ChartChangeList
      * @param comp The parent.
      * @param style The style of the composite.
      */
-    public ExchangeChartComposite(Composite comp, int style) {
+    public NeuralNetworkResultChartComposite(Composite comp, int style) {
         this(comp,
                 style,
                 null,
@@ -395,7 +393,7 @@ public class ExchangeChartComposite extends Composite implements ChartChangeList
      * @param style The style of the composite.
      * @param chart  the chart.
      */
-    public ExchangeChartComposite(Composite comp, int style, JFreeChart chart) {
+    public NeuralNetworkResultChartComposite(Composite comp, int style, JFreeChart chart) {
         this(comp,
              style,
              chart,
@@ -423,7 +421,7 @@ public class ExchangeChartComposite extends Composite implements ChartChangeList
      * @param useBuffer  a flag controlling whether or not an off-screen buffer
      *                   is used.
      */
-    public ExchangeChartComposite(Composite comp, int style, JFreeChart chart,
+    public NeuralNetworkResultChartComposite(Composite comp, int style, JFreeChart chart,
             boolean useBuffer) {
 
         this(comp, style, chart,
@@ -459,7 +457,7 @@ public class ExchangeChartComposite extends Composite implements ChartChangeList
      * @param tooltips  a flag indicating whether or not tooltips should be
      *                  enabled for the chart.
      */
-    public ExchangeChartComposite(
+    public NeuralNetworkResultChartComposite(
             Composite comp,
             int style,
             JFreeChart chart,
@@ -513,7 +511,7 @@ public class ExchangeChartComposite extends Composite implements ChartChangeList
      * @param tooltips  a flag indicating whether or not tooltips should be
      *                  enabled for the chart.
      */
-    public ExchangeChartComposite(Composite comp,
+    public NeuralNetworkResultChartComposite(Composite comp,
             int style,
             JFreeChart jfreechart,
             int width,
@@ -546,9 +544,6 @@ public class ExchangeChartComposite extends Composite implements ChartChangeList
         this.canvas.addPaintListener(this);
         this.canvas.addMouseListener(this);
         this.canvas.addMouseMoveListener(this);
-        this.canvas.addMouseWheelListener(this);
-        this.canvas.addMouseTrackListener(this);
-        //TODO Add other listener
         this.canvas.addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e) {
                 org.eclipse.swt.graphics.Image img;
@@ -1588,8 +1583,7 @@ public class ExchangeChartComposite extends Composite implements ChartChangeList
      * @param event  the mouse event.
      */
     public void mouseDoubleClick(MouseEvent event) {
-        // TODO mouseDoubleClick do nothing, override if necessary
-    	
+        // do nothing, override if necessary
     }
 
     /**
@@ -1691,7 +1685,7 @@ public class ExchangeChartComposite extends Composite implements ChartChangeList
      * @param event  the mouse event.
      */
     public void mouseMove(MouseEvent event) {
-    	
+
         // handle axis trace
         if (this.horizontalAxisTrace || this.verticalAxisTrace) {
             this.horizontalTraceLineY = event.y;
@@ -1744,10 +1738,17 @@ public class ExchangeChartComposite extends Composite implements ChartChangeList
 
         // new entity code
         ChartEntity entity = null;
-        int x = (int) ((event.x - getClientArea().x) / this.scaleX);
-        int y = (int) ((event.y - getClientArea().y) / this.scaleY);
-        System.out.println("scaleX: "+this.scaleX);
-        System.out.println("scaleY: "+this.scaleY);
+        //int x = (int) ((event.x - getClientArea().x) / this.scaleX);
+        //int y = (int) ((event.y - getClientArea().y) / this.scaleY);
+        
+        int x = (int) ((event.x - getClientArea().x) );
+        int y = (int) ((event.y - getClientArea().y) );
+        
+        
+        
+        //System.out.println("scaleX: "+this.scaleX);
+        //System.out.println("this.scaleY: "+this.scaleY);
+        
         //TODO
 
         if (this.info != null) {
@@ -1920,30 +1921,5 @@ public class ExchangeChartComposite extends Composite implements ChartChangeList
         }
         super.dispose();
     }
-
-	@Override
-	public void mouseScrolled(MouseEvent e) {
-	//	logger.info("mouseScrolled: "+e);
-		
-	}
-
-	@Override
-	public void mouseEnter(MouseEvent e) {
-		// TODO Auto-generated method stub
-		//logger.info("mouseEnter: "+e);
-		this.canvas.setFocus();
-	}
-
-	@Override
-	public void mouseExit(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseHover(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
 
 }

@@ -1,18 +1,17 @@
  
 package com.munch.exchange.parts.neuralnetwork.results;
 
-import java.util.Arrays;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Shape;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import javax.inject.Inject;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
-import org.eclipse.swt.widgets.Composite;
-
-import javax.annotation.PreDestroy;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -23,56 +22,68 @@ import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Tree;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.window.ToolTip;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.wb.swt.SWTResourceManager;
+import org.goataa.impl.utils.Constants;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.entity.XYItemEntity;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYDataItem;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.experimental.chart.swt.ChartComposite;
+import org.jfree.util.ShapeUtilities;
+import org.neuroph.core.data.DataSet;
 
 import com.munch.exchange.IEventConstant;
-import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptManagerInfo;
-import com.munch.exchange.job.objectivefunc.NetworkArchitectureObjFunc.NetworkArchitectureOptInfo;
-import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
-import com.munch.exchange.model.core.neuralnetwork.ValuePointList;
 import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlock;
 import com.munch.exchange.model.core.neuralnetwork.training.TrainingBlocks;
 import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.model.tool.DateTool;
-import com.munch.exchange.parts.InfoPart;
-import com.munch.exchange.parts.composite.RateChart;
 import com.munch.exchange.services.INeuralNetworkProvider;
 import com.munch.exchange.utils.ProfitUtils;
-
-import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.jface.viewers.TreeViewerColumn;
-import org.goataa.impl.utils.Constants;
-import org.neuroph.core.data.DataSet;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.window.ToolTip;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
 
 public class NeuralNetworkResultsPart {
 	
 	public static final String NEURAL_NETWORK_RESULTS_ID="com.munch.exchange.part.networkresults";
 	
 	private static Logger logger = Logger.getLogger(NeuralNetworkResultsPart.class);
+	
+	//Chart
+	private XYLineAndShapeRenderer renderer =new XYLineAndShapeRenderer(true, false);
+	private XYSeriesCollection collection=new XYSeriesCollection();
+	private JFreeChart chart;
+	private NeuralNetworkResultChartComposite compositeChart;
+	
 	
 	private Stock stock=null;
 	private Configuration config=null;
@@ -225,7 +236,64 @@ public class NeuralNetworkResultsPart {
 	    compositeGraph = new Composite(tabFolder, SWT.NONE);
 	    tbtmGraph.setControl(compositeGraph);
 	    compositeGraph.setLayout(new GridLayout(1, false));
-		
+	    
+	    //==================================================
+	  	//==                 CHART                        ==    
+	  	//==================================================
+	  	chart = createChart();
+	  	compositeChart = new NeuralNetworkResultChartComposite(compositeGraph, SWT.NONE,chart);
+	  	compositeChart.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+	  	compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	  	compositeChart.addChartMouseListener(new ChartMouseListener() {
+			
+	  		private XYItemEntity lastEntity=null;
+	  		
+			@Override
+			public void chartMouseMoved(ChartMouseEvent event) {
+				// TODO Auto-generated method stub
+				
+				if(lastEntity!=null){
+					renderer.setSeriesPaint(lastEntity.getSeriesIndex(), Color.RED);
+				}
+				
+				if(event.getEntity() instanceof XYItemEntity){
+					
+					XYItemEntity ent=(XYItemEntity)event.getEntity();
+					renderer.setSeriesPaint(ent.getSeriesIndex(), Color.GREEN);
+					lastEntity=ent;
+				}
+				else{
+					lastEntity=null;
+				}
+				
+				
+			}
+			
+			@Override
+			public void chartMouseClicked(ChartMouseEvent event) {
+				
+				if(lastEntity==null)return;
+				logger.info("Click Class: "+lastEntity.getClass().getName());
+				
+				if(	event.getTrigger().getButton()==1){
+					
+					XYDataItem item=collection.getSeries(lastEntity.getSeriesIndex()).getDataItem(lastEntity.getItem());
+					
+					logger.info("Click Item: "+item.getClass().getName());
+					
+					if(item instanceof ResultDataItem){
+						ResultDataItem res_item=(ResultDataItem) item;
+						res_item.getArchi().setSelectedResultEntity(null);
+	    				selectionService.setSelection(res_item.getArchi());
+					}
+					
+					
+				}
+				
+				
+			}
+		});
+	  	
 		refresh();
 	}
 	
@@ -246,7 +314,123 @@ public class NeuralNetworkResultsPart {
 		lblSelectedConfig.setText(stock.getFullName()+": "+config.getName());
 		treeViewer.setInput(config);
 		treeViewer.refresh();
+		updateSeries();
 	}
+	
+	
+	/**
+     * Creates a chart.
+     *
+     * @return a chart.
+     */
+    private JFreeChart createChart() {
+    	
+    	//====================
+    	//===  Main Axis   ===
+    	//====================
+    	NumberAxis trainErrorAxis =	createAxis("Train Error");
+    	NumberAxis testErrorAxis  =	createAxis("Test Error");
+    	
+    	
+    	//updateSeries();
+    	
+    	//====================
+    	//===  Main Plot   ===
+    	//====================
+    	XYPlot plot = createPlot(collection,renderer,trainErrorAxis,testErrorAxis);
+    	
+    
+    	 //=========================
+    	//=== Create the Chart  ===
+    	//=========================
+        chart = new JFreeChart("",
+                JFreeChart.DEFAULT_TITLE_FONT, plot, false);
+        chart.setBackgroundPaint(Color.white);
+      
+        return chart;
+    	
+    }
+    
+    private NumberAxis createAxis(String name){
+     	 //Axis
+         NumberAxis domainAxis = new NumberAxis(name);
+         domainAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
+         domainAxis.setAutoRange(true);
+         domainAxis.setLowerMargin(0.01);
+         domainAxis.setUpperMargin(0.01);
+         domainAxis.setVisible(true);
+         domainAxis.setAutoRangeIncludesZero(false);
+         return domainAxis;
+     }
+    
+    private XYPlot createPlot(XYSeriesCollection xySeriesCollection,XYLineAndShapeRenderer lineAndShapeRenderer, NumberAxis domainAxis, NumberAxis valueAxis){
+    	//Plot
+    	XYPlot plot = new XYPlot(xySeriesCollection, domainAxis, valueAxis, lineAndShapeRenderer);
+    	//plot.setDomainAxis(valueAxis);
+    	plot.setRenderer(lineAndShapeRenderer);
+    	plot.setDataset(xySeriesCollection);
+    	
+    	plot.setDomainPannable(true);
+        plot.setRangePannable(true);
+        
+        plot.setBackgroundPaint(Color.lightGray);
+        //plot1.setBackgroundPaint(Color.BLACK);
+        plot.setDomainGridlinePaint(Color.white);
+        plot.setRangeGridlinePaint(Color.white);
+        
+         
+        //bubbleRenderer.setSeriesPaint(0, Color.blue);
+    	
+    	return plot;
+    }
+    
+    private void updateSeries(){
+    	collection.removeAllSeries();
+    	
+    	for(NetworkArchitecture archi:config.getNetworkArchitectures()){
+    		XYSeries serie =new XYSeries(String.valueOf(archi.getSelfIndex()));
+    		
+    		ResultDataItem item=new ResultDataItem(getResultsInfo(archi).trainProfit,
+    				getResultsInfo(archi).validateProfit, archi);
+    		
+    		serie.add(item);
+    		
+    		
+    		//serie.getDataItem(index)
+    		
+    		addSeriesAsShape(renderer, collection, serie,
+    				ShapeUtilities.createRegularCross(6f, 2f),Color.RED,false);
+    		
+    	}
+    	
+    }
+    
+  
+    
+    private void addSeriesAsShape(XYLineAndShapeRenderer rend,  XYSeriesCollection col, XYSeries series,Shape shape,Color color,boolean useOutlinePaint){
+		
+		col.addSeries(series);
+		int pos=col.indexOf(series.getKey());
+		if(pos>=0){
+			
+			rend.setSeriesShapesVisible(pos, true);
+			rend.setSeriesLinesVisible(pos, false);
+			rend.setSeriesShape(pos,shape);
+			rend.setSeriesShapesFilled(pos, true);
+			rend.setSeriesPaint(pos, color);
+			if(useOutlinePaint){
+				rend.setSeriesOutlinePaint(pos, Color.BLACK);
+				rend.setSeriesOutlineStroke(pos, new BasicStroke(0.5f));
+				rend.setUseOutlinePaint(useOutlinePaint);
+			}
+			else{
+				rend.setSeriesOutlinePaint(pos, color);
+			}
+			
+		}
+	}
+    
+	
 	
 	@PreDestroy
 	public void preDestroy() {
@@ -517,23 +701,23 @@ public class NeuralNetworkResultsPart {
 		}
 
 		@Override
-		public Color getBackground(Object element) {
+		public org.eclipse.swt.graphics.Color getBackground(Object element) {
 			
 			if(element instanceof NetworkArchitecture){
 				NetworkArchitecture el=(NetworkArchitecture) element;
 				double pred=getResultsInfo(el).prediction;
 				if(pred>ProfitUtils.SIGNAL_LIMIT)
-					return new Color(null, 0, 255, 0);
+					return new org.eclipse.swt.graphics.Color(null, 0, 255, 0);
 				else
-					return new Color(null, 255, 0, 0);
+					return new org.eclipse.swt.graphics.Color(null, 255, 0, 0);
 			}
 			if(element instanceof ResultEntity){
 				ResultEntity el=(ResultEntity) element;
 				double pred=getResultsInfo(el).prediction;
 				if(pred>ProfitUtils.SIGNAL_LIMIT)
-					return new Color(null, 0, 255, 0);
+					return new org.eclipse.swt.graphics.Color(null, 0, 255, 0);
 				else
-					return new Color(null, 255, 0, 0);
+					return new org.eclipse.swt.graphics.Color(null, 255, 0, 0);
 			}
 			
 			return super.getBackground(element);
@@ -666,16 +850,17 @@ public class NeuralNetworkResultsPart {
 	private Composite compositeTable;
 	private Composite compositeGraph;
 	
+	
 	private synchronized ResultsInfo getResultsInfo(NetworkArchitecture archi){
 		if(!resultsInfoMap.containsKey(archi.getId()))
-			resultsInfoMap.put(archi.getId(), new ResultsInfo());
+			resultsInfoMap.put(archi.getId(), new ResultsInfo(archi));
 		
 		return resultsInfoMap.get(archi.getId());
 	}
 	
 	private synchronized ResultsInfo getResultsInfo(ResultEntity ent){
 		if(!resultsInfoMap.containsKey(ent.getId()))
-			resultsInfoMap.put(ent.getId(), new ResultsInfo());
+			resultsInfoMap.put(ent.getId(), new ResultsInfo(ent));
 		
 		return resultsInfoMap.get(ent.getId());
 	}
@@ -702,6 +887,12 @@ public class NeuralNetworkResultsPart {
 		public double validateProfit=Double.NaN;
 		public double validateProfitTarget=Double.NaN;
 		public double validateProfitKeepAndOld=Double.NaN;
+		
+		public Object parent;
+		
+		public ResultsInfo(Object parent){
+			this.parent=parent;
+		}
 		
 		public double getValue(String value_name){
 			if(value_name.equals(PREDICTION)){
@@ -946,6 +1137,7 @@ public class NeuralNetworkResultsPart {
 		
 		if (!isCompositeAbleToReact())return;
 		treeViewer.refresh();
+		updateSeries();
 	}
 	
 	
