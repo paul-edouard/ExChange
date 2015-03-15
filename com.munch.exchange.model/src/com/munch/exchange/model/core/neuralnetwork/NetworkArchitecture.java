@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.ejml.simple.SimpleMatrix;
 import org.goataa.impl.searchSpaces.trees.math.real.basic.Constant;
 import org.goataa.impl.utils.Constants;
 import org.neuroph.core.Connection;
@@ -108,7 +109,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	
 	private NeuralNetwork network=new NeuralNetwork();
-	private NeuralNetwork faMeNetwork=new NeuralNetwork();
 	private OptimizationResults optResults=new OptimizationResults();
 	
 	private Configuration parent=null;
@@ -193,12 +193,24 @@ public class NetworkArchitecture extends XmlParameterElement {
 		createNetwork(layers);
 	}
 	
+	private NeuronProperties getInputNeuronProperties(){
+		return new NeuronProperties(
+				InputNeuron.class, Linear.class);
+	}
+	
+	private NeuronProperties getNeuronProperties(){
+		NeuronProperties neuronProperties = new NeuronProperties();
+		neuronProperties.setProperty("useBias", false);
+	    neuronProperties.setProperty("transferFunction", TransferFunctionType.TANH);
+	    return neuronProperties;
+	}
+	
+	
 	private LinkedList<Neuron> createNeurons(LinkedList<String> neuronsLabels){
 		LinkedList<Neuron> neurons=new LinkedList< Neuron>();
 		
 		// create input neurons
-		NeuronProperties inputNeuronProperties = new NeuronProperties(
-			InputNeuron.class, Linear.class);
+		NeuronProperties inputNeuronProperties = getInputNeuronProperties();
 		for(int i=0;i<numberOfInputNeurons;i++){
 			Neuron neuron = NeuronFactory.createNeuron(inputNeuronProperties);
 			neuron.setLabel(neuronsLabels.get(i));
@@ -206,9 +218,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		}
 		
 		//Create the inner neurons
-		NeuronProperties neuronProperties = new NeuronProperties();
-		neuronProperties.setProperty("useBias", false);
-	    neuronProperties.setProperty("transferFunction", TransferFunctionType.TANH);
+		NeuronProperties neuronProperties = getNeuronProperties();
 	      
         for(int i=numberOfInputNeurons;i<numberOfInnerNeurons+numberOfInputNeurons;i++){
         	Neuron neuron = NeuronFactory.createNeuron(neuronProperties);
@@ -601,19 +611,94 @@ public class NetworkArchitecture extends XmlParameterElement {
 	//Factored Mean Network
 	//*************************
 	
+	private NeuralNetwork faMeNetwork=new NeuralNetwork();
+	
+	private NeuronProperties getFaMeNeuronProperties(){
+		NeuronProperties neuronProperties = new NeuronProperties();
+		neuronProperties.setProperty("useBias", false);
+	    neuronProperties.setProperty("transferFunction", TransferFunctionType.TANH);
+	    return neuronProperties;
+	}
+	
 	public void createFactoredMeanNetwork(){
-		//Load the network!
-		this.getNetwork();
 		
 		logger.info("createFactoredMeanNetwork!");
 		
+		//=======================
+		//Load the network!
+		//=======================
+		this.getNetwork();
+		if(network.getLayersCount()<2)return;
+		
+		//=======================
+		//Create the input Layer
+		//=======================
+		NeuronProperties inputNeuronProperties = getInputNeuronProperties();
+		
+		Layer in_layer=network.getLayerAt(0);
+		Layer in_layer_cp=new Layer();
+		for(int j=0;j<in_layer.getNeuronsCount()-1;j++){
+			Neuron neuron = NeuronFactory.createNeuron(inputNeuronProperties);
+			neuron.setLabel(in_layer.getNeuronAt(j).getLabel());
+			in_layer_cp.addNeuron(neuron);
+		}
+		
+		//=======================
+		//Create the inner layers
+		//=======================
+		NeuronProperties neuronProperties = getNeuronProperties();
+		NeuronProperties faMeNeuronProperties = getFaMeNeuronProperties();
+		LinkedList<Layer> inner_layers=new LinkedList<Layer>();
+		
 		for(int i=1;i<network.getLayersCount();i++){
-			Layer p_layer=network.getLayerAt(i-1);
 			Layer layer=network.getLayerAt(i);
+			
+			Layer layer_cp=new Layer();
+			Layer fame_layer=new Layer();
+			LinkedList<String> input_neuron_labels=new LinkedList<String>();
+			for(int j=0;j<layer.getNeuronsCount();j++){
+				Neuron master=in_layer.getNeuronAt(j);
+				
+				Neuron neuron = NeuronFactory.createNeuron(neuronProperties);
+				neuron.setLabel(master.getLabel());
+				layer_cp.addNeuron(neuron);
+				
+				
+				Neuron fame_neuron = NeuronFactory.createNeuron(faMeNeuronProperties);
+				fame_neuron.setLabel(master.getLabel()+"_fame");
+				fame_layer.addNeuron(fame_neuron);
+				
+				for(Connection conn :master.getInputConnections()){
+					if(!input_neuron_labels.contains(conn.getFromNeuron().getLabel()))
+						input_neuron_labels.add(conn.getFromNeuron().getLabel());
+				}
+				
+			}
+			
+			
+			Layer p_layer=network.getLayerAt(i-1);
+			
 			logger.info("parent layer size: "+p_layer.getNeuronsCount());
 			logger.info("Current layer size: "+layer.getNeuronsCount());
 			
+			//NeuronFactory.createNeuron(neuronProperties)
+			//layer.getNeuronAt(0).
 		}
+		
+	}
+	
+	public class LayerDecomposition{
+		
+		public int position;
+		public SimpleMatrix Q;
+		public SimpleMatrix R;
+		
+		public LinkedList<Neuron> inputNeurons=new LinkedList<Neuron>();
+		public LinkedList<Neuron> outputNeurons=new LinkedList<Neuron>();
+		
+		
+		
+		
 		
 	}
 	
