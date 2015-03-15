@@ -114,7 +114,7 @@ public class StartNeuralNetworkOptimizationHandler {
 		logger.info("Dataset row size: "+trainingSet.getRowAt(0).getInput().length);
 		logger.info("Number of input neurons: "+minDim);
 		
-		if(minDim!=trainingSet.getRowAt(0).getInput().length){
+		if(minDim!=trainingSet.getRowAt(0).getInput().length-1){
 			logger.info("Input neuron size error: "+minDim);
 			return;
 		}

@@ -23,6 +23,7 @@
               <handlers xmi:id="_-OQxUJQmEeSELaFC0uCLhQ" elementId="com.munch.exchange.handler.network.results.refresh" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.neuralnetwork.RefreshResultsHandler" command="_H24RYJQnEeSELaFC0uCLhQ"/>
               <handlers xmi:id="_tbLmsJc8EeSOucMkNo4JCA" elementId="com.munch.exchange.handler.network.results.load" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.neuralnetwork.LoadNetArchitectureResults" command="_0qBL8Jc8EeSOucMkNo4JCA"/>
               <handlers xmi:id="_DGNvwJc9EeSOucMkNo4JCA" elementId="com.munch.exchange.handler.network.results.unload" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.neuralnetwork.UnloadNetArchitectureResults" command="_5-q8cJc8EeSOucMkNo4JCA"/>
+              <handlers xmi:id="_CMgqsMr9EeSVyK6ZyVzZ9w" elementId="com.munch.exchange.handler.network.results.createandstart.fame_network" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.neuralnetwork.CreateAndTrainFaMeNetwork" command="_NWblcMr9EeSVyK6ZyVzZ9w"/>
               <menus xmi:id="_t9-f0Jc-EeSOucMkNo4JCA" elementId="com.munch.exchange.menu.1">
                 <tags>ViewMenu</tags>
                 <children xsi:type="menu:HandledMenuItem" xmi:id="_wjOq0Jc-EeSOucMkNo4JCA" elementId="com.munch.exchange.handledmenuitem.network.results.load" label="Load Results" iconURI="platform:/plugin/com.munch.exchange/icons/add.png" tooltip="Load Network Architecture Results" command="_0qBL8Jc8EeSOucMkNo4JCA"/>
@@ -30,6 +31,7 @@
               </menus>
               <toolbar xmi:id="_fu1n4IboEeSK6OWfylybxw" elementId="com.munch.exchange.toolbar.network.results" accessibilityPhrase="Network Results Toolbar">
                 <children xsi:type="menu:HandledToolItem" xmi:id="_bIH4kJQnEeSELaFC0uCLhQ" elementId="com.munch.exchange.handledtoolitem.network.results.refresh" accessibilityPhrase="Refresh the network results" label="Refresh" iconURI="platform:/plugin/com.munch.exchange/icons/arrow_right.png" tooltip="Refresh the network results" command="_H24RYJQnEeSELaFC0uCLhQ"/>
+                <children xsi:type="menu:HandledToolItem" xmi:id="_jBJlcMr9EeSVyK6ZyVzZ9w" elementId="com.munch.exchange.handledtoolitem.fame.network" label="FaMe Training" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/lrun_obj.gif" tooltip="Create and Train factored mean network" command="_NWblcMr9EeSVyK6ZyVzZ9w"/>
               </toolbar>
             </children>
           </children>
@@ -130,6 +132,7 @@
   <commands xmi:id="_Tztu8J8sEeSmioYt6FCyYw" elementId="com.munch.exchange.command.neuralnetwork.configuration.architecture.optimization" commandName="Architecture Optimization Configuration" description="Configuration of the architecture optimization"/>
   <commands xmi:id="_h_DzUJ8sEeSmioYt6FCyYw" elementId="com.munch.exchange.command.neuralnetwork.configuration.weights.optimization" commandName="Weights Optimization Configuration" description="Configuration of the weights optimization"/>
   <commands xmi:id="_zKe9gJ8sEeSmioYt6FCyYw" elementId="com.munch.exchange.command.neuralnetwork.configuration.learning" commandName="Learning Configuration" description="Configuration of the learning arlgorithm"/>
+  <commands xmi:id="_NWblcMr9EeSVyK6ZyVzZ9w" elementId="com.munch.exchange.command.network.results.createandstart.fame_network" commandName="Factored Mean Training Procedure" description="Create a factored mean network and start it's training"/>
   <addons xmi:id="_hCM1ImTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.core.commands.service" contributionURI="bundleclass://org.eclipse.e4.core.commands/org.eclipse.e4.core.commands.CommandServiceAddon"/>
   <addons xmi:id="_hCM1I2TNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ui.contexts.service" contributionURI="bundleclass://org.eclipse.e4.ui.services/org.eclipse.e4.ui.services.ContextServiceAddon"/>
   <addons xmi:id="_hCM1JGTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ui.bindings.service" contributionURI="bundleclass://org.eclipse.e4.ui.bindings/org.eclipse.e4.ui.bindings.BindingServiceAddon"/>

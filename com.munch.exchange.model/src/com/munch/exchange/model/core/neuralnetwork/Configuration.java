@@ -215,7 +215,7 @@ public class Configuration extends XmlParameterElement {
 		double[][] outputs=createOutputArrays(len-1);
 		
 		//Create the Training set
-		trainingSet = new DataSet(doubleArrayList.size(), 1);
+		trainingSet = new DataSet(doubleArrayList.size()+1, 1);
 		trainingSet.setLabel(ROOT_DATA_SET);
 		//this.getInputNeuronNames().toArray();
 		
@@ -223,11 +223,13 @@ public class Configuration extends XmlParameterElement {
 		for(int i=0;i<len;i++){
 			
 			
-			double[] input=new double[doubleArrayList.size()];
+			double[] input=new double[doubleArrayList.size()+1];
 			for(int j=0;j<doubleArrayList.size();j++){
 				
 				input[j]=doubleArrayList.get(j)[i];
 			}
+			//Set the bias input
+			input[input.length-1]=1;
 			
 			double[] output=null;
 			double[] diff=null;

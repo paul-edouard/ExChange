@@ -108,6 +108,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	
 	private NeuralNetwork network=new NeuralNetwork();
+	private NeuralNetwork faMeNetwork=new NeuralNetwork();
 	private OptimizationResults optResults=new OptimizationResults();
 	
 	private Configuration parent=null;
@@ -206,7 +207,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		//Create the inner neurons
 		NeuronProperties neuronProperties = new NeuronProperties();
-		neuronProperties.setProperty("useBias", true);
+		neuronProperties.setProperty("useBias", false);
 	    neuronProperties.setProperty("transferFunction", TransferFunctionType.TANH);
 	      
         for(int i=numberOfInputNeurons;i<numberOfInnerNeurons+numberOfInputNeurons;i++){
@@ -221,6 +222,11 @@ public class NetworkArchitecture extends XmlParameterElement {
         neuron.setLabel(UUID.randomUUID().toString());
     	//neuronsLabels.add(neuron.getLabel());
         neurons.add( neuron);
+        
+        //Add the bias neuron
+      	Neuron bias_neuron = NeuronFactory.createNeuron(inputNeuronProperties);
+      	bias_neuron.setLabel("Bias");
+      	neurons.add( bias_neuron);
 		
         return neurons;
 	}
@@ -235,6 +241,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 			}
 		}
 		
+		//Create the bias neuron connections
+		Neuron bias_neuron=neurons.getLast();
+		if(bias_neuron==null)return;
+		for(int i=numberOfInputNeurons;i<neurons.size()-1;i++){
+			ConnectionFactory.createConnection(bias_neuron, neurons.get(i));
+		}
+		
 	}
 	
 	private LinkedList<Layer> createLayers(LinkedList<Neuron> neurons){
@@ -246,6 +259,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 		for(int i=0;i<numberOfInputNeurons;i++){
 			inputLayer.addNeuron(neurons.get(i));
 		}
+		//Add the bias neuron the input layer
+		if(neurons.getLast()!=null)
+			inputLayer.addNeuron(neurons.getLast());
 		layers.add(inputLayer);
 		
 		//List<Integer> layerSizes=new LinkedList<Integer>();
@@ -309,7 +325,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 		//initialization of the weigths
 		network.randomizeWeights(new NguyenWidrowRandomizer(-0.7, 0.7));
 		
-		//networks.clear();
 		this.network=network;
 	}
 	
@@ -583,6 +598,26 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	//*************************
+	//Factored Mean Network
+	//*************************
+	
+	public void createFactoredMeanNetwork(){
+		//Load the network!
+		this.getNetwork();
+		
+		logger.info("createFactoredMeanNetwork!");
+		
+		for(int i=1;i<network.getLayersCount();i++){
+			Layer p_layer=network.getLayerAt(i-1);
+			Layer layer=network.getLayerAt(i);
+			logger.info("parent layer size: "+p_layer.getNeuronsCount());
+			logger.info("Current layer size: "+layer.getNeuronsCount());
+			
+		}
+		
+	}
+	
+	//*************************
 	// ADAPTION to new input neurons
 	//*************************
 	
@@ -603,7 +638,9 @@ public class NetworkArchitecture extends XmlParameterElement {
 		for(String label:neuronsLabels){
 			if(label.matches("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[34][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
 				continue;
-			if(!newInputNeuronsLabels.contains(label) && newInputNeuronsLabels.size()>0){
+			else if(label.equals("Bias"))
+				continue;
+			else if(!newInputNeuronsLabels.contains(label) && newInputNeuronsLabels.size()>0){
 				toDeleteLabels.add(label);
 			}
 		}
