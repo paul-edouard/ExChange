@@ -61,7 +61,7 @@ public class Gaussian extends TransferFunction implements Serializable {
 		}
 	}
 
-        @Override
+    @Override
 	public double getOutput(double net) {
             output = Math.exp(-0.5d * Math.pow((net / this.sigma), 2d));
             return output;

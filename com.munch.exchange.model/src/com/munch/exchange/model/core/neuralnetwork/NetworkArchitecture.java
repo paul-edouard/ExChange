@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.ejml.example.QRExampleSimple;
 import org.ejml.simple.SimpleMatrix;
 import org.goataa.impl.searchSpaces.trees.math.real.basic.Constant;
 import org.goataa.impl.utils.Constants;
@@ -611,19 +612,27 @@ public class NetworkArchitecture extends XmlParameterElement {
 	//Factored Mean Network
 	//*************************
 	
-	private NeuralNetwork faMeNetwork=new NeuralNetwork();
+	private NeuralNetwork faMeNetwork=null;
 	
+	
+	
+	public NeuralNetwork getFaMeNetwork() {
+		return faMeNetwork;
+	}
+
 	private NeuronProperties getFaMeNeuronProperties(){
 		NeuronProperties neuronProperties = new NeuronProperties();
 		neuronProperties.setProperty("useBias", false);
-	    neuronProperties.setProperty("transferFunction", TransferFunctionType.TANH);
+	    neuronProperties.setProperty("transferFunction", TransferFunctionType.RANDOM_GAUSSIAN);
+	    neuronProperties.setProperty("transferFunction.mean", 1.0d);
+	    neuronProperties.setProperty("transferFunction.varianz", 1.0d);
 	    return neuronProperties;
 	}
 	
 	public void createFactoredMeanNetwork(){
 		
 		logger.info("createFactoredMeanNetwork!");
-		
+		LinkedList<Layer> fema_layers=new LinkedList<Layer>();
 		//=======================
 		//Load the network!
 		//=======================
@@ -643,12 +652,20 @@ public class NetworkArchitecture extends XmlParameterElement {
 			in_layer_cp.addNeuron(neuron);
 		}
 		
+		//Add the bias neuron
+      	Neuron bias_neuron = NeuronFactory.createNeuron(inputNeuronProperties);
+      	bias_neuron.setLabel("Bias");
+      	in_layer_cp.addNeuron( bias_neuron);
+		
+      	fema_layers.add(in_layer_cp);
+		Layer last_layer_cp=in_layer_cp;
+		
+		
 		//=======================
 		//Create the inner layers
 		//=======================
 		NeuronProperties neuronProperties = getNeuronProperties();
 		NeuronProperties faMeNeuronProperties = getFaMeNeuronProperties();
-		LinkedList<Layer> inner_layers=new LinkedList<Layer>();
 		
 		for(int i=1;i<network.getLayersCount();i++){
 			Layer layer=network.getLayerAt(i);
@@ -678,29 +695,104 @@ public class NetworkArchitecture extends XmlParameterElement {
 			
 			Layer p_layer=network.getLayerAt(i-1);
 			
-			logger.info("parent layer size: "+p_layer.getNeuronsCount());
-			logger.info("Current layer size: "+layer.getNeuronsCount());
+			fema_layers.add(fame_layer);
+			fema_layers.add(layer_cp);
 			
-			//NeuronFactory.createNeuron(neuronProperties)
-			//layer.getNeuronAt(0).
+			//=======================
+			//Decompose the origin neuron connections using the QR algorithm
+			//=======================
+			SimpleMatrix QR=createTheQRMatrix(p_layer,layer,i);
+			QRExampleSimple decomp=new QRExampleSimple();
+			decomp.decompose(QR);
+			
+			SimpleMatrix Q=decomp.getQ();
+			SimpleMatrix R=decomp.getR();
+			
+			//=======================
+			//Create the neuron connection
+			//=======================
+			createFactoredMeanNeuronsConnections(last_layer_cp, Q, fame_layer, R, layer_cp);
+			
+			//Creation of the bias neuron connections
+			for(int k=0;k<layer_cp.getNeuronsCount();k++)
+				ConnectionFactory.createConnection(bias_neuron, layer_cp.getNeuronAt(k), 0);
+			
+			last_layer_cp=layer_cp;
+		}
+		
+		
+		//Creation of the feMaNetwork
+		NeuralNetwork <BackPropagation> network=new NeuralNetwork <BackPropagation>();
+		network.setLabel(UUID.randomUUID().toString());
+				
+		// set network type
+		network.setNetworkType(NeuralNetworkType.MULTI_LAYER_PERCEPTRON);
+				
+		//Add the layers
+		for(Layer layer:fema_layers)
+			network.addLayer(layer);
+				
+		// set input and output cells for network
+		NeuralNetworkFactory.setDefaultIO(network);
+				
+		// set learning rule
+		network.setLearningRule(new MomentumBackpropagation());
+		
+		faMeNetwork=network;
+	}
+	
+	private void createFactoredMeanNeuronsConnections(Layer fame_input,SimpleMatrix Q,Layer fame_inner,
+			SimpleMatrix R, Layer fame_target){
+		
+		for(int i=0;i<Q.numCols();i++){
+			Neuron input=fame_input.getNeuronAt(i);
+			for(int j=0;i<Q.numRows();j++){
+				//Create connections
+				double weigth=Q.get(i, j);
+				if(weigth!=0){
+					Neuron output=fame_inner.getNeuronAt(i);
+					ConnectionFactory.createConnection(input, output, weigth);
+				}
+			}
+		}
+		
+		for(int i=0;i<R.numCols();i++){
+			Neuron input=fame_inner.getNeuronAt(i);
+			for(int j=0;i<R.numRows();j++){
+				//Create connections
+				double weigth=R.get(i, j);
+				if(weigth!=0){
+					Neuron output=fame_target.getNeuronAt(i);
+					ConnectionFactory.createConnection(input, output, weigth);
+				}
+			}
 		}
 		
 	}
 	
-	public class LayerDecomposition{
+	private SimpleMatrix createTheQRMatrix(Layer input, Layer target, int layer_pos){
+		SimpleMatrix qr=new SimpleMatrix(input.getNeuronsCount(), target.getNeuronsCount());
+		int i_max=input.getNeuronsCount();
+		//ignore the bias neuron
+		if(layer_pos==1 && i_max>1){
+			i_max=i_max-1;
+		}
+		for(int i=0;i<input.getNeuronsCount();i++){
+			Neuron input_neuron=input.getNeuronAt(i);
+			for(int j=0;j<target.getNeuronsCount();j++){
+				Neuron target_neuron=target.getNeuronAt(j);
+				if(input_neuron.hasOutputConnectionTo(target_neuron)){
+					Connection conn=target_neuron.getConnectionFrom(input_neuron);
+					qr.set(i, j, conn.getWeight().getValue());
+				}
+			}
+		}
 		
-		public int position;
-		public SimpleMatrix Q;
-		public SimpleMatrix R;
 		
-		public LinkedList<Neuron> inputNeurons=new LinkedList<Neuron>();
-		public LinkedList<Neuron> outputNeurons=new LinkedList<Neuron>();
-		
-		
-		
-		
-		
+		return qr;
 	}
+	
+	
 	
 	//*************************
 	// ADAPTION to new input neurons

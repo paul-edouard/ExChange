@@ -33,6 +33,8 @@ public class CreateAndTrainFaMeNetwork {
 		if(archi==null)return;
 		
 		archi.createFactoredMeanNetwork();
+		
+		
 	}
 		
 	
