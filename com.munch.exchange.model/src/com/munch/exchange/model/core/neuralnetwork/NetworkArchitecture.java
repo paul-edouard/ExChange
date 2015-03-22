@@ -24,6 +24,7 @@ import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
 import org.neuroph.core.input.WeightedSum;
 import org.neuroph.core.transfer.Linear;
+import org.neuroph.core.transfer.RandomGaussian;
 import org.neuroph.nnet.comp.neuron.InputNeuron;
 import org.neuroph.nnet.learning.BackPropagation;
 import org.neuroph.nnet.learning.MomentumBackpropagation;
@@ -526,6 +527,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 	 * @return 3 arrays: network output, desired output, the diff factor, start values, end values
 	 */
 	public double[][] calculateNetworkOutputs(DataSet dataSet,double[] weigths){
+		//return calculateOutputFromNetwork(dataSet,weigths,network);
+		
 		if(!resultLoaded)this.loadResults();
 		
 		network.setWeights(weigths);
@@ -564,6 +567,49 @@ public class NetworkArchitecture extends XmlParameterElement {
 		double[][] outputs={output, desiredOutput, outputdiff, startVal, endVal};
 		
 		return outputs;
+		
+	}
+	
+	
+	private double[][] calculateOutputFromNetwork(DataSet dataSet,double[] weigths,NeuralNetwork net){
+		if(!resultLoaded)this.loadResults();
+		
+		net.setWeights(weigths);
+		
+		double[] output 		= new double[dataSet.getRows().size()];
+		double[] desiredOutput 	= new double[dataSet.getRows().size()];
+		double[] outputdiff		= new double[dataSet.getRows().size()];
+		double[] startVal		= new double[dataSet.getRows().size()];
+		double[] endVal			= new double[dataSet.getRows().size()];
+		
+		int pos=0;
+		for(DataSetRow row : dataSet.getRows()) {
+			if(row.getInput().length!=net.getInputsCount()){
+				logger.info("Size error: Test Row Size: "+row.getInput().length+", Network input: "+net.getInputsCount());
+				continue;
+			}
+			 net.setInput(row.getInput());
+			 net.calculate();
+	         double[] networkOutput = net.getOutput();
+	         
+	         output[pos]=networkOutput[0];
+	         desiredOutput[pos]=row.getDesiredOutput()[0];
+	         
+	         if(row instanceof NNDataSetRaw){
+	        	 NNDataSetRaw nn_row=(NNDataSetRaw) row;
+	        	// logger.info("Row:"+nn_row);
+	        	 outputdiff[pos]=nn_row.getDiff()[0];
+	        	 startVal[pos]=nn_row.getStartVal()[0];
+	        	 endVal[pos]=nn_row.getEndVal()[0];
+	         }
+	         
+	         pos++;
+			
+		}
+		
+		double[][] outputs={output, desiredOutput, outputdiff, startVal, endVal};
+		
+		return outputs;
 	}
 	
 	
@@ -577,8 +623,12 @@ public class NetworkArchitecture extends XmlParameterElement {
 	 */
 	public double[][] calculateNetworkOutputsAndProfit(DataSet dataSet,double[] weigths, double penalty){
 		
-		
 		double[][] outputs=calculateNetworkOutputs(dataSet,weigths);
+		
+		return calculateProfitFromOutput(outputs);
+	}
+	
+	private double[][] calculateProfitFromOutput(double[][] outputs){
 		double[] output 		= outputs[0];
 		double[] desiredOutput 	= outputs[1];
 		double[] outputdiff		= outputs[2];
@@ -614,10 +664,53 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	private NeuralNetwork faMeNetwork=null;
 	
+	public boolean isFaMeNetworkCreated(){
+		return faMeNetwork!=null;
+	}
+	
+	public void resetFaMeNetwork(){
+		faMeNetwork=null;
+	}
 	
 	
 	public NeuralNetwork getFaMeNetwork() {
+		if(faMeNetwork==null)
+			createFactoredMeanNetwork();
 		return faMeNetwork;
+	}
+	
+	private double[][] calculateFaMeNetworkOutputs(DataSet dataSet){
+		Double[] in_w=getFaMeNetwork().getWeights();
+		double[] weigths=new double[in_w.length];
+		for(int i=0;i<in_w.length;i++)
+			weigths[i]=in_w[i];
+		
+		return calculateOutputFromNetwork(dataSet,weigths,getFaMeNetwork());
+	}
+	
+	
+	public double[][] calculateFaMeNetworkOutputsAndProfit(DataSet dataSet, double penalty){
+		double[][] outputs=calculateFaMeNetworkOutputs(dataSet);
+		return calculateProfitFromOutput(outputs);
+	}
+	
+	
+	public void setNewRandomValueOfFaMeNeurons(){
+		if(faMeNetwork==null)return;
+		for(int i=0;i<faMeNetwork.getLayersCount();i++){
+			Layer layer=faMeNetwork.getLayerAt(i);
+			for(int j=0;j<layer.getNeuronsCount();j++){
+				Neuron n=layer.getNeuronAt(j);
+				if(n.getTransferFunction() instanceof RandomGaussian){
+					RandomGaussian func=(RandomGaussian)n.getTransferFunction();
+				//	double befor_val=func.getValue();
+					func.resetValue();
+				//	double after_val=func.getValue();
+					
+				//	logger.info("Before: "+befor_val+", after: "+after_val);
+				}
+			}
+		}
 	}
 
 	private NeuronProperties getFaMeNeuronProperties(){
@@ -625,14 +718,16 @@ public class NetworkArchitecture extends XmlParameterElement {
 		neuronProperties.setProperty("useBias", false);
 	    neuronProperties.setProperty("transferFunction", TransferFunctionType.RANDOM_GAUSSIAN);
 	    neuronProperties.setProperty("transferFunction.mean", 1.0d);
-	    neuronProperties.setProperty("transferFunction.varianz", 1.0d);
+	    neuronProperties.setProperty("transferFunction.varianz", 0.05d);
 	    return neuronProperties;
 	}
 	
-	public void createFactoredMeanNetwork(){
+	private void createFactoredMeanNetwork(){
 		
 		logger.info("createFactoredMeanNetwork!");
 		LinkedList<Layer> fema_layers=new LinkedList<Layer>();
+		HashMap<String, Neuron> cpNeuronMap=new HashMap<String, Neuron>();
+		HashMap<String, Neuron> faMeNeuronMap=new HashMap<String, Neuron>();
 		//=======================
 		//Load the network!
 		//=======================
@@ -650,12 +745,14 @@ public class NetworkArchitecture extends XmlParameterElement {
 			Neuron neuron = NeuronFactory.createNeuron(inputNeuronProperties);
 			neuron.setLabel(in_layer.getNeuronAt(j).getLabel());
 			in_layer_cp.addNeuron(neuron);
+			cpNeuronMap.put(in_layer.getNeuronAt(j).getLabel(), neuron);
 		}
 		
 		//Add the bias neuron
-      	Neuron bias_neuron = NeuronFactory.createNeuron(inputNeuronProperties);
-      	bias_neuron.setLabel("Bias");
-      	in_layer_cp.addNeuron( bias_neuron);
+		Neuron bias_neuron=in_layer.getNeuronAt(in_layer.getNeuronsCount()-1);
+      	Neuron bias_neuron_cp = NeuronFactory.createNeuron(inputNeuronProperties);
+      	bias_neuron_cp.setLabel("Bias");
+      	in_layer_cp.addNeuron( bias_neuron_cp);
 		
       	fema_layers.add(in_layer_cp);
 		Layer last_layer_cp=in_layer_cp;
@@ -666,59 +763,144 @@ public class NetworkArchitecture extends XmlParameterElement {
 		//=======================
 		NeuronProperties neuronProperties = getNeuronProperties();
 		NeuronProperties faMeNeuronProperties = getFaMeNeuronProperties();
+		HashMap<String, Double> LayerConnectionMap=new HashMap<String, Double>();
+		
 		
 		for(int i=1;i<network.getLayersCount();i++){
 			Layer layer=network.getLayerAt(i);
+			Layer p_layer=network.getLayerAt(i-1);
 			
-			Layer layer_cp=new Layer();
+			int max_pre=p_layer.getNeuronsCount();
+			if(i==1)max_pre=max_pre-1;
+			
+			//=======================
+			//Create the Connection HasMap
+			//=======================
+			for(int k=0;k<max_pre;k++){
+				Neuron fromNeuron=p_layer.getNeuronAt(k);
+				Connection[] cons=fromNeuron.getOutConnections();
+				for(int n=0;n<cons.length;n++){
+					Neuron toNeuron=cons[n].getToNeuron();
+					LayerConnectionMap.put(fromNeuron.getLabel()+"_"+toNeuron.getLabel(), cons[n].getWeight().getValue());
+					//logger.info("Creation Key: "+fromNeuron.getLabel()+"_"+toNeuron.getLabel());
+				}
+			}
+			
+			
+			
+			//=======================
+			//Decompose the origin neuron connections using the QR algorithm
+			//=======================
+			//SimpleMatrix QR=createTheQRMatrix(p_layer,layer,i);
+			//QRExampleSimple decomp=new QRExampleSimple();
+			//decomp.decompose(QR);
+			
+			//SimpleMatrix Q=decomp.getQ();
+			//SimpleMatrix R=decomp.getR();
+			
+			//=======================
+			//Creation of the neurons
+			//=======================
+			
 			Layer fame_layer=new Layer();
-			LinkedList<String> input_neuron_labels=new LinkedList<String>();
+			Layer layer_cp=new Layer();
+			
+			
+			//=======================
+			//Creation of the FaMe Layer
+			//=======================
+			
 			for(int j=0;j<layer.getNeuronsCount();j++){
-				Neuron master=in_layer.getNeuronAt(j);
-				
-				Neuron neuron = NeuronFactory.createNeuron(neuronProperties);
-				neuron.setLabel(master.getLabel());
-				layer_cp.addNeuron(neuron);
-				
+				Neuron master=layer.getNeuronAt(j);
 				
 				Neuron fame_neuron = NeuronFactory.createNeuron(faMeNeuronProperties);
 				fame_neuron.setLabel(master.getLabel()+"_fame");
 				fame_layer.addNeuron(fame_neuron);
+				faMeNeuronMap.put(master.getLabel(), fame_neuron);
+				//Connection
+				for(int k=0;k<max_pre;k++){
+					Neuron from=last_layer_cp.getNeuronAt(k);
+					//String conKey=from.getLabel()+"_"+master.getLabel();
+					//logger.info("Key: "+conKey);
+					//if(LayerConnectionMap.containsKey(conKey)){
+					//	ConnectionFactory.createConnection(from, fame_neuron, LayerConnectionMap.get(conKey));
+					//}
+					//else{
+					ConnectionFactory.createConnection(from, fame_neuron, 0);
+					//}
+					
+				}
+			}
+			
+			//=======================
+			//Creation of the Target Layer
+			//=======================
+			
+			for(int j=0;j<layer.getNeuronsCount();j++){
+				Neuron master=layer.getNeuronAt(j);
 				
-				for(Connection conn :master.getInputConnections()){
-					if(!input_neuron_labels.contains(conn.getFromNeuron().getLabel()))
-						input_neuron_labels.add(conn.getFromNeuron().getLabel());
+				
+				Neuron neuron = NeuronFactory.createNeuron(neuronProperties);
+				neuron.setLabel(master.getLabel());
+				layer_cp.addNeuron(neuron);
+				cpNeuronMap.put(master.getLabel(), neuron);
+				//Connection
+				for(int k=0;k<fame_layer.getNeuronsCount();k++){
+					Neuron fromNeuron = fame_layer.getNeuronAt(j);
+					if(k==i)
+						ConnectionFactory.createConnection(fromNeuron, neuron, 1);
+					else
+						ConnectionFactory.createConnection(fromNeuron, neuron, 0);
 				}
 				
 			}
 			
 			
-			Layer p_layer=network.getLayerAt(i-1);
-			
 			fema_layers.add(fame_layer);
 			fema_layers.add(layer_cp);
 			
-			//=======================
-			//Decompose the origin neuron connections using the QR algorithm
-			//=======================
-			SimpleMatrix QR=createTheQRMatrix(p_layer,layer,i);
-			QRExampleSimple decomp=new QRExampleSimple();
-			decomp.decompose(QR);
 			
-			SimpleMatrix Q=decomp.getQ();
-			SimpleMatrix R=decomp.getR();
 			
-			//=======================
-			//Create the neuron connection
-			//=======================
-			createFactoredMeanNeuronsConnections(last_layer_cp, Q, fame_layer, R, layer_cp);
+			
+			//createFactoredMeanNeuronsConnections(last_layer_cp, Q, fame_layer, R, layer_cp);
 			
 			//Creation of the bias neuron connections
-			for(int k=0;k<layer_cp.getNeuronsCount();k++)
-				ConnectionFactory.createConnection(bias_neuron, layer_cp.getNeuronAt(k), 0);
+			Connection[] conns=bias_neuron.getOutConnections();
+			HashMap<String, Double> biasWeigthMap=new HashMap<>();
+			for(int k=0;k<conns.length;k++){
+				String key=conns[k].getToNeuron().getLabel();
+				biasWeigthMap.put(key, conns[k].getWeight().getValue());
+			}
+			for(int k=0;k<layer_cp.getNeuronsCount();k++){
+				Neuron toNeuron=layer_cp.getNeuronAt(k);
+				ConnectionFactory.createConnection(bias_neuron_cp, toNeuron, biasWeigthMap.get(toNeuron.getLabel()));
+			}
 			
 			last_layer_cp=layer_cp;
 		}
+		
+		//=======================
+		//Create the neuron connection
+		//=======================
+		for(String key_1:cpNeuronMap.keySet()){
+			for(String key_2:faMeNeuronMap.keySet()){
+				if(key_1==key_2)continue;
+				
+				String conKey=key_1+"_"+key_2;
+				if(LayerConnectionMap.containsKey(conKey)){
+					Neuron fromNeuron=cpNeuronMap.get(key_1);
+					Neuron toNeuron=faMeNeuronMap.get(key_2);
+					double value=LayerConnectionMap.get(conKey);
+					Connection conn=toNeuron.getConnectionFrom(fromNeuron);
+					if(conn==null)
+						ConnectionFactory.createConnection(fromNeuron, toNeuron,value);
+					else
+						toNeuron.getConnectionFrom(fromNeuron).getWeight().setValue(value);
+				}
+				
+			}
+		}
+		
 		
 		
 		//Creation of the feMaNetwork
@@ -744,25 +926,25 @@ public class NetworkArchitecture extends XmlParameterElement {
 	private void createFactoredMeanNeuronsConnections(Layer fame_input,SimpleMatrix Q,Layer fame_inner,
 			SimpleMatrix R, Layer fame_target){
 		
-		for(int i=0;i<Q.numCols();i++){
+		for(int i=0;i<Q.numRows();i++){
 			Neuron input=fame_input.getNeuronAt(i);
-			for(int j=0;i<Q.numRows();j++){
+			for(int j=0;j<Q.numCols();j++){
 				//Create connections
 				double weigth=Q.get(i, j);
 				if(weigth!=0){
-					Neuron output=fame_inner.getNeuronAt(i);
+					Neuron output=fame_inner.getNeuronAt(j);
 					ConnectionFactory.createConnection(input, output, weigth);
 				}
 			}
 		}
 		
-		for(int i=0;i<R.numCols();i++){
+		for(int i=0;i<R.numRows();i++){
 			Neuron input=fame_inner.getNeuronAt(i);
-			for(int j=0;i<R.numRows();j++){
+			for(int j=0;j<R.numCols();j++){
 				//Create connections
 				double weigth=R.get(i, j);
 				if(weigth!=0){
-					Neuron output=fame_target.getNeuronAt(i);
+					Neuron output=fame_target.getNeuronAt(j);
 					ConnectionFactory.createConnection(input, output, weigth);
 				}
 			}

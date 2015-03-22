@@ -25,15 +25,17 @@ public class RandomGaussian extends TransferFunction implements Serializable {
 	 * The mean of the gaussian probability function
 	 */	
 	private double mean = 1.0d;
-	private double varianz = 1.0d;
+	private double varianz = 0.1d;
 	
 	private double randomGaussian = 1.0d;
 	
 	private Random fRandom = new Random();
 	
+	/*
 	public RandomGaussian(){
 		init();
 	}
+	*/
 	
 	public RandomGaussian(Properties properties){
 		try {
@@ -45,18 +47,25 @@ public class RandomGaussian extends TransferFunction implements Serializable {
 			System.err.println("Invalid transfer function properties! Using default values.");
 		}
 		
-		init();
+		//init();
 	}
 	  
 	      
 	private void init(){
+		//System.out.println("Mean: "+mean+", varianz: "+varianz);
 		  randomGaussian=mean + fRandom.nextGaussian() * varianz;
 	}
 	  
-
+	public void resetValue(){
+		init();
+	}
+	public double getValue(){
+		return randomGaussian;
+	}
 
 	@Override
 	public double getOutput(double net) {
+		//System.out.println("Before Output: "+net+", after: "+randomGaussian*net);
 		return randomGaussian*net;
 	}
 	

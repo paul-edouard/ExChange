@@ -34,6 +34,7 @@ import org.neuroph.core.Connection;
 import org.neuroph.core.Layer;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.Neuron;
+import org.neuroph.core.transfer.RandomGaussian;
 
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
@@ -178,6 +179,9 @@ public class NeuralNetworkBrainPart {
 		if(archi.getBestResultEntity()!=null){
 			neuralNetwork.setWeights(archi.getBestResultEntity().getDoubleArray());
 		}
+		if(archi.isFaMeNetworkCreated())
+			neuralNetwork=archi.getFaMeNetwork();
+		
     }
     
     public void updateYXZDataSet(){
@@ -220,7 +224,10 @@ public class NeuralNetworkBrainPart {
     			
     			y.add((i+0.2) * -5.0);
     			x.add(j * 20.0 - 10.0 * neurons.length);
-    			z.add(neuron.getOutput() * 5+6);
+    			if(neuron.getTransferFunction() instanceof RandomGaussian)
+    				z.add(6.0);
+    			else
+    				z.add(neuron.getOutput() * 5+6);
     			
     			neuronXYZPosMap.put(neuron, new double[]{x.getLast(),y.getLast(),z.getLast()});
     			
@@ -259,13 +266,15 @@ public class NeuralNetworkBrainPart {
     
     private void addConnectionSeries(Connection connection, XYSeries series){
     	
-    	Color col=new Color(255,255,255);
-    	int val=(int)Math.min(255, Math.abs((int)255*connection.getWeight().getValue()));
+    	int max=200;
+    	
+    	Color col=new Color(max,max,max);
+    	int val=(int)Math.min(max, Math.abs((int)max*connection.getWeight().getValue()));
     	if(connection.getWeight().getValue()>0){
-    		col=new Color(val,0,255-val);
+    		col=new Color(val,0,max-val);
     	}
     	else{
-    		col=new Color(255-val,0,val);
+    		col=new Color(max-val,0,val);
     	}
     	this.xySeriesCollection.addSeries(series);
     	int pos=xySeriesCollection.indexOf(series.getKey());
