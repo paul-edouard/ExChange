@@ -570,7 +570,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 	}
 	
-	
+	/*
 	private double[][] calculateOutputFromNetwork(DataSet dataSet,double[] weigths,NeuralNetwork net){
 		if(!resultLoaded)this.loadResults();
 		
@@ -611,7 +611,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		return outputs;
 	}
-	
+	*/
 	
 	/**
 	 * calculate the profit and add at the end of the output matrix
@@ -680,12 +680,47 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	private double[][] calculateFaMeNetworkOutputs(DataSet dataSet){
-		Double[] in_w=getFaMeNetwork().getWeights();
-		double[] weigths=new double[in_w.length];
-		for(int i=0;i<in_w.length;i++)
-			weigths[i]=in_w[i];
 		
-		return calculateOutputFromNetwork(dataSet,weigths,getFaMeNetwork());
+	
+		double[] output 		= new double[dataSet.getRows().size()];
+		double[] desiredOutput 	= new double[dataSet.getRows().size()];
+		double[] outputdiff		= new double[dataSet.getRows().size()];
+		double[] startVal		= new double[dataSet.getRows().size()];
+		double[] endVal			= new double[dataSet.getRows().size()];
+		
+		int pos=0;
+		for(DataSetRow row : dataSet.getRows()) {
+			if(row.getInput().length!=network.getInputsCount()){
+				logger.info("Size error: Test Row Size: "+row.getInput().length+", Network input: "+network.getInputsCount());
+				continue;
+			}
+			faMeNetwork.setInput(row.getInput());
+			faMeNetwork.calculate();
+			
+	         double[] networkOutput = faMeNetwork.getOutput();
+	         
+	         output[pos]=networkOutput[0];
+	         desiredOutput[pos]=row.getDesiredOutput()[0];
+	         
+	    
+	         
+	         if(row instanceof NNDataSetRaw){
+	        	 NNDataSetRaw nn_row=(NNDataSetRaw) row;
+	        	// logger.info("Row:"+nn_row);
+	        	 outputdiff[pos]=nn_row.getDiff()[0];
+	        	 startVal[pos]=nn_row.getStartVal()[0];
+	        	 endVal[pos]=nn_row.getEndVal()[0];
+	         }
+	         
+	         pos++;
+			
+		}
+		
+		double[][] outputs={output, desiredOutput, outputdiff, startVal, endVal};
+		
+		return outputs;
+		
+		
 	}
 	
 	
@@ -703,16 +738,93 @@ public class NetworkArchitecture extends XmlParameterElement {
 				Neuron n=layer.getNeuronAt(j);
 				if(n.getTransferFunction() instanceof RandomGaussian){
 					RandomGaussian func=(RandomGaussian)n.getTransferFunction();
-				//	double befor_val=func.getValue();
 					func.resetValue();
-				//	double after_val=func.getValue();
-					
-				//	logger.info("Before: "+befor_val+", after: "+after_val);
 				}
 			}
 		}
 	}
+	
+	public void checkFaMeNeuronsOutput(){
+		if(faMeNetwork==null)return;
+		for(int i=0;i<faMeNetwork.getLayersCount();i++){
+			Layer layer=faMeNetwork.getLayerAt(i);
+			for(int j=0;j<layer.getNeuronsCount();j++){
+				Neuron n=layer.getNeuronAt(j);
+				if(n.getTransferFunction() instanceof RandomGaussian){
+					System.out.println("Gaussian Label: "+n.getLabel()+", Input: "+n.getNetInput()+", Neuron Output: "+n.getOutput()+ ", Layer: "+i);
+				}
+				else{
+					System.out.println("Label: "+n.getLabel()+", Input: "+n.getNetInput()+", Neuron Output: "+n.getOutput()+ ", Layer: "+i);
+				}
+				Connection[] conns=n.getInputConnections();
+				for(int k=0;k<conns.length;k++){
+					Connection conn=conns[k];
+					System.out.println("Conn From: "+conn.getFromNeuron().getLabel()+", with weight: "+conn.getWeight().getValue());
+				}
+				
+			}
+		}
+	}
+	
+	public void checkFaMeLayerWeigth(){
+		String output="";
+		for(int i=0;i<faMeNetwork.getLayersCount();i++){
+			Layer layer=faMeNetwork.getLayerAt(i);
+			double weigth=0;
+			for(int j=0;j<layer.getNeuronsCount();j++){
+				Neuron n=layer.getNeuronAt(j);
+				Connection[] conns=n.getInputConnections();
+				for(int k=0;k<conns.length;k++){
+					Connection conn=conns[k];
+					weigth+=conn.getWeight().getValue()*conn.getWeight().getValue();
+				}
+			}
+			output+="Layer_"+i+", total weigth="+weigth+", ";
+		}
+		
+		logger.info(output);
+		
+	}
+	
+	public void checkNeuronsOutput(){
+		if(network==null)return;
+		for(int i=0;i<network.getLayersCount();i++){
+			Layer layer=network.getLayerAt(i);
+			for(int j=0;j<layer.getNeuronsCount();j++){
+				Neuron n=layer.getNeuronAt(j);
+				if(n.getTransferFunction() instanceof RandomGaussian){
+					System.out.println("Gaussian Label: "+n.getLabel()+", Input: "+n.getNetInput()+", Neuron Output: "+n.getOutput()+ ", Layer: "+i);
+					
+				}
+				else{
+					System.out.println("Label: "+n.getLabel()+", Input: "+n.getNetInput()+", Neuron Output: "+n.getOutput()+ ", Layer: "+i);
+				}
+				
+				Connection[] conns=n.getInputConnections();
+				for(int k=0;k<conns.length;k++){
+					Connection conn=conns[k];
+					System.out.println("Conn From: "+conn.getFromNeuron().getLabel()+", with weight: "+conn.getWeight().getValue());
+				}
+				
+				
+			}
+		}
+	}
 
+	public void setMeanValueOfFaMeNeurons(){
+		if(faMeNetwork==null)return;
+		for(int i=0;i<faMeNetwork.getLayersCount();i++){
+			Layer layer=faMeNetwork.getLayerAt(i);
+			for(int j=0;j<layer.getNeuronsCount();j++){
+				Neuron n=layer.getNeuronAt(j);
+				if(n.getTransferFunction() instanceof RandomGaussian){
+					RandomGaussian func=(RandomGaussian)n.getTransferFunction();
+					func.resetToMean();
+				}
+			}
+		}
+	}
+	
 	private NeuronProperties getFaMeNeuronProperties(){
 		NeuronProperties neuronProperties = new NeuronProperties();
 		neuronProperties.setProperty("useBias", false);
@@ -846,8 +958,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 				cpNeuronMap.put(master.getLabel(), neuron);
 				//Connection
 				for(int k=0;k<fame_layer.getNeuronsCount();k++){
-					Neuron fromNeuron = fame_layer.getNeuronAt(j);
-					if(k==i)
+					Neuron fromNeuron = fame_layer.getNeuronAt(k);
+					if(k==j)
 						ConnectionFactory.createConnection(fromNeuron, neuron, 1);
 					else
 						ConnectionFactory.createConnection(fromNeuron, neuron, 0);

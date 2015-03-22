@@ -213,8 +213,13 @@ public class NeuralNetworkResultsChartPart {
 		
 		if(archi.getSelectedResultEntity()!=null)
 			outputs=archi.calculateNetworkOutputsAndProfit(dataset, archi.getSelectedResultEntity().getDoubleArray(), ProfitUtils.PENALTY);
-		else
-			outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset,ProfitUtils.PENALTY);
+		else{
+			if(archi.isFaMeNetworkCreated()){
+				outputs=archi.calculateFaMeNetworkOutputsAndProfit(dataset,ProfitUtils.PENALTY);
+			}
+			else
+				outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset,ProfitUtils.PENALTY);
+		}
 		//outputs=archi.cal
 		
 		if(outputs==null)return;

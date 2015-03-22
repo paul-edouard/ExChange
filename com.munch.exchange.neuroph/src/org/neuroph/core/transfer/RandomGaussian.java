@@ -59,6 +59,11 @@ public class RandomGaussian extends TransferFunction implements Serializable {
 	public void resetValue(){
 		init();
 	}
+	
+	public void resetToMean(){
+		randomGaussian=this.mean;
+	}
+	
 	public double getValue(){
 		return randomGaussian;
 	}

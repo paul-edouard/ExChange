@@ -89,7 +89,7 @@ public class LearningStrategyWizardPage extends WizardPage {
 			}
 		});
 		spinnerNumberOfIterations.setIncrement(1);
-		spinnerNumberOfIterations.setMaximum(1000);
+		spinnerNumberOfIterations.setMaximum(10000);
 		spinnerNumberOfIterations.setMinimum(1);
 		spinnerNumberOfIterations.setSelection(3);
 		if(param.hasParamKey(LearnParameters.Max_Iterations)){
