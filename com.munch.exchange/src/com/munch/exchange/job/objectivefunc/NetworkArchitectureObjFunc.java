@@ -67,6 +67,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	private ISOOptimizationAlgorithm<double[], double[], Individual<double[], double[]>> algorithm=null;
 	private StepLimitPropChange<double[],double[]> term=null;
 	private int optLoops=1;
+	private int nbOfIndividualsToTrain=10;
 	
 	private boolean isCancel=false;
 	
@@ -78,7 +79,7 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 	private LearningRule learningRule=null;
 	
 	public static double MAX_WEIGTH_FACTOR=100d;
-	public static int NB_OF_RESULTS_TO_TRAIN=10;
+	//public static int NB_OF_RESULTS_TO_TRAIN=10;
 	
 	public NetworkArchitectureObjFunc(ExchangeRate rate, Configuration configuration,DataSet testSet,
 			IEventBroker eventBroker,IProgressMonitor monitor,INeuralNetworkProvider nnprovider ){
@@ -137,8 +138,8 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 			//ResultEntity ref=architecture.getOptResults().getBestResult();
 			
 			//Loop on all the individuals to try increase the result quality
-			info.setLearningMax(NB_OF_RESULTS_TO_TRAIN);
-			for(int j=0;j<NB_OF_RESULTS_TO_TRAIN;j++){
+			info.setLearningMax(nbOfIndividualsToTrain);
+			for(int j=0;j<nbOfIndividualsToTrain;j++){
 				info.setLearningId(j);
 				//eventBroker.post(IEventConstant.NETWORK_LEARNING_STARTED,info);
 				
@@ -267,6 +268,11 @@ public class NetworkArchitectureObjFunc extends OptimizationModule implements
 		//Set the number of loops
 		if(configuration.getOptLearnParam().hasParamKey(AlgorithmParameters.OPTIMIZATION_Loops)){
 			optLoops=configuration.getOptLearnParam().getIntegerParam(AlgorithmParameters.OPTIMIZATION_Loops);
+		}
+		
+		//Set the number of individuals to train
+		if(configuration.getOptLearnParam().hasParamKey(AlgorithmParameters.LEARNING_NbOfBestIndividuals)){
+			nbOfIndividualsToTrain=configuration.getOptLearnParam().getIntegerParam(AlgorithmParameters.LEARNING_NbOfBestIndividuals);
 		}
 		
 		//set the gpm

@@ -85,6 +85,9 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 	//Optimization Loops
 	public static final String OPTIMIZATION_Loops="Optimization loops";
 	
+	//Nb of best Individuals to train
+	public static final String LEARNING_NbOfBestIndividuals="Learning Number of best individuals";
+	
 	
 	static final String FIELD_Type="Type";
 	static final String FIELD_Name="Name";
@@ -406,8 +409,7 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 		optLearnParam.setType(AlgorithmParameters.ALGORITHM_Evolution_Strategy);
 		optLearnParam.setParam(AlgorithmParameters.TERMINATION_Steps, 5);
 		optLearnParam.setParam(AlgorithmParameters.OPTIMIZATION_Loops, 3);
-		
-		
+		optLearnParam.setParam(AlgorithmParameters.LEARNING_NbOfBestIndividuals, 10);
 		
 		
 		optLearnParam.setParam(AlgorithmParameters.SELECTION_ALGORITHM, AlgorithmParameters.SELECTION_ALGORITHM_Tournament);
@@ -419,7 +421,6 @@ public class AlgorithmParameters<X> extends XmlParameterElement {
 		optLearnParam.setParam(AlgorithmParameters.ES_Lambda, 10);
 		optLearnParam.setParam(AlgorithmParameters.ES_Mu, 30);
 		optLearnParam.setParam(AlgorithmParameters.NULLARY_SEARCH_OPERATION, AlgorithmParameters.NSO_Uniform_Creation);
-		
 		
 		
 	}

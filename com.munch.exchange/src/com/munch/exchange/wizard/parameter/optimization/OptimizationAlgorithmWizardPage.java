@@ -26,6 +26,7 @@ public class OptimizationAlgorithmWizardPage extends WizardPage {
 	private Combo comboAlgorithmType;
 	private Spinner spinnerNumberOfSteps;
 	private Spinner spinnerNumberOfLoops;
+	private Spinner spinnerNumberOfIndividualsToTrain;
 	
 
 	/**
@@ -102,6 +103,18 @@ public class OptimizationAlgorithmWizardPage extends WizardPage {
 			spinnerNumberOfLoops.setSelection(optLearnParam.getIntegerParam(AlgorithmParameters.OPTIMIZATION_Loops));
 		}
 		
+		Label lblNumberOfIndToTrain = new Label(container, SWT.NONE);
+		lblNumberOfIndToTrain.setText("Number of Individuals to train:");
+		
+		spinnerNumberOfIndividualsToTrain = new Spinner(container, SWT.BORDER);
+		spinnerNumberOfIndividualsToTrain.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		spinnerNumberOfIndividualsToTrain.setPageIncrement(1);
+		spinnerNumberOfIndividualsToTrain.setMinimum(1);
+		spinnerNumberOfIndividualsToTrain.setSelection(10);
+		if(optLearnParam.hasParamKey(AlgorithmParameters.LEARNING_NbOfBestIndividuals)){
+			spinnerNumberOfIndividualsToTrain.setSelection(optLearnParam.getIntegerParam(AlgorithmParameters.LEARNING_NbOfBestIndividuals));
+		}
+		
 		
 		saveParameters();
 	}
@@ -112,6 +125,7 @@ public class OptimizationAlgorithmWizardPage extends WizardPage {
 		optLearnParam.setType(comboAlgorithmType.getText());
 		optLearnParam.setParam(AlgorithmParameters.TERMINATION_Steps, spinnerNumberOfSteps.getSelection());
 		optLearnParam.setParam(AlgorithmParameters.OPTIMIZATION_Loops, spinnerNumberOfLoops.getSelection());
+		optLearnParam.setParam(AlgorithmParameters.LEARNING_NbOfBestIndividuals, spinnerNumberOfIndividualsToTrain.getSelection());
 		
 	}
 	

@@ -78,6 +78,11 @@ public class Configuration extends XmlParameterElement {
 	private AlgorithmParameters<boolean[]> optArchitectureParam=new AlgorithmParameters<boolean[]>("Optimization_architecture_parameters");
 	private LearnParameters learnParam=new LearnParameters("Neural_Network_learn_parameters");
 	
+	//Regularization Parameters
+	private AlgorithmParameters<double[]> regOptParam=new AlgorithmParameters<double[]>("Regularization_optimization_parameters");
+	private LearnParameters regTrainParam=new LearnParameters("Regularization_train_parameters");
+	private RegularizationParameters regBasicParam=new RegularizationParameters("Regularization_basic_parameters");
+	
 	//Architectures
 	private int maxNumberOfSavedAchitectures=200;
 	private LinkedList<NetworkArchitecture> networkArchitectures=new LinkedList<NetworkArchitecture>();
@@ -94,6 +99,11 @@ public class Configuration extends XmlParameterElement {
 		AlgorithmParameters.setDefaultBooleansParameters(optArchitectureParam);
 		AlgorithmParameters.setDefaultDoublesParameters(optLearnParam);
 		LearnParameters.setDefaultLearnParameters(learnParam);
+		
+		RegularizationParameters.setDefaultParameters(regBasicParam);
+		AlgorithmParameters.setDefaultDoublesParameters(regOptParam);
+		LearnParameters.setDefaultLearnParameters(regTrainParam);
+		
 	}
 	
 	
@@ -532,6 +542,10 @@ public class Configuration extends XmlParameterElement {
 	//****************************************
 	
 	
+	
+	
+	
+	
 	public Type getOptimizationResultType(){
 		switch (period) {
 		case DAY:
@@ -548,6 +562,42 @@ public class Configuration extends XmlParameterElement {
 		}
 	}
 	
+	public AlgorithmParameters<double[]> getRegOptParam() {
+		return regOptParam;
+	}
+
+
+
+	public void setRegOptParam(AlgorithmParameters<double[]> regOptParam) {
+	this.regOptParam = regOptParam;}
+	
+
+
+
+	public LearnParameters getRegTrainParam() {
+		return regTrainParam;
+	}
+
+
+
+	public void setRegTrainParam(LearnParameters regTrainParam) {
+	this.regTrainParam = regTrainParam;}
+	
+
+
+
+	public RegularizationParameters getRegBasicParam() {
+		return regBasicParam;
+	}
+
+
+
+	public void setRegBasicParam(RegularizationParameters regBasicParam) {
+	this.regBasicParam = regBasicParam;}
+	
+
+
+
 	public Calendar getLastInputPointDate() {
 		return lastInputPointDate;
 	}
@@ -801,21 +851,13 @@ public class Configuration extends XmlParameterElement {
 		NetworkArchitecture arch=new NetworkArchitecture();
 		OptimizationResults results=new OptimizationResults();
 		TimeSeriesGroup group=new TimeSeriesGroup(null, "root", false);
-		/*
-		if(childElement.getTagName().equals(ent.getTagName())){
-			ent.init(childElement);
-			addTimeSeries(ent,false);
-		}
-		*/
-		/*
-		else if(childElement.getTagName().equals(outputPointList.getTagName())){
-			outputPointList.init(childElement);
-		}
-		*/
+		
 		if(childElement.getTagName().equals(group.getTagName())){
 			rootTimeSeriesGroup=group;
 			rootTimeSeriesGroup.init(childElement);
 		}
+		
+		//Weigth optimization parameters
 		else if(childElement.getTagName().equals(optLearnParam.getTagName())){
 			optLearnParam.init(childElement);
 		}
@@ -825,6 +867,19 @@ public class Configuration extends XmlParameterElement {
 		else if(childElement.getTagName().equals(optArchitectureParam.getTagName())){
 			optArchitectureParam.init(childElement);
 		}
+		
+		//Regularization parameters
+		else if(childElement.getTagName().equals(regBasicParam.getTagName())){
+			regBasicParam.init(childElement);
+		}
+		else if(childElement.getTagName().equals(regOptParam.getTagName())){
+			regOptParam.init(childElement);
+		}
+		else if(childElement.getTagName().equals(regTrainParam.getTagName())){
+			regTrainParam.init(childElement);
+		}
+		
+		
 		else if(childElement.getTagName().equals(trainingBlocks.getTagName())){
 			trainingBlocks.init(childElement);
 		}
@@ -855,13 +910,14 @@ public class Configuration extends XmlParameterElement {
 
 	@Override
 	protected void appendChild(Element rootElement, Document doc) {
-		//for(TimeSeries ent:allTimeSeries){
-		//	rootElement.appendChild(ent.toDomElement(doc));
-		//}
-		//rootElement.appendChild(outputPointList.toDomElement(doc));
 		rootElement.appendChild(optLearnParam.toDomElement(doc));
 		rootElement.appendChild(learnParam.toDomElement(doc));
 		rootElement.appendChild(optArchitectureParam.toDomElement(doc));
+		
+		rootElement.appendChild(regBasicParam.toDomElement(doc));
+		rootElement.appendChild(regOptParam.toDomElement(doc));
+		rootElement.appendChild(regTrainParam.toDomElement(doc));
+		
 		rootElement.appendChild(trainingBlocks.toDomElement(doc));
 		rootElement.appendChild(rootTimeSeriesGroup.toDomElement(doc));
 		
