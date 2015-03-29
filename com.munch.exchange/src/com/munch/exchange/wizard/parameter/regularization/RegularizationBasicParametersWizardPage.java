@@ -57,7 +57,7 @@ public class RegularizationBasicParametersWizardPage extends WizardPage {
 			}
 		});
 		sliderVarianz.setMinimum(1);
-		sliderVarianz.setMaximum(200);
+		sliderVarianz.setMaximum(501);
 		sliderVarianz.setSelection(50);
 		sliderVarianz.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		if(param.hasParamKey(RegularizationParameters.VARIANZ)){
@@ -67,7 +67,10 @@ public class RegularizationBasicParametersWizardPage extends WizardPage {
 		
 		
 		lblVarianzVal = new Label(container, SWT.NONE);
+		lblVarianzVal.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
+		
+		saveParameters();
 		
 	}
 	
@@ -75,7 +78,7 @@ public class RegularizationBasicParametersWizardPage extends WizardPage {
 		
 		param.setParam(RegularizationParameters.VARIANZ, (double) sliderVarianz.getSelection()/scalar);
 		
-		lblVarianzVal.setText(String.format("%1$,.2f", (double)sliderVarianz.getSelection()/scalar ));
+		lblVarianzVal.setText(String.format("%1$,.3f", (double)sliderVarianz.getSelection()/scalar ));
 		
 		
 	}

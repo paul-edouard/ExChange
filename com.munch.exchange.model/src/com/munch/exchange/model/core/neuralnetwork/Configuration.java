@@ -279,7 +279,7 @@ public class Configuration extends XmlParameterElement {
 		
 		//Set the DiffFactor of the
 		this.learnParam.setArrays(outputs[0],outputs[1],outputs[2],outputs[3]);
-		
+		this.regTrainParam.setArrays(outputs[0],outputs[1],outputs[2],outputs[3]);
 		
 		fireTrainingDataSetChanged();
 		
