@@ -664,6 +664,78 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	private NeuralNetwork faMeNetwork=null;
 	
+	private OptimizationResults regularizationResults=new OptimizationResults();
+	
+	private boolean regularizationResultLoaded=false;
+	
+	
+	private synchronized void loadRegularizationResults(){
+		if(localSavePath.isEmpty()){
+			logger.info("Error by loading Results: Local save path is empty!!");
+			return;
+		}
+		File netFile=new File(localSavePath+File.separator+networkLabel+"_reg.nnet");
+		if(!netFile.exists())return;
+		
+		this.faMeNetwork=NeuralNetwork.createFromFile(localSavePath+File.separator+networkLabel+"_reg.nnet");
+		
+		
+		File resFile=new File(localSavePath+File.separator+networkLabel+"_reg.ores");
+		if(!resFile.exists())return;
+		
+		setRegularizationResults(OptimizationResults.createFromFile(localSavePath+File.separator+networkLabel+"_reg.ores"));
+		regularizationResultLoaded=true;
+	}
+	
+	public void setRegularizationResults(OptimizationResults optResuts) {
+		this.regularizationResults = optResuts;
+		for(ResultEntity resultEntity:optResults.getResults()){
+			resultEntity.setParentId(this.getId());
+		}
+		
+	}
+	
+	private void saveRegularizationResults(){
+		if(localSavePath.isEmpty()){
+			logger.info("Error by saving results: Local save path is empty!!");
+			return;
+		}
+		if(network==null)return;
+		faMeNetwork.save(localSavePath + File.separator + network.getLabel() + "_reg.nnet");
+		regularizationResults.save(localSavePath + File.separator + network.getLabel() + "_reg.ores");
+	}
+	
+	
+	public List<ResultEntity> getRegularizationResultsEntities(){
+		if(!regularizationResultLoaded)this.loadRegularizationResults();
+		return regularizationResults.getResults();
+	}
+	
+	public void sortRegularizationResults(){
+		regularizationResults.sort();
+	}
+	
+	/**
+	 * Add a result untity to the current list and save the best value
+	 * @param ent
+	 */
+	public boolean addRegularizationResultEntity(ResultEntity ent){
+		
+		//Test if the entity is already present
+		for(ResultEntity old_ent:this.getRegularizationResultsEntities()){
+			if(old_ent.getValue()!=ent.getValue())continue;
+			return false;
+		}
+		
+		
+		ent.setParentId(this.getId());
+		this.regularizationResults.addResult(ent);
+		
+		return true;
+		
+	}
+	
+	
 	public boolean isFaMeNetworkCreated(){
 		return faMeNetwork!=null;
 	}
@@ -675,8 +747,28 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	public NeuralNetwork getFaMeNetwork() {
 		if(faMeNetwork==null)
-			createFactoredMeanNetwork();
+			faMeNetwork=createFactoredMeanNetwork();
 		return faMeNetwork;
+	}
+	
+	public NeuralNetwork getCopyOfFaMeNetwork(){
+		NeuralNetwork master=getFaMeNetwork();
+		NeuralNetwork copy=createFactoredMeanNetwork();
+		
+		Double[] masterWeigths=master.getWeights();
+		double[] weigths=new double[masterWeigths.length];
+		for(int i=0;i<weigths.length;i++){
+			weigths[i]=masterWeigths[i];
+		}
+		
+		copy.setWeights(weigths);
+		
+		return copy;
+	}
+	
+	public double[][] calculateFaMeNetworkOutputs(DataSet dataSet,double[] weigths){
+		faMeNetwork.setWeights(weigths);
+		return calculateFaMeNetworkOutputs(dataSet);
 	}
 	
 	private double[][] calculateFaMeNetworkOutputs(DataSet dataSet){
@@ -690,7 +782,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		int pos=0;
 		for(DataSetRow row : dataSet.getRows()) {
-			if(row.getInput().length!=network.getInputsCount()){
+			if(row.getInput().length!=faMeNetwork.getInputsCount()){
 				logger.info("Size error: Test Row Size: "+row.getInput().length+", Network input: "+network.getInputsCount());
 				continue;
 			}
@@ -848,7 +940,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	    return neuronProperties;
 	}
 	
-	private void createFactoredMeanNetwork(){
+	private NeuralNetwork createFactoredMeanNetwork(){
 		
 		logger.info("createFactoredMeanNetwork!");
 		LinkedList<Layer> fema_layers=new LinkedList<Layer>();
@@ -858,7 +950,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		//Load the network!
 		//=======================
 		this.getNetwork();
-		if(network.getLayersCount()<2)return;
+		if(network.getLayersCount()<2)return null;
 		
 		//=======================
 		//Create the input Layer
@@ -1027,8 +1119,6 @@ public class NetworkArchitecture extends XmlParameterElement {
 			}
 		}
 		
-		
-		
 		//Creation of the feMaNetwork
 		NeuralNetwork <BackPropagation> network=new NeuralNetwork <BackPropagation>();
 		network.setLabel(UUID.randomUUID().toString());
@@ -1046,8 +1136,12 @@ public class NetworkArchitecture extends XmlParameterElement {
 		// set learning rule
 		network.setLearningRule(new MomentumBackpropagation());
 		
-		faMeNetwork=network;
+		return network;
+		//faMeNetwork=network;
 	}
+	
+	
+	
 	
 	private void createFactoredMeanNeuronsConnections(Layer fame_input,SimpleMatrix Q,Layer fame_inner,
 			SimpleMatrix R, Layer fame_target){
@@ -1389,27 +1483,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 			if(old_ent.getValue()!=ent.getValue())continue;
 			
 			return false;
-			//logger.info("Same Value");
-			/*
-			double[] old_genome=old_ent.getDoubleArray();
-			double[] new_genome=ent.getDoubleArray();
 			
-			if(old_genome.length!=new_genome.length)continue;
-			
-			boolean same_genome=true;
-			for(int i=0;i<old_genome.length;i++){
-				if(old_genome[i]==new_genome[i])continue;
-				same_genome=false;
-				break;
-			}
-			
-			if(same_genome){
-				logger.info("Same Genome");
-				return false;
-			}
-			*/
 		}
-		
 		
 		if(bestResultEntity==null || ent.getValue()<bestResultEntity.getValue())
 			setBestResultEntity(ent);
@@ -1951,6 +2026,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 		rootElement.appendChild(e);
 		*/
 		saveResults();
+		
+		saveRegularizationResults();
 		
 		if(this.bestResultEntity!=null){
 			rootElement.appendChild(this.bestResultEntity.toDomElement(doc));

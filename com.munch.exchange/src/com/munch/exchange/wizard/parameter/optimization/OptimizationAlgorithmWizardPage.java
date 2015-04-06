@@ -96,6 +96,12 @@ public class OptimizationAlgorithmWizardPage extends WizardPage {
 		
 		spinnerNumberOfLoops = new Spinner(container, SWT.BORDER);
 		spinnerNumberOfLoops.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		spinnerNumberOfLoops.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				saveParameters();
+			}
+		});
 		spinnerNumberOfLoops.setPageIncrement(1);
 		spinnerNumberOfLoops.setMinimum(1);
 		spinnerNumberOfLoops.setSelection(3);
@@ -108,6 +114,12 @@ public class OptimizationAlgorithmWizardPage extends WizardPage {
 		
 		spinnerNumberOfIndividualsToTrain = new Spinner(container, SWT.BORDER);
 		spinnerNumberOfIndividualsToTrain.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		spinnerNumberOfIndividualsToTrain.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				saveParameters();
+			}
+		});
 		spinnerNumberOfIndividualsToTrain.setPageIncrement(1);
 		spinnerNumberOfIndividualsToTrain.setMinimum(1);
 		spinnerNumberOfIndividualsToTrain.setSelection(10);

@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
+import com.munch.exchange.model.core.optimization.AlgorithmParameters;
 import com.munch.exchange.wizard.parameter.optimization.OptimizationDoubleParamWizard;
 
 public class RegularizationOptimizationParameterHandler {
@@ -38,8 +39,13 @@ public class RegularizationOptimizationParameterHandler {
 				config.getRegOptParam().createCopy());
 		WizardDialog dialog = new WizardDialog(shell, wizard);
 		if (dialog.open() == Window.OK){
+			logger.info(wizard.getOptLearnParam().getIntegerParam(AlgorithmParameters.OPTIMIZATION_Loops));
+			
 			config.setRegOptParam(wizard.getOptLearnParam());
 			config.setDirty(true);
+			
+			logger.info(config.getRegOptParam().getIntegerParam(AlgorithmParameters.OPTIMIZATION_Loops));
+			
 			eventBroker.send(IEventConstant.NEURAL_NETWORK_CONFIG_DIRTY,config);
 		}
 	}
