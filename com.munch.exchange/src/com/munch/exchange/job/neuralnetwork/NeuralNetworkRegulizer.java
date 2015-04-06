@@ -15,6 +15,7 @@ import org.neuroph.nnet.learning.BackPropagation;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.neuralnetwork.Configuration;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
+import com.munch.exchange.model.core.neuralnetwork.RegularizationParameters;
 import com.munch.exchange.services.INeuralNetworkProvider;
 import com.munch.exchange.utils.ProfitUtils;
 
@@ -75,11 +76,15 @@ public class NeuralNetworkRegulizer extends Job implements LearningEventListener
 		trainingSet=archi.getParent().getTrainingDataSet();
 		testSet=archi.getParent().getValidateDataSet();
 		
-		
+		//Set the learning rule
 		LearningRule learningRule=archi.getParent().getRegTrainParam().createLearningRule();
 		learningRule.addListener(this);
 		archi.getFaMeNetwork().setLearningRule(learningRule);
 		
+		//Set the Varianz
+		double varianz=archi.getParent().getRegBasicParam().getDoubleParam(RegularizationParameters.VARIANZ);
+		archi.setVarianzOfFaMeNeurons(varianz);
+		logger.info( "Varianz: "+varianz);
 		
 		archi.getFaMeNetwork().learn(trainingSet);
 		

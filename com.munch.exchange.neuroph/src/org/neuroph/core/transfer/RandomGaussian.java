@@ -79,4 +79,11 @@ public class RandomGaussian extends TransferFunction implements Serializable {
 		return randomGaussian;
 	}
 
+
+	public void setVarianz(double varianz) {
+		this.varianz = varianz;
+	}
+	
+	
+
 }

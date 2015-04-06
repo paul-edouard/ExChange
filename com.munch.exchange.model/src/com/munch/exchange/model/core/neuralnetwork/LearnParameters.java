@@ -151,11 +151,17 @@ public class LearnParameters extends XmlParameterElement implements FinancialLea
 		this.endVal=endVal;
 	}
 	
+	@Override
+	public String getTagName() {
+		return name;
+	}
 	
 	//****************************************
 	//***           STATIC                ****
 	//****************************************
 	
+	
+
 	public static  void setDefaultLearnParameters(LearnParameters param){
 		
 		param.setType(LearnParameters.MOMENTUM_BACK_PROPAGATION);
