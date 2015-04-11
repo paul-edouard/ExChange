@@ -18,8 +18,12 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
 
 
+
+
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkRegulizer;
+import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
+import com.munch.exchange.parts.neuralnetwork.error.NeuralNetworkRegularizationErrorPart;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
 
@@ -64,6 +68,8 @@ public class StartNeuralNetworkRegularizationHandler {
 		
 		if(archi==null)return;
 		if(archi.getParent()==null)return;
+		
+		Stock stock=archi.getParent().getParent();
 
 		if(regulizer==null){
 			regulizer=new NeuralNetworkRegulizer(eventBroker,nnprovider,archi);
@@ -71,6 +77,17 @@ public class StartNeuralNetworkRegularizationHandler {
 		else{
 			regulizer.setArchi(archi);
 		}
+		
+		
+		NeuralNetworkRegularizationErrorPart.openPart(
+				stock,
+				partService,
+				modelService,
+				application,
+				regulizer,
+				context);
+		
+		
 		
 		regulizer.schedule();
 		

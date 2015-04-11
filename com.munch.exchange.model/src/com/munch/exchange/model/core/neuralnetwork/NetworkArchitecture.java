@@ -711,6 +711,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return regularizationResults.getResults();
 	}
 	
+	public void setRegularizationResultsEntities(LinkedList<ResultEntity> results){
+		if(!regularizationResultLoaded)this.loadRegularizationResults();
+		
+		regularizationResults.setResults(results);
+		
+	}
+	
 	public void sortRegularizationResults(){
 		regularizationResults.sort();
 	}
@@ -719,7 +726,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	 * Add a result untity to the current list and save the best value
 	 * @param ent
 	 */
-	public boolean addRegularizationResultEntity(ResultEntity ent){
+	public synchronized boolean addRegularizationResultEntity(ResultEntity ent){
 		
 		//Test if the entity is already present
 		for(ResultEntity old_ent:this.getRegularizationResultsEntities()){

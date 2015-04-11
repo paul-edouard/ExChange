@@ -111,7 +111,12 @@ public class OptimizationResults extends XmlParameterElement implements Serializ
 	public LinkedList<ResultEntity> getResults() {
 		return results;
 	}
+	
 
+	public void setResults(LinkedList<ResultEntity> results) {
+		this.results = results;
+	}
+	
 
 
 	public enum Type { MOVING_AVERAGE, MACD,
