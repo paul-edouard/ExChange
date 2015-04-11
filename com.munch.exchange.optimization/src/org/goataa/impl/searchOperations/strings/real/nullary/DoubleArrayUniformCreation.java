@@ -59,7 +59,8 @@ public class DoubleArrayUniformCreation extends RealVectorCreation {
   @Override
   public final double[] create(final Random r) {
 	if(oldResults!=null && !oldResults.isEmpty()){
-		return oldResults.pollLast();
+		return oldResults.pollFirst();
+		//return oldResults.pollLast();
 	}
 	  
     double[] g;

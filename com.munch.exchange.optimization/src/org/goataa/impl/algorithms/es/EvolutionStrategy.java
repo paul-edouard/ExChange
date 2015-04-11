@@ -258,6 +258,10 @@ public class EvolutionStrategy<X> extends
         // stop
         if (term.terminationCriterion()) {
           // if we should stop, return the best individual found
+        	if(term instanceof StepLimitPropChange){
+        		StepLimitPropChange<double[],X> t=(StepLimitPropChange<double[],X>) term;
+        		t.setPop(pop);
+        	}
           return best;
         }
         

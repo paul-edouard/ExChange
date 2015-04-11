@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.services.events.IEventBroker;
+import org.goataa.impl.algorithms.es.ESIndividual;
 import org.goataa.impl.algorithms.es.EvolutionStrategy;
 import org.goataa.impl.gpms.IdentityMapping;
 import org.goataa.impl.termination.StepLimitPropChange;
@@ -82,7 +83,6 @@ public class NeuralNetworkRegulizer extends Job implements LearningEventListener
 	public void setArchi(NetworkArchitecture archi) {
 		this.archi = archi;
 	}
-	
 	
 	private boolean prepareAll(){
 		nnprovider.createAllValuePoints(archi.getParent(),true);
@@ -184,9 +184,6 @@ public class NeuralNetworkRegulizer extends Job implements LearningEventListener
 	//################################
 	//##            RUN             ##
 	//################################
-	
-	
-	
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
@@ -196,11 +193,7 @@ public class NeuralNetworkRegulizer extends Job implements LearningEventListener
 		if(archi==null)return Status.CANCEL_STATUS;
 		if(archi.getParent()==null)return Status.CANCEL_STATUS;
 		
-		double sumProfit=0;
-		int count=0;
-		
 		if(!prepareAll())return Status.CANCEL_STATUS;
-		
 		
 		//Start the Optimization
 		for(int i=0;i<optLoops;i++){
@@ -210,22 +203,16 @@ public class NeuralNetworkRegulizer extends Job implements LearningEventListener
 			
 			logger.info("Loop: "+i);
 			
-			//info.setLoop(i);
-			//eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_LOOP,info);
-					
-			//Start the optimization algorithm
-			//archi.prepareOptimizationStatistic();
 			algorithm.call();
-			//archi.saveOptimizationStatistic();
-					
-			//ResultEntity ref=architecture.getOptResults().getBestResult();
-					
+			
+			//Resort the results and plot
+			logger.info("After Evolution Strategy: ");
+			reorderResults();
+			plotResults();
+			
 			//Loop on all the individuals to try increase the result quality
-			//info.setLearningMax(nbOfIndividualsToTrain);
 			for(int j=0;j<nbOfIndividualsToTrain;j++){
-					//	info.setLearningId(j);
-						//eventBroker.post(IEventConstant.NETWORK_LEARNING_STARTED,info);
-						
+			
 				if(monitor.isCanceled() || isCancel)break;
 				if(archi.getRegularizationResultsEntities().size()<=j)break;
 
@@ -249,39 +236,25 @@ public class NeuralNetworkRegulizer extends Job implements LearningEventListener
 				archi.getFaMeNetwork().setWeights(ent.getDoubleArray());
 				archi.getFaMeNetwork().learn(trainingSet);
 						
-				//saveLearningResults();
-						
-				//archi.saveTrainingStatistic(architecture.getBestResultEntity().getValue());
-						
 			}
 			
 			if(monitor.isCanceled() || isCancel)break;
 			
 			resetMinMaxValuesOfAlgorithm();
 			
-			//Resort the results
+			//Resort the results and plot
+			logger.info("After Learning: ");
 			reorderResults();
 			plotResults();
 			
 			
 			archi.getParent().getRegOptParam().addLastBestResults(algorithm,
 					archi.getRegularizationResultsEntities());
-			
-			logger.info("\nNumber of results: "+archi.getRegularizationResultsEntities().size());
-			
-			
 						
 		}
 		
 		
-		
-		
-		//archi.getFaMeNetwork().learn(trainingSet);
-		
-		
-		//this.archi.setMeanValueOfFaMeNeurons();
-		//logger.info( "Mean Validate Profit: "+sumProfit/count);
-		
+		archi.saveRegularizationResults();
 		
 		return Status.OK_STATUS;
 	}
@@ -300,8 +273,14 @@ public class NeuralNetworkRegulizer extends Job implements LearningEventListener
 		
 		archi.setMeanValueOfFaMeNeurons();
 		
-		for(int j=0;j<nbOfIndividualsToTrain;j++){
-			
+		double val_total=0;
+		double train_total=0;
+		
+		int size=archi.getRegularizationResultsEntities().size();
+		
+		//for(int j=0;j<nbOfIndividualsToTrain;j++){
+		for(int j=size-1;j>=0;j--){
+					
 			if(archi.getRegularizationResultsEntities().size()<=j)break;
 
 			//Start learning for each individuals
@@ -310,18 +289,23 @@ public class NeuralNetworkRegulizer extends Job implements LearningEventListener
 			archi.getFaMeNetwork().setWeights(ent.getDoubleArray());
 			double[][] outputs=archi.calculateFaMeNetworkOutputsAndProfit(testSet, ProfitUtils.PENALTY);
 			double val=outputs[5][outputs[5].length-1];
+			val_total+=val;
 			
 			outputs=archi.calculateFaMeNetworkOutputsAndProfit(trainingSet, ProfitUtils.PENALTY);
 			double train=outputs[5][outputs[5].length-1];
+			train_total+=train;
 			
-			logger.info("Res: "+j+", Train="+train+", val="+val);
+			//logger.info("Res: "+j+", Train="+train+", val="+val+", genome: "+Arrays.toString(ent.getDoubleArray()));
+			//logger.info("Res: "+j+", Train="+train+", val="+val);
 			
 		}
+		
+		
+		logger.info("Mean Train: "+train_total/size+", Mean Val="+val_total/size);
 		
 		archi.setNewRandomValueOfFaMeNeurons();
 		
 	}
-	
 	
 	private void resetMinMaxValuesOfAlgorithm(){
 		//configuration.getOptLearnParam().setParam(AlgorithmParameters.ES_Minimum, minWeigth);
@@ -404,8 +388,6 @@ public class NeuralNetworkRegulizer extends Job implements LearningEventListener
 	}
 	
 	
-	
-	
 	private class TerminationPropertyChangeListener implements PropertyChangeListener{
 		IProgressMonitor monitor;
 		
@@ -418,27 +400,23 @@ public class NeuralNetworkRegulizer extends Job implements LearningEventListener
 		public void propertyChange(PropertyChangeEvent evt) {
 			
 			if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_BEST)){
-				Individual<double[], double[]> ind=(Individual<double[], double[]>) evt.getNewValue();
-				ResultEntity ent=new ResultEntity(ind.g,ind.v);
-				/*
-				if(info.getResults().addResult(ent)){
-					eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_NEW_BEST_INDIVIDUAL,info);
-				}
-				*/
+				//Individual<double[], double[]> ind=(Individual<double[], double[]>) evt.getNewValue();
+				//ResultEntity ent=new ResultEntity(ind.g,ind.v);
+				
 			}
 			else if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_STEP)){
-				int val=(int)evt.getNewValue();
-				//logger.info("Step: "+val);
-				
+				//int val=(int)evt.getNewValue();				
 				archi.setNewRandomValueOfFaMeNeurons();
+			}
+			else if(evt.getPropertyName().equals(StepLimitPropChange.FIELD_POP)){
 				
-				/*
-				if(val%50==0){
-					info.setStep((int)evt.getNewValue());
-					eventBroker.post(IEventConstant.NETWORK_OPTIMIZATION_NEW_STEP,info);
+				
+				ESIndividual<double[]>[] pop=(ESIndividual<double[]>[])evt.getNewValue();
+				for (int i = pop.length; (--i) >= 0;) {
+					ESIndividual<double[]> p=pop[i];
+					archi.addRegularizationResultEntity(
+							new ResultEntity(p.g,p.v));
 				}
-				*/
-				
 				
 			}
 			// Cancel called

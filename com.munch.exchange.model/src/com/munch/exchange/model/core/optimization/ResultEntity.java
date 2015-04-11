@@ -154,6 +154,21 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 	changes.firePropertyChange(FIELD_Value, this.value, this.value = value);}
 	
 	
+	public boolean isGenomeEqualsTo(ResultEntity compare_ent){
+		if(this.genome.size()!=compare_ent.getGenome().size())
+			return false;
+		
+		double[] master=this.getDoubleArray();
+		double[] compare=compare_ent.getDoubleArray();
+		
+		for(int i=0;i<master.length;i++){
+			if(master[i]!=compare[i])return false;
+		}
+		
+		return true;
+		
+	}
+	
 
 	public String getId() {
 		return id;

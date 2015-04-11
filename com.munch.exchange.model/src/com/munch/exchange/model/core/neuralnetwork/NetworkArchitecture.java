@@ -695,14 +695,14 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 	}
 	
-	private void saveRegularizationResults(){
+	public void saveRegularizationResults(){
 		if(localSavePath.isEmpty()){
 			logger.info("Error by saving results: Local save path is empty!!");
 			return;
 		}
-		if(network==null)return;
-		faMeNetwork.save(localSavePath + File.separator + network.getLabel() + "_reg.nnet");
-		regularizationResults.save(localSavePath + File.separator + network.getLabel() + "_reg.ores");
+		if(faMeNetwork==null)return;
+		faMeNetwork.save(localSavePath + File.separator + networkLabel + "_reg.nnet");
+		regularizationResults.save(localSavePath + File.separator + networkLabel + "_reg.ores");
 	}
 	
 	
@@ -723,8 +723,11 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		//Test if the entity is already present
 		for(ResultEntity old_ent:this.getRegularizationResultsEntities()){
-			if(old_ent.getValue()!=ent.getValue())continue;
-			return false;
+			if(old_ent.isGenomeEqualsTo(ent)){
+				old_ent.setValue(ent.getValue());
+				this.regularizationResults.sort();
+				return false;
+			}
 		}
 		
 		
@@ -942,6 +945,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	private NeuralNetwork createFactoredMeanNetwork(){
 		
+		if(!resultLoaded)this.loadResults();
+		
 		logger.info("createFactoredMeanNetwork!");
 		LinkedList<Layer> fema_layers=new LinkedList<Layer>();
 		HashMap<String, Neuron> cpNeuronMap=new HashMap<String, Neuron>();
@@ -1120,23 +1125,24 @@ public class NetworkArchitecture extends XmlParameterElement {
 		}
 		
 		//Creation of the feMaNetwork
-		NeuralNetwork <BackPropagation> network=new NeuralNetwork <BackPropagation>();
-		network.setLabel(UUID.randomUUID().toString());
+		NeuralNetwork <BackPropagation> f_network=new NeuralNetwork <BackPropagation>();
+		f_network.setLabel(UUID.randomUUID().toString());
 				
 		// set network type
-		network.setNetworkType(NeuralNetworkType.MULTI_LAYER_PERCEPTRON);
+		f_network.setNetworkType(NeuralNetworkType.MULTI_LAYER_PERCEPTRON);
 				
 		//Add the layers
 		for(Layer layer:fema_layers)
-			network.addLayer(layer);
+			f_network.addLayer(layer);
 				
 		// set input and output cells for network
-		NeuralNetworkFactory.setDefaultIO(network);
+		NeuralNetworkFactory.setDefaultIO(f_network);
 				
 		// set learning rule
-		network.setLearningRule(new MomentumBackpropagation());
+		f_network.setLearningRule(new MomentumBackpropagation());
+		f_network.setLabel(network.getLabel());
 		
-		return network;
+		return f_network;
 		//faMeNetwork=network;
 	}
 	

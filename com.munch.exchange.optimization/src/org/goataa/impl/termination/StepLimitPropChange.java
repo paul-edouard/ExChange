@@ -4,12 +4,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
 
+import org.goataa.impl.algorithms.es.ESIndividual;
 import org.goataa.impl.utils.Individual;
 
 public class StepLimitPropChange<G,X> extends StepLimit {
 	
 	public static final String FIELD_STEP = "STEP";
 	public static final String FIELD_BEST = "BEST";
+	public static final String FIELD_POP = "POP";
 	
 	protected PropertyChangeSupport changes = new PropertyChangeSupport(this);
 	
@@ -19,6 +21,8 @@ public class StepLimitPropChange<G,X> extends StepLimit {
 	private static final long serialVersionUID = 1L;
 	
 	private Individual<G, X> best;
+	
+	private ESIndividual<X>[] pop;
 	
 	private boolean isCancel=false;
 	
@@ -43,6 +47,16 @@ public class StepLimitPropChange<G,X> extends StepLimit {
 	
 		changes.firePropertyChange(FIELD_BEST, this.best,
 				this.best = localBest);
+	}
+	
+	
+	public ESIndividual<X>[] getPop() {
+		return pop;
+	}
+
+	public void setPop(ESIndividual<X>[] pop){
+		changes.firePropertyChange(FIELD_POP, this.pop,
+				this.pop = pop);
 	}
 
 
