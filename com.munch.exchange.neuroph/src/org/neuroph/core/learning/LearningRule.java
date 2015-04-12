@@ -131,6 +131,13 @@ abstract public class LearningRule implements Serializable {
         listeners.remove(LearningEventListener.class, listener);
     }
     
+    public void removeAllListerner(){
+    	LearningEventListener[] all=  listeners.getListeners(LearningEventListener.class);
+    	for(int i=0;i<all.length;i++){
+    		listeners.remove(LearningEventListener.class, all[i]);
+    	} 
+    }
+    
     // This private class is used to fire LearningEvents
     protected void fireLearningEvent(LearningEvent evt) {
         Object[] listeners = this.listeners.getListenerList();

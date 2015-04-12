@@ -57,7 +57,7 @@ public class RegularizationBasicParametersWizardPage extends WizardPage {
 			}
 		});
 		sliderVarianz.setMinimum(1);
-		sliderVarianz.setMaximum(501);
+		sliderVarianz.setMaximum(1001);
 		sliderVarianz.setSelection(50);
 		sliderVarianz.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		if(param.hasParamKey(RegularizationParameters.VARIANZ)){

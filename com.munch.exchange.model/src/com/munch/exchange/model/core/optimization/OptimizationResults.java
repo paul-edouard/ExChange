@@ -59,7 +59,7 @@ public class OptimizationResults extends XmlParameterElement implements Serializ
 		results.addFirst(result);
 		Collections.sort(results);
 		//Collections.reverse(list);
-		if(results.size()>maxResult)
+		while(results.size()>maxResult)
 			results.removeLast();
 		
 		return result==results.getFirst();

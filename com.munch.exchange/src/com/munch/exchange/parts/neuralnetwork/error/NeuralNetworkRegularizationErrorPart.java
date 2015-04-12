@@ -103,7 +103,7 @@ public class NeuralNetworkRegularizationErrorPart {
 			NeuralNetworkRegulizer regulizer,
 			EPartService partService,
 			IEclipseContext context){
-		MPart part = partService.createPart(NeuralNetworkErrorPart.NEURALNETWORK_ERROR_EDITOR_ID);
+		MPart part = partService.createPart(NeuralNetworkRegularizationErrorPart.NEURALNETWORK_REGULARIZATION_ERROR_EDITOR_ID);
 		
 		//MPart part =MBasicFactory.INSTANCE.createPartDescrip;
 		

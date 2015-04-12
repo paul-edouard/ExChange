@@ -72,12 +72,13 @@ public class NeuralNetworkRegulizer extends Job  {
 	public static double MAX_WEIGTH_FACTOR=100d;
 	
 	//Local learning Strategy
-	private LearningRule learningRule=null;
+	//private LearningRule learningRule=null;
 	
 	//Effective Value Map
 	private HashMap<String, Double> effectivityValueMap=new HashMap<String, Double>();
 	private HashMap<String, ResultEntity> EntityMap=new HashMap<String, ResultEntity>();
-	private int nbOfCalculation=20;
+	private HashMap<String, LearningRule> learningRuleMap=new HashMap<String, LearningRule>();
+	private int nbOfCalculation=100;
 	
 	
 	private LinkedList<Learner> Learners=new LinkedList<Learner>();
@@ -243,12 +244,14 @@ public class NeuralNetworkRegulizer extends Job  {
 			IStatus returnStatus=Status.OK_STATUS;
 			
 			
+			LinkedList<ResultEntity> results=this.getResultCopy();
+			
 			while(nbOfIndTrained<nbOfIndividualsToTrain){
 				
 				if(monitor.isCanceled() || isCancel)break;
-				if(archi.getRegularizationResultsEntities().size()<=nbOfIndTrained)break;
+				if(results.size()<=nbOfIndTrained)break;
 				
-				ResultEntity ent=archi.getRegularizationResultsEntities().get(nbOfIndTrained);
+				ResultEntity ent=results.get(nbOfIndTrained);
 				if(ent==null){
 					logger.info("Result entity is null??: ");
 					continue;
@@ -268,7 +271,7 @@ public class NeuralNetworkRegulizer extends Job  {
 					
 					learner.initFromResult(ent);
 					learner.schedule();
-					logger.info("New Learning is starting at position: "+nbOfIndTrained+", at learner: "+learnerID);
+					logger.info("New Learning is starting at position: "+nbOfIndTrained+", at learner: "+learnerID+", ent: "+ent.getId());
 					nbOfIndTrained++;break;
 					
 				}
@@ -286,7 +289,6 @@ public class NeuralNetworkRegulizer extends Job  {
 				areAllFinished=true;
 				for(Learner learner:Learners){
 					if(learner.getState()==Job.RUNNING){
-						//InfoPart.postInfoText(eventBroker, "Job "+pos+" is running");
 						areAllFinished=false;
 					}
 				}
@@ -311,6 +313,8 @@ public class NeuralNetworkRegulizer extends Job  {
 			
 			archi.getParent().getRegOptParam().addLastBestResults(algorithm,
 					archi.getRegularizationResultsEntities());
+			
+			resetMinMaxValuesOfAlgorithm();
 						
 		}
 		
@@ -320,6 +324,14 @@ public class NeuralNetworkRegulizer extends Job  {
 		return Status.OK_STATUS;
 	}
 	
+	
+	private LinkedList<ResultEntity> getResultCopy(){
+		LinkedList<ResultEntity> copy=new LinkedList<ResultEntity>();
+		for(ResultEntity ent : archi.getRegularizationResultsEntities()){
+			copy.add(ent);
+		}
+		return copy;
+	}
 	
 	private boolean makeItSleep(IProgressMonitor monitor){
 		
@@ -343,10 +355,27 @@ public class NeuralNetworkRegulizer extends Job  {
 		}
 	}
 	
-	
 	private void calculateEffectivitiy(){
-		for(int j=0;j<archi.getRegularizationResultsEntities().size();j++){
-			ResultEntity ent=archi.getRegularizationResultsEntities().get(j);
+		//Clean the maps from the dead keys
+		LinkedList<String> keysToDelete=new LinkedList<String>();
+		for(String key : effectivityValueMap.keySet()){
+			boolean keyFound=false;
+			for(ResultEntity ent : archi.getRegularizationResultsEntities()){
+				if(ent.getId().equals(key)){
+					keyFound=true;break;
+				}
+			}
+			if(!keyFound)
+				keysToDelete.add(key);
+		}
+		
+		for(String key : keysToDelete){
+			effectivityValueMap.remove(key);
+			EntityMap.remove(key);
+		}
+		
+		
+		for(ResultEntity ent : archi.getRegularizationResultsEntities()){
 			calculateEffectivityValueOf(ent);
 		}
 	}
@@ -354,8 +383,8 @@ public class NeuralNetworkRegulizer extends Job  {
 	private void calculateEffectivityValueOf(ResultEntity ent){
 		//logger.info("calculateEffectivityValueOf="+ent.getId());
 		
-		//if(this.effectivityValueMap.containsKey(ent.getId()))
-		//	return;
+		if(this.effectivityValueMap.containsKey(ent.getId()))
+			return;
 		
 		double[] values=new double[nbOfCalculation];
 		
@@ -390,7 +419,6 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 	}
 	
-	
 	private void reorderResults(){
 		
 		calculateEffectivitiy();
@@ -402,6 +430,7 @@ public class NeuralNetworkRegulizer extends Job  {
 			ent.setValue(error);
 		}
 		*/
+		
 		//archi.sortRegularizationResults();
 		LinkedList<ResultEntity> results=new LinkedList<ResultEntity>();
 		for(String id:EntityMap.keySet()){
@@ -422,16 +451,7 @@ public class NeuralNetworkRegulizer extends Job  {
 			
 		}
 		
-		/*
-		for(ResultEntity sorted_ent:results){
-			double effectivity_sorted=effectivityValueMap.get(sorted_ent.getId());
-			logger.info("effectivity_sorted="+effectivity_sorted);
-		}
-		*/
-		
 		archi.setRegularizationResultsEntities(results);
-		
-		
 		
 	}
 	
@@ -444,8 +464,12 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 		int size=archi.getRegularizationResultsEntities().size();
 		
+		logger.info("Population: "+size);
+		
 		//for(int j=0;j<nbOfIndividualsToTrain;j++){
 		for(int j=size-1;j>=0;j--){
+			
+			if (j>=nbOfIndividualsToTrain)continue;
 					
 			if(archi.getRegularizationResultsEntities().size()<=j)break;
 
@@ -461,14 +485,14 @@ public class NeuralNetworkRegulizer extends Job  {
 			double train=outputs[5][outputs[5].length-1];
 			train_total+=train;
 			
-			if (j<nbOfIndividualsToTrain)
+			//if (j<nbOfIndividualsToTrain)
 			//logger.info("Res: "+j+", Train="+train+", val="+val+", genome: "+Arrays.toString(ent.getDoubleArray()));
-			 logger.info("Best Res: "+j+", Train="+train+", val="+val+", effectivity="+effectivityValueMap.get(ent.getId()));
+			 logger.info("Best Res: "+j+", Train="+train+", val="+val+", effectivity="+effectivityValueMap.get(ent.getId())+", id="+ent.getId());
 			
 		}
 		
 		
-		logger.info("Mean Train: "+train_total/size+", Mean Val="+val_total/size);
+		logger.info("Mean Train: "+train_total/nbOfIndividualsToTrain+", Mean Val="+val_total/nbOfIndividualsToTrain);
 		
 		archi.setNewRandomValueOfFaMeNeurons();
 		
@@ -484,7 +508,6 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 	}
 	
-
 	public synchronized void setMinMaxWeigth(ResultEntity ent){
 		
 		double[] w=ent.getDoubleArray();
@@ -498,6 +521,18 @@ public class NeuralNetworkRegulizer extends Job  {
 				maxWeigth=Math.min(w[j]+Math.abs(w[j])*0.1,MAX_WEIGTH_FACTOR);
 			if(w[j]<minWeigth)
 				minWeigth=Math.max(w[j]-Math.abs(w[j])*0.1,-MAX_WEIGTH_FACTOR);
+		}
+		
+	}
+	
+	public synchronized LearningRule getLearningRuleOf(ResultEntity ent){
+		if(learningRuleMap.containsKey(ent.getId())){
+			return learningRuleMap.get(ent.getId());
+		}
+		else{
+			LearningRule learningRule=archi.getParent().getRegTrainParam().createLearningRule();
+			learningRuleMap.put(ent.getId(), learningRule);
+			return learningRule;
 		}
 		
 	}
@@ -570,14 +605,19 @@ public class NeuralNetworkRegulizer extends Job  {
 			this.archi=archi;
 			network=this.archi.getCopyOfFaMeNetwork();
 			
-			learningRule=archi.getParent().getRegTrainParam().createLearningRule();
-			learningRule.addListener(this);
-			network.setLearningRule(learningRule);
+			//learningRule=archi.getParent().getRegTrainParam().createLearningRule();
+			//learningRule.addListener(this);
+			//network.setLearningRule(learningRule);
 			
 		}
 		
 		public void initFromResult(ResultEntity ent){
-			archi.getFaMeNetwork().setWeights(ent.getDoubleArray());
+			network.setWeights(ent.getDoubleArray());
+			
+			learningRule=getLearningRuleOf(ent);
+			learningRule.removeAllListerner();
+			learningRule.addListener(this);
+			network.setLearningRule(learningRule);
 		}
 
 		@Override
@@ -624,6 +664,8 @@ public class NeuralNetworkRegulizer extends Job  {
 				
 				archi.addRegularizationResultEntity(ent);
 			}
+			
+			learningRule.removeListener(this);
 			
 			return Status.OK_STATUS;
 		}
