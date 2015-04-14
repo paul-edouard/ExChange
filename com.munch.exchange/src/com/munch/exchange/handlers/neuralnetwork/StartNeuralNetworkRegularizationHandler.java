@@ -80,7 +80,7 @@ public class StartNeuralNetworkRegularizationHandler {
 		
 		
 		NeuralNetworkRegularizationErrorPart.openPart(
-				stock,
+				archi,
 				partService,
 				modelService,
 				application,
@@ -96,10 +96,11 @@ public class StartNeuralNetworkRegularizationHandler {
 	
 	@CanExecute
 	public boolean canExecute() {
-		if(this.archi !=null )
-			return true;
+		if(this.archi ==null )
+			return false;
 		
-		if(this.regulizer!=null && this.regulizer.getState()==Job.RUNNING)return false;
+		if(this.regulizer!=null && this.regulizer.getState()==Job.RUNNING)
+			return false;
 		
 		return true;
 		
