@@ -221,10 +221,10 @@ public class NeuralNetworkRegulizer extends Job  {
 		if(archi==null)return Status.CANCEL_STATUS;
 		if(archi.getParent()==null)return Status.CANCEL_STATUS;
 		
-		eventBroker.send(IEventConstant.REGULARIZATION_STARTED,
-				new RegularizationInfo(archi, step, getResultCopy(),this));
-		
 		if(!prepareAll())return Status.CANCEL_STATUS;
+		
+		sendRegularizationInfo(IEventConstant.REGULARIZATION_STARTED);
+		
 		
 		//Start the Optimization
 		for(int i=0;i<optLoops;i++){
@@ -238,9 +238,7 @@ public class NeuralNetworkRegulizer extends Job  {
 			
 			//Resort the results and plot
 			logger.info("After Evolution Strategy: ");
-			reorderResults();
-			sendNewStepSignal();
-			plotResults();
+			sendRegularizationInfo(IEventConstant.REGULARIZATION_NEW_STEP);
 			
 			//Loop on all the individuals to try increase the result quality
 			int nbOfIndTrained=0;
@@ -311,9 +309,7 @@ public class NeuralNetworkRegulizer extends Job  {
 			
 			//Resort the results and plot
 			logger.info("After Learning: ");
-			reorderResults();
-			sendNewStepSignal();
-			plotResults();
+			sendRegularizationInfo(IEventConstant.REGULARIZATION_NEW_STEP);
 			
 			
 			archi.getParent().getRegOptParam().addLastBestResults(algorithm,
@@ -325,21 +321,30 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 		
 		archi.saveRegularizationResults();
-	
-		eventBroker.send(IEventConstant.REGULARIZATION_FINISHED,
-				new RegularizationInfo(archi, step, getResultCopy(),this));
 		
+		sendRegularizationInfo(IEventConstant.REGULARIZATION_FINISHED);
+	
 		return Status.OK_STATUS;
 	}
 	
 
-	private void sendNewStepSignal(){
+	private void sendRegularizationInfo(String message){
 		
-		RegularizationInfo info =new RegularizationInfo(archi, step, getResultCopy(),this);
-		eventBroker.send(IEventConstant.REGULARIZATION_NEW_STEP,info);
+		RegularizationInfo info =new RegularizationInfo(archi, step,optLoops*2,
+				getResultCopy(),this,trainingSet, testSet,nbOfIndividualsToTrain);
 		
-		step++;
+		
+		if(message.equals(IEventConstant.REGULARIZATION_NEW_STEP)){
+			reorderResults();
+			eventBroker.send(message,info);
+			step++;
+			plotResults();
+		}
+		else{
+			eventBroker.send(message,info);
+		}
 	}
+	
 	
 	private LinkedList<ResultEntity> getResultCopy(){
 		LinkedList<ResultEntity> copy=new LinkedList<ResultEntity>();
@@ -493,11 +498,11 @@ public class NeuralNetworkRegulizer extends Job  {
 			ResultEntity ent=archi.getRegularizationResultsEntities().get(j);
 			
 			archi.getFaMeNetwork().setWeights(ent.getDoubleArray());
-			double[][] outputs=archi.calculateFaMeNetworkOutputsAndProfit(testSet, ProfitUtils.PENALTY);
+			double[][] outputs=archi.calculateFaMeNetworkOutputsAndProfit(testSet);
 			double val=outputs[5][outputs[5].length-1];
 			val_total+=val;
 			
-			outputs=archi.calculateFaMeNetworkOutputsAndProfit(trainingSet, ProfitUtils.PENALTY);
+			outputs=archi.calculateFaMeNetworkOutputsAndProfit(trainingSet);
 			double train=outputs[5][outputs[5].length-1];
 			train_total+=train;
 			
@@ -697,16 +702,28 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 		private NetworkArchitecture archi;
 		private int step;
+		private int maxStep;
+		
 		private LinkedList<ResultEntity> population=new LinkedList<ResultEntity>();
 		private NeuralNetworkRegulizer regulizer;
+		private int nbOfIndividualsToTrain;
 		
-		public RegularizationInfo(NetworkArchitecture archi, int step,
-				LinkedList<ResultEntity> population, NeuralNetworkRegulizer regulizer) {
+		private DataSet trainingSet;
+		private DataSet testSet;
+		
+		public RegularizationInfo(NetworkArchitecture archi, int step,int maxStep,
+				LinkedList<ResultEntity> population, NeuralNetworkRegulizer regulizer,
+				DataSet trainingSet,DataSet testSet,int nbOfIndividualsToTrain ) {
 			super();
 			this.archi = archi;
 			this.step = step;
+			this.maxStep = maxStep;
 			this.population = population;
 			this.regulizer = regulizer;
+			
+			this.trainingSet = trainingSet;
+			this.testSet = testSet;
+			this.nbOfIndividualsToTrain=nbOfIndividualsToTrain;
 		}
 
 		public NetworkArchitecture getArchi() {
@@ -715,6 +732,10 @@ public class NeuralNetworkRegulizer extends Job  {
 
 		public int getStep() {
 			return step;
+		}
+
+		public int getMaxStep() {
+			return maxStep;
 		}
 
 		public LinkedList<ResultEntity> getPopulation() {
@@ -727,6 +748,20 @@ public class NeuralNetworkRegulizer extends Job  {
 
 		public void setRegulizer(NeuralNetworkRegulizer regulizer) {
 			this.regulizer = regulizer;
+		}
+		
+
+		public DataSet getTrainingSet() {
+			return trainingSet;
+		}
+		
+
+		public DataSet getTestSet() {
+			return testSet;
+		}
+
+		public int getNbOfIndividualsToTrain() {
+			return nbOfIndividualsToTrain;
 		}
 		
 		

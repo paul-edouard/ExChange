@@ -4,6 +4,7 @@ package com.munch.exchange.parts.neuralnetwork.error;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -46,15 +47,20 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
+import org.neuroph.core.NeuralNetwork;
+import org.neuroph.core.data.DataSet;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkRegulizer;
+import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizer.OptInfo;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkOptimizerManager.NNOptManagerInfo;
 import com.munch.exchange.job.neuralnetwork.NeuralNetworkRegulizer.RegularizationInfo;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
+import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.parts.MyMDirtyable;
+import com.munch.exchange.utils.ProfitUtils;
 
 public class NeuralNetworkRegularizationErrorPart {
 	
@@ -65,7 +71,16 @@ public class NeuralNetworkRegularizationErrorPart {
 	@Inject
 	private NetworkArchitecture archi;
 	
+	@SuppressWarnings("rawtypes")
+	private NeuralNetwork network=null;
+	private DataSet trainingSet=null;
+	private DataSet testSet=null;
+	
+	private HashMap<String, PlotElement> elementMap=new HashMap<String, PlotElement>();
+	private LinkedList<Generation> generations=new LinkedList<Generation>();
+	
 	private NeuralNetworkRegulizer regulizer;
+	private int step;
 	
 	
 	private Button btnStop;
@@ -73,7 +88,10 @@ public class NeuralNetworkRegularizationErrorPart {
 	
 	private Composite compositeChart;
 	private JFreeChart chart;
-	private XYSeriesCollection errorData;
+	private XYSeriesCollection errorData = new XYSeriesCollection();;
+	private XYSeries trainingSeries=new XYSeries("Training");
+	private XYSeries testSeries=new XYSeries("Test");
+	
 	private XYSeries lastSeries;
 	
 	
@@ -84,7 +102,7 @@ public class NeuralNetworkRegularizationErrorPart {
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
-parent.setLayout(new GridLayout(1, false));
+		parent.setLayout(new GridLayout(1, false));
 		
 		TabFolder tabFolder = new TabFolder(parent, SWT.BOTTOM);
 		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -182,21 +200,25 @@ parent.setLayout(new GridLayout(1, false));
           domainAxis.setLowerMargin(0.01);
           domainAxis.setUpperMargin(0.01);
           return domainAxis;
-      }
+    }
+    
+    
+    
+    
+    
        /**
         * Create the Main Plot
         * 
         * @return
         */
-       private XYPlot createMainPlot( NumberAxis domainAxis){
+    private XYPlot createMainPlot( NumberAxis domainAxis){
        	
        	//====================
        	//=== Main Curves  ===
        	//====================
        	//Creation of data Set
-           //XYDataset priceData = createDataset(HistoricalPoint.FIELD_Close);
-       	errorData = new XYSeriesCollection();
-       	
+    	errorData.addSeries(trainingSeries);
+    	errorData.addSeries(testSeries);
        	
            //Renderer
            XYItemRenderer renderer1 = new XYLineAndShapeRenderer(true, false);
@@ -235,7 +257,13 @@ parent.setLayout(new GridLayout(1, false));
 	
 	
 	
+    private void updateProgressBar(RegularizationInfo info){
 	
+		progressBarNetworkError.setSelection(info.getStep());
+		progressBarNetworkError.setToolTipText(String.valueOf(100*info.getStep()/info.getMaxStep())+"%");
+		progressBarNetworkError.setMaximum(info.getMaxStep());
+		
+	}
 	
 	
 	
@@ -257,6 +285,104 @@ parent.setLayout(new GridLayout(1, false));
 	}
 	
 	
+	private class Generation{
+		
+		private LinkedList<PlotElement> elements=new LinkedList<PlotElement>();
+		
+		private int max=10;
+		
+		public Generation(LinkedList<ResultEntity> entities,int max){
+			
+			this.max=max;
+			
+			for(ResultEntity ent :entities ){
+				if(elementMap.containsKey(ent.getId())){
+					elements.add(elementMap.get(ent.getId()));
+					continue;
+				}
+					
+				PlotElement el=new PlotElement(ent);
+				elementMap.put(ent.getId(), el);
+				elements.add(el);
+			}
+			
+			double trainingErrorTotal=0;
+			double testErrorTotal=0;
+			
+			int pos=0;
+			for(PlotElement el:elements){
+				if(pos>=max)break;
+				
+				trainingErrorTotal+=el.getTrainingError();
+				testErrorTotal+=el.getTestError();
+				
+				pos++;
+			}
+			
+			trainingSeries.add(step,trainingErrorTotal/pos);
+			testSeries.add(step,testErrorTotal/pos);
+			
+			
+		}
+
+
+		public LinkedList<PlotElement> getElements() {
+			return elements;
+		}
+		
+		
+		
+		
+	}
+	
+	private class PlotElement{
+		
+		ResultEntity entity;
+		private double trainingError;
+		private double testError;
+		
+		public PlotElement(ResultEntity entity){
+			this.entity=entity;
+			
+			calculateErrors();
+		}
+		
+		private void calculateErrors(){
+			network.setWeights(entity.getDoubleArray());
+			
+			
+			double[][] outputs=NetworkArchitecture.calculateOutputsAndProfit(network, trainingSet);
+			double train=outputs[5][outputs[5].length-1];
+			double maxTrainProfit=outputs[6][outputs[6].length-1];
+			
+			trainingError=1-train/maxTrainProfit;
+			
+			
+			outputs=NetworkArchitecture.calculateOutputsAndProfit(network, testSet);
+			double test=outputs[5][outputs[5].length-1];
+			double maxTestProfit=outputs[6][outputs[6].length-1];
+			
+			testError=1-test/maxTestProfit;
+			
+		}
+
+		public double getTrainingError() {
+			return trainingError;
+		}
+
+		public double getTestError() {
+			return testError;
+		}
+
+		public ResultEntity getEntity() {
+			return entity;
+		}
+		
+		
+		
+		
+	}
+	
 	//################################
 	//##  EVENT REACTIONS          ##
 	//################################
@@ -266,6 +392,8 @@ parent.setLayout(new GridLayout(1, false));
 		if(info.getArchi()!=this.archi)return false;
 		if(!info.getArchi().getId().equals(this.archi.getId()))return false;
 		if(btnStop == null)return false;
+		
+		updateProgressBar(info);
 		
 		return true;
 	}
@@ -277,7 +405,16 @@ parent.setLayout(new GridLayout(1, false));
 		if(!isAbleToReact(info))return;
 		
 		this.regulizer=info.getRegulizer();
+		this.network=this.archi.getCopyOfFaMeNetwork();
 		
+		trainingSet=info.getTrainingSet();
+		testSet=info.getTestSet();
+		elementMap.clear();
+		generations.clear();
+		
+		
+		trainingSeries.clear();
+		testSeries.clear();
 		
 		
 	}
@@ -288,6 +425,8 @@ parent.setLayout(new GridLayout(1, false));
 		if(!isAbleToReact(info))return;
 		
 		
+		
+		
 	}
 	
 	@Inject
@@ -295,7 +434,9 @@ parent.setLayout(new GridLayout(1, false));
 		
 		if(!isAbleToReact(info))return;
 		
+		step=info.getStep();
 		
+		generations.add(new Generation(info.getPopulation(),info.getNbOfIndividualsToTrain()));
 	}
 	
 	

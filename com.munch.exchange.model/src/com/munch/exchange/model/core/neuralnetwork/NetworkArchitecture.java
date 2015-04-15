@@ -628,7 +628,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return calculateProfitFromOutput(outputs);
 	}
 	
-	private double[][] calculateProfitFromOutput(double[][] outputs){
+	public static double[][] calculateProfitFromOutput(double[][] outputs){
 		double[] output 		= outputs[0];
 		double[] desiredOutput 	= outputs[1];
 		double[] outputdiff		= outputs[2];
@@ -781,9 +781,8 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return calculateFaMeNetworkOutputs(dataSet);
 	}
 	
-	private double[][] calculateFaMeNetworkOutputs(DataSet dataSet){
-		
 	
+	public static double[][] calculateOutputs(NeuralNetwork nn, DataSet dataSet){
 		double[] output 		= new double[dataSet.getRows().size()];
 		double[] desiredOutput 	= new double[dataSet.getRows().size()];
 		double[] outputdiff		= new double[dataSet.getRows().size()];
@@ -792,14 +791,14 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		int pos=0;
 		for(DataSetRow row : dataSet.getRows()) {
-			if(row.getInput().length!=faMeNetwork.getInputsCount()){
-				logger.info("Size error: Test Row Size: "+row.getInput().length+", Network input: "+network.getInputsCount());
+			if(row.getInput().length!=nn.getInputsCount()){
+				logger.info("Size error: Test Row Size: "+row.getInput().length+", Network input: "+nn.getInputsCount());
 				continue;
 			}
-			faMeNetwork.setInput(row.getInput());
-			faMeNetwork.calculate();
+			nn.setInput(row.getInput());
+			nn.calculate();
 			
-	         double[] networkOutput = faMeNetwork.getOutput();
+	         double[] networkOutput = nn.getOutput();
 	         
 	         output[pos]=networkOutput[0];
 	         desiredOutput[pos]=row.getDesiredOutput()[0];
@@ -821,14 +820,21 @@ public class NetworkArchitecture extends XmlParameterElement {
 		double[][] outputs={output, desiredOutput, outputdiff, startVal, endVal};
 		
 		return outputs;
-		
-		
 	}
 	
 	
-	public double[][] calculateFaMeNetworkOutputsAndProfit(DataSet dataSet, double penalty){
-		double[][] outputs=calculateFaMeNetworkOutputs(dataSet);
+	public static double[][] calculateOutputsAndProfit(NeuralNetwork nn, DataSet dataSet){
+		double[][] outputs=calculateOutputs(nn,dataSet);
 		return calculateProfitFromOutput(outputs);
+	}
+	
+	private double[][] calculateFaMeNetworkOutputs(DataSet dataSet){	
+		return calculateOutputs(faMeNetwork, dataSet);
+	}
+	
+	
+	public double[][] calculateFaMeNetworkOutputsAndProfit(DataSet dataSet){
+		return calculateOutputsAndProfit(faMeNetwork, dataSet);
 	}
 	
 	

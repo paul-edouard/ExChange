@@ -215,7 +215,7 @@ public class NeuralNetworkResultsChartPart {
 			outputs=archi.calculateNetworkOutputsAndProfit(dataset, archi.getSelectedResultEntity().getDoubleArray(), ProfitUtils.PENALTY);
 		else{
 			if(archi.isFaMeNetworkCreated()){
-				outputs=archi.calculateFaMeNetworkOutputsAndProfit(dataset,ProfitUtils.PENALTY);
+				outputs=archi.calculateFaMeNetworkOutputsAndProfit(dataset);
 			}
 			else
 				outputs=archi.calculateNetworkOutputsAndProfitFromBestResult(dataset,ProfitUtils.PENALTY);
