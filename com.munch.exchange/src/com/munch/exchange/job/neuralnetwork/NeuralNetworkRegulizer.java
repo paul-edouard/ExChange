@@ -124,23 +124,27 @@ public class NeuralNetworkRegulizer extends Job  {
 		trainingSet=archi.getParent().getTrainingDataSet();
 		testSet=archi.getParent().getValidateDataSet();
 		
+		//Set the Varianz
+		double varianz=archi.getParent().getRegBasicParam().getDoubleParam(RegularizationParameters.VARIANZ);
+		archi.setVarianzOfFaMeNeurons(varianz);
+		logger.info( "Varianz: "+varianz);
+		
 		
 		//Prepare the optimization of the network weights
 		prepareNetworkWeightsRegularization();
 		if(algorithm==null || term == null)return false;
 		
 		
-		//Set the Varianz
-		double varianz=archi.getParent().getRegBasicParam().getDoubleParam(RegularizationParameters.VARIANZ);
-		archi.setVarianzOfFaMeNeurons(varianz);
-		logger.info( "Varianz: "+varianz);
-		
-		for(Learner learner:this.Learners)
+		for(Learner learner:this.Learners){
 			learner.setArchitecture(archi);
+			learner.setVarianz(varianz);
+		}
 		
 		for(EffectivityCalculator calculator:this.EffectivityCalculators){
 			//Set the objective function
-			calculator.setObjFunc(new NnRegularizationObjFunc(archi, trainingSet));
+			NnRegularizationObjFunc func=new NnRegularizationObjFunc(archi, trainingSet);
+			func.setVarianz(varianz);
+			calculator.setObjFunc(func);
 		}
 		
 		return true;
@@ -173,6 +177,7 @@ public class NeuralNetworkRegulizer extends Job  {
 				
 		//Set the number of loops
 		if(archi.getParent().getRegOptParam().hasParamKey(AlgorithmParameters.OPTIMIZATION_Loops)){
+			//logger.info("Set the number of loops: "+optLoops);
 			optLoops=archi.getParent().getRegOptParam().getIntegerParam(AlgorithmParameters.OPTIMIZATION_Loops);
 		}
 				
@@ -789,6 +794,11 @@ public class NeuralNetworkRegulizer extends Job  {
 			
 		}
 		
+		
+		public void setVarianz(double varianz){
+			NetworkArchitecture.setVarianzOfFaMeNeurons(network, varianz);
+		}
+		
 		public void initFromResult(ResultEntity ent){
 			network.setWeights(ent.getDoubleArray());
 			
@@ -801,20 +811,7 @@ public class NeuralNetworkRegulizer extends Job  {
 		@Override
 		public void handleLearningEvent(LearningEvent event) {
 			if(event.getSource() instanceof BackPropagation){
-				
-				//Rest the Random Gaussian values
-				if(network==null)return;
-				for(int i=0;i<network.getLayersCount();i++){
-					Layer layer=network.getLayerAt(i);
-					for(int j=0;j<layer.getNeuronsCount();j++){
-						Neuron n=layer.getNeuronAt(j);
-						if(n.getTransferFunction() instanceof RandomGaussian){
-							RandomGaussian func=(RandomGaussian)n.getTransferFunction();
-							func.resetValue();
-						}
-					}
-				}
-				
+				NetworkArchitecture.setNewRandomValueOfFaMeNeurons(network);
 			}
 			
 		}
@@ -844,6 +841,8 @@ public class NeuralNetworkRegulizer extends Job  {
 			}
 			
 			learningRule.removeListener(this);
+			
+			logger.info("Values: "+NetworkArchitecture.plotValueOfFaMeNeurons(network));
 			
 			return Status.OK_STATUS;
 		}

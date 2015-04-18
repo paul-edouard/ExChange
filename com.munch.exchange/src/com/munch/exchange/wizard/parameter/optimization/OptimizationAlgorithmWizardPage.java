@@ -72,7 +72,7 @@ public class OptimizationAlgorithmWizardPage extends WizardPage {
 		new Label(container, SWT.NONE);
 		
 		Label lblNumberOfSteps = new Label(container, SWT.NONE);
-		lblNumberOfSteps.setText("Number of Steps:");
+		lblNumberOfSteps.setText("Number of generations:");
 		
 		spinnerNumberOfSteps = new Spinner(container, SWT.BORDER);
 		spinnerNumberOfSteps.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -92,7 +92,7 @@ public class OptimizationAlgorithmWizardPage extends WizardPage {
 		}
 		
 		Label lblNumberOfLoops = new Label(container, SWT.NONE);
-		lblNumberOfLoops.setText("Number of Loops:");
+		lblNumberOfLoops.setText("Number of global loops:");
 		
 		spinnerNumberOfLoops = new Spinner(container, SWT.BORDER);
 		spinnerNumberOfLoops.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));

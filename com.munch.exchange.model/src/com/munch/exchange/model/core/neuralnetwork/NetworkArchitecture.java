@@ -857,18 +857,46 @@ public class NetworkArchitecture extends XmlParameterElement {
 	}
 	
 	public void setVarianzOfFaMeNeurons(double varianz){
-		if(faMeNetwork==null)return;
-		for(int i=0;i<faMeNetwork.getLayersCount();i++){
-			Layer layer=faMeNetwork.getLayerAt(i);
+		setVarianzOfFaMeNeurons(faMeNetwork,varianz);
+	}
+	
+	
+	public static void setVarianzOfFaMeNeurons(NeuralNetwork network,double varianz){
+		if(network==null)return;
+		for(int i=0;i<network.getLayersCount();i++){
+			Layer layer=network.getLayerAt(i);
 			for(int j=0;j<layer.getNeuronsCount();j++){
 				Neuron n=layer.getNeuronAt(j);
 				if(n.getTransferFunction() instanceof RandomGaussian){
 					RandomGaussian func=(RandomGaussian)n.getTransferFunction();
 					func.setVarianz(varianz);
+					
 				}
 			}
 		}
 	}
+	
+	public static String plotValueOfFaMeNeurons(NeuralNetwork network){
+		if(network==null)return "";
+		
+		String plot="[";
+		
+		for(int i=0;i<network.getLayersCount();i++){
+			Layer layer=network.getLayerAt(i);
+			for(int j=0;j<layer.getNeuronsCount();j++){
+				Neuron n=layer.getNeuronAt(j);
+				if(n.getTransferFunction() instanceof RandomGaussian){
+					RandomGaussian func=(RandomGaussian)n.getTransferFunction();
+					plot+=func.getValue()+", ";
+					
+				}
+			}
+		}
+		
+		return plot+"]";
+		
+	}
+	
 	
 	public void checkFaMeNeuronsOutput(){
 		if(faMeNetwork==null)return;

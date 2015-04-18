@@ -36,6 +36,10 @@ public class NnRegularizationObjFunc extends OptimizationModule implements
 		
 	}
 	
+	public void setVarianz(double varianz){
+		NetworkArchitecture.setVarianzOfFaMeNeurons(network, varianz);
+	}
+	
 	@Override
 	public double compute(double[] x, Random r) {
 		 double error=calculateError(x,r);
