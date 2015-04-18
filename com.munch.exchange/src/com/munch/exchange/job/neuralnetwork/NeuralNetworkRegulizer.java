@@ -83,6 +83,8 @@ public class NeuralNetworkRegulizer extends Job  {
 	
 	
 	private LinkedList<Learner> Learners=new LinkedList<Learner>();
+	private LinkedList<EffectivityCalculator> EffectivityCalculators=new LinkedList<EffectivityCalculator>();
+	
 	
 
 	public NeuralNetworkRegulizer( IEventBroker eventBroker, INeuralNetworkProvider nnprovider,
@@ -96,6 +98,7 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 		for(int i=0;i<getNumberOfProcessors();i++){
 			Learners.add(new Learner(this.archi));
+			EffectivityCalculators.add(new EffectivityCalculator());
 		}
 		
 		
@@ -134,6 +137,11 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 		for(Learner learner:this.Learners)
 			learner.setArchitecture(archi);
+		
+		for(EffectivityCalculator calculator:this.EffectivityCalculators){
+			//Set the objective function
+			calculator.setObjFunc(new NnRegularizationObjFunc(archi, trainingSet));
+		}
 		
 		return true;
 	}
@@ -243,7 +251,7 @@ public class NeuralNetworkRegulizer extends Job  {
 			//Loop on all the individuals to try increase the result quality
 			int nbOfIndTrained=0;
 			
-			IStatus returnStatus=Status.OK_STATUS;
+			//IStatus returnStatus=Status.OK_STATUS;
 			
 			
 			LinkedList<ResultEntity> results=this.getResultCopy();
@@ -263,9 +271,9 @@ public class NeuralNetworkRegulizer extends Job  {
 						continue;
 				}
 				
-				int learnerID=0;
+				//int learnerID=0;
 				for(Learner learner:this.Learners){
-					learnerID++;
+				//	learnerID++;
 					
 					if(learner.getState()==Job.RUNNING){
 						continue;
@@ -273,35 +281,20 @@ public class NeuralNetworkRegulizer extends Job  {
 					
 					learner.initFromResult(ent);
 					learner.schedule();
-					logger.info("New Learning is starting at position: "+nbOfIndTrained+", at learner: "+learnerID+", ent: "+ent.getId());
+					//logger.info("New Learning is starting at position: "+nbOfIndTrained+", at learner: "+learnerID+", ent: "+ent.getId());
 					nbOfIndTrained++;break;
 					
 				}
 				
-				if(!makeItSleep(monitor)){
-					returnStatus=Status.CANCEL_STATUS;
+				if(!waitForNextFreeLearners()){
+					//returnStatus=Status.CANCEL_STATUS;
 					break;
 				}
 				
 			}
 			
 			
-			boolean areAllFinished=false;
-			while(!areAllFinished){
-				areAllFinished=true;
-				for(Learner learner:Learners){
-					if(learner.getState()==Job.RUNNING){
-						areAllFinished=false;
-					}
-				}
-				
-				if(!makeItSleep(monitor)){
-					returnStatus=Status.CANCEL_STATUS;
-				}
-				
-				if(areAllFinished)break;
-			
-			}
+			waitUntilAllLearnersFinished();
 			
 			if (monitor.isCanceled())
 				return Status.CANCEL_STATUS;
@@ -354,7 +347,7 @@ public class NeuralNetworkRegulizer extends Job  {
 		return copy;
 	}
 	
-	private boolean makeItSleep(IProgressMonitor monitor){
+	private boolean waitForNextFreeLearners(){
 		
 		try {
 			Thread.sleep(RESTART);
@@ -376,6 +369,78 @@ public class NeuralNetworkRegulizer extends Job  {
 		}
 	}
 	
+	private IStatus waitUntilAllLearnersFinished(){
+		
+		IStatus returnStatus=Status.OK_STATUS;
+		
+		boolean areAllFinished=false;
+		while(!areAllFinished){
+			areAllFinished=true;
+			for(Learner learner:Learners){
+				if(learner.getState()==Job.RUNNING){
+					areAllFinished=false;
+				}
+			}
+			
+			if(!waitForNextFreeLearners()){
+				returnStatus=Status.CANCEL_STATUS;
+			}
+			
+			if(areAllFinished)break;
+		
+		}
+		
+		return returnStatus;
+	}
+	
+	private boolean waitForNextFreeEffectivityCalculators(IProgressMonitor monitor){
+		
+		try {
+			Thread.sleep(RESTART);
+			if (monitor.isCanceled()){
+				int pos=-1;
+				for(EffectivityCalculator calculator:EffectivityCalculators){
+					pos++;
+					if(calculator.getState()==Job.RUNNING){
+						InfoPart.postInfoText(eventBroker, "Try to cancel job "+pos+"!!");
+						calculator.cancel();	
+					}
+				}
+				return false;
+			}
+			return true;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	
+	private IStatus waitUntilAllEffectivityCalculatorsFinished(){
+		
+		IStatus returnStatus=Status.OK_STATUS;
+		
+		boolean areAllFinished=false;
+		while(!areAllFinished){
+			areAllFinished=true;
+			for(EffectivityCalculator calculator:EffectivityCalculators){
+				if(calculator.getState()==Job.RUNNING){
+					areAllFinished=false;
+				}
+			}
+			
+			if(!waitForNextFreeLearners()){
+				returnStatus=Status.CANCEL_STATUS;
+			}
+			
+			if(areAllFinished)break;
+		
+		}
+		
+		return returnStatus;
+	}
+	
+	
 	private void calculateEffectivitiy(){
 		//Clean the maps from the dead keys
 		LinkedList<String> keysToDelete=new LinkedList<String>();
@@ -396,11 +461,37 @@ public class NeuralNetworkRegulizer extends Job  {
 		}
 		
 		
-		for(ResultEntity ent : archi.getRegularizationResultsEntities()){
-			calculateEffectivityValueOf(ent);
+		
+		int nbOfEffCalculated=0;
+		while(nbOfEffCalculated<archi.getRegularizationResultsEntities().size()){
+			ResultEntity ent=archi.getRegularizationResultsEntities().get(nbOfEffCalculated);
+			
+			if(this.effectivityValueMap.containsKey(ent.getId())){
+				nbOfEffCalculated++;continue;
+			}
+			
+			//int learnerID=0;
+			for(EffectivityCalculator calculator:EffectivityCalculators){
+				//learnerID++;
+				
+				if(calculator.getState()==Job.RUNNING)continue;
+				
+				calculator.setEnt(archi.getRegularizationResultsEntities().get(nbOfEffCalculated));
+				calculator.schedule();
+				//logger.info("New Learning is starting at position: "+nbOfIndTrained+", at learner: "+learnerID+", ent: "+ent.getId());
+				nbOfEffCalculated++;break;
+				
+			}
+			
+			if(!waitForNextFreeEffectivityCalculators(monitor))break;
+			
 		}
+		
+		waitUntilAllEffectivityCalculatorsFinished();
+	
 	}
 	
+	/*
 	private void calculateEffectivityValueOf(ResultEntity ent){
 		//logger.info("calculateEffectivityValueOf="+ent.getId());
 		
@@ -428,17 +519,23 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 		double effectivity=mean+stdDev;
 		
-		//logger.info("Mean="+mean+", Std Dev="+stdDev+", Effectivity="+effectivity);
-		if (stdDev>0.1){
+		
+		saveEffectivity(ent,effectivity,stdDev);
+		
+	}
+	*/
+	
+	private synchronized void saveEffectivity(ResultEntity ent,double effectivity,double stdDev){
+		// logger.info("Mean="+mean+", Std Dev="+stdDev+", Effectivity="+effectivity);
+		if (stdDev > 0.1) {
 			effectivityValueMap.put(ent.getId(), effectivity);
 			EntityMap.put(ent.getId(), ent);
-		}
-		else{
+		} else {
 			effectivityValueMap.put(ent.getId(), 0.0);
 			EntityMap.put(ent.getId(), ent);
 		}
-		
 	}
+	
 	
 	private void reorderResults(){
 		
@@ -604,9 +701,69 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 	}
 	
-	//################################
-	//##          WORKER            ##
-	//################################
+	//#################################
+	//##          WORKERS            ##
+	//#################################
+	
+	private class EffectivityCalculator extends Job{
+		
+		ResultEntity ent;
+		private NnRegularizationObjFunc objFunc;
+		
+		public EffectivityCalculator(){
+			super("EffectivityCalculator");
+		}
+
+		public void setEnt(ResultEntity ent) {
+			this.ent = ent;
+		}
+		
+		
+
+		public void setObjFunc(NnRegularizationObjFunc objFunc) {
+			this.objFunc = objFunc;
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			// TODO Auto-generated method stub
+			
+			if(effectivityValueMap.containsKey(ent.getId()))
+				return Status.OK_STATUS;
+			
+			double[] values=new double[nbOfCalculation];
+			
+			double mean=0;double var=0;
+			//logger.info("Genome: "+Arrays.toString(ent.getDoubleArray()));
+			for(int i=0;i<nbOfCalculation;i++){
+				values[i]=objFunc.calculateError(ent.getDoubleArray(), null);
+				mean+=values[i];
+			}
+			//logger.info("values: "+Arrays.toString(values));
+			
+			mean/=nbOfCalculation;
+			for(int i=0;i<nbOfCalculation;i++){
+				double diff=mean-values[i];
+				var+=diff*diff;
+			}
+			var/=nbOfCalculation;
+			
+			double stdDev=Math.sqrt(var);
+			
+			double effectivity=mean+stdDev;
+			
+			
+			saveEffectivity(ent,effectivity,stdDev);
+			
+			
+			return Status.OK_STATUS;
+		}
+		
+		
+		
+	}
+	
+	
 	
 	private class Learner extends Job implements LearningEventListener{
 		

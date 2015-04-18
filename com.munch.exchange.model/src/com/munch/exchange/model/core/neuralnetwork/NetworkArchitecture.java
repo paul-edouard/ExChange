@@ -839,9 +839,13 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	
 	public void setNewRandomValueOfFaMeNeurons(){
-		if(faMeNetwork==null)return;
-		for(int i=0;i<faMeNetwork.getLayersCount();i++){
-			Layer layer=faMeNetwork.getLayerAt(i);
+		setNewRandomValueOfFaMeNeurons(faMeNetwork);
+	}
+	
+	public static void setNewRandomValueOfFaMeNeurons(NeuralNetwork network){
+		if(network==null)return;
+		for(int i=0;i<network.getLayersCount();i++){
+			Layer layer=network.getLayerAt(i);
 			for(int j=0;j<layer.getNeuronsCount();j++){
 				Neuron n=layer.getNeuronAt(j);
 				if(n.getTransferFunction() instanceof RandomGaussian){

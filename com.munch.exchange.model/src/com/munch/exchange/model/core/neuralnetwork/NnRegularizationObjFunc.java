@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.goataa.impl.OptimizationModule;
 import org.goataa.impl.utils.Constants;
 import org.goataa.spec.IObjectiveFunction;
+import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.learning.error.ErrorFunction;
 import org.neuroph.nnet.learning.financial.FinancialProfitError;
@@ -21,6 +22,7 @@ public class NnRegularizationObjFunc extends OptimizationModule implements
 	private static Logger logger = Logger.getLogger(NnObjFunc.class);
 			
 	private NetworkArchitecture architecture;
+	private NeuralNetwork network;
 	private DataSet testSet;
 	
 	private ErrorFunction errorFunction;
@@ -30,6 +32,7 @@ public class NnRegularizationObjFunc extends OptimizationModule implements
 		//this.network=architecture.getNetwork();
 		this.testSet=testSet;
 		this.architecture=architecture;
+		network=this.architecture.getCopyOfFaMeNetwork();
 		
 	}
 	
@@ -59,9 +62,11 @@ public class NnRegularizationObjFunc extends OptimizationModule implements
 	
 	public double calculateError(double[] w, Random r){
 		
-		architecture.setNewRandomValueOfFaMeNeurons();
+		NetworkArchitecture.setNewRandomValueOfFaMeNeurons(network);
 		
-		double[][] outputs=architecture.calculateFaMeNetworkOutputs(testSet, w);
+		network.setWeights(w);
+		
+		double[][] outputs=NetworkArchitecture.calculateOutputs(network,testSet);
 		
 		double[] output=outputs[0];
 		double[] desiredOutput=outputs[1];
