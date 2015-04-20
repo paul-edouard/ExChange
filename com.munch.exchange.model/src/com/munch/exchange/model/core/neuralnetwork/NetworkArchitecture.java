@@ -992,7 +992,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 		
 		if(!resultLoaded)this.loadResults();
 		
-		logger.info("createFactoredMeanNetwork!");
+		//logger.info("createFactoredMeanNetwork!");
 		LinkedList<Layer> fema_layers=new LinkedList<Layer>();
 		HashMap<String, Neuron> cpNeuronMap=new HashMap<String, Neuron>();
 		HashMap<String, Neuron> faMeNeuronMap=new HashMap<String, Neuron>();

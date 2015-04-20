@@ -3,8 +3,10 @@ package com.munch.exchange.parts.neuralnetwork.error;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Shape;
 import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,6 +25,7 @@ import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.wb.swt.ResourceManager;
+import org.eclipse.wb.swt.SWTResourceManager;
 
 import javax.annotation.PreDestroy;
 
@@ -38,6 +41,8 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
@@ -47,6 +52,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
+import org.jfree.util.ShapeUtilities;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 
@@ -60,6 +66,8 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.model.core.optimization.ResultEntity;
 import com.munch.exchange.parts.MyMDirtyable;
+import com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultChartComposite;
+import com.munch.exchange.parts.neuralnetwork.results.ResultDataItem;
 import com.munch.exchange.utils.ProfitUtils;
 
 public class NeuralNetworkRegularizationErrorPart {
@@ -93,6 +101,15 @@ public class NeuralNetworkRegularizationErrorPart {
 	private XYSeries testSeries=new XYSeries("Test");
 	
 	private XYSeries lastSeries;
+	
+	
+	//Pareto Chart
+	private XYLineAndShapeRenderer rendererPareto =new XYLineAndShapeRenderer(true, false);
+	private XYSeriesCollection collectionPareto=new XYSeriesCollection();
+	private JFreeChart chartPareto;
+	private NeuralNetworkResultChartComposite compositeChartPareto;
+	
+	
 	
 	
 	@Inject
@@ -154,17 +171,257 @@ public class NeuralNetworkRegularizationErrorPart {
 		btnStop.setImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/delete.png"));
 		btnStop.setText("Stop");
 		
-		TabItem tbtmWorkers = new TabItem(tabFolder, SWT.NONE);
-		tbtmWorkers.setText("Workers");
+		TabItem tbtmPareto = new TabItem(tabFolder, SWT.NONE);
+		tbtmPareto.setText("Pareto");
 		
-		Composite compositeTable = new Composite(tabFolder, SWT.NONE);
-		tbtmWorkers.setControl(compositeTable);
-		compositeTable.setLayout(new GridLayout(1, false));
+		Composite compositePareto = new Composite(tabFolder, SWT.NONE);
+		tbtmPareto.setControl(compositePareto);
+		compositePareto.setLayout(new GridLayout(1, false));
+		
+		//==================================================
+	  	//==                 PARETO                       ==    
+	  	//==================================================
+		createParetoChart();
+	  	compositeChartPareto = new NeuralNetworkResultChartComposite(compositePareto, SWT.NONE,chartPareto);
+	  	compositeChartPareto.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+	  	compositeChartPareto.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	  	compositeChartPareto.addChartMouseListener(new ChartMouseListener() {
+			
+			@Override
+			public void chartMouseMoved(ChartMouseEvent event) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void chartMouseClicked(ChartMouseEvent event) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
 		
 		
 	}
 	
+	//==================================================
+	//==                 PARETO                       ==    
+	//==================================================
 	
+	private JFreeChart createParetoChart(){
+		//====================
+    	//===  Main Axis   ===
+    	//====================
+    	NumberAxis trainErrorAxis =	createParetoAxis("Train Error");
+    	NumberAxis testErrorAxis  =	createParetoAxis("Test Error");
+    	
+    	
+    	//updateSeries();
+    	
+    	//====================
+    	//===  Main Plot   ===
+    	//====================
+    	XYPlot plot = createParetoPlot(collectionPareto,rendererPareto,trainErrorAxis,testErrorAxis);
+    	
+    
+    	 //=========================
+    	//=== Create the Chart  ===
+    	//=========================
+    	chartPareto = new JFreeChart("",
+                JFreeChart.DEFAULT_TITLE_FONT, plot, false);
+    	chartPareto.setBackgroundPaint(Color.white);
+      
+        return chartPareto;
+	}
+	
+	private XYPlot createParetoPlot(XYSeriesCollection xySeriesCollection,XYLineAndShapeRenderer lineAndShapeRenderer, NumberAxis domainAxis, NumberAxis valueAxis){
+    	//Plot
+    	XYPlot plot = new XYPlot(xySeriesCollection, domainAxis, valueAxis, lineAndShapeRenderer);
+    	//plot.setDomainAxis(valueAxis);
+    	plot.setRenderer(lineAndShapeRenderer);
+    	plot.setDataset(xySeriesCollection);
+    	
+    	plot.setDomainPannable(true);
+        plot.setRangePannable(true);
+        
+        plot.setBackgroundPaint(Color.lightGray);
+        //plot1.setBackgroundPaint(Color.BLACK);
+        plot.setDomainGridlinePaint(Color.white);
+        plot.setRangeGridlinePaint(Color.white);
+        
+         
+        //bubbleRenderer.setSeriesPaint(0, Color.blue);
+    	
+    	return plot;
+    }
+	
+	private NumberAxis createParetoAxis(String name){
+     	 //Axis
+         NumberAxis domainAxis = new NumberAxis(name);
+         domainAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
+         domainAxis.setAutoRange(true);
+         domainAxis.setLowerMargin(0.01);
+         domainAxis.setUpperMargin(0.01);
+         domainAxis.setVisible(true);
+         domainAxis.setAutoRangeIncludesZero(false);
+         return domainAxis;
+     }
+	
+	private void updateParetoSeries(){
+	    	collectionPareto.removeAllSeries();
+	    	rendererPareto.clearSeriesPaints(false);
+	    	rendererPareto.clearSeriesStrokes(false);
+	    	
+	    	HashSet<String> elIds=new HashSet<>();
+	    	
+	    	LinkedList<PlotElement> paretoFront=new LinkedList<>();
+	    	LinkedList<PlotElement> toRemoveFromPareto=new LinkedList<>();
+	    	
+	    	int pos=0;
+	    	for(Generation gen:generations){
+	    		XYSeries serie =new XYSeries(String.valueOf("Gen: "+pos));
+	    		for(PlotElement el:gen.getElements()){
+	    			if(!elIds.contains(el.getEntity().getId())){
+	    				serie.add(el.getTrainingError(), el.getTestError());
+	    				elIds.add(el.getEntity().getId());
+	    				
+	    				//Add to pareto
+	    				toRemoveFromPareto.clear();
+	    				if(paretoFront.isEmpty())
+	    					paretoFront.add(el);
+	    				
+	    				boolean toAdd=true;
+	    				for(PlotElement p_el:paretoFront){
+	    					if(el.getTestError()>p_el.getTestError() &&
+	    					el.getTrainingError()>p_el.getTrainingError()){
+	    						toAdd=false;
+	    						break;
+	    					}
+	    				}
+	    				
+	    				if(toAdd){
+	    					int p_pos=0;
+	    					for(PlotElement p_el:paretoFront){
+	    						if(p_el.getTrainingError()>el.getTrainingError())
+	    							break;
+	    						p_pos++;
+	    					}
+	    					paretoFront.add(p_pos, el);
+	    				}
+	    				
+	    				
+	    				
+	    				for(PlotElement p_el:paretoFront){
+	    					if(el.getTestError()<p_el.getTestError() &&
+	    							el.getTrainingError()<p_el.getTrainingError()){
+	    						toRemoveFromPareto.add(p_el);
+	    					}
+	    				}
+	    				
+	    				//logger.info("Pareto length before: "+paretoFront.size());
+	    				if(toRemoveFromPareto.size()>0){
+	    				//	logger.info("To remove from Pareto length: "+toRemoveFromPareto.size());
+	    					
+	    					for(PlotElement p_el:toRemoveFromPareto){
+		    					paretoFront.remove(p_el);
+		    				}
+	    				}
+	    				//logger.info("Pareto length after: "+paretoFront.size());
+	    				
+	    			}
+	    		}
+	    		
+	    		Color col=Color.BLUE;
+	    		if(pos==0)
+	    			col=Color.WHITE;
+	    		if(pos==generations.size()-1)
+	    			col=Color.RED;
+	    		
+	    		addSeriesAsShape(rendererPareto, collectionPareto, serie,
+	    				ShapeUtilities.createRegularCross(5f, 1.5f),col,false);
+	    		
+	    		pos++;
+	    	}
+	    	
+	    	
+	    	
+	    	//logger.info("Pareto length: "+paretoFront.size());
+	    	
+	    	XYSeries serie =new XYSeries("Pareto");
+	    	int par_pos=0;
+	    	for(PlotElement p_el:paretoFront){
+	    		if(par_pos==0)
+	    			serie.add(p_el.getTrainingError(), 1);
+	    		
+	    		serie.add(p_el.getTrainingError(), p_el.getTestError());
+	    		
+	    		if(par_pos==paretoFront.size()-1)
+	    			serie.add(1,  p_el.getTestError());
+	    		
+	    		par_pos++;
+	    	}
+	    	
+	    	addSeriesAsLine(rendererPareto, collectionPareto, serie,
+    				Color.ORANGE,true);
+	    	
+	    	
+	    }
+	
+	private void addSeriesAsShape(XYLineAndShapeRenderer rend,  XYSeriesCollection col, XYSeries series,Shape shape,Color color,boolean useOutlinePaint){
+		
+		col.addSeries(series);
+		int pos=col.indexOf(series.getKey());
+		if(pos>=0){
+			
+			rend.setSeriesShapesVisible(pos, true);
+			rend.setSeriesLinesVisible(pos, false);
+			rend.setSeriesShape(pos,shape);
+			rend.setSeriesShapesFilled(pos, true);
+			rend.setSeriesPaint(pos, color);
+			rend.setSeriesStroke(pos, new BasicStroke(1f));
+			
+			if(useOutlinePaint){
+				rend.setSeriesOutlinePaint(pos, Color.BLACK);
+				rend.setSeriesOutlineStroke(pos, new BasicStroke(1f));
+				rend.setUseOutlinePaint(useOutlinePaint);
+			}
+			else{
+				rend.setSeriesOutlinePaint(pos, color);
+			}
+			
+		}
+	}
+	
+	private void addSeriesAsLine(XYLineAndShapeRenderer rend,  XYSeriesCollection col, XYSeries series,Color color,boolean useOutlinePaint){
+		
+		col.addSeries(series);
+		int pos=col.indexOf(series.getKey());
+		if(pos>=0){
+			
+			rend.setSeriesShapesVisible(pos, false);
+			rend.setSeriesLinesVisible(pos, true);
+			//rend.setSeriesShape(pos,shape);
+			rend.setSeriesShapesFilled(pos, false);
+			rend.setSeriesPaint(pos, color);
+			rend.setSeriesStroke(pos, new BasicStroke(3f));
+           
+			if(useOutlinePaint){
+				rend.setSeriesOutlinePaint(pos, Color.BLACK);
+				rend.setSeriesOutlineStroke(pos, new BasicStroke(3f));
+				rend.setUseOutlinePaint(useOutlinePaint);
+			}
+			else{
+				rend.setSeriesOutlinePaint(pos, color);
+			}
+			
+		}
+	}
+	
+	//==================================================
+	//==                 RESULTS                      ==    
+	//==================================================
+	 
+	 
 	/**
      * Creates a chart.
      *
@@ -295,6 +552,8 @@ public class NeuralNetworkRegularizationErrorPart {
 			
 			this.max=max;
 			
+			logger.info("Number of recieved entities: "+entities.size());
+			
 			for(ResultEntity ent :entities ){
 				if(elementMap.containsKey(ent.getId())){
 					elements.add(elementMap.get(ent.getId()));
@@ -306,12 +565,14 @@ public class NeuralNetworkRegularizationErrorPart {
 				elements.add(el);
 			}
 			
+			logger.info("Number of elements: "+elements.size());
+			
 			double trainingErrorTotal=0;
 			double testErrorTotal=0;
 			
 			int pos=0;
 			for(PlotElement el:elements){
-				if(pos>=max)break;
+				//if(pos>=max)break;
 				
 				trainingErrorTotal+=el.getTrainingError();
 				testErrorTotal+=el.getTestError();
@@ -437,6 +698,9 @@ public class NeuralNetworkRegularizationErrorPart {
 		step=info.getStep();
 		
 		generations.add(new Generation(info.getPopulation(),info.getNbOfIndividualsToTrain()));
+		
+		updateParetoSeries();
+		
 	}
 	
 	

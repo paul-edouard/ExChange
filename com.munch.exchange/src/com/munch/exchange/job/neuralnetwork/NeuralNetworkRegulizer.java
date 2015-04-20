@@ -63,6 +63,7 @@ public class NeuralNetworkRegulizer extends Job  {
 	private StepLimitPropChange<double[],double[]> term=null;
 	private int optLoops=1;
 	private int nbOfIndividualsToTrain=10;
+	private int nbOfIndividualsInParetoFront=10;
 	
 	private boolean isCancel=false;
 	private int step=0;
@@ -76,7 +77,7 @@ public class NeuralNetworkRegulizer extends Job  {
 	//private LearningRule learningRule=null;
 	
 	//Effective Value Map
-	private HashMap<String, Double> effectivityValueMap=new HashMap<String, Double>();
+	private HashMap<String, double[]> effectivityValueMap=new HashMap<String, double[]>();
 	private HashMap<String, ResultEntity> EntityMap=new HashMap<String, ResultEntity>();
 	private HashMap<String, LearningRule> learningRuleMap=new HashMap<String, LearningRule>();
 	private int nbOfCalculation=100;
@@ -142,9 +143,13 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 		for(EffectivityCalculator calculator:this.EffectivityCalculators){
 			//Set the objective function
-			NnRegularizationObjFunc func=new NnRegularizationObjFunc(archi, trainingSet);
-			func.setVarianz(varianz);
-			calculator.setObjFunc(func);
+			NnRegularizationObjFunc objFuncTest=new NnRegularizationObjFunc(archi, testSet);
+			objFuncTest.setVarianz(varianz);
+			NnRegularizationObjFunc objFuncTrain=new NnRegularizationObjFunc(archi, trainingSet);
+			objFuncTrain.setVarianz(varianz);
+			
+			calculator.setObjFuncTest(objFuncTest);
+			calculator.setObjFuncTrain(objFuncTrain);
 		}
 		
 		return true;
@@ -261,7 +266,7 @@ public class NeuralNetworkRegulizer extends Job  {
 			
 			LinkedList<ResultEntity> results=this.getResultCopy();
 			
-			while(nbOfIndTrained<nbOfIndividualsToTrain){
+			while(nbOfIndTrained<Math.max(nbOfIndividualsToTrain,nbOfIndividualsInParetoFront)){
 				
 				if(monitor.isCanceled() || isCancel)break;
 				if(results.size()<=nbOfIndTrained)break;
@@ -329,7 +334,7 @@ public class NeuralNetworkRegulizer extends Job  {
 	private void sendRegularizationInfo(String message){
 		
 		RegularizationInfo info =new RegularizationInfo(archi, step,optLoops*2,
-				getResultCopy(),this,trainingSet, testSet,nbOfIndividualsToTrain);
+				getResultCopy(),this,trainingSet, testSet,Math.max(nbOfIndividualsToTrain,nbOfIndividualsInParetoFront));
 		
 		
 		if(message.equals(IEventConstant.REGULARIZATION_NEW_STEP)){
@@ -530,13 +535,15 @@ public class NeuralNetworkRegulizer extends Job  {
 	}
 	*/
 	
-	private synchronized void saveEffectivity(ResultEntity ent,double effectivity,double stdDev){
+	private synchronized void saveEffectivity(ResultEntity ent,double effectivityTrain, double effectivityTest,double stdDev){
 		// logger.info("Mean="+mean+", Std Dev="+stdDev+", Effectivity="+effectivity);
 		if (stdDev > 0.1) {
-			effectivityValueMap.put(ent.getId(), effectivity);
+			double[] eff={effectivityTrain,effectivityTest};
+			effectivityValueMap.put(ent.getId(), eff);
 			EntityMap.put(ent.getId(), ent);
 		} else {
-			effectivityValueMap.put(ent.getId(), 0.0);
+			double[] eff=new double[2];
+			effectivityValueMap.put(ent.getId(), eff);
 			EntityMap.put(ent.getId(), ent);
 		}
 	}
@@ -556,6 +563,12 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 		//archi.sortRegularizationResults();
 		LinkedList<ResultEntity> results=new LinkedList<ResultEntity>();
+		for(String id:paretoSort()){
+			results.add(EntityMap.get(id));
+		}
+		
+		
+		/*
 		for(String id:EntityMap.keySet()){
 			double effectivity=effectivityValueMap.get(id);
 			if(effectivity==0.0)continue;
@@ -573,10 +586,79 @@ public class NeuralNetworkRegulizer extends Job  {
 			results.add(pos, EntityMap.get(id));
 			
 		}
-		
+		*/
 		archi.setRegularizationResultsEntities(results);
 		
 	}
+	
+	
+	//Pareto sorter
+	private LinkedList<String> paretoSort(){
+		LinkedList<String> resultId=new LinkedList<String>();
+		for(String id:EntityMap.keySet()){
+			if(effectivityValueMap.get(id)[0]>0)
+				resultId.add(id);
+		}
+		
+		LinkedList<String> allElements=new LinkedList<>();
+		
+		int paretoId=0;
+		while(resultId.size()>0){
+			
+			LinkedList<String> pareto=new LinkedList<>();
+			
+			//Searcht the pareto elements
+			for(int i=0;i<resultId.size();i++){
+				double[] eff=effectivityValueMap.get(resultId.get(i));
+				
+				boolean toAdd=true;
+				for(int j=0;j<resultId.size();j++){
+					if(j==i)continue;
+					double[] eff_r=effectivityValueMap.get(resultId.get(j));
+					
+					if(eff[0]>eff_r[0] && eff[1]>eff_r[1]){
+						toAdd=false;
+						break;
+					}
+					
+				}
+				
+				if(toAdd){
+					int p_pos=0;
+					for(String p_id:pareto){
+						double[] eff_r=effectivityValueMap.get(p_id);
+						if(eff_r[0]>eff[0])
+							break;
+						p_pos++;
+					}
+					pareto.add(p_pos, resultId.get(i));
+					
+				}
+				
+			}
+			
+			//Remove the pareto elements from the list
+			for(String id :pareto)
+				resultId.remove(id);
+			
+			
+			if(paretoId==0)
+				nbOfIndividualsInParetoFront=pareto.size();
+			
+			//Sort the pareto elements
+			allElements.addAll(pareto);
+			
+			
+			paretoId++;
+		}
+		
+		
+		logger.info("Number of individuals on the pareto front: "+nbOfIndividualsInParetoFront);
+		
+		return allElements;
+		
+	}
+	
 	
 	private void plotResults(){
 		
@@ -590,9 +672,11 @@ public class NeuralNetworkRegulizer extends Job  {
 		logger.info("Population: "+size);
 		
 		//for(int j=0;j<nbOfIndividualsToTrain;j++){
+		int nbOfIndToPlot=Math.max(nbOfIndividualsToTrain,nbOfIndividualsInParetoFront);
+		
 		for(int j=size-1;j>=0;j--){
 			
-			if (j>=nbOfIndividualsToTrain)continue;
+			if (j>=nbOfIndToPlot)continue;
 					
 			if(archi.getRegularizationResultsEntities().size()<=j)break;
 
@@ -610,12 +694,12 @@ public class NeuralNetworkRegulizer extends Job  {
 			
 			//if (j<nbOfIndividualsToTrain)
 			//logger.info("Res: "+j+", Train="+train+", val="+val+", genome: "+Arrays.toString(ent.getDoubleArray()));
-			 logger.info("Best Res: "+j+", Train="+train+", val="+val+", effectivity="+effectivityValueMap.get(ent.getId())+", id="+ent.getId());
+			 logger.info("Best Res: "+j+", Train="+train+", val="+val+", effectivity="+Arrays.toString(effectivityValueMap.get(ent.getId()))+", id="+ent.getId());
 			
 		}
 		
 		
-		logger.info("Mean Train: "+train_total/nbOfIndividualsToTrain+", Mean Val="+val_total/nbOfIndividualsToTrain);
+		logger.info("Mean Train: "+train_total/nbOfIndToPlot+", Mean Val="+val_total/nbOfIndToPlot);
 		
 		archi.setNewRandomValueOfFaMeNeurons();
 		
@@ -713,7 +797,8 @@ public class NeuralNetworkRegulizer extends Job  {
 	private class EffectivityCalculator extends Job{
 		
 		ResultEntity ent;
-		private NnRegularizationObjFunc objFunc;
+		private NnRegularizationObjFunc objFuncTrain;
+		private NnRegularizationObjFunc objFuncTest;
 		
 		public EffectivityCalculator(){
 			super("EffectivityCalculator");
@@ -725,9 +810,14 @@ public class NeuralNetworkRegulizer extends Job  {
 		
 		
 
-		public void setObjFunc(NnRegularizationObjFunc objFunc) {
-			this.objFunc = objFunc;
+		public void setObjFuncTrain(NnRegularizationObjFunc objFuncTrain) {
+			this.objFuncTrain = objFuncTrain;
 		}
+		
+		public void setObjFuncTest(NnRegularizationObjFunc objFuncTest) {
+			this.objFuncTest = objFuncTest;
+		}
+		
 
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
@@ -736,29 +826,45 @@ public class NeuralNetworkRegulizer extends Job  {
 			if(effectivityValueMap.containsKey(ent.getId()))
 				return Status.OK_STATUS;
 			
-			double[] values=new double[nbOfCalculation];
+			double[] valuesTrain=new double[nbOfCalculation];
+			double[] valuesTest=new double[nbOfCalculation];
 			
-			double mean=0;double var=0;
+			double meanTrain=0;double varTrain=0;
+			double meanTest=0;double varTest=0;
+			
 			//logger.info("Genome: "+Arrays.toString(ent.getDoubleArray()));
 			for(int i=0;i<nbOfCalculation;i++){
-				values[i]=objFunc.calculateError(ent.getDoubleArray(), null);
-				mean+=values[i];
+				valuesTrain[i]=objFuncTrain.calculateError(ent.getDoubleArray(), null);
+				valuesTest[i]=objFuncTest.calculateError(ent.getDoubleArray(), null);
+				
+				
+				meanTrain+=valuesTrain[i];
+				meanTest+=valuesTest[i];
 			}
 			//logger.info("values: "+Arrays.toString(values));
 			
-			mean/=nbOfCalculation;
+			meanTrain/=nbOfCalculation;
+			meanTest/=nbOfCalculation;
+			
 			for(int i=0;i<nbOfCalculation;i++){
-				double diff=mean-values[i];
-				var+=diff*diff;
+				double diffTrain=meanTrain-valuesTrain[i];
+				varTrain+=diffTrain*diffTrain;
+				
+				double diffTest=meanTest-valuesTest[i];
+				varTest+=diffTest*diffTest;
+				
 			}
-			var/=nbOfCalculation;
+			varTrain/=nbOfCalculation;
+			varTest/=nbOfCalculation;
 			
-			double stdDev=Math.sqrt(var);
+			double stdDevTrain=Math.sqrt(varTrain);
+			double stdDevTest=Math.sqrt(varTest);
 			
-			double effectivity=mean+stdDev;
+			double effectivityTrain=meanTrain+stdDevTrain;
+			double effectivityTest=meanTest+stdDevTest;
 			
 			
-			saveEffectivity(ent,effectivity,stdDev);
+			saveEffectivity(ent,effectivityTrain,effectivityTest , stdDevTrain);
 			
 			
 			return Status.OK_STATUS;
@@ -842,7 +948,7 @@ public class NeuralNetworkRegulizer extends Job  {
 			
 			learningRule.removeListener(this);
 			
-			logger.info("Values: "+NetworkArchitecture.plotValueOfFaMeNeurons(network));
+			//logger.info("Values: "+NetworkArchitecture.plotValueOfFaMeNeurons(network));
 			
 			return Status.OK_STATUS;
 		}
