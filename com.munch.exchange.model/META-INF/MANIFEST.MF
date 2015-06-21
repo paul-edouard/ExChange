@@ -22,9 +22,11 @@ Export-Package: com.munch.exchange.model.analytic.indicator,
  com.munch.exchange.model.core.optimization,
  com.munch.exchange.model.core.quote,
  com.munch.exchange.model.core.watchlist,
+ com.munch.exchange.model.jpa.entity,
  com.munch.exchange.model.tool,
  com.munch.exchange.model.xml
 Require-Bundle: com.munch.exchange.libs;bundle-version="1.0.0",
  com.munch.exchange.neuroph;bundle-version="1.0.0",
  com.munch.exchange.optimization;bundle-version="1.0.0",
- com.munch.exchange.utils;bundle-version="1.0.0"
+ com.munch.exchange.utils;bundle-version="1.0.0",
+ com.munch.exchange.wildflylibs;bundle-version="1.0.0"

@@ -1141,7 +1141,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 			
 			//Creation of the bias neuron connections
 			Connection[] conns=bias_neuron.getOutConnections();
-			HashMap<String, Double> biasWeigthMap=new HashMap<>();
+			HashMap<String, Double> biasWeigthMap=new HashMap<String, Double>();
 			for(int k=0;k<conns.length;k++){
 				String key=conns[k].getToNeuron().getLabel();
 				biasWeigthMap.put(key, conns[k].getWeight().getValue());

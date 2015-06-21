@@ -76,7 +76,7 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 		LinkedList<Double> list=new LinkedList<Double>();
 		for(Object obj:this.genome){
 			if(obj instanceof Double){
-				list.add((double)obj);
+				list.add((Double)obj);
 			}
 		}
 		
@@ -93,7 +93,7 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 		LinkedList<Boolean> list=new LinkedList<Boolean>();
 		for(Object obj:this.genome){
 			if(obj instanceof Boolean){
-				list.add((boolean)obj);
+				list.add((Boolean)obj);
 			}
 		}
 		
@@ -120,7 +120,7 @@ public class ResultEntity extends XmlParameterElement implements Comparable<Resu
 		
 		for(Object obj : this.genome){
 			if(obj instanceof Double){
-				allDoubles.add((double) obj);
+				allDoubles.add((Double) obj);
 			}
 		}
 		
