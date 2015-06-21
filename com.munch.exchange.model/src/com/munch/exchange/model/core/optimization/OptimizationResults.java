@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.UUID;
 
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.exceptions.NeurophException;
@@ -50,9 +51,14 @@ public class OptimizationResults extends XmlParameterElement implements Serializ
 	private LinkedList<ResultEntity> results=new LinkedList<ResultEntity>();
 	private Type type=Type.NONE;
 	private int maxResult=200;
+	private String name;
+	
+	public OptimizationResults(String name){
+		this.name=name;
+	}
 	
 	public OptimizationResults(){
-		
+		this.name=UUID.randomUUID().toString();
 	}
 	
 	public boolean addResult(ResultEntity result){
@@ -117,6 +123,12 @@ public class OptimizationResults extends XmlParameterElement implements Serializ
 		this.results = results;
 	}
 	
+	
+
+	public String getName() {
+		return name;
+	}
+
 
 
 	public enum Type { MOVING_AVERAGE, MACD,

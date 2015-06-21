@@ -17,6 +17,10 @@ import com.munch.exchange.services.internal.KeyStatisticsProviderLocalImpl;
 import com.munch.exchange.services.internal.QuotePoviderLocalImpl;
 
 public class InternalTest {
+	
+	public void print(){
+		System.out.println("Internal Test Hallo!");
+	}
 
 	public static void main(String[] args) {
 		

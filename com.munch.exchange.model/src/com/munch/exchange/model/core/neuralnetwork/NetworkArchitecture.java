@@ -111,7 +111,7 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	
 	private NeuralNetwork network=new NeuralNetwork();
-	private OptimizationResults optResults=new OptimizationResults();
+	private OptimizationResults optResults=new OptimizationResults("Optimization");
 	
 	private Configuration parent=null;
 	
@@ -664,11 +664,18 @@ public class NetworkArchitecture extends XmlParameterElement {
 	
 	private NeuralNetwork faMeNetwork=null;
 	
-	private OptimizationResults regularizationResults=new OptimizationResults();
+	private OptimizationResults regularizationResults=new OptimizationResults("Regularization");
 	
 	private boolean regularizationResultLoaded=false;
 	
 	
+	
+	
+	
+	public OptimizationResults getRegularizationResults() {
+		return regularizationResults;
+	}
+
 	private synchronized void loadRegularizationResults(){
 		if(localSavePath.isEmpty()){
 			logger.info("Error by loading Results: Local save path is empty!!");
@@ -1571,6 +1578,11 @@ public class NetworkArchitecture extends XmlParameterElement {
 		return !this.optResults.getResults().isEmpty();
 	}
 	
+	
+	public OptimizationResults getOptResults() {
+		return optResults;
+	}
+
 	private synchronized void loadResults(){
 		if(localSavePath.isEmpty()){
 			logger.info("Error by loading Results: Local save path is empty!!");

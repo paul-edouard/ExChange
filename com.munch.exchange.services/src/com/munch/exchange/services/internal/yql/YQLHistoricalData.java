@@ -172,8 +172,11 @@ public class YQLHistoricalData extends YQLTable {
 		point.setClose(obj.getFloat("Close"));
 		try {
 			point.setDate(obj.getDate("Date"));
-		} catch (JSONException | ParseException e) {
+		} catch (JSONException e ) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch(ParseException e){
 			e.printStackTrace();
 		}
 		point.setVolume(obj.getLong("Volume"));
