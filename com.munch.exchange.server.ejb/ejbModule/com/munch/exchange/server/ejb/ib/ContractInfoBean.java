@@ -1,6 +1,10 @@
 package com.munch.exchange.server.ejb.ib;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.ejb.LocalBean;
@@ -12,6 +16,7 @@ import com.ib.controller.ApiController.IContractDetailsHandler;
 import com.ib.controller.Types.SecType;
 import com.ib.controller.NewContract;
 import com.ib.controller.NewContractDetails;
+import com.munch.exchange.model.core.ib.ExContract;
 import com.munch.exchange.services.ejb.beans.ContractInfoBeanRemote;
 
 /**
@@ -23,7 +28,9 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	
 	private static final Logger log = Logger.getLogger(ContractInfoBean.class.getName());
 	
-
+	private ArrayList<NewContractDetails> list;
+	
+	
     /**
      * Default constructor. 
      */
@@ -37,22 +44,99 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 		m_contract.symbol(symbol);
 		m_contract.secType(SecType.STK);
 		
+		
+		//log.info("reqContractDetails Started!");
+		
 		ConnectionBean.INSTANCE.controller().reqContractDetails(m_contract, this);
+		
+		//ConnectionBean.INSTANCE.controller().reqHistoricalData(contract, endDateTime, duration, durationUnit, barSize, whatToShow, rthOnly, handler);
+		
+		
+		log.info("searchContractInfo Finished!");
 		
 	}
 
 	@Override
 	public void contractDetails(ArrayList<NewContractDetails> list) {
+		
+		
+		
+		this.list=list;
+		
 		if (list.size() == 0) {
 			log.warning("No matching contracts were found");
 			return;
 		}
+		/*
 		int i=1;
 		for(NewContractDetails details:list){
 			log.info("Found Contract: "+i+"\n"+details.toString());
 			i++;
 		}
+		*/
+		//Munch better send a message to the client
 		
 	}
+	
+	
+	
+	@Override
+	public List<ExContract> searchContractExchange(String symbol, String exchange) {
+		
+	
+		NewContract m_contract = new NewContract();
+		m_contract.symbol(symbol);
+		//m_contract.tradingClass(marketName);
+		m_contract.secType(SecType.STK);
+		m_contract.exchange(exchange);
+		
+		//log.info("reqContractDetails Started!");
+		
+		//Reset the list
+		this.list=null;
+		
+		ConnectionBean.INSTANCE.controller().reqContractDetails(m_contract, this);
+		
+		//Wait of the answer
+		waitForIbAnswer();
+		
+		
+		log.info("searchContractInfo Finished!");
+		
+		
+		List<ExContract> ouputList=new LinkedList<>();
+		for(NewContractDetails details:list){
+			ouputList.add(new ExContract(details));
+			
+			//log.info("Found Contract: "+i+"\n"+details.toString());
+			//output+="Found Contract: "+i+"\n"+details.toString()+"\n";
+			//i++;
+		}
+		
+		
+		
+		return ouputList;
+		
+		
+	}
+	
+	private void waitForIbAnswer(){
+		int i=0;
+		while(i<100){
+			if(this.list==null){
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					break;
+				}
+			}
+			else break;
+			i++;
+		}
+	}
+
+	
 
 }

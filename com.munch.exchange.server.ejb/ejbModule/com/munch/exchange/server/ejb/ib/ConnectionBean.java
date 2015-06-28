@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
@@ -41,6 +42,12 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
     	log.info("Startup Bean is starting");
     	log.info("Try to connect again");
     	m_controller.connect( "127.0.0.1", 7496, 1);
+    }
+    
+    @PreDestroy
+    private void shutdown() {
+    	log.info("Startup Bean is shuting down!");
+    	m_controller.disconnect();
     }
     
     public ApiController controller() 		{ return m_controller; }

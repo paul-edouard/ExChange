@@ -39,8 +39,8 @@ public class Utils {
 		
         final Context context = new InitialContext(jndiProperties);
         
-        System.out.println("context: "+context);
-       
+        System.out.println("context: "+context+"Remote Class: ");
+        
         final String appName = "com.munch.exchange.server";
        
         final String moduleName = "com.munch.exchange.server.ejb";

@@ -1,14 +1,36 @@
 package com.munch.exchange.services.ejb.beans;
 
+import java.util.List;
+import java.util.logging.Logger;
+
 import javax.naming.NamingException;
+
+import com.ib.controller.NewContractDetails;
+import com.munch.exchange.model.core.ib.ExContract;
+
 
 
 public class ContractInfoMB {
 	
+	private static final Logger log = Logger.getLogger(ContractInfoMB.class.getName());
+	
 	public void test() throws NamingException{
+		
+		
+		log.info("Look for Contract Service!");
+		
 		ContractInfoBeanRemote contractInfoBeanRemote=Utils.doLookUpContractInfo();
-		contractInfoBeanRemote.searchContractInfo("BMW", "");
+		//contractInfoBeanRemote.searchContractInfo("BMW", "");
+		log.info("Request started!");
+		List<ExContract> list=contractInfoBeanRemote.searchContractExchange("BMW","TRQXDE");
+		for(ExContract contract: list)
+			System.out.println(contract);
+		
+		
 	}
+	
+	
+	
 	
 	public static void main(String[] args) {
 		//new StudentMB().test();
