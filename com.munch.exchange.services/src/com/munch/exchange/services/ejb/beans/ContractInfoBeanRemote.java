@@ -13,5 +13,12 @@ public interface ContractInfoBeanRemote {
 	
 	List<ExContract> searchContractExchange(String symbol, String exchange);
 	
+	
+	public ExContract create(ExContract contract);
+	public ExContract update(ExContract contract);
+	public void remove(int id);
+	public ExContract getContract(int id);
+	public List<ExContract> getAllContracts();
+	
 
 }

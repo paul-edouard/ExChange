@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import apidemo.ApiDemo;
 
@@ -17,6 +19,7 @@ import com.ib.controller.Types.SecType;
 import com.ib.controller.NewContract;
 import com.ib.controller.NewContractDetails;
 import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.jpa.entity.Student;
 import com.munch.exchange.services.ejb.beans.ContractInfoBeanRemote;
 
 /**
@@ -29,6 +32,9 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	private static final Logger log = Logger.getLogger(ContractInfoBean.class.getName());
 	
 	private ArrayList<NewContractDetails> list;
+	
+	@PersistenceContext
+	private EntityManager em;
 	
 	
     /**
@@ -135,6 +141,33 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 			else break;
 			i++;
 		}
+	}
+
+	@Override
+	public ExContract create(ExContract contract) {
+		em.persist(contract);
+		return contract;
+	}
+
+	@Override
+	public ExContract update(ExContract contract) {
+		em.merge(contract);
+		return contract;
+	}
+
+	@Override
+	public void remove(int id) {
+		em.remove(getContract(id));
+	}
+
+	@Override
+	public ExContract getContract(int id) {
+		return em.find(ExContract.class, id);
+	}
+
+	@Override
+	public List<ExContract> getAllContracts() {
+		return em.createNamedQuery("ExContract.getAll", ExContract.class).getResultList();
 	}
 
 	

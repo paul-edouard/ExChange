@@ -22,9 +22,20 @@ public class ContractInfoMB {
 		ContractInfoBeanRemote contractInfoBeanRemote=Utils.doLookUpContractInfo();
 		//contractInfoBeanRemote.searchContractInfo("BMW", "");
 		log.info("Request started!");
-		List<ExContract> list=contractInfoBeanRemote.searchContractExchange("BMW","TRQXDE");
-		for(ExContract contract: list)
+		//List<ExContract> list=contractInfoBeanRemote.searchContractExchange("BMW","TRQXDE");
+		//List<ExContract> list=contractInfoBeanRemote.searchContractExchange("IBM","SMART");
+		/*
+		for(ExContract contract: list){
 			System.out.println(contract);
+			contractInfoBeanRemote.create(contract);
+		}
+		*/
+		List<ExContract> list=contractInfoBeanRemote.getAllContracts();
+		for(ExContract contract: list){
+			//System.out.println(contract.getSecIdType().getApiString());
+			System.out.println(contract);
+			System.out.println(contract.getSecType().getClass());
+		}
 		
 		
 	}

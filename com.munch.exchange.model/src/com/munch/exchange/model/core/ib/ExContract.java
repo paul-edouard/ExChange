@@ -8,6 +8,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 
 import com.ib.controller.NewContractDetails;
 import com.ib.controller.Types.Right;
@@ -16,6 +17,7 @@ import com.ib.controller.Types.SecType;
 
 
 @Entity
+@NamedQuery(name="ExContract.getAll",query="SELECT s FROM ExContract s")
 public class ExContract implements Serializable{
 
 	/**
@@ -37,7 +39,7 @@ public class ExContract implements Serializable{
 	private double strike;
 	
 	@Enumerated(EnumType.STRING)
-	private Right right;
+	private Right m_right;
 	private String multiplier;
 	private String exchange;
 
@@ -59,14 +61,14 @@ public class ExContract implements Serializable{
 		symbol=newContractDetails.contract().symbol();
 		secType=newContractDetails.contract().secType();
 		expiry=newContractDetails.contract().expiry();
-		right=newContractDetails.contract().right();
+		m_right=newContractDetails.contract().right();
 		multiplier=newContractDetails.contract().multiplier();
 		exchange=newContractDetails.contract().exchange();
 		currency=newContractDetails.contract().currency();
 		localSymbol=newContractDetails.contract().localSymbol();
 		tradingClass=newContractDetails.contract().tradingClass();
 		primaryExch=newContractDetails.contract().primaryExch();
-		secIdType=newContractDetails.contract().secIdType();
+		//secIdType=newContractDetails.contract().secIdType();
 		secId=newContractDetails.contract().secId();
 		
 	}
@@ -99,6 +101,7 @@ public class ExContract implements Serializable{
 	public void setSecType(SecType secType) {
 		this.secType = secType;
 	}
+	
 
 	public String getExpiry() {
 		return expiry;
@@ -112,13 +115,13 @@ public class ExContract implements Serializable{
 	public void setStrike(double strike) {
 	this.strike = strike;}
 	
-	
-	public Right getRight() {
-		return right;
+
+	public Right getM_right() {
+		return m_right;
 	}
 
-	public void setRight(Right right) {
-		this.right = right;
+	public void setM_right(Right m_right) {
+		this.m_right = m_right;
 	}
 
 	public String getMultiplier() {
@@ -165,6 +168,7 @@ public class ExContract implements Serializable{
 	public void setSecIdType(SecIdType secIdType) {
 		this.secIdType = secIdType;
 	}
+	
 
 	public String getSecId() {
 		return secId;
@@ -191,12 +195,13 @@ public class ExContract implements Serializable{
 			return false;
 		return true;
 	}
-
+	
+	
 	@Override
 	public String toString() {
 		return "ExContract [id=" + id + ", conId=" + conId + ", symbol="
 				+ symbol + ", secType=" + secType + ", expiry=" + expiry
-				+ ", strike=" + strike + ", right=" + right + ", multiplier="
+				+ ", strike=" + strike + ", right=" + m_right + ", multiplier="
 				+ multiplier + ", exchange=" + exchange + ", currency="
 				+ currency + ", localSymbol=" + localSymbol + ", tradingClass="
 				+ tradingClass + ", primaryExch=" + primaryExch
