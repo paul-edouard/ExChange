@@ -7,6 +7,7 @@ import javax.naming.NamingException;
 
 import com.ib.controller.NewContractDetails;
 import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
 
 
 
@@ -19,7 +20,14 @@ public class ContractInfoMB {
 		
 		log.info("Look for Contract Service!");
 		
-		ContractInfoBeanRemote contractInfoBeanRemote=Utils.doLookUpContractInfo();
+		//ContractInfoBeanRemote contractInfoBeanRemote=BeanRemote.doLookUpContractInfo();
+		
+		
+		BeanRemote<ContractInfoBeanRemote> beanRemote;
+		beanRemote=new BeanRemote<ContractInfoBeanRemote>("ContractInfoBean",ContractInfoBeanRemote.class);
+		
+		ContractInfoBeanRemote contractInfoBeanRemote=beanRemote.getService();
+		
 		//contractInfoBeanRemote.searchContractInfo("BMW", "");
 		log.info("Request started!");
 		//List<ExContract> list=contractInfoBeanRemote.searchContractExchange("BMW","TRQXDE");

@@ -1,5 +1,7 @@
 package com.munch.exchange.lifecycle;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import org.apache.log4j.BasicConfigurator;
@@ -16,8 +18,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.osgi.service.prefs.BackingStoreException;
 
 import com.munch.exchange.dialog.WorkspaceDialog;
+import com.munch.exchange.model.core.ib.ExContract;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IWatchlistProvider;
+import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
+import com.munch.exchange.services.ejb.interfaces.IContractProvider;
 
 @SuppressWarnings("restriction")
 public class Manager {
@@ -55,12 +60,19 @@ public class Manager {
 	public void postContextCreate(@Preference IEclipsePreferences prefs,
 			IApplicationContext appContext, Display display,
 			IExchangeRateProvider exchangeRateProvider,
-			IWatchlistProvider watchlistProvider) {
+			IWatchlistProvider watchlistProvider,
+			IContractProvider contractProvider) {
 		
 		
 		BasicConfigurator.configure();
 		
-		
+		contractProvider.init();
+		List<ExContract> list=contractProvider.getAll();
+		for(ExContract contract: list){
+			//System.out.println(contract.getSecIdType().getApiString());
+			System.out.println(contract);
+			//System.out.println(contract.getSecType().getClass());
+		}
 		
 		final Shell shell = new Shell(SWT.TOOL | SWT.NO_TRIM);
 		

@@ -10,7 +10,7 @@ import com.munch.exchange.model.jpa.entity.Student;
 public class StudentMB {
 	
 	public void test() throws NamingException{
-		StudentDAORemote studentDAORemote=Utils.doLookUp();
+		StudentDAORemote studentDAORemote=BeanRemote.doLookUp();
 		System.out.println("Hallo");
 		System.out.println(studentDAORemote);
 		Student student =new Student();

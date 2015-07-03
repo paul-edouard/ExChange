@@ -20,7 +20,7 @@ import com.ib.controller.NewContract;
 import com.ib.controller.NewContractDetails;
 import com.munch.exchange.model.core.ib.ExContract;
 import com.munch.exchange.model.jpa.entity.Student;
-import com.munch.exchange.services.ejb.beans.ContractInfoBeanRemote;
+import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
 
 /**
  * Session Bean implementation class ContractInfoBean

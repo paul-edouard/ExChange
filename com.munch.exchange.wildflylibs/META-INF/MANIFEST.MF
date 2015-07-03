@@ -47,8 +47,7 @@ Bundle-ClassPath: activation-1.1.1.jar,
  resteasy-multipart-provider-3.0.10.Final.jar,
  resteasy-multipart-provider-3.0.10.Final-jandex.jar,
  jboss-ejb3-ext-api-2.1.0.jar,
- jboss-cli-client.jar,
- jboss-client.jar
+ resources/
 Export-Package: com.ibm.wsdl,
  com.ibm.wsdl.extensions,
  com.ibm.wsdl.extensions.http,
@@ -454,3 +453,5 @@ Export-Package: com.ibm.wsdl,
  org.picketbox.plugins.vault,
  org.picketbox.util
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Eclipse-BuddyPolicy: registered
+Eclipse-RegisterBuddy: org.jboss.client
