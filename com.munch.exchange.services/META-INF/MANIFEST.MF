@@ -22,4 +22,5 @@ Export-Package: com.munch.exchange.services;uses:="org.eclipse.jface.resource,or
 Bundle-ClassPath: resources/,
  src/,
  jboss-cli-client.jar,
- jboss-client.jar
+ jboss-client.jar,
+ hibernate-core-4.3.10.Final.jar

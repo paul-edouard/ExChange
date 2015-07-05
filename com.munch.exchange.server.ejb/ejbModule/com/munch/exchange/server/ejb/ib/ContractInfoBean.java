@@ -14,6 +14,7 @@ import javax.persistence.PersistenceContext;
 
 import apidemo.ApiDemo;
 
+import com.ib.client.TagValue;
 import com.ib.controller.ApiController.IContractDetailsHandler;
 import com.ib.controller.Types.SecType;
 import com.ib.controller.NewContract;
@@ -68,21 +69,12 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	public void contractDetails(ArrayList<NewContractDetails> list) {
 		
 		
-		
 		this.list=list;
 		
 		if (list.size() == 0) {
 			log.warning("No matching contracts were found");
 			return;
 		}
-		/*
-		int i=1;
-		for(NewContractDetails details:list){
-			log.info("Found Contract: "+i+"\n"+details.toString());
-			i++;
-		}
-		*/
-		//Munch better send a message to the client
 		
 	}
 	
@@ -144,6 +136,11 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 		
 		List<ExContract> ouputList=new LinkedList<>();
 		for(NewContractDetails details:list){
+			if(details.secIdList()!=null){
+				for(TagValue tagValue: details.secIdList()){
+					log.info("Tag: "+tagValue.m_tag+", Value: "+tagValue.m_value);
+				}
+			}
 			ouputList.add(new ExContract(details));
 		}
 		return ouputList;

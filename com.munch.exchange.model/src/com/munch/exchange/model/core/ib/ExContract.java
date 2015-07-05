@@ -138,8 +138,10 @@ public class ExContract implements Serializable{
 		evMultiplier=newContractDetails.evMultiplier();
 		
 		secIdList=new LinkedList<ExTagValue>();
+		if(newContractDetails.secIdList()!=null){
 		for (TagValue tagValue : newContractDetails.secIdList()) {
 			secIdList.add(new ExTagValue(tagValue));
+		}
 		}
 		
 		// BOND values
@@ -564,8 +566,8 @@ public class ExContract implements Serializable{
 				+ ", category=" + category + ", subcategory=" + subcategory
 				+ ", timeZoneId=" + timeZoneId + ", tradingHours="
 				+ tradingHours + ", liquidHours=" + liquidHours + ", evRule="
-				+ evRule + ", evMultiplier=" + evMultiplier + ", m_secIdList="
-				+ secIdList + ", cusip=" + cusip + ", ratings=" + ratings
+				+ evRule + ", evMultiplier=" + evMultiplier + /*", m_secIdList="
+				+ secIdList +*/ ", cusip=" + cusip + ", ratings=" + ratings
 				+ ", descAppend=" + descAppend + ", bondType=" + bondType
 				+ ", couponType=" + couponType + ", callable=" + callable
 				+ ", putable=" + putable + ", coupon=" + coupon

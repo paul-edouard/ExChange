@@ -1,5 +1,7 @@
 package com.munch.exchange.dialog;
 
+import java.util.HashMap;
+
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
@@ -8,6 +10,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -20,41 +23,60 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.ResourceManager;
 
+import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.parts.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.services.ejb.interfaces.IContractProvider;
+
+import org.eclipse.swt.widgets.List;
+import org.eclipse.jface.viewers.IContentProvider;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 
 public class AddContractDialog extends TitleAreaDialog {
 	private Text SymbolText;
-	private Text OnVistaIdText;
-	private Text CommodityName;
-	private Button btnOnVistaId;
-	private Button btnCommodityName;
 	private Button buttonOk;
 	
-	private IExchangeRateProvider exchangeRateProvider;
-	
-	private ExchangeRate rate;
-	
 	private static Logger logger = Logger.getLogger(AddContractDialog.class);
-	private Combo comboRateType;
+	private Combo comboType;
 	private Label lblRateType;
-	private Label lblYahooFinanceSymbol;
+	private Label lblSymbol;
+	private List listResults;
+	private ListViewer listViewerResults;
+	private Button btnSearch;
 	
-
+	IContractProvider contractProvider;
+	private ExContract contract;
+	
+	private HashMap<String, SecType> secTypemap=new HashMap<>();
+	private HashMap<String, ExContract> contractMap=new HashMap<>();
+	
 	/**
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public AddContractDialog(Shell parentShell, IExchangeRateProvider exchangeRateProvider) {
+	public AddContractDialog(Shell parentShell, IContractProvider contractProvider) {
 		super(parentShell);
+		setShellStyle(SWT.RESIZE);
 		setHelpAvailable(false);
-		this.exchangeRateProvider=exchangeRateProvider;
+		this.contractProvider=contractProvider;
 	}
 	
-	
-	public ExchangeRate getRate() {
-		return rate;
+
+	public ExContract getContract() {
+		return contract;
 	}
+
 
 	/**
 	 * Create contents of the dialog.
@@ -63,98 +85,114 @@ public class AddContractDialog extends TitleAreaDialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		setTitleImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/login_dialog.gif"));
-		setTitle("Add Rate");
-		setMessage("Add a new rate to the list by downloading it to from Yahoo Finance or OnVista");
+		setTitle("Search new contract");
+		setMessage("Search and add a new Interactive Brokers contract");
 		Composite area = (Composite) super.createDialogArea(parent);
 		Composite container = new Composite(area, SWT.NONE);
 		container.setLayout(new GridLayout(2, false));
 		container.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		lblRateType = new Label(container, SWT.NONE);
-		lblRateType.setText("Rate Type:");
+		lblRateType.setText("Type:");
 		
-		comboRateType = new Combo(container, SWT.NONE);
-		comboRateType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		comboRateType.setText("Yahoo Finance Symbol, ex: DAE.DE");
-		comboRateType.add("Yahoo Finance Symbol, ex: DAE.DE");
-		comboRateType.add("Federal Reserve Bank St. Louis Symbol, ex: CPIAUCSL");
-		comboRateType.add("ISIN, ex: US9843321061");
+		comboType = new Combo(container, SWT.NONE);
+		comboType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
-		comboRateType.addModifyListener(new ModifyListener() {
+		
+		comboType.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				System.out.println(comboRateType.getText());
-				boolean modus=(comboRateType.getText().startsWith("Yahoo Finance Symbol") || 
-						comboRateType.getText().startsWith("ISIN"));
-				btnOnVistaId.setVisible(modus);
-				OnVistaIdText.setVisible(modus);
-				btnCommodityName.setVisible(modus);
-				CommodityName.setVisible(modus);
+				/*
+				System.out.println(comboType.getText());
+				boolean modus=(comboType.getText().startsWith("Yahoo Finance Symbol") || 
+						comboType.getText().startsWith("ISIN"));
 				
-				if(modus && comboRateType.getText().startsWith("ISIN")){
-					lblYahooFinanceSymbol.setText("ISIN:");
+				
+				if(modus && comboType.getText().startsWith("ISIN")){
+					lblSymbol.setText("ISIN:");
 				}
-				else if(modus && comboRateType.getText().startsWith("Yahoo Finance")){
-					lblYahooFinanceSymbol.setText("Yahoo Finance Symbol:");
+				else if(modus && comboType.getText().startsWith("Yahoo Finance")){
+					lblSymbol.setText("Yahoo Finance Symbol:");
 				}
 				else{
-					lblYahooFinanceSymbol.setText("St. Louis Symbol:");
+					lblSymbol.setText("St. Louis Symbol:");
 				}
-				
+				*/
 			}
 		});
+		fillCombo();
 		
-		
-		lblYahooFinanceSymbol = new Label(container, SWT.NONE);
-		lblYahooFinanceSymbol.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblYahooFinanceSymbol.setText("Yahoo Finance Symbol:");
+		lblSymbol = new Label(container, SWT.NONE);
+		lblSymbol.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblSymbol.setText("Symbol:");
 		
 		SymbolText = new Text(container, SWT.BORDER);
 		SymbolText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				String text=SymbolText.getText();
-				buttonOk.setEnabled(!text.isEmpty());
+				btnSearch.setEnabled(!text.isEmpty());
 				AddContractDialog.this.setErrorMessage(null);
 				//AddRateDialog.this.
 			}
 		});
 		SymbolText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
-		btnOnVistaId = new Button(container, SWT.CHECK);
-		btnOnVistaId.addSelectionListener(new SelectionAdapter() {
+		btnSearch = new Button(container, SWT.NONE);
+		btnSearch.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				//listViewerResults.setInput(null);
+				//listViewerResults.refresh();
+				contractMap.clear();
+				String symbol=SymbolText.getText();
+				SecType secType=secTypemap.get(comboType.getText());
 				
-				OnVistaIdText.setEnabled(btnOnVistaId.getSelection());
-				btnCommodityName.setEnabled(btnOnVistaId.getSelection());
-				if(!btnOnVistaId.getSelection()){
-					btnCommodityName.setSelection(false);
-					CommodityName.setEnabled(false);
-				}
+				java.util.List<ExContract> contracts=contractProvider.searchContracts(symbol, secType);
+				//java.util.List<ExContract> contracts=contractProvider.getAll();
+				buttonOk.setEnabled(false);
+				listViewerResults.setInput(contracts);
+				listViewerResults.refresh();
 				
 			}
 		});
-		btnOnVistaId.setText("On Vista ID:");
+		btnSearch.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
+		btnSearch.setText("Search");
 		
-		OnVistaIdText = new Text(container, SWT.BORDER);
-		OnVistaIdText.setEnabled(false);
-		OnVistaIdText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
-		btnCommodityName = new Button(container, SWT.CHECK);
-		btnCommodityName.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				CommodityName.setEnabled(btnCommodityName.getSelection());
+		listViewerResults = new ListViewer(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		listViewerResults.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
+				ISelection sel=event.getSelection();
+				buttonOk.setEnabled(!sel.isEmpty());
 			}
 		});
-		btnCommodityName.setText("Commodity Name:");
-		btnCommodityName.setEnabled(false);
-		
-		CommodityName = new Text(container, SWT.BORDER);
-		CommodityName.setEnabled(false);
-		CommodityName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		listResults = listViewerResults.getList();
+		listResults.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		listViewerResults.setContentProvider(new ResultListContentProvider());
+		listViewerResults.setLabelProvider(new ResultListLabelProvider());
 
 		return area;
 	}
+	
+	private void fillCombo(){
+		
+		secTypemap.clear();
+		
+		SecType[] values=SecType.values();
+		
+		boolean textSet=false;
+		for(int i=0;i<values.length;i++){
+			if(values[i]==SecType.None)continue;
+			comboType.add(values[i].getApiString());
+			secTypemap.put(values[i].getApiString(), values[i]);
+			
+			
+			if(!textSet){
+				comboType.setText(values[i].getApiString());
+				textSet=true;
+			}
+		}
+		
+	}
+	
 
 	/**
 	 * Create contents of the button bar.
@@ -172,53 +210,15 @@ public class AddContractDialog extends TitleAreaDialog {
 	@Override
 	protected void okPressed() {
 		
-		String search_str=SymbolText.getText();
-		boolean modus=comboRateType.getText().startsWith("Yahoo Finance Symbol") || comboRateType.getText().startsWith("ISIN") ;
-		if(!modus){
-			search_str="FRED_"+SymbolText.getText();
-		}
-		//Search the Yahoo Symbol
-		String isin=search_str;
-		if(comboRateType.getText().startsWith("ISIN")){
-			search_str=exchangeRateProvider.getYahooSymbolFromIsin(isin);
-			if(search_str.isEmpty()){
-				this.setErrorMessage("The given isin \""+SymbolText.getText()+
-						"\" can not be found on Yahoo!\nPlease enter a other one.");
-				return;
-			}
-				
-		}
+		String[] selections=listResults.getSelection();
+		if(selections.length!=1)return;
 		
-		//Test if the symbol is already used
-		if(this.btnCommodityName.getSelection()){
-			search_str=CommodityName.getText();
-		}
-		if(exchangeRateProvider.isSymbolAlreadyUsed(search_str)){
-			this.setErrorMessage("The given symbol \""+SymbolText.getText()+
-					"\" is already used!\nPlease enter a other one.");
-			return;
-		}
+		String sel=selections[0];
+		contract=contractMap.get(sel);
+		if(contract==null)return;
 		
-		if(modus){
-			if(this.btnOnVistaId.getSelection()){
-				search_str=SymbolText.getText()+";"+OnVistaIdText.getText();
-			}
-			if(this.btnCommodityName.getSelection()){
-				search_str=CommodityName.getText()+";"+SymbolText.getText()+";"+OnVistaIdText.getText();
-			}
-		}
+		contract=contractProvider.create(contract);
 		
-	
-		rate=  exchangeRateProvider.load(search_str);
-		if(rate==null){
-			this.setErrorMessage("Cannot find the given symbol \""+SymbolText.getText()+
-					"\" on Yahoo Finance!\nPlease check if it is correct spelled.");
-			return;
-		}
-		if(comboRateType.getText().startsWith("ISIN")){
-			rate.setISIN(isin);
-			exchangeRateProvider.save(rate);
-		}
 		
 		super.okPressed();
 	}
@@ -228,9 +228,84 @@ public class AddContractDialog extends TitleAreaDialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(672, 384);
+		return new Point(672, 434);
 	}
 	
+	private class ResultListContentProvider implements IStructuredContentProvider{
+
+		@Override
+		public void dispose() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public Object[] getElements(Object inputElement) {
+			if(inputElement instanceof java.util.List<?>){
+				java.util.List<?> l=(java.util.List<?>) inputElement;
+				return l.toArray();
+			}
+			return null;
+		}
+		
+	}
+	
+	private class ResultListLabelProvider extends StyledCellLabelProvider implements ILabelProvider{
+
+		@Override
+		public void update(ViewerCell cell) {
+			Object element=cell.getElement();
+			if(element instanceof ExContract){
+				ExContract contract=(ExContract) element;
+				cell.setText( contract.getLongName());
+				
+				/*
+				FontData[] datas=cell.getFont().getFontData();
+				for(FontData data:datas){
+					data.setStyle(SWT.BOLD);
+				}
+				cell.getFont().
+				*/
+						//cell.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
+			}
+			super.update(cell);
+		}
+
+		@Override
+		public Image getImage(Object element) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getText(Object element) {
+			
+			if(element instanceof ExContract){
+				ExContract contract=(ExContract) element;
+				
+				
+				String text= contract.getLongName()+" ["+contract.getMarketName()
+						+", "+contract.getPrimaryExch()+", "+contract.getExchange()+"]";
+				
+				if(!contractMap.containsKey(text))
+					contractMap.put(text, contract);
+				
+				return text;
+				
+				
+				
+				
+			}
+			return null;
+		}
+		
+	}
 	
 
 }

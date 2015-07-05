@@ -4,10 +4,11 @@ import com.ib.controller.Types.Right;
 import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
 import javax.annotation.Generated;
+import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-07-04T20:27:46.307+0200")
+@Generated(value="Dali", date="2015-07-05T13:33:49.024+0200")
 @StaticMetamodel(ExContract.class)
 public class ExContract_ {
 	public static volatile SingularAttribute<ExContract, Integer> id;
@@ -25,20 +26,36 @@ public class ExContract_ {
 	public static volatile SingularAttribute<ExContract, String> primaryExch;
 	public static volatile SingularAttribute<ExContract, SecIdType> secIdType;
 	public static volatile SingularAttribute<ExContract, String> secId;
-	public static volatile SingularAttribute<ExContract, String> m_marketName;
-	public static volatile SingularAttribute<ExContract, Double> m_minTick;
-	public static volatile SingularAttribute<ExContract, Integer> m_priceMagnifier;
-	public static volatile SingularAttribute<ExContract, String> m_orderTypes;
-	public static volatile SingularAttribute<ExContract, String> m_validExchanges;
-	public static volatile SingularAttribute<ExContract, Integer> m_underConid;
-	public static volatile SingularAttribute<ExContract, String> m_longName;
-	public static volatile SingularAttribute<ExContract, String> m_contractMonth;
-	public static volatile SingularAttribute<ExContract, String> m_industry;
-	public static volatile SingularAttribute<ExContract, String> m_category;
-	public static volatile SingularAttribute<ExContract, String> m_subcategory;
-	public static volatile SingularAttribute<ExContract, String> m_timeZoneId;
-	public static volatile SingularAttribute<ExContract, String> m_tradingHours;
-	public static volatile SingularAttribute<ExContract, String> m_liquidHours;
-	public static volatile SingularAttribute<ExContract, String> m_evRule;
-	public static volatile SingularAttribute<ExContract, Double> m_evMultiplier;
+	public static volatile SingularAttribute<ExContract, String> marketName;
+	public static volatile SingularAttribute<ExContract, Double> minTick;
+	public static volatile SingularAttribute<ExContract, Integer> priceMagnifier;
+	public static volatile SingularAttribute<ExContract, String> orderTypes;
+	public static volatile SingularAttribute<ExContract, String> validExchanges;
+	public static volatile SingularAttribute<ExContract, Integer> underConid;
+	public static volatile SingularAttribute<ExContract, String> longName;
+	public static volatile SingularAttribute<ExContract, String> contractMonth;
+	public static volatile SingularAttribute<ExContract, String> industry;
+	public static volatile SingularAttribute<ExContract, String> category;
+	public static volatile SingularAttribute<ExContract, String> subcategory;
+	public static volatile SingularAttribute<ExContract, String> timeZoneId;
+	public static volatile SingularAttribute<ExContract, String> tradingHours;
+	public static volatile SingularAttribute<ExContract, String> liquidHours;
+	public static volatile SingularAttribute<ExContract, String> evRule;
+	public static volatile SingularAttribute<ExContract, Double> evMultiplier;
+	public static volatile ListAttribute<ExContract, ExTagValue> secIdList;
+	public static volatile SingularAttribute<ExContract, String> cusip;
+	public static volatile SingularAttribute<ExContract, String> ratings;
+	public static volatile SingularAttribute<ExContract, String> descAppend;
+	public static volatile SingularAttribute<ExContract, String> bondType;
+	public static volatile SingularAttribute<ExContract, String> couponType;
+	public static volatile SingularAttribute<ExContract, Boolean> callable;
+	public static volatile SingularAttribute<ExContract, Boolean> putable;
+	public static volatile SingularAttribute<ExContract, Double> coupon;
+	public static volatile SingularAttribute<ExContract, Boolean> convertible;
+	public static volatile SingularAttribute<ExContract, String> maturity;
+	public static volatile SingularAttribute<ExContract, String> issueDate;
+	public static volatile SingularAttribute<ExContract, String> nextOptionDate;
+	public static volatile SingularAttribute<ExContract, String> nextOptionType;
+	public static volatile SingularAttribute<ExContract, Boolean> nextOptionPartial;
+	public static volatile SingularAttribute<ExContract, String> notes;
 }

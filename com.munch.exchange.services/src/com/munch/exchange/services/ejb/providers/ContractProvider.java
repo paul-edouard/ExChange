@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.jboss.security.authorization.resources.EJBResource;
 
+import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ib.ExContract;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
@@ -16,22 +17,6 @@ public class ContractProvider implements IContractProvider {
 	
 
 	public ContractProvider() {
-		
-		//beanRemote=new BeanRemote<ContractInfoBeanRemote>("ContractInfoBean",ContractInfoBeanRemote.class);
-		
-		//System.setProperty("jboss.ejb.client.properties.file.path", "C:\\Users\\paul-edouard\\git\\ExChange\\com.munch.exchange.services\\src\\jboss-ejb-client.properties");
-		
-		
-		
-		/*
-		List<ExContract> list=getAll();
-		for(ExContract contract: list){
-			//System.out.println(contract.getSecIdType().getApiString());
-			System.out.println(contract);
-			System.out.println(contract.getSecType().getClass());
-		}
-		*/
-		
 	}
 
 	@Override
@@ -43,6 +28,31 @@ public class ContractProvider implements IContractProvider {
 	public void init() {
 		beanRemote=new BeanRemote<ContractInfoBeanRemote>("ContractInfoBean",ContractInfoBeanRemote.class);
 		
+	}
+
+	@Override
+	public List<ExContract> searchContracts(String symbol, SecType secType) {
+		return beanRemote.getService().searchContract(symbol, secType);
+	}
+
+	@Override
+	public ExContract create(ExContract contract) {
+		return beanRemote.getService().create(contract);
+	}
+
+	@Override
+	public ExContract update(ExContract contract) {
+		return beanRemote.getService().update(contract);
+	}
+
+	@Override
+	public void remove(int id) {
+		beanRemote.getService().remove(id);
+	}
+
+	@Override
+	public ExContract getContract(int id) {
+		return beanRemote.getService().getContract(id);
 	}
 
 }
