@@ -67,12 +67,7 @@ public class Manager {
 		BasicConfigurator.configure();
 		
 		contractProvider.init();
-		List<ExContract> list=contractProvider.getAll();
-		for(ExContract contract: list){
-			//System.out.println(contract.getSecIdType().getApiString());
-			System.out.println(contract);
-			//System.out.println(contract.getSecType().getClass());
-		}
+		
 		
 		final Shell shell = new Shell(SWT.TOOL | SWT.NO_TRIM);
 		
@@ -118,6 +113,8 @@ public class Manager {
 		
 		
 	}
+	
+	
 
 	private void setLocation(Display display, Shell shell) {
 		Monitor monitor = display.getPrimaryMonitor();

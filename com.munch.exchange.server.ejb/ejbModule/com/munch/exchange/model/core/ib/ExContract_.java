@@ -7,7 +7,7 @@ import javax.annotation.Generated;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-07-03T20:03:05.461+0200")
+@Generated(value="Dali", date="2015-07-04T20:27:46.307+0200")
 @StaticMetamodel(ExContract.class)
 public class ExContract_ {
 	public static volatile SingularAttribute<ExContract, Integer> id;
@@ -25,4 +25,20 @@ public class ExContract_ {
 	public static volatile SingularAttribute<ExContract, String> primaryExch;
 	public static volatile SingularAttribute<ExContract, SecIdType> secIdType;
 	public static volatile SingularAttribute<ExContract, String> secId;
+	public static volatile SingularAttribute<ExContract, String> m_marketName;
+	public static volatile SingularAttribute<ExContract, Double> m_minTick;
+	public static volatile SingularAttribute<ExContract, Integer> m_priceMagnifier;
+	public static volatile SingularAttribute<ExContract, String> m_orderTypes;
+	public static volatile SingularAttribute<ExContract, String> m_validExchanges;
+	public static volatile SingularAttribute<ExContract, Integer> m_underConid;
+	public static volatile SingularAttribute<ExContract, String> m_longName;
+	public static volatile SingularAttribute<ExContract, String> m_contractMonth;
+	public static volatile SingularAttribute<ExContract, String> m_industry;
+	public static volatile SingularAttribute<ExContract, String> m_category;
+	public static volatile SingularAttribute<ExContract, String> m_subcategory;
+	public static volatile SingularAttribute<ExContract, String> m_timeZoneId;
+	public static volatile SingularAttribute<ExContract, String> m_tradingHours;
+	public static volatile SingularAttribute<ExContract, String> m_liquidHours;
+	public static volatile SingularAttribute<ExContract, String> m_evRule;
+	public static volatile SingularAttribute<ExContract, Double> m_evMultiplier;
 }

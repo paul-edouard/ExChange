@@ -44,6 +44,7 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
         // TODO Auto-generated constructor stub
     }
 
+    /*
 	@Override
 	public void searchContractInfo(String symbol, String Sectype) {
 		NewContract m_contract = new NewContract();
@@ -61,6 +62,7 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 		log.info("searchContractInfo Finished!");
 		
 	}
+	*/
 
 	@Override
 	public void contractDetails(ArrayList<NewContractDetails> list) {
@@ -85,7 +87,7 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	}
 	
 	
-	
+	/*
 	@Override
 	public List<ExContract> searchContractExchange(String symbol, String exchange) {
 		
@@ -109,22 +111,45 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 		
 		log.info("searchContractInfo Finished!");
 		
+		List<ExContract> ouputList=new LinkedList<>();
+		for(NewContractDetails details:list){
+			ouputList.add(new ExContract(details));
+		}
+		return ouputList;
+	}
+	*/
+	
+	@Override
+	public List<ExContract> searchContract(String symbol,SecType secType) {
+		
+	
+		NewContract m_contract = new NewContract();
+		m_contract.symbol(symbol);
+		//m_contract.tradingClass(marketName);
+		m_contract.secType(secType);
+		//m_contract.exchange(exchange);
+		
+		//log.info("reqContractDetails Started!");
+		
+		//Reset the list
+		this.list=null;
+		
+		ConnectionBean.INSTANCE.controller().reqContractDetails(m_contract, this);
+		
+		//Wait of the answer
+		waitForIbAnswer();
+		
+		
+		log.info("searchContractInfo Finished!");
 		
 		List<ExContract> ouputList=new LinkedList<>();
 		for(NewContractDetails details:list){
 			ouputList.add(new ExContract(details));
-			
-			//log.info("Found Contract: "+i+"\n"+details.toString());
-			//output+="Found Contract: "+i+"\n"+details.toString()+"\n";
-			//i++;
 		}
-		
-		
-		
 		return ouputList;
-		
-		
 	}
+	
+	
 	
 	private void waitForIbAnswer(){
 		int i=0;

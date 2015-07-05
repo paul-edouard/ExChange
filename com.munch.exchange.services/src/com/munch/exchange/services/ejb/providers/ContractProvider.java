@@ -16,6 +16,9 @@ public class ContractProvider implements IContractProvider {
 	
 
 	public ContractProvider() {
+		
+		//beanRemote=new BeanRemote<ContractInfoBeanRemote>("ContractInfoBean",ContractInfoBeanRemote.class);
+		
 		//System.setProperty("jboss.ejb.client.properties.file.path", "C:\\Users\\paul-edouard\\git\\ExChange\\com.munch.exchange.services\\src\\jboss-ejb-client.properties");
 		
 		

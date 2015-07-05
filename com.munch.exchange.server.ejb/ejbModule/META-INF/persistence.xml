@@ -3,6 +3,7 @@
 	<persistence-unit name="com.munch.exchange.server.ejb">
 	<jta-data-source>java:jboss/datasources/exchange</jta-data-source>
 	<class>com.munch.exchange.model.core.ib.ExContract</class>
+	<class>com.munch.exchange.model.core.ib.ExTagValue</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

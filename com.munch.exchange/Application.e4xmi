@@ -10,6 +10,7 @@
               <handlers xmi:id="_iD3JEIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.handler.delete_rate" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.DeleteRateHandler" command="_q70BMIaQEeOL4pkNq6bgJQ"/>
               <handlers xmi:id="_kS-iIOceEeOcocoRitCrsA" elementId="com.munch.exchange.handler.clrearhistorypoints" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.ClearHistoryPointsHandler" command="_Watx0OceEeOcocoRitCrsA"/>
               <handlers xmi:id="_FGXyoJ4tEeS7tt67LZ9rkQ" elementId="com.munch.exchange.handler.neuralnetwork.openconfiguration" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.neuralnetwork.OpenNNConfigEditorHandler" command="_pCAwAJ4sEeS7tt67LZ9rkQ"/>
+              <handlers xmi:id="_GxwCoCJAEeWhE_6saneqfA" elementId="com.munch.exchange.handler.contract.add" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.handlers.contract.AddContract" command="_7F77wCI_EeWhE_6saneqfA"/>
               <menus xsi:type="menu:PopupMenu" xmi:id="_blA2UIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.popupmenu.rates_overview" label="Rate Overview">
                 <children xsi:type="menu:HandledMenuItem" xmi:id="_yR7TIIaQEeOL4pkNq6bgJQ" elementId="com.munch.exchange.handledmenuitem.delete_rate" label="Delete" iconURI="platform:/plugin/com.munch.exchange/icons/delete.png" command="_q70BMIaQEeOL4pkNq6bgJQ"/>
                 <children xsi:type="menu:HandledMenuItem" xmi:id="_1dEPkOceEeOcocoRitCrsA" elementId="com.munch.exchange.handledmenuitem.clearhistorypoints" label="Clear History Points" command="_Watx0OceEeOcocoRitCrsA"/>
@@ -17,6 +18,7 @@
               </menus>
               <toolbar xmi:id="_lUDAYIUwEeO8JejmZH0Bqw" elementId="com.munch.exchange.toolbar.rates">
                 <children xsi:type="menu:HandledToolItem" xmi:id="_tSYvsIXPEeOHHYCHtnBtIA" elementId="com.munch.exchange.handledtoolitem.rates.add" label="add" iconURI="platform:/plugin/com.munch.exchange/icons/add.png" tooltip="Add a new rate" command="_EztE8IXQEeOHHYCHtnBtIA"/>
+                <children xsi:type="menu:HandledToolItem" xmi:id="_SsCqYCJAEeWhE_6saneqfA" elementId="com.munch.exchange.handledtoolitem.contract.add" accessibilityPhrase="Add a new contract to the overview" label="Add a new contract" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/thread_view.gif" tooltip="Add a new contract" command="_7F77wCI_EeWhE_6saneqfA"/>
               </toolbar>
             </children>
             <children xsi:type="basic:Part" xmi:id="_F6RdoIboEeSK6OWfylybxw" elementId="com.munch.exchange.part.networkresults" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsPart" label="Network Results" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/history_list.gif" tooltip="Liste the network result of the selected configuration">
@@ -146,6 +148,7 @@
   <commands xmi:id="_WbbIoNYBEeSLTvsUcbJGjA" elementId="com.munch.exchange.command.neuralnetwork.configuration.regularization.basic" commandName="Regularization Basic Parameters" description="Set the basis parameters of the neural network regularization concept"/>
   <commands xmi:id="_guWxANYBEeSLTvsUcbJGjA" elementId="com.munch.exchange.command.neuralnetwork.configuration.regularization.optimization" commandName="Regularization Optimization Parameters" description="Set the basis parameters of the neural network regularization optimization"/>
   <commands xmi:id="_m_W1ANYBEeSLTvsUcbJGjA" elementId="com.munch.exchange.command.neuralnetwork.configuration.regularization.training" commandName="Regularization Training Parameters" description="Set the basis parameters of the neural network regularization training"/>
+  <commands xmi:id="_7F77wCI_EeWhE_6saneqfA" elementId="com.munch.exchange.command.contract.add" commandName="Add a contract" description="Add a contract to the overview"/>
   <addons xmi:id="_hCM1ImTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.core.commands.service" contributionURI="bundleclass://org.eclipse.e4.core.commands/org.eclipse.e4.core.commands.CommandServiceAddon"/>
   <addons xmi:id="_hCM1I2TNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ui.contexts.service" contributionURI="bundleclass://org.eclipse.e4.ui.services/org.eclipse.e4.ui.services.ContextServiceAddon"/>
   <addons xmi:id="_hCM1JGTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ui.bindings.service" contributionURI="bundleclass://org.eclipse.e4.ui.bindings/org.eclipse.e4.ui.bindings.BindingServiceAddon"/>
