@@ -4,12 +4,14 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -57,6 +59,7 @@ public class AddContractDialog extends TitleAreaDialog {
 	
 	IContractProvider contractProvider;
 	private ExContract contract;
+	private Shell shell;
 	
 	private HashMap<String, SecType> secTypemap=new HashMap<>();
 	private HashMap<String, ExContract> contractMap=new HashMap<>();
@@ -70,6 +73,9 @@ public class AddContractDialog extends TitleAreaDialog {
 		setShellStyle(SWT.RESIZE);
 		setHelpAvailable(false);
 		this.contractProvider=contractProvider;
+		this.shell=parentShell;
+		
+		
 	}
 	
 
@@ -140,8 +146,9 @@ public class AddContractDialog extends TitleAreaDialog {
 		btnSearch.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//listViewerResults.setInput(null);
-				//listViewerResults.refresh();
+				//Cursor cursor=shell.getCursor();
+				//shell.setCursor( new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT) );
+				
 				contractMap.clear();
 				String symbol=SymbolText.getText();
 				SecType secType=secTypemap.get(comboType.getText());
@@ -151,6 +158,8 @@ public class AddContractDialog extends TitleAreaDialog {
 				buttonOk.setEnabled(false);
 				listViewerResults.setInput(contracts);
 				listViewerResults.refresh();
+				
+				//shell.setCursor(cursor);
 				
 			}
 		});
@@ -217,6 +226,18 @@ public class AddContractDialog extends TitleAreaDialog {
 		contract=contractMap.get(sel);
 		if(contract==null)return;
 		
+		//Test if the contract was allready added
+		//MessageDialog
+		java.util.List<ExContract> list=contractProvider.getAll();
+		for(ExContract testContract:list ){
+			if(testContract.compareWith(contract)){
+				MessageDialog.openWarning(shell, "Contract alleady in the database",
+						"The contract "+contract.getLongName()+" connot be added");
+				return;
+			}
+		}
+		
+		
 		contract=contractProvider.create(contract);
 		
 		
@@ -264,15 +285,6 @@ public class AddContractDialog extends TitleAreaDialog {
 			if(element instanceof ExContract){
 				ExContract contract=(ExContract) element;
 				cell.setText( contract.getLongName());
-				
-				/*
-				FontData[] datas=cell.getFont().getFontData();
-				for(FontData data:datas){
-					data.setStyle(SWT.BOLD);
-				}
-				cell.getFont().
-				*/
-						//cell.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
 			}
 			super.update(cell);
 		}
@@ -289,16 +301,29 @@ public class AddContractDialog extends TitleAreaDialog {
 			if(element instanceof ExContract){
 				ExContract contract=(ExContract) element;
 				
+				String text="";
+				switch (contract.getSecType()) {
+				case STK:
+					text= contract.getLongName()+" ["+contract.getMarketName()
+					+", "+contract.getPrimaryExch()+", "+contract.getExchange()+"] "+contract.getCurrency();
+					break;
+				case OPT:
+					text= contract.getLongName()+", "+contract.getLocalSymbol()+" ["+contract.getMarketName()
+					+", "+contract.getM_right()+", "+contract.getExchange()+"] "+contract.getCurrency();
+					break;
+				case IND:
+					text= contract.getLongName()+", "+contract.getLocalSymbol()+" ["+contract.getMarketName()
+					+", "+contract.getExchange()+"] "+contract.getCurrency();
+					break;
 				
-				String text= contract.getLongName()+" ["+contract.getMarketName()
-						+", "+contract.getPrimaryExch()+", "+contract.getExchange()+"]";
+				default:
+					break;
+				}
 				
 				if(!contractMap.containsKey(text))
 					contractMap.put(text, contract);
 				
 				return text;
-				
-				
 				
 				
 			}

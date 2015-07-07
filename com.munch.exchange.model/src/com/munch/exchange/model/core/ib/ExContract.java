@@ -18,6 +18,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
 import com.ib.client.TagValue;
+import com.ib.controller.NewContract;
 import com.ib.controller.NewContractDetails;
 import com.ib.controller.Types.Right;
 import com.ib.controller.Types.SecIdType;
@@ -165,6 +166,40 @@ public class ExContract implements Serializable{
 		coucou me revoila enfin sur Facebook. Ici il fait persque 40 degre et il n'y a personne dehors! On a installe une petite piscine pour Luisa sur le balcon. Je crois que c'est vraiment la seule qui se rejouit de cette chaleur. Et chez vous ca va un peu mieux au Luxembourg?
 				Tu as dit que tu avais fini tes
 		*/
+		
+	}
+	
+	
+	public boolean compareWith(ExContract contract){
+		if(conId!=contract.getConId())return false;
+		if(!symbol.equals(contract.getSymbol()))return false;
+		if(!exchange.equals(contract.getExchange()))return false;
+		if(!currency.equals(contract.getCurrency()))return false;
+		if(!localSymbol.equals(contract.getLocalSymbol()))return false;
+		if(secType!=contract.getSecType())return false;
+		
+		return true;
+	}
+	
+	public NewContract getNewContract(){
+		NewContract n_contract=new NewContract();
+		
+		n_contract.conid(this.conId);
+		n_contract.symbol(this.symbol);
+		n_contract.secType(this.secType);
+		n_contract.expiry(this.expiry);
+		n_contract.strike(this.strike);
+		n_contract.right(this.m_right);
+		n_contract.multiplier(this.multiplier);
+		n_contract.exchange(this.exchange);
+		n_contract.currency(this.currency);
+		n_contract.localSymbol(this.localSymbol);
+		n_contract.tradingClass(this.tradingClass);
+		n_contract.primaryExch(this.primaryExch);
+		n_contract.secIdType(this.secIdType);
+		n_contract.secId(this.secId);
+		//Missing Delta, ComboLegs
+		return n_contract;
 		
 	}
 	

@@ -34,16 +34,17 @@ public class AddContract {
 		
 		AddContractDialog dialog=new AddContractDialog(shell,contractProvider);
 		if (dialog.open() == Window.OK) {
-			//eventBroker.post(IEventConstant.RATE_NEW, dialog.getRate());
+			eventBroker.post(IEventConstant.CONTRACT_NEW, dialog.getContract());
 		}
 		
+		/*
 		List<ExContract> list=contractProvider.getAll();
 		for(ExContract contract: list){
 			//System.out.println(contract.getSecIdType().getApiString());
 			System.out.println(contract);
 			System.out.println(contract.getSecType().getClass());
 		}
-		
+		*/
 		
 	}
 	

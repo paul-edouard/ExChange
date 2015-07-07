@@ -244,7 +244,6 @@ public class RatesOverviewPart {
 		}
 	}
 	
-	
 	@Inject
 	private void addRate(@Optional  @UIEventTopic(IEventConstant.RATE_NEW) ExchangeRate rate ){
 		
@@ -272,6 +271,7 @@ public class RatesOverviewPart {
 			treeViewer.refresh();
 		}
 	}
+	
 	@Inject
 	private void loadedRate(@Optional  @UIEventTopic(IEventConstant.RATE_LOADED) ExchangeRate rate ){
 		if(treeViewer!=null && rate!=null){

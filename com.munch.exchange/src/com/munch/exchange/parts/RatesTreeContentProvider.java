@@ -183,9 +183,6 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 	}
 	
 	
-	
-	
-
 	public class RateContainer extends ExchangeRate{
 		
 		protected ExchangeRate parent;
@@ -330,7 +327,6 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			monitor.worked(20);
 		}
 		
-
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			

@@ -1,17 +1,30 @@
 package com.munch.exchange.server.ejb.ib;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.inject.Inject;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSConnectionFactory;
+import javax.jms.JMSContext;
+import javax.jms.JMSException;
+import javax.jms.Topic;
+import javax.jms.TopicConnectionFactory;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import com.ib.controller.ApiController;
 import com.ib.controller.ApiConnection.ILogger;
 import com.ib.controller.ApiController.IConnectionHandler;
+import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.server.ejb.ib.collectors.TopMktDataMsgSenderCollector;
 
 /**
  * Session Bean implementation class ConnectionBean
@@ -21,17 +34,26 @@ import com.ib.controller.ApiController.IConnectionHandler;
 @Startup
 public class ConnectionBean implements IConnectionHandler,ILogger{
 	
-	static ConnectionBean INSTANCE;
+	public static ConnectionBean INSTANCE;
 	
 	private static final Logger log = Logger.getLogger(ConnectionBean.class.getName());
 	
 	private final ApiController m_controller = new ApiController( this, this, this);
 	
+	@PersistenceContext
+	private EntityManager em;
+	
+	@Resource(mappedName = "java:jboss/DefaultJMSConnectionFactory")
+	private ConnectionFactory connectionFactory;
+	
+	@Resource(lookup="java:/jms/topic/demoTopic")
+	private Topic destination;
 	
 	
     /**
      * Default constructor. 
      */
+	@Inject
     public ConnectionBean() {
     	log.info("Connection Bean is started");
     	INSTANCE=this;
@@ -57,11 +79,40 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
 	@Override
 	public void connected() {
 		log.info("Connected!");
+		if(connectionFactory==null){
+			log.warning("connectionFactory is null!");
+			return;
+		}
+		else{
+			try {
+				log.info("connectionFactory is here: "+connectionFactory.createConnection());
+			} catch (JMSException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if(destination==null){
+			log.warning("destination is null!");
+			return;
+		}
+		else{
+			try {
+				log.info("Destination is here: "+destination.getTopicName());
+			} catch (JMSException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		//return;
+		
+		TopMktDataMsgSenderCollector.INSTANCE.init(em,connectionFactory,destination);
+		
 	}
 
 	@Override
 	public void disconnected() {
 		log.info("Disconnected!");
+		TopMktDataMsgSenderCollector.INSTANCE.clearAll();
 	}
 
 	@Override
