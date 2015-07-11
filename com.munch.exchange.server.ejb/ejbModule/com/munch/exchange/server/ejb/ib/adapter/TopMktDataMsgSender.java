@@ -84,7 +84,7 @@ public class TopMktDataMsgSender extends TopMktDataAdapter{
 			msg.setText(txt);
 			msg.setStringProperty("NAME", name);
 			msgProducer.send(msg);
-			log.info("Message send: "+txt);
+			//log.info("Message send: "+txt);
 			
 		} catch (JMSException e) {
 			// TODO Auto-generated catch block

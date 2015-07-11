@@ -16,6 +16,14 @@ public class BeanRemote<T> {
 	public static final String MODULE_NAME="com.munch.exchange.server.ejb";
 	public static final String DISTINCT_NAME="";
 	
+	public static final String SERVER_CONTEXT_FACTORY="org.jboss.naming.remote.client.InitialContextFactory";
+	public static final String SERVER_HOST="localhost";
+	public static final String SERVER_PORT="8080";
+	public static final String SERVER_USER="admin";
+	public static final String SERVER_PASSWORD="1SAMPRAS..";
+	
+	
+	
 	public static Context context=null;
 	
 	private T instance=null;
@@ -59,7 +67,7 @@ public class BeanRemote<T> {
 	}
 
 
-
+/*
 	public static ContractInfoBeanRemote doLookUpContractInfo() throws NamingException{
 		
         
@@ -77,16 +85,14 @@ public class BeanRemote<T> {
        
         return (ContractInfoBeanRemote) getJndiContext().lookup("ejb:" + appName + "/" + moduleName + "/" + distinctName + "/" + beanName + "!" + viewClassName);
 	}
-	
+	*/
 	
 	@SuppressWarnings("unchecked")
 	public T doLookUp(String beanName,Class<?> viewClass){
 		
-	
 		String viewClassName = viewClass.getName();
-		System.out.println(viewClassName);
+		//System.out.println(viewClassName);
 		try {
-			//return (T)  getJndiContext().lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME + "/" + beanName + "!" + viewClassName);
 			return (T)  getJndiContext().lookup( APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME + "/" + beanName + "!" + viewClassName);
 		} catch (NamingException e) {
 			// TODO Auto-generated catch block
@@ -97,64 +103,32 @@ public class BeanRemote<T> {
 	}
 	
 	
-	@SuppressWarnings("unchecked")
-	public static Context getJndiContext() throws NamingException{
-		
-	
-		if(context==null){
-			@SuppressWarnings("rawtypes")
+	public static Context getJndiContext() throws NamingException {
+
+		if (context == null) {
+
+			// Property to enable scoped EJB client context which will be tied
+			// to the JNDI context
+			Properties jndiProps = new Properties();
 			
+			jndiProps.put(Context.INITIAL_CONTEXT_FACTORY,SERVER_CONTEXT_FACTORY);
 			
+			jndiProps.put(Context.PROVIDER_URL,"http-remoting://"+SERVER_HOST+":"+SERVER_PORT);
 			
+			// username
+			jndiProps.put(Context.SECURITY_PRINCIPAL, SERVER_USER);
 			
-			/*
-			Hashtable jndiProperties = new Hashtable();
-			jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-			context = new InitialContext(jndiProperties);
-			*/
-			// Configure  EJB Client properties for the InitialContext
-			Properties ejbClientContextProps = new Properties();
+			// password
+			jndiProps.put(Context.SECURITY_CREDENTIALS, SERVER_PASSWORD);
 			
-			ejbClientContextProps.put("org.jboss.ejb.client.scoped.context", false);
-			ejbClientContextProps.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-			ejbClientContextProps.put("endpoint.name", "client");
-			
-			
-			ejbClientContextProps.put("remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED","false");
-			ejbClientContextProps.put("remote.connections","default");
-			ejbClientContextProps.put("remote.connection.default.host","localhost");
-			ejbClientContextProps.put("remote.connection.default.port","8080");
-			
-			ejbClientContextProps.put("remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS","false");
-			
-			
-			ejbClientContextProps.put("remote.connection.default.username","admin");
-			ejbClientContextProps.put("remote.connection.default.password","1SAMPRAS..");
-			
-			// Property to enable scoped EJB client context which will be tied to the JNDI context
-			
-			
-			 Properties jndiProps = new Properties();
-			  jndiProps.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-			  jndiProps.put(Context.PROVIDER_URL,"http-remoting://localhost:8080");
-			  // username
-			  jndiProps.put(Context.SECURITY_PRINCIPAL, "admin");
-			  // password
-			  jndiProps.put(Context.SECURITY_CREDENTIALS, "1SAMPRAS..");
-			  // This is an important property to set if you want to do EJB invocations via the remote-naming project
-			  jndiProps.put("jboss.naming.client.ejb.context", true);
-			  // create a context passing these properties
-			  Context ctx = new InitialContext(jndiProps);
-			  // lookup the bean     Foo
-			  //beanRemoteInterface = (Foo) ctx.lookup("myapp/myejbmodule/FooBean!org.myapp.ejb.Foo");
-			  context = ctx;
-			
-			//context = new InitialContext(ejbClientContextProps);
-			
-			System.out.println("Hallo");
-			
+			// This is an important property to set if you want to do EJB
+			// invocations via the remote-naming project
+			jndiProps.put("jboss.naming.client.ejb.context", true);
+			// create a context passing these properties
+			context = new InitialContext(jndiProps);
+
 		}
-        return context;
+		return context;
 	}
 	
 	

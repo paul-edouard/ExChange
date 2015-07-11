@@ -36,6 +36,7 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
 	
 	public static ConnectionBean INSTANCE;
 	
+	
 	private static final Logger log = Logger.getLogger(ConnectionBean.class.getName());
 	
 	private final ApiController m_controller = new ApiController( this, this, this);
@@ -43,10 +44,12 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
 	@PersistenceContext
 	private EntityManager em;
 	
-	@Resource(mappedName = "java:jboss/DefaultJMSConnectionFactory")
+	//@Resource(mappedName = "java:jboss/DefaultJMSConnectionFactory")
+	@Resource(mappedName =Constants.JMS_CONNECTION_FACTORY)
 	private ConnectionFactory connectionFactory;
 	
-	@Resource(lookup="java:/jms/topic/demoTopic")
+	//@Resource(lookup="java:/jms/topic/demoTopic")
+	@Resource(lookup=Constants.JMS_TOPIC_MARKET_DATA)
 	private Topic destination;
 	
 	
@@ -63,7 +66,9 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
     private void startup() {
     	log.info("Startup Bean is starting");
     	log.info("Try to connect again");
-    	m_controller.connect( "127.0.0.1", 7496, 1);
+    	m_controller.connect( 	Constants.IB_CONNECTION_HOST,
+    							Constants.IB_CONNECTION_PORT,
+    							Constants.IB_CONNECTION_ID);
     }
     
     @PreDestroy

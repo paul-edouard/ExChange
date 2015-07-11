@@ -49,7 +49,7 @@ public enum TopMktDataMsgSenderCollector {
 		TopMktDataMsgSender sender=new TopMktDataMsgSender(contract,connectionFactory,destination);
 		ConnectionBean.INSTANCE.controller().reqTopMktData(contract.getNewContract(), "", false, sender);
 		
-		log.info("Top Market Data Requested!");
+		//log.info("Top Market Data Requested!");
 		
 		senders.put(contract.getId(), sender);
 	}
