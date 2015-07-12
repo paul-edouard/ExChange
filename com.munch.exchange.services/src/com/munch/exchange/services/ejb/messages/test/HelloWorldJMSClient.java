@@ -1,4 +1,4 @@
-package com.munch.exchange.services.ejb.messages;
+package com.munch.exchange.services.ejb.messages.test;
 
 import java.util.logging.Logger;
 import java.util.Properties;

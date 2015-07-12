@@ -1,8 +1,8 @@
-package com.munch.exchange.services.ejb.messages;
+package com.munch.exchange.services.ejb.providers;
 
 import java.util.Enumeration;
-import java.util.Scanner;
-import java.util.logging.Logger;
+import java.util.HashMap;
+//import java.util.logging.Logger;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -18,11 +18,14 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import com.munch.exchange.model.core.ib.ExTopMktData;
+import com.munch.exchange.services.ejb.interfaces.ITopMktDataProvider;
+import com.munch.exchange.services.ejb.messages.Constants;
 
-public class TopMktDataClient implements MessageListener {
+public class TopMktDataProvider implements ITopMktDataProvider, MessageListener{
 	
 	
-	private static final Logger log = Logger.getLogger(TopMktDataClient.class.getName());
+	
+	//private static final Logger log = Logger.getLogger(TopMktDataProvider.class.getName());
 	 
 	
 	private ConnectionFactory connectionFactory;
@@ -30,18 +33,22 @@ public class TopMktDataClient implements MessageListener {
 	private Context context;
 	private JMSConsumer consumer;
 	
+	private HashMap<Integer, ExTopMktData> topMktDataMap=new HashMap<Integer, ExTopMktData>();
 	
-	public TopMktDataClient(){
+
+	@Override
+	public void init() {
+		
 		try {
 			context = new InitialContext(Constants.getContextProperties());
 			
 			//log.info("Attempting to acquire connection factory \"" + Constants.DEFAULT_CONNECTION_FACTORY + "\"");
 	        connectionFactory = (ConnectionFactory) context.lookup(Constants.DEFAULT_CONNECTION_FACTORY);
-	        log.info("Found connection factory \"" + Constants.DEFAULT_CONNECTION_FACTORY + "\" in JNDI");
+	        //log.info("Found connection factory \"" + Constants.DEFAULT_CONNECTION_FACTORY + "\" in JNDI");
 	        
 	        //log.info("Attempting to acquire destination \"" + Constants.TOP_MARKET_DATA + "\"");
 	        destination = (Destination) context.lookup(Constants.TOP_MARKET_DATA);
-	        log.info("Found destination \"" + Constants.TOP_MARKET_DATA + "\" in JNDI");
+	        //log.info("Found destination \"" + Constants.TOP_MARKET_DATA + "\" in JNDI");
 	        
 	        JMSContext jmsContext=connectionFactory.createContext(Constants.DEFAULT_USERNAME, Constants.DEFAULT_PASSWORD);
 	        jmsContext.setClientID(Constants.DEFAULT_CLIENT_ID);
@@ -58,18 +65,38 @@ public class TopMktDataClient implements MessageListener {
 		}
 		
 	}
-	
-	
 
 	@Override
- 	public void onMessage(Message arg0) {
+	public void registerTopMktData(ExTopMktData topMktData) {
+		if(!topMktDataMap.containsKey(topMktData.getContractId()))
+			topMktDataMap.put(topMktData.getContractId(), topMktData);
+	}
+
+	@Override
+	public void unregisterTopMktData(ExTopMktData topMktData) {
+		if(topMktDataMap.containsKey(topMktData.getContractId()))
+			topMktDataMap.remove(topMktData.getContractId());
+
+	}
+
+	@Override
+	public void onMessage(Message arg0) {
 		try {
 			TextMessage msg=(TextMessage) arg0;
+			/*
+			int contractId=msg.getIntProperty(ExTopMktData.CONTRACT_ID);
+			if(contractId==0)return;
+			ExTopMktData topMktData=topMktDataMap.get(contractId);
+			if(topMktData==null)return;
+			*/
+			
+			@SuppressWarnings("unchecked")
 			Enumeration<String> propList= msg.getPropertyNames();
 			String content="";
 			while(propList.hasMoreElements()){
 				String prop=propList.nextElement();
 				String value=msg.getStringProperty(prop);
+				//topMktData.setValue(prop, value);
 				content+=prop+"="+value+", ";
 			}
 			
@@ -78,24 +105,7 @@ public class TopMktDataClient implements MessageListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-	}
-	
-	public static void readIn(){
-		System.out.println("Type exit to close!");
 		
-		@SuppressWarnings("resource")
-    	Scanner scanner = new Scanner(System.in);
-		while(true){
-    		String in=scanner.nextLine();
-    		if(in.equals("exit"))return;
-    	}
-	}
-	
-	
-	public static void main(String[] args) throws JMSException, NamingException{
-		TopMktDataClient client=new TopMktDataClient();
-		client.readIn();
 	}
 
 }

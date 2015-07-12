@@ -23,6 +23,7 @@ import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IWatchlistProvider;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
 import com.munch.exchange.services.ejb.interfaces.IContractProvider;
+import com.munch.exchange.services.ejb.interfaces.ITopMktDataProvider;
 
 @SuppressWarnings("restriction")
 public class Manager {
@@ -61,12 +62,14 @@ public class Manager {
 			IApplicationContext appContext, Display display,
 			IExchangeRateProvider exchangeRateProvider,
 			IWatchlistProvider watchlistProvider,
-			IContractProvider contractProvider) {
+			IContractProvider contractProvider,
+			ITopMktDataProvider topMktDataProvider) {
 		
 		
 		BasicConfigurator.configure();
 		
 		contractProvider.init();
+		topMktDataProvider.init();
 		
 		
 		final Shell shell = new Shell(SWT.TOOL | SWT.NO_TRIM);

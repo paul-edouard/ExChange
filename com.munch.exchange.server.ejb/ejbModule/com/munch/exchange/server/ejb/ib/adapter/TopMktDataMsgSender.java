@@ -1,5 +1,7 @@
 package com.munch.exchange.server.ejb.ib.adapter;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -18,8 +20,9 @@ import com.ib.controller.NewTickType;
 import com.ib.controller.ApiController.TopMktDataAdapter;
 import com.ib.controller.Types.MktDataType;
 import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.ExTopMktData;
 
-public class TopMktDataMsgSender extends TopMktDataAdapter{
+public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyChangeListener{
 	
 	private static final Logger log = Logger.getLogger(TopMktDataMsgSender.class.getName());
 	
@@ -33,7 +36,9 @@ public class TopMktDataMsgSender extends TopMktDataAdapter{
 	private MessageProducer msgProducer;
 	
 	private ExContract contract;
+	private ExTopMktData topMktData;
 	
+	/*
 	private double m_bid;
 	private double m_ask;
 	private double m_last;
@@ -43,34 +48,38 @@ public class TopMktDataMsgSender extends TopMktDataAdapter{
 	private double m_close;
 	private int m_volume;
 	private boolean m_frozen;
-	
+	*/
 	
 	public TopMktDataMsgSender(ExContract contract,ConnectionFactory connectionFactory,Topic destination){
 		this.contract=contract;
 		this.connectionFactory=connectionFactory;
 		this.destination=destination;
+		topMktData=new ExTopMktData(this.contract);
+		//log.info(String.valueOf(topMktData.getContractId()));
+		topMktData.addPropertyChangeListener(this);
 		
 		try {
 			connection=connectionFactory.createConnection();
 			session=connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-			msgProducer=session.createProducer(destination);
-			
+			msgProducer=session.createProducer(destination);	
 		} catch (JMSException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		sendMessage("Hallo");
 		
+		
+		log.info("Sender activated for "+contract.toString());
 	}
 	
+	/*
 	private String createMsgText(){
 		String txt="Bid: "+m_bid+", Ask: "+m_ask;
 		txt+=", Close: "+m_close+", ";
 		
 		return txt;
 	}
+	*/
 	
-	private void sendMessage(String name){
+	private void sendMessage(String field, String value){
 		
 		if(destination==null || msgProducer==null || connectionFactory==null){
 			log.info("Smth is null!");
@@ -80,14 +89,15 @@ public class TopMktDataMsgSender extends TopMktDataAdapter{
 		
 		try {
 			TextMessage msg=session.createTextMessage();
-			String txt=createMsgText();
-			msg.setText(txt);
-			msg.setStringProperty("NAME", name);
+			msg.setText("Top_Market_Data");
+			msg.setIntProperty(ExTopMktData.CONTRACT_ID, topMktData.getContractId());
+			//msg.setStringProperty(ExTopMktData.CONTRACT_ID, String.valueOf(topMktData.getContractId()));
+			msg.setStringProperty(field, value);
 			msgProducer.send(msg);
-			//log.info("Message send: "+txt);
+			//log.info("New msg!");
 			
 		} catch (JMSException e) {
-			// TODO Auto-generated catch block
+			log.warning(e.toString());
 			e.printStackTrace();
 		}
 	}
@@ -95,50 +105,63 @@ public class TopMktDataMsgSender extends TopMktDataAdapter{
 	@Override public void tickPrice( NewTickType tickType, double price, int canAutoExecute) {
 		switch( tickType) {
 			case BID:
-				m_bid = price;
+				topMktData.setBid(price);
 				break;
 			case ASK:
-				m_ask = price;
+				topMktData.setAsk(price);
 				break;
 			case LAST:
-				m_last = price;
+				topMktData.setLast(price);
 				break;
 			case CLOSE:
-				m_close = price;
+				topMktData.setClose(price);
+				break;
+			default:
 				break;
 		}
-		sendMessage("Tick Price");
+		//sendMessage("Tick Price");
 		//m_model.fireTableDataChanged(); // should use a timer to be more efficient
 	}
 
 	@Override public void tickSize( NewTickType tickType, int size) {
 		switch( tickType) {
 			case BID_SIZE:
-				m_bidSize = size;
+				topMktData.setBidSize(size);
 				break;
 			case ASK_SIZE:
-				m_askSize = size;
+				topMktData.setAskSize(size);
 				break;
 			case VOLUME:
-				m_volume = size;
+				topMktData.setVolume(size);
+				break;
+			default:
 				break;
 		}
-		sendMessage("Tick Size");
+		//sendMessage("Tick Size");
 		//m_model.fireTableDataChanged();
 	}
 	
 	@Override public void tickString(NewTickType tickType, String value) {
 		switch( tickType) {
 			case LAST_TIMESTAMP:
-				m_lastTime = Long.parseLong( value) * 1000;
+				topMktData.setLastTime(Long.parseLong( value) * 1000);
 				break;
 		}
 	}
 	
 	@Override public void marketDataType(MktDataType marketDataType) {
-		m_frozen = marketDataType == MktDataType.Frozen;
-		sendMessage("Market Data Type");
+		boolean m_frozen = marketDataType == MktDataType.Frozen;
+		topMktData.setFrozen(m_frozen);
+		//sendMessage("Market Data Type");
 		//m_model.fireTableDataChanged();
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		String field=evt.getPropertyName();
+		String value=String.valueOf(evt.getNewValue());
+		
+		this.sendMessage(field, value);	
 	}
 	
 	

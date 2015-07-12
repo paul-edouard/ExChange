@@ -9,7 +9,7 @@ public class Constants {
 	 public static final String DEFAULT_CONNECTION_FACTORY = "jms/RemoteConnectionFactory";
 	 public static final String DEFAULT_USERNAME = "jmsuser";
 	 public static final String DEFAULT_PASSWORD = "Password1!";
-	 public static final String DEFAULT_CLIENT_ID = "12345678900987654321";
+	 public static final String DEFAULT_CLIENT_ID = "12345";
 	 private static final String INITIAL_CONTEXT_FACTORY = "org.jboss.naming.remote.client.InitialContextFactory";
 	 private static final String PROVIDER_URL = "http-remoting://localhost:8080";
 	 

@@ -84,34 +84,8 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
 	@Override
 	public void connected() {
 		log.info("Connected!");
-		if(connectionFactory==null){
-			log.warning("connectionFactory is null!");
-			return;
-		}
-		else{
-			try {
-				log.info("connectionFactory is here: "+connectionFactory.createConnection());
-			} catch (JMSException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		if(destination==null){
-			log.warning("destination is null!");
-			return;
-		}
-		else{
-			try {
-				log.info("Destination is here: "+destination.getTopicName());
-			} catch (JMSException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		//return;
-		
+		//Start the Message sender collector
 		TopMktDataMsgSenderCollector.INSTANCE.init(em,connectionFactory,destination);
-		
 	}
 
 	@Override

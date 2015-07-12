@@ -48,13 +48,13 @@ public enum TopMktDataMsgSenderCollector {
 	public void addSender(ExContract contract){
 		TopMktDataMsgSender sender=new TopMktDataMsgSender(contract,connectionFactory,destination);
 		ConnectionBean.INSTANCE.controller().reqTopMktData(contract.getNewContract(), "", false, sender);
-		
-		//log.info("Top Market Data Requested!");
-		
 		senders.put(contract.getId(), sender);
 	}
 	
 	public void clearAll(){
+		for(TopMktDataMsgSender sender : senders.values()){
+			ConnectionBean.INSTANCE.controller().cancelTopMktData(sender);
+		}
 		senders.clear();
 	}
 	

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="TopMktDataProvider">
+   <implementation class="com.munch.exchange.services.ejb.providers.TopMktDataProvider"/>
+   <service>
+      <provide interface="com.munch.exchange.services.ejb.interfaces.ITopMktDataProvider"/>
+   </service>
+</scr:component>
