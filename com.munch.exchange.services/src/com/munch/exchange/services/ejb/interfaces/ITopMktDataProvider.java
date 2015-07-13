@@ -5,6 +5,7 @@ import com.munch.exchange.model.core.ib.ExTopMktData;
 public interface ITopMktDataProvider {
 	
 	void init();
+	void close();
 	
 	
 	//Market Data registering

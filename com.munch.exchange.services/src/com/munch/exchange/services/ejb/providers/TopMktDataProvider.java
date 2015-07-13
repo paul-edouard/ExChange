@@ -4,6 +4,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 //import java.util.logging.Logger;
 
+
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
@@ -17,6 +18,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.log4j.Logger;
+
 import com.munch.exchange.model.core.ib.ExTopMktData;
 import com.munch.exchange.services.ejb.interfaces.ITopMktDataProvider;
 import com.munch.exchange.services.ejb.messages.Constants;
@@ -25,11 +28,12 @@ public class TopMktDataProvider implements ITopMktDataProvider, MessageListener{
 	
 	
 	
-	//private static final Logger log = Logger.getLogger(TopMktDataProvider.class.getName());
+	private static final Logger log = Logger.getLogger(TopMktDataProvider.class.getName());
 	 
 	
 	private ConnectionFactory connectionFactory;
 	private Destination destination;
+	private JMSContext jmsContext;
 	private Context context;
 	private JMSConsumer consumer;
 	
@@ -50,7 +54,7 @@ public class TopMktDataProvider implements ITopMktDataProvider, MessageListener{
 	        destination = (Destination) context.lookup(Constants.TOP_MARKET_DATA);
 	        //log.info("Found destination \"" + Constants.TOP_MARKET_DATA + "\" in JNDI");
 	        
-	        JMSContext jmsContext=connectionFactory.createContext(Constants.DEFAULT_USERNAME, Constants.DEFAULT_PASSWORD);
+	        jmsContext=connectionFactory.createContext(Constants.DEFAULT_USERNAME, Constants.DEFAULT_PASSWORD);
 	        jmsContext.setClientID(Constants.DEFAULT_CLIENT_ID);
 	        consumer=jmsContext.createDurableConsumer((Topic) destination,
         			"abo",
@@ -65,6 +69,15 @@ public class TopMktDataProvider implements ITopMktDataProvider, MessageListener{
 		}
 		
 	}
+	
+	@Override
+	public void close() {
+		log.info("Close message consumer");
+		consumer.close();
+		jmsContext.close();
+	}
+	
+	
 
 	@Override
 	public void registerTopMktData(ExTopMktData topMktData) {
@@ -107,5 +120,7 @@ public class TopMktDataProvider implements ITopMktDataProvider, MessageListener{
 		}
 		
 	}
+
+	
 
 }
