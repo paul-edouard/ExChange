@@ -67,6 +67,7 @@ public class Manager {
 		
 		
 		BasicConfigurator.configure();
+		//BasicConfigurator.
 		
 		contractProvider.init();
 		topMktDataProvider.init();
