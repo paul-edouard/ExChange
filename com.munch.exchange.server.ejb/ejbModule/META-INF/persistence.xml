@@ -4,6 +4,9 @@
 	<jta-data-source>java:jboss/datasources/exchange</jta-data-source>
 	<class>com.munch.exchange.model.core.ib.ExContract</class>
 	<class>com.munch.exchange.model.core.ib.ExTagValue</class>
+	<class>com.munch.exchange.model.core.ib.bar.ExBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.ExSecondeBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.ExMinuteBar</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	
