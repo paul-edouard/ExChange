@@ -51,8 +51,8 @@ public abstract  class ExBar implements Serializable{
 	
 	
 	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="CONTRACT_ID")
-	private ExContract contract;
+	@JoinColumn(name="ROOT_ID")
+	private ExContractBars root;
 	
 	
 	private  long time;
@@ -90,6 +90,15 @@ public abstract  class ExBar implements Serializable{
 		this.count = bar.count();
 	}
 	
+
+
+	public ExContractBars getRoot() {
+		return root;
+	}
+
+	public void setRoot(ExContractBars root) {
+		this.root = root;
+	}
 
 	public BarSize getSize() {
 		return size;

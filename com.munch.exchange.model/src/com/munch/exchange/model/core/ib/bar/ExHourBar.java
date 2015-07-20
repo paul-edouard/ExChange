@@ -19,7 +19,7 @@ public class ExHourBar extends ExBar{
 	private static final long serialVersionUID = -5073661063360288597L;
 	
 	@OneToMany(mappedBy="parent")
-	private List<ExMinuteBar> minuteBars;
+	private List<ExBar> minuteBars;
 	
 	public ExHourBar(){
 		super();
@@ -32,11 +32,11 @@ public class ExHourBar extends ExBar{
 	}
 	
 	
-	public List<ExMinuteBar> getMinuteBars() {
+	public List<ExBar> getMinuteBars() {
 		return minuteBars;
 	}
 
-	public void setMinuteBars(List<ExMinuteBar> minuteBars) {
+	public void setMinuteBars(List<ExBar> minuteBars) {
 		this.minuteBars = minuteBars;
 	}
 	

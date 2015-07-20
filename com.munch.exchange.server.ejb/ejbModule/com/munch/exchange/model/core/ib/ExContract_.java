@@ -3,12 +3,13 @@ package com.munch.exchange.model.core.ib;
 import com.ib.controller.Types.Right;
 import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
+import com.munch.exchange.model.core.ib.bar.ExContractBars;
 import javax.annotation.Generated;
 import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-07-05T13:33:49.024+0200")
+@Generated(value="Dali", date="2015-07-20T21:52:13.332+0200")
 @StaticMetamodel(ExContract.class)
 public class ExContract_ {
 	public static volatile SingularAttribute<ExContract, Integer> id;
@@ -58,4 +59,5 @@ public class ExContract_ {
 	public static volatile SingularAttribute<ExContract, String> nextOptionType;
 	public static volatile SingularAttribute<ExContract, Boolean> nextOptionPartial;
 	public static volatile SingularAttribute<ExContract, String> notes;
+	public static volatile ListAttribute<ExContract, ExContractBars> bars;
 }

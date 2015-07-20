@@ -20,7 +20,7 @@ public class ExDayBar extends ExBar{
 	
 	
 	@OneToMany(mappedBy="parent")
-	private List<ExHourBar> hourBars;
+	private List<ExBar> hourBars;
 
 	
 	public ExDayBar() {
@@ -35,12 +35,12 @@ public class ExDayBar extends ExBar{
 	}
 
 
-	public List<ExHourBar> getHourBars() {
+	public List<ExBar> getHourBars() {
 		return hourBars;
 	}
 
 
-	public void setHourBars(List<ExHourBar> hourBars) {
+	public void setHourBars(List<ExBar> hourBars) {
 		this.hourBars = hourBars;
 	}
 	

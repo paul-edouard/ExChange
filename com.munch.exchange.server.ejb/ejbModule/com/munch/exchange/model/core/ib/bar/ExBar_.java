@@ -2,12 +2,11 @@ package com.munch.exchange.model.core.ib.bar;
 
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.model.core.ib.ExContract;
 import javax.annotation.Generated;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-07-20T18:39:31.533+0200")
+@Generated(value="Dali", date="2015-07-20T19:42:12.237+0200")
 @StaticMetamodel(ExBar.class)
 public class ExBar_ {
 	public static volatile SingularAttribute<ExBar, Integer> id;
@@ -22,5 +21,5 @@ public class ExBar_ {
 	public static volatile SingularAttribute<ExBar, Double> wap;
 	public static volatile SingularAttribute<ExBar, Long> volume;
 	public static volatile SingularAttribute<ExBar, Integer> count;
-	public static volatile SingularAttribute<ExBar, ExContract> contract;
+	public static volatile SingularAttribute<ExBar, ExContractBars> root;
 }

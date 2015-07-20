@@ -7,6 +7,9 @@
 	<class>com.munch.exchange.model.core.ib.bar.ExBar</class>
 	<class>com.munch.exchange.model.core.ib.bar.ExSecondeBar</class>
 	<class>com.munch.exchange.model.core.ib.bar.ExMinuteBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.ExHourBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.ExDayBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.ExContractBars</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

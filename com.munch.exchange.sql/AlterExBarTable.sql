@@ -1,1 +1,2 @@
-DROP TABLE exbar
+DROP TABLE exbar;
+DROP TABLE excontractbars;

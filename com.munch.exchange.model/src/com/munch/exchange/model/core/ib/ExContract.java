@@ -23,6 +23,8 @@ import com.ib.controller.NewContractDetails;
 import com.ib.controller.Types.Right;
 import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
+import com.munch.exchange.model.core.ib.bar.ExBar;
+import com.munch.exchange.model.core.ib.bar.ExContractBars;
 
 
 @Entity
@@ -37,6 +39,9 @@ public class ExContract implements Serializable{
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private int id;
+	
+	@OneToMany(mappedBy="contract")
+	private List<ExContractBars> bars;
 	
 	
 	private int    conId;
@@ -210,6 +215,13 @@ public class ExContract implements Serializable{
 	public void setId(int id) {
 	this.id = id;}
 	
+	public List<ExContractBars> getBars() {
+		return bars;
+	}
+	public void setBars(List<ExContractBars> bars) {
+		this.bars = bars;
+	}
+
 	public int getConId() {
 		return conId;
 	}
