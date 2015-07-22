@@ -3,6 +3,7 @@ package com.munch.exchange.model.core.ib.bar;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
@@ -15,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 
 import com.ib.controller.Bar;
@@ -54,6 +56,9 @@ public abstract  class ExBar implements Serializable{
 	@JoinColumn(name="ROOT_ID")
 	private ExContractBars root;
 	
+	@OneToMany(mappedBy="parent")
+	private List<ExBar> childBars;
+	
 	
 	private  long time;
 	private  double high;
@@ -90,7 +95,15 @@ public abstract  class ExBar implements Serializable{
 		this.count = bar.count();
 	}
 	
+	
 
+	public List<ExBar> getChildBars() {
+		return childBars;
+	}
+
+	public void setChildBars(List<ExBar> childBars) {
+		this.childBars = childBars;
+	}
 
 	public ExContractBars getRoot() {
 		return root;

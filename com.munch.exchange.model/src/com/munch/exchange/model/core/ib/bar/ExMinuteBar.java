@@ -27,18 +27,6 @@ public class ExMinuteBar extends ExBar {
 		// TODO Auto-generated constructor stub
 	}
 	
-	@OneToMany(mappedBy="parent")
-	private List<ExBar> secondBars;
-
-
-	public List<ExBar> getSecondBars() {
-		return secondBars;
-	}
-
-	public void setSecondBars(List<ExBar> secondBars) {
-		this.secondBars = secondBars;
-	}
-	
 	
 	
 	

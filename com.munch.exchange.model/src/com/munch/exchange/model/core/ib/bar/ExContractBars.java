@@ -27,21 +27,10 @@ public class ExContractBars extends ExBar {
 	@JoinColumn(name="CONTRACT_ID")
 	private ExContract contract;
 	
-	@OneToMany(mappedBy="parent")
-	private List<ExBar> dayBars;
-	
 	
 	@OneToMany(mappedBy="root")
 	private List<ExBar> allBars;
 	
-
-	public List<ExBar> getDayBars() {
-		return dayBars;
-	}
-
-	public void setDayBars(List<ExBar> dayBars) {
-		this.dayBars = dayBars;
-	}
 
 	public ExContract getContract() {
 		return contract;

@@ -9,10 +9,11 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-07-20T21:52:13.332+0200")
+@Generated(value="Dali", date="2015-07-22T21:17:42.637+0200")
 @StaticMetamodel(ExContract.class)
 public class ExContract_ {
 	public static volatile SingularAttribute<ExContract, Integer> id;
+	public static volatile ListAttribute<ExContract, ExContractBars> bars;
 	public static volatile SingularAttribute<ExContract, Integer> conId;
 	public static volatile SingularAttribute<ExContract, String> symbol;
 	public static volatile SingularAttribute<ExContract, SecType> secType;
@@ -59,5 +60,4 @@ public class ExContract_ {
 	public static volatile SingularAttribute<ExContract, String> nextOptionType;
 	public static volatile SingularAttribute<ExContract, Boolean> nextOptionPartial;
 	public static volatile SingularAttribute<ExContract, String> notes;
-	public static volatile ListAttribute<ExContract, ExContractBars> bars;
 }
