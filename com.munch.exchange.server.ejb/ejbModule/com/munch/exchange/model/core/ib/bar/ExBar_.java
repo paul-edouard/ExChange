@@ -7,10 +7,10 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-07-22T21:17:42.271+0200")
+@Generated(value="Dali", date="2015-08-02T14:00:30.954+0200")
 @StaticMetamodel(ExBar.class)
 public class ExBar_ {
-	public static volatile SingularAttribute<ExBar, Integer> id;
+	public static volatile SingularAttribute<ExBar, Long> id;
 	public static volatile SingularAttribute<ExBar, WhatToShow> type;
 	public static volatile SingularAttribute<ExBar, ExBar> parent;
 	public static volatile SingularAttribute<ExBar, BarSize> size;

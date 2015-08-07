@@ -2,7 +2,7 @@ package com.munch.exchange.services.ejb.interfaces;
 
 import com.munch.exchange.model.core.ib.ExTopMktData;
 
-public interface ITopMktDataProvider {
+public interface IIBTopMktDataProvider {
 	
 	void init();
 	void close();

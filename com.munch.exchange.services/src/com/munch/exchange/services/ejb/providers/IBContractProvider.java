@@ -8,15 +8,15 @@ import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ib.ExContract;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
-import com.munch.exchange.services.ejb.interfaces.IContractProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
 
-public class ContractProvider implements IContractProvider {
+public class IBContractProvider implements IIBContractProvider {
 	
 	
 	BeanRemote<ContractInfoBeanRemote> beanRemote;
 	
 
-	public ContractProvider() {
+	public IBContractProvider() {
 	}
 
 	@Override

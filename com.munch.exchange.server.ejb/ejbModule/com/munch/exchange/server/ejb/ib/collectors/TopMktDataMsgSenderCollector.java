@@ -39,7 +39,7 @@ public enum TopMktDataMsgSenderCollector {
 		log.info("Initialization");
 		List<ExContract> list=em.createNamedQuery("ExContract.getAll", ExContract.class).getResultList();
 		for(ExContract contract : list){
-			log.info(contract.toString());
+			//log.info(contract.toString());
 			addSender(contract);
 		}
 	}
@@ -49,6 +49,17 @@ public enum TopMktDataMsgSenderCollector {
 		TopMktDataMsgSender sender=new TopMktDataMsgSender(contract,connectionFactory,destination);
 		ConnectionBean.INSTANCE.controller().reqTopMktData(contract.getNewContract(), "", false, sender);
 		senders.put(contract.getId(), sender);
+	}
+	
+	public boolean removeSender(ExContract contract){
+		if(senders.containsKey(contract.getId())){
+			ConnectionBean.INSTANCE.controller().cancelTopMktData(senders.get(contract.getId()));
+			senders.remove(contract.getId());
+			return true;
+		}
+		
+		return false;
+		
 	}
 	
 	public void clearAll(){

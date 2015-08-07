@@ -3,9 +3,12 @@ package com.munch.exchange.model.core.ib.bar;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorColumn;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -39,10 +42,15 @@ public abstract  class ExBar implements Serializable{
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	private int id;
+	private long id;
 	
 	@Enumerated(EnumType.STRING)
 	private WhatToShow type;
+	
+	/*
+	@EmbeddedId
+	private ExBarPK pk;
+	*/
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="PARENT_ID")
@@ -56,7 +64,7 @@ public abstract  class ExBar implements Serializable{
 	@JoinColumn(name="ROOT_ID")
 	private ExContractBars root;
 	
-	@OneToMany(mappedBy="parent")
+	@OneToMany(mappedBy="parent",cascade=CascadeType.ALL)
 	private List<ExBar> childBars;
 	
 	
@@ -74,7 +82,7 @@ public abstract  class ExBar implements Serializable{
 	}
 	
 	public ExBar( long time, double high, double low, double open, double close, double wap, long volume, int count) {
-		this.time = time;
+		this.setTime( time  );
 		this.high = high;
 		this.low = low;
 		this.open = open;
@@ -85,7 +93,11 @@ public abstract  class ExBar implements Serializable{
 	}
 	
 	public ExBar(Bar bar){
-		this.time = bar.time();
+		this.init(bar);
+	}
+	
+	public void init(Bar bar){
+		this.setTime( bar.time());
 		this.high = bar.high();
 		this.low = bar.low();
 		this.open = bar.open();
@@ -95,9 +107,49 @@ public abstract  class ExBar implements Serializable{
 		this.count = bar.count();
 	}
 	
+	public void copyData(ExBar bar){
+		this.setTime( bar.time);
+		this.high = bar.high;
+		this.low = bar.low;
+		this.open = bar.open;
+		this.close = bar.close;
+		this.wap = bar.wap;
+		this.volume = bar.volume;
+		this.count = bar.count;
+		
+		this.size=bar.size;
+		this.type=bar.type;
+		this.id=bar.id;
+	}
 	
+	
+	public void setRootAndParent(ExContractBars root,ExBar parent){
+		setParent(parent);
+		setRoot(root);
+		setType(root.getType());
+		
+		parent.getChildBars().add(this);
+		//root.getAllBars().add(this);
+		
+	}
+	
+	public abstract long getIntervall();
+	
+	
+	/*
+	public ExBarPK getPk() {
+		return pk;
+	}
+
+	public void setPk(ExBarPK pk) {
+		this.pk = pk;
+	}
+	*/
 
 	public List<ExBar> getChildBars() {
+		if(childBars==null || childBars.isEmpty()){
+			childBars=new LinkedList<ExBar>();
+		}
 		return childBars;
 	}
 
@@ -111,6 +163,9 @@ public abstract  class ExBar implements Serializable{
 
 	public void setRoot(ExContractBars root) {
 		this.root = root;
+		setType(root.getType());
+		
+		//root.getAllBars().add(this);
 	}
 
 	public BarSize getSize() {
@@ -121,24 +176,33 @@ public abstract  class ExBar implements Serializable{
 		this.size = size;
 	}
 
-	public WhatToShow getType() {	return type;}
+	public WhatToShow getType() {
+		return type;
+		//return pk.getType();
+	}
 
-	public void setType(WhatToShow type) {this.type = type;}
+	public void setType(WhatToShow type) {
+		this.type = type;
+		//this.pk.setType(type);
+	}
+	
+	
+	public long getId() {return id;}
 
-	public int getId() {return id;}
-
-	public void setId(int id) {this.id = id;}
-
+	public void setId(long id) {this.id = id;}
+	
 	public ExBar getParent() {return parent;}
 
 	public void setParent(ExBar parent) {this.parent = parent;}
 
 	public long getTime() {
-		return time;
+		return this.time;
+		//return this.pk.getTime();
 	}
 
 	public void setTime(long time) {
 		this.time = time;
+		//this.pk.setTime(time);
 	}
 	
 	public double getHigh() {
@@ -199,44 +263,24 @@ public abstract  class ExBar implements Serializable{
 
 	public String formattedTime() {
 		return Formats.fmtDate( this.time * 1000);
+		//return Formats.fmtDate( this.pk.getTime() * 1000);
 	}
 	
 	/** Format for query. */
 	public static String format( long ms) {
 		return FORMAT.format( new Date( ms) );
 	}
-	
-	
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + id;
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ExBar other = (ExBar) obj;
-		if (id != other.id)
-			return false;
-		return true;
-	}
 
 	@Override
 	public String toString() {
-		return "ExBar [id=" + id + ", whatToShow=" + type + ", time="
-				+ time + ", high=" + high + ", low=" + low + ", open=" + open
-				+ ", close=" + close + ", wap=" + wap + ", volume=" + volume
-				+ ", count=" + count + "]";
+		return "ExBar [id=" + id + ", type=" + type + ", parent=" + parent
+				+ ", size=" + size + ", root=" + root + ", time=" + time +", formated time="+this.formattedTime()+ ", high=" + high + ", low="
+				+ low + ", open=" + open + ", close=" + close + ", wap=" + wap
+				+ ", volume=" + volume + ", count=" + count + "]";
 	}
+	
+	
+
 	
 	
 	

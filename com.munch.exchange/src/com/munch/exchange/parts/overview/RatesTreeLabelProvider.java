@@ -1,4 +1,4 @@
-package com.munch.exchange.parts;
+package com.munch.exchange.parts.overview;
 
 import javax.inject.Inject;
 
@@ -6,11 +6,14 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 
+import com.ib.controller.Types.SecType;
 import com.munch.exchange.IImageKeys;
 import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
-import com.munch.exchange.parts.RatesTreeContentProvider.RateContainer;
+import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.parts.overview.RatesTreeContentProvider.ExContractContainer;
+import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IBundleResourceLoader;
 
 
@@ -33,8 +36,7 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 	@Inject
 	IBundleResourceLoader loader;
 	
-	
-	
+
 	
 	private Image getRateContainerImage() {
 		if(rateContainerImage==null){
@@ -94,12 +96,28 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 
 	@Override
 	public void update(ViewerCell cell) {
+		
+		//Set cell label for rates
+		setCellLabelForRate(cell);
+		//Set cell Image for rates
+		setCellImageForRate(cell);
+		
+		//Set cell label for contracts
+		setCellLabelForContract(cell);
+		//Set cell image for contracts
+		setCellImageForContract(cell);
+		
+		super.update(cell);
+	}
+	
+	
+	private void setCellLabelForRate(ViewerCell cell){
 		Object element=cell.getElement();
 		//Text
 		if(element instanceof RateContainer){
 			RateContainer rate=(RateContainer) element;
 			if(rate.getLoadingState().isEmpty()){
-				cell.setText( rate.getName()+ " ["+rate.getChilds().size()+"]");
+				cell.setText( rate.getName()+ " ["+rate.getChildren().size()+"]");
 			}
 			else{
 				cell.setText( rate.getName()+ ": "+rate.getLoadingState());
@@ -125,6 +143,10 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 			ExchangeRate rate=(ExchangeRate) element;
 			cell.setText(rate.getFullName());
 		}
+	}
+	
+	private void setCellImageForRate(ViewerCell cell){
+		Object element=cell.getElement();
 		
 		//Image
 		if(element instanceof RateContainer){
@@ -152,9 +174,40 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 		else{
 			cell.setImage(getRateImage());
 		}
-		
-		
-		super.update(cell);
 	}
 
+	private void setCellLabelForContract(ViewerCell cell){
+		Object element=cell.getElement();
+		//Text
+		if(element instanceof ExContractContainer){
+			ExContractContainer container=(ExContractContainer) element;
+			cell.setText(container.getLongName()+ " ["+container.getChildren().size()+"]");
+		}
+		else if(element instanceof ExContract){
+			ExContract contract=(ExContract) element;
+			cell.setText(contract.getLongName()+" ["+contract.getExchange()+", "+contract.getCurrency()+"]");
+		}
+		
+	}
+	
+	private void setCellImageForContract(ViewerCell cell){
+		Object element=cell.getElement();
+		
+		//Image
+		if(element instanceof ExContractContainer){
+			ExContractContainer container=(ExContractContainer) element;
+			if(container.getSecType()==SecType.STK){
+				cell.setImage(getRateStocksImage());
+			}
+			else if(container.getSecType()==SecType.IND){
+				cell.setImage(getRateIndicesImage());
+			}
+			else if(container.getSecType()==SecType.OPT){
+				cell.setImage(getRateFundsImage());
+			}
+			else{
+				cell.setImage(getRateStocksImage());
+			}
+		}
+	}
 }

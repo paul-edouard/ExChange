@@ -1,4 +1,4 @@
-package com.munch.exchange.parts;
+package com.munch.exchange.parts.overview;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;

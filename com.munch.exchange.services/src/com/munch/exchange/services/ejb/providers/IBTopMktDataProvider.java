@@ -21,14 +21,14 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 
 import com.munch.exchange.model.core.ib.ExTopMktData;
-import com.munch.exchange.services.ejb.interfaces.ITopMktDataProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataProvider;
 import com.munch.exchange.services.ejb.messages.Constants;
 
-public class TopMktDataProvider implements ITopMktDataProvider, MessageListener{
+public class IBTopMktDataProvider implements IIBTopMktDataProvider, MessageListener{
 	
 	
 	
-	private static final Logger log = Logger.getLogger(TopMktDataProvider.class.getName());
+	private static final Logger log = Logger.getLogger(IBTopMktDataProvider.class.getName());
 	 
 	
 	private ConnectionFactory connectionFactory;

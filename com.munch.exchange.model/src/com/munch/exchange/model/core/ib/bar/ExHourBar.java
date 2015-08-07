@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib.bar;
 
 import javax.persistence.Entity;
+
 import com.ib.controller.Bar;
 import com.ib.controller.Types.BarSize;
 
@@ -23,6 +24,11 @@ public class ExHourBar extends ExBar{
 	public ExHourBar(Bar bar) {
 		super(bar);
 		this.setSize(BarSize._1_hour);
+	}
+	
+	@Override
+	public long getIntervall() {
+		return 1000*60*60;
 	}
 	
 	

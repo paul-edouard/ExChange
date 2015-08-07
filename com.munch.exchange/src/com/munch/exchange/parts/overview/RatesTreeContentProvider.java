@@ -1,6 +1,7 @@
-package com.munch.exchange.parts;
+package com.munch.exchange.parts.overview;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -12,7 +13,9 @@ import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.jfree.chart.plot.RainbowPalette;
 
+import com.ib.controller.Types.SecType;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.Commodity;
 import com.munch.exchange.model.core.Currency;
@@ -21,7 +24,9 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.ib.ExContract;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
 
 public class RatesTreeContentProvider implements IStructuredContentProvider,
 		ITreeContentProvider {
@@ -35,14 +40,17 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 	public static String ECONOMICDATA_CONTAINER="Economic Datas";
 	
 	
-	RateContainer root;
-	
+
 	@Inject
 	IExchangeRateProvider exchangeRateProvider;
 	
 	@Inject
 	private IEventBroker eventBroker;
 	
+	@Inject
+	private IIBContractProvider contractProvider;
+	
+	RootContainer rootContainer;
 	
 	RateLoader loader=new RateLoader();
 
@@ -67,8 +75,17 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 	public Object[] getChildren(Object parentElement) {
 		if(parentElement instanceof RateContainer){
 			RateContainer cont=(RateContainer) parentElement;
-			return cont.getChilds().toArray();
+			return cont.getChildren().toArray();
 		}
+		else if(parentElement instanceof RootContainer){
+			RootContainer root=(RootContainer) parentElement;
+			return root.getChildren();
+		}
+		else if(parentElement instanceof ExContractContainer){
+			ExContractContainer root=(ExContractContainer) parentElement;
+			return root.getChildren().toArray();
+		}
+		
 		return null;
 	}
 
@@ -82,15 +99,25 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 	public boolean hasChildren(Object element) {
 		if(element instanceof RateContainer){
 			RateContainer cont=(RateContainer) element;
-			return !cont.getChilds().isEmpty();
-			
+			return !cont.getChildren().isEmpty();
 		}
+		else if(element instanceof RootContainer){
+			return true;
+		}
+		else if(element instanceof ExContractContainer){
+			ExContractContainer cont=(ExContractContainer) element;
+			return !cont.getChildren().isEmpty();
+		}
+		
+		
 		return false;
 	}
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-		if(inputElement instanceof RateContainer){
+		if(inputElement instanceof RateContainer
+				|| inputElement instanceof RootContainer
+				|| inputElement instanceof ExContractContainer){
 			return this.getChildren(inputElement);
 		}
 		return null;
@@ -101,52 +128,58 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 	 */
 	public void resetRoot(){
 		
-		if(root!=null){
-			root.getChilds().clear();
+		if(rootContainer!=null){
+			rootContainer.getRateRoot().getChildren().clear();
+			rootContainer.getExContractRoot().getChildren().clear();
+			//rateRoot.getChilds().clear();
 		}
 		else{
-			root=new RateContainer("ROOT", null);
+			rootContainer =new RootContainer();
+			//rateRoot=new RateContainer("ROOT", null);
 		}
+		
+		rootContainer.loadAllContracts();
+		
 		loader.schedule();
 	}
 	
 	
-	public RateContainer getRoot() {
-		if(root!=null)return root;
+	public RootContainer getRoot() {
+		if(rootContainer!=null)return rootContainer;
 		
 		resetRoot();
-		return root;
+		return rootContainer;
 	}
 	
 	public RateContainer addExChangeRate(ExchangeRate rate){
 		
 		RateContainer container=null;
 		if(rate instanceof Stock){
-			container=(RateContainer) root.getChild(STOCKS_CONTAINER);
-			container.getChilds().add(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(STOCKS_CONTAINER);
+			container.getChildren().add(rate);
 			
 		}
 		else if(rate instanceof Indice){
-			container=(RateContainer) root.getChild(INDICES_CONTAINER);
-			container.getChilds().add(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(INDICES_CONTAINER);
+			container.getChildren().add(rate);
 			
 		}
 		else if(rate instanceof Commodity){
-			container=(RateContainer) root.getChild(COMMODITIES_CONTAINER);
-			container.getChilds().add(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(COMMODITIES_CONTAINER);
+			container.getChildren().add(rate);
 			
 		}
 		else if(rate instanceof Fund){
-			container=(RateContainer) root.getChild(FUNDS_CONTAINER);
-			container.getChilds().add(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(FUNDS_CONTAINER);
+			container.getChildren().add(rate);
 		}
 		else if(rate instanceof Currency){
-			container=(RateContainer) root.getChild(CURRENCIES_CONTAINER);
-			container.getChilds().add(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(CURRENCIES_CONTAINER);
+			container.getChildren().add(rate);
 		}
 		else if(rate instanceof EconomicData){
-			container=(RateContainer) root.getChild(ECONOMICDATA_CONTAINER);
-			container.getChilds().add(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(ECONOMICDATA_CONTAINER);
+			container.getChildren().add(rate);
 		}
 		
 		return container;
@@ -155,47 +188,133 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 	public void deleteExChangeRate(ExchangeRate rate){
 		RateContainer container=null;
 		if(rate instanceof Stock){
-			container=(RateContainer) root.getChild(STOCKS_CONTAINER);
-			container.getChilds().remove(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(STOCKS_CONTAINER);
+			container.getChildren().remove(rate);
 		}
 		else if(rate instanceof Indice){
-			container=(RateContainer) root.getChild(INDICES_CONTAINER);
-			container.getChilds().remove(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(INDICES_CONTAINER);
+			container.getChildren().remove(rate);
 			
 		}
 		else if(rate instanceof Commodity){
-			container=(RateContainer) root.getChild(COMMODITIES_CONTAINER);
-			container.getChilds().remove(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(COMMODITIES_CONTAINER);
+			container.getChildren().remove(rate);
 			
 		}
 		else if(rate instanceof Fund){
-			container=(RateContainer) root.getChild(FUNDS_CONTAINER);
-			container.getChilds().remove(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(FUNDS_CONTAINER);
+			container.getChildren().remove(rate);
 		}
 		else if(rate instanceof Currency){
-			container=(RateContainer) root.getChild(CURRENCIES_CONTAINER);
-			container.getChilds().remove(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(CURRENCIES_CONTAINER);
+			container.getChildren().remove(rate);
 		}
 		else if(rate instanceof EconomicData){
-			container=(RateContainer) root.getChild(ECONOMICDATA_CONTAINER);
-			container.getChilds().remove(rate);
+			container=(RateContainer) rootContainer.getRateRoot().getChild(ECONOMICDATA_CONTAINER);
+			container.getChildren().remove(rate);
+		}
+	}
+	
+	
+	public class RootContainer{
+		protected RateContainer rateRoot;
+		protected ExContractContainer exContractRoot;
+		
+		public RootContainer(){
+			rateRoot=new RateContainer("Rates", this);
+			exContractRoot =new ExContractContainer();
+			exContractRoot.setParent(this);
+			exContractRoot.setLongName("Contracts");
+		}
+		
+		public RateContainer getRateRoot() {
+			return rateRoot;
+		}
+		public void setRateRoot(RateContainer rateRoot) {
+			this.rateRoot = rateRoot;
+		}
+		public ExContractContainer getExContractRoot() {
+			return exContractRoot;
+		}
+		public void setExContractRoot(ExContractContainer exContractRoot) {
+			this.exContractRoot = exContractRoot;
+		}
+		
+		void loadAllContracts(){
+			List<ExContract> contracts=contractProvider.getAll();
+			for(ExContract contract:contracts){
+				exContractRoot.addExContract(contract);
+			}
+		}
+		
+		public Object[] getChildren(){
+			Object[] children=new Object[2];
+			children[0]=exContractRoot;
+			children[1]=rateRoot;
+			return children;
+		}
+		
+	}
+	
+	public class ExContractContainer extends ExContract{
+		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -7657341323960133574L;
+		
+		protected Object parent;
+		protected LinkedList<ExContract> children=new LinkedList<ExContract>();
+		public Object getParent() {
+			return parent;
+		}
+		public void setParent(Object parent) {
+			this.parent = parent;
+		}
+		public LinkedList<ExContract> getChildren() {
+			return children;
+		}
+		public void setChilds(LinkedList<ExContract> children) {
+			this.children = children;
+		}
+		
+		
+		private ExContractContainer getChild(SecType type){
+			for(ExContract child:children){
+				if(child.getSecType()==type && child instanceof ExContractContainer)
+					return (ExContractContainer)child;
+			}
+			
+			ExContractContainer newChild=new ExContractContainer();
+			newChild.setSecType(type);
+			newChild.setLongName(type.getApiString());
+			children.add(newChild);
+			
+			return newChild;
+			
+		}
+		
+		public void addExContract(ExContract contract){
+			SecType type=contract.getSecType();
+			ExContractContainer childContainer=this.getChild(type);
+			childContainer.getChildren().add(contract);
 		}
 	}
 	
 	
 	public class RateContainer extends ExchangeRate{
 		
-		protected ExchangeRate parent;
-		protected LinkedList<ExchangeRate> childs=new LinkedList<ExchangeRate>();
+		protected Object parent;
+		protected LinkedList<ExchangeRate> children=new LinkedList<ExchangeRate>();
 		protected String loadingState="";
 		
-		public RateContainer(String name, ExchangeRate parent) {
+		public RateContainer(String name, Object parent) {
 			super();
 			this.name = name;
 			this.parent = parent;
 			if(this.parent!=null && parent instanceof RateContainer){
 				RateContainer p=(RateContainer) this.parent;
-				p.getChilds().add(this);
+				p.getChildren().add(this);
 			}
 		}
 		public String getName() {
@@ -204,18 +323,18 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 		public void setName(String name) {
 			this.name = name;
 		}
-		public ExchangeRate getParent() {
+		public Object getParent() {
 			return parent;
 		}
-		public void setParent(ExchangeRate parent) {
+		public void setParent(Object parent) {
 			this.parent = parent;
 		}
-		public LinkedList<ExchangeRate> getChilds() {
-			return childs;
+		public LinkedList<ExchangeRate> getChildren() {
+			return children;
 		}
 		
 		public void setChilds(LinkedList<ExchangeRate> childs) {
-			this.childs = childs;
+			this.children = childs;
 		}
 		public String getLoadingState() {
 			return loadingState;
@@ -225,7 +344,7 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 		}
 		
 		public ExchangeRate getChild(String name){
-			for(ExchangeRate rate:this.getChilds()){
+			for(ExchangeRate rate:this.getChildren()){
 				if(rate.getName().equals(name))
 					return rate;
 			}
@@ -234,8 +353,6 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			return child;
 			
 		}
-		
-		
 		
 	}
 	
@@ -305,7 +422,7 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 		
 		private void loadRateContainer(IProgressMonitor monitor, String container_name,Class<? extends ExchangeRate> clazz){
 			monitor.subTask("Loading "+container_name);
-			RateContainer container=(RateContainer) root.getChild(container_name);
+			RateContainer container=(RateContainer) rootContainer.getRateRoot().getChild(container_name);
 			
 			LoadingStateChanger changer=new LoadingStateChanger(container);
 			

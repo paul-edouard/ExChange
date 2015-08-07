@@ -1,5 +1,5 @@
  
-package com.munch.exchange.parts;
+package com.munch.exchange.parts.overview;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -46,6 +46,8 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.parts.MyMDirtyable;
+import com.munch.exchange.parts.RateEditorPart;
 import com.munch.exchange.services.IBundleResourceLoader;
 
 
@@ -137,9 +139,7 @@ public class RatesOverviewPart {
 		treeViewer.addDragSupport(operations, transferTypes , new RatesTreeDragSourceListener(treeViewer));
 
 		
-		
 		menuService.registerContextMenu(treeViewer.getTree(), "com.munch.exchange.popupmenu.rates_overview");
-		
 		
 		//Create and start the quote loader
 		quoteLoader=ContextInjectionFactory.make( QuoteLoader.class,context);

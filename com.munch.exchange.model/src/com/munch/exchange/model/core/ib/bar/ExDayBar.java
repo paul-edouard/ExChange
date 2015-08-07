@@ -1,9 +1,6 @@
 package com.munch.exchange.model.core.ib.bar;
 
-import java.util.List;
-
 import javax.persistence.Entity;
-import javax.persistence.OneToMany;
 
 import com.ib.controller.Bar;
 import com.ib.controller.Types.BarSize;
@@ -31,6 +28,10 @@ public class ExDayBar extends ExBar{
 		this.setSize(BarSize._1_day);
 	}
 
-
+	
+	@Override
+	public long getIntervall() {
+		return 1000*60*60*24;
+	}
 
 }

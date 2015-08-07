@@ -14,7 +14,7 @@ public class StudentMB {
 		System.out.println("Hallo");
 		System.out.println(studentDAORemote);
 		Student student =new Student();
-		student.setFirstName("Paul5");
+		student.setFirstName("Paul6");
 		student.setLastName("Munch");
 		student.setStandert("X");
 		student.setPhone("Phone");

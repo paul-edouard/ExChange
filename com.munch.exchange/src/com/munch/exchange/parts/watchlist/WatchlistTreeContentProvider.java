@@ -9,7 +9,7 @@ import org.eclipse.jface.viewers.Viewer;
 
 import com.munch.exchange.model.core.watchlist.Watchlist;
 import com.munch.exchange.model.core.watchlist.WatchlistEntity;
-import com.munch.exchange.parts.RatesTreeContentProvider.RateContainer;
+import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IExchangeRateProvider;
 
 public class WatchlistTreeContentProvider implements

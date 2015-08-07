@@ -47,7 +47,7 @@ public class BeanRemote<T> {
         
         System.out.println("context: "+context);
        
-        final String appName = "ServerDemoProj";
+        final String appName = "com.munch.exchange.server";
        
         final String moduleName = "ServerTestEJB";
        

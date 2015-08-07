@@ -28,7 +28,10 @@ public class ExMinuteBar extends ExBar {
 	}
 	
 	
-	
+	@Override
+	public long getIntervall() {
+		return 1000*60;
+	}
 	
 	
 }

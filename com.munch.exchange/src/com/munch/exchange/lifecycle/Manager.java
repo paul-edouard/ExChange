@@ -1,5 +1,6 @@
 package com.munch.exchange.lifecycle;
 
+
 import java.util.List;
 
 import javax.inject.Inject;
@@ -16,15 +17,19 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
+import org.jfree.util.Log;
 import org.osgi.service.prefs.BackingStoreException;
 
 import com.munch.exchange.dialog.WorkspaceDialog;
 import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.bar.ExBar;
+import com.munch.exchange.model.core.ib.bar.ExContractBars;
+import com.munch.exchange.model.core.ib.bar.ExSecondeBar;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IWatchlistProvider;
-import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
-import com.munch.exchange.services.ejb.interfaces.IContractProvider;
-import com.munch.exchange.services.ejb.interfaces.ITopMktDataProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataProvider;
 
 @SuppressWarnings("restriction")
 public class Manager {
@@ -63,23 +68,22 @@ public class Manager {
 			IApplicationContext appContext, Display display,
 			IExchangeRateProvider exchangeRateProvider,
 			IWatchlistProvider watchlistProvider,
-			IContractProvider contractProvider,
-			ITopMktDataProvider topMktDataProvider) {
+			IIBContractProvider contractProvider,
+			IIBTopMktDataProvider topMktDataProvider,
+			IIBHistoricalDataProvider ibHistoricalDataProvider) {
 		
 		
-		BasicConfigurator.configure();
+		//BasicConfigurator.configure();
 		//BasicConfigurator.
 		
 		contractProvider.init();
 		topMktDataProvider.init();
+		ibHistoricalDataProvider.init();
 		
+		//testIBProviders(contractProvider, topMktDataProvider, ibHistoricalDataProvider);
 		
 		final Shell shell = new Shell(SWT.TOOL | SWT.NO_TRIM);
 		
-		/*
-		boolean res = MessageDialog.openConfirm(shell, "Delete rate?",
-				"Do you really want to delete the project: \""+"\"?");
-		*/
 		WorkspaceDialog dialog = new WorkspaceDialog(shell);
 		if (workspaces != null) {
 			dialog.setWorkspaces(workspaces);
@@ -119,9 +123,31 @@ public class Manager {
 		
 	}
 	
+	/*
+	private void testIBProviders(IIBContractProvider contractProvider,
+			IIBTopMktDataProvider topMktDataProvider,
+			IIBHistoricalDataProvider ibHistoricalDataProvider){
+		
+		System.out.println("Test IB started!: ");
+		
+		//Log.info("Test IB started!: ");
+		
+		List<ExContract> contracts=contractProvider.getAll();
+		for(ExContract exContract:contracts){
+			System.out.println("Contract: "+exContract.toString());
+			List<ExContractBars> bars=ibHistoricalDataProvider.getAllExContractBars(exContract);
+			if(bars==null)continue;
+			for(ExContractBars contractBar:bars){
+				ExBar bar=ibHistoricalDataProvider.getLastBar(contractBar, ExSecondeBar.class);
+				Log.info(bar.toString());
+			}
+		}
+	}
+	*/
+	
 	
 	@PreSave
-	public void preSave(ITopMktDataProvider topMktDataProvider){
+	public void preSave(IIBTopMktDataProvider topMktDataProvider){
 		System.out.println("Application is going to close!");
 		topMktDataProvider.close();
 	}

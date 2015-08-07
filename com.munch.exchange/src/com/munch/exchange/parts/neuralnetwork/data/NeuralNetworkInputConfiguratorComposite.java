@@ -56,8 +56,8 @@ import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesGroup;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.parts.InfoPart;
-import com.munch.exchange.parts.RatesTreeDragSourceListener;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkConfigEditor;
+import com.munch.exchange.parts.overview.RatesTreeDragSourceListener;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.INeuralNetworkProvider;
 

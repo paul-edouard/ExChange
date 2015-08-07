@@ -32,10 +32,10 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.parts.MyMDirtyable;
 import com.munch.exchange.parts.RateEditorPart;
-import com.munch.exchange.parts.RatesOverviewPart;
-import com.munch.exchange.parts.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.parts.neuralnetwork.NeuralNetworkConfigEditor;
 import com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsPart;
+import com.munch.exchange.parts.overview.RatesOverviewPart;
+import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IBundleResourceLoader;
 
 public class OpenNNConfigEditorHandler {

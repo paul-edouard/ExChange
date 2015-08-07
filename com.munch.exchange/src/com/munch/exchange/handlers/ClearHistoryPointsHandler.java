@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
-import com.munch.exchange.parts.RatesTreeContentProvider.RateContainer;
+import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IHistoricalDataProvider;
 

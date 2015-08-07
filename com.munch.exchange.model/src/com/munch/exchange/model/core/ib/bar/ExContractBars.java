@@ -1,14 +1,16 @@
 package com.munch.exchange.model.core.ib.bar;
 
+import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.ExContract;
 
 
@@ -28,8 +30,21 @@ public class ExContractBars extends ExBar {
 	private ExContract contract;
 	
 	
-	@OneToMany(mappedBy="root")
+	@OneToMany(mappedBy="root",cascade=CascadeType.ALL)
 	private List<ExBar> allBars;
+	
+	
+	
+	public ExContractBars(ExContract contract, WhatToShow whatToShow) {
+		super();
+		this.contract = contract;
+		this.setType(whatToShow);
+		this.setTime(new Date().getTime());
+	}
+	
+	public ExContractBars() {
+		super();
+	}
 	
 
 	public ExContract getContract() {
@@ -48,7 +63,14 @@ public class ExContractBars extends ExBar {
 	public void setAllBars(List<ExBar> allBars) {
 		this.allBars = allBars;
 	}
-
 	
-
+	@Override
+	public long getIntervall() {
+		return Long.MAX_VALUE;
+	}
+	
+	
+	
+	
+	
 }

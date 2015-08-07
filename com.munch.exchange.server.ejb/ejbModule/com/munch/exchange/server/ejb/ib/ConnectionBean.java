@@ -10,6 +10,8 @@ import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSConnectionFactory;
@@ -19,12 +21,18 @@ import javax.jms.Topic;
 import javax.jms.TopicConnectionFactory;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.transaction.UserTransaction;
+
+import org.hibernate.Hibernate;
 
 import com.ib.controller.ApiController;
 import com.ib.controller.ApiConnection.ILogger;
 import com.ib.controller.ApiController.IConnectionHandler;
+import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.ExContract;
 import com.munch.exchange.server.ejb.ib.collectors.TopMktDataMsgSenderCollector;
+import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataBean;
+import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataLoaders;
 
 /**
  * Session Bean implementation class ConnectionBean
@@ -41,14 +49,13 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
 	
 	private final ApiController m_controller = new ApiController( this, this, this);
 	
+	
 	@PersistenceContext
 	private EntityManager em;
 	
-	//@Resource(mappedName = "java:jboss/DefaultJMSConnectionFactory")
 	@Resource(mappedName =Constants.JMS_CONNECTION_FACTORY)
 	private ConnectionFactory connectionFactory;
 	
-	//@Resource(lookup="java:/jms/topic/demoTopic")
 	@Resource(lookup=Constants.JMS_TOPIC_MARKET_DATA)
 	private Topic destination;
 	
@@ -69,6 +76,10 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
     	m_controller.connect( 	Constants.IB_CONNECTION_HOST,
     							Constants.IB_CONNECTION_PORT,
     							Constants.IB_CONNECTION_ID);
+    	
+    	//TODO remove
+    	log.info("Initialization of bars");
+		//historicalDataBean.searchNewBars(null, WhatToShow.BID_ASK);
     }
     
     @PreDestroy
@@ -86,6 +97,15 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
 		log.info("Connected!");
 		//Start the Message sender collector
 		TopMktDataMsgSenderCollector.INSTANCE.init(em,connectionFactory,destination);
+		
+		
+		//Start of the update of the historical data
+		//HistoricalDataCollector.INSTANCE.init(em);
+		
+		//log.info("Initialization of bars");
+		//historicalDataBean.searchNewBars(null, WhatToShow.BID_ASK);
+		
+		
 	}
 
 	@Override

@@ -28,9 +28,9 @@ import org.eclipse.wb.swt.ResourceManager;
 import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.ib.ExContract;
-import com.munch.exchange.parts.RatesTreeContentProvider.RateContainer;
+import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IExchangeRateProvider;
-import com.munch.exchange.services.ejb.interfaces.IContractProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
 
 import org.eclipse.swt.widgets.List;
 import org.eclipse.jface.viewers.IContentProvider;
@@ -57,7 +57,7 @@ public class AddContractDialog extends TitleAreaDialog {
 	private ListViewer listViewerResults;
 	private Button btnSearch;
 	
-	IContractProvider contractProvider;
+	IIBContractProvider contractProvider;
 	private ExContract contract;
 	private Shell shell;
 	
@@ -68,7 +68,7 @@ public class AddContractDialog extends TitleAreaDialog {
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public AddContractDialog(Shell parentShell, IContractProvider contractProvider) {
+	public AddContractDialog(Shell parentShell, IIBContractProvider contractProvider) {
 		super(parentShell);
 		setShellStyle(SWT.RESIZE);
 		setHelpAvailable(false);

@@ -29,6 +29,11 @@ public class ExSecondeBar extends ExBar{
 		super(bar);
 		this.setSize(BarSize._1_secs);
 	}
+
+	@Override
+	public long getIntervall() {
+		return 1000;
+	}
 	
 	
 

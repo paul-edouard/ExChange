@@ -5,7 +5,7 @@ import java.util.List;
 import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ib.ExContract;
 
-public interface IContractProvider {
+public interface IIBContractProvider {
 	
 	//Initialization
 	void init();
