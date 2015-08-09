@@ -220,23 +220,23 @@ public enum HistoricalDataLoaders {
 			recievedBars.clear();
 			finished=false;
 			
-			/*
+			
 			String date=FORMAT.format( new Date(to) );
-			int duration=(int) (to-from)/1000;
+			//int duration=(int) (to-from)/1000;
 			log.info("Date: "+date);
 			ConnectionBean.INSTANCE.controller().reqHistoricalData(bars.getContract().getNewContract(),
-					date, 							//The new Data
-					duration,						//duration in secondes
-					DurationUnit.SECOND,			//secondes
-					barSize,						//bar Size
-					bars.getType(), 				//Ex MIDPOINT, BID, ASK
-					false,							//RTh only
+					date, 									//The new Data
+					calculateDuration(from, to, barSize),	//duration in secondes
+					getDurationUnit(barSize),				//secondes
+					barSize,								//bar Size
+					bars.getType(), 						//Ex MIDPOINT, BID, ASK
+					false,									//RTh only
 					this);
 			
 			requestStartTime=new Date().getTime();
 			log.info("Search for Historical data Finished!");
-			*/
-			recievedBars=createDummyBars(from, to, barSize);
+			
+			//recievedBars=createDummyBars(from, to, barSize);
 			
 			
 			//Wait of the ib answer
@@ -245,6 +245,43 @@ public enum HistoricalDataLoaders {
 			
 			return recievedBars;
 		}
+		
+		private int calculateDuration(long from, long to,BarSize barSize){
+			long diff=to-from;
+			if(barSize==BarSize._1_secs){
+				diff/=1000;
+			}
+			else if(barSize==BarSize._1_min){
+				diff/=1000;
+			}
+			else if(barSize==BarSize._1_hour){
+				diff/=1000;
+			}
+			else if(barSize==BarSize._1_day){
+				diff/=1000*60*60*24;
+			}
+			
+			return (int) diff;
+		}
+		
+		private DurationUnit getDurationUnit(BarSize barSize){
+			if(barSize==BarSize._1_secs){
+				return DurationUnit.SECOND;
+			}
+			else if(barSize==BarSize._1_min){
+				return DurationUnit.SECOND;
+			}
+			else if(barSize==BarSize._1_hour){
+				return DurationUnit.SECOND;
+			}
+			else if(barSize==BarSize._1_day){
+				return DurationUnit.DAY;
+			}
+			
+			return DurationUnit.SECOND;
+		}
+		
+		
 		
 		private List<Bar> createDummyBars(long from, long to,BarSize barSize){
 			//log.info("Creation of dummy bars: "+barSize.toString());
@@ -321,30 +358,8 @@ public enum HistoricalDataLoaders {
 
 		@Override
 		public void historicalData(Bar bar, boolean hasGaps) {
-			recievedBars.add(bar);
-			
-			/*
 			log.info("New bar recieved: "+bar.toString());
-			ExSecondeBar exBar=new ExSecondeBar(bar);
-			
-			log.info("1 Trie to load Bars: ");
-			List<ExBar> allbars=bars.getAllBars();
-			if(allbars==null){
-				allbars=new LinkedList<ExBar>();
-			}
-			try{
-			log.info("2 Trie to load Bars: ");
-			log.info("Number of bars: "+allbars.size());
-			allbars.add(exBar);
-			bars.setAllBars(allbars);
-			exBar.setRoot(bars);
-			exBar.setParent(bars);
-			
-			}catch(Exception ex){
-			log.warning(ex.toString());
-			
-			}
-			*/
+			recievedBars.add(bar);
 			
 			//em.persist(exBar);
 			return ;

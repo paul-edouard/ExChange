@@ -158,6 +158,8 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	log.info("Last day found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastDayBar) ));
     	List<ExBar> newDayBars=new LinkedList<>();
     	if(loader.getTime()-lastDayBar>new ExDayBar().getIntervall()){
+    		//Search the number of years!!
+    		
     		List<Bar> dayBars=loader.loadLastBars(lastDayBar, BarSize._1_day);
     		log.info("Number of new days found: "+dayBars.size());
     		for(Bar bar:dayBars){
@@ -167,11 +169,8 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		}
     	}
     	
-    	//log.info("Now persist the day bars: "+newDayBars.size());
     	if(!newDayBars.isEmpty()){
     		saveBars(newDayBars,true);
-    		//for(ExBar bar:newDayBars)		{em.persist(bar);}
-    		//em.flush();
     	}
     	
     	//----------------------------------
@@ -187,6 +186,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	//----------------------------------
     	//- 3. Search the last minute bars -
     	//----------------------------------
+    	/*
     	List<ExBar> newMinuteBars= loadNewChildBars(	loader,
     													newHourBars,
 														ExMinuteBar.class,
@@ -203,7 +203,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 							BarSize._1_secs,
 							new ExSecondeBar().getIntervall()
 						);
-    	
+    	*/
     	
     }
     
