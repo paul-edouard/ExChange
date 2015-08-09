@@ -24,13 +24,13 @@ import com.ib.controller.NewContractDetails;
 import com.ib.controller.Types.Right;
 import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
-import com.munch.exchange.model.core.ib.bar.ExBar;
-import com.munch.exchange.model.core.ib.bar.ExContractBars;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 
 
 @Entity
-@NamedQuery(name="ExContract.getAll",query="SELECT s FROM ExContract s")
-public class ExContract implements Serializable{
+@NamedQuery(name="IbContract.getAll",query="SELECT s FROM IbContract s")
+public class IbContract implements Serializable{
 
 	/**
 	 * 
@@ -42,7 +42,7 @@ public class ExContract implements Serializable{
 	private int id;
 	
 	@OneToMany(mappedBy="contract",cascade=CascadeType.ALL)
-	private List<ExContractBars> bars;
+	private List<IbBarContainer> bars;
 	
 	
 	private int    conId;
@@ -89,7 +89,7 @@ public class ExContract implements Serializable{
 	private double evMultiplier;
 	
 	@OneToMany(mappedBy="owner")
-	private List<ExTagValue> secIdList;
+	private List<IbTagValue> secIdList;
 	
 	// BOND values
 	private String cusip;
@@ -109,9 +109,9 @@ public class ExContract implements Serializable{
 	private String notes;
 	
 	
-	public ExContract(){}
+	public IbContract(){}
 	
-	public ExContract(NewContractDetails newContractDetails){
+	public IbContract(NewContractDetails newContractDetails){
 		
 		conId=newContractDetails.contract().conid();
 		symbol=newContractDetails.contract().symbol();
@@ -144,10 +144,10 @@ public class ExContract implements Serializable{
 		evRule=newContractDetails.evRule();
 		evMultiplier=newContractDetails.evMultiplier();
 		
-		secIdList=new LinkedList<ExTagValue>();
+		secIdList=new LinkedList<IbTagValue>();
 		if(newContractDetails.secIdList()!=null){
 		for (TagValue tagValue : newContractDetails.secIdList()) {
-			secIdList.add(new ExTagValue(tagValue));
+			secIdList.add(new IbTagValue(tagValue));
 		}
 		}
 		
@@ -176,7 +176,7 @@ public class ExContract implements Serializable{
 	}
 	
 	
-	public boolean compareWith(ExContract contract){
+	public boolean compareWith(IbContract contract){
 		if(conId!=contract.getConId())return false;
 		if(!symbol.equals(contract.getSymbol()))return false;
 		if(!exchange.equals(contract.getExchange()))return false;
@@ -216,10 +216,10 @@ public class ExContract implements Serializable{
 	public void setId(int id) {
 	this.id = id;}
 	
-	public List<ExContractBars> getBars() {
+	public List<IbBarContainer> getBars() {
 		return bars;
 	}
-	public void setBars(List<ExContractBars> bars) {
+	public void setBars(List<IbBarContainer> bars) {
 		this.bars = bars;
 	}
 
@@ -448,11 +448,11 @@ public class ExContract implements Serializable{
 		this.evMultiplier = evMultiplier;
 	}
 
-	public List<ExTagValue> getSecIdList() {
+	public List<IbTagValue> getSecIdList() {
 		return secIdList;
 	}
 
-	public void setSecIdList(Vector<ExTagValue> secIdList) {
+	public void setSecIdList(Vector<IbTagValue> secIdList) {
 		this.secIdList = secIdList;
 	}
 
@@ -591,7 +591,7 @@ public class ExContract implements Serializable{
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ExContract other = (ExContract) obj;
+		IbContract other = (IbContract) obj;
 		if (id != other.id)
 			return false;
 		return true;

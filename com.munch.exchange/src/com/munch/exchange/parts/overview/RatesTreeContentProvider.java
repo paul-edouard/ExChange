@@ -14,6 +14,7 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.jfree.chart.plot.RainbowPalette;
+import org.jfree.util.Log;
 
 import com.ib.controller.Types.SecType;
 import com.munch.exchange.IEventConstant;
@@ -24,7 +25,7 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
-import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
 
@@ -138,10 +139,15 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			//rateRoot=new RateContainer("ROOT", null);
 		}
 		
-		rootContainer.loadAllContracts();
+		relaodContracts();
 		
 		loader.schedule();
 	}
+	
+	public void relaodContracts(){
+		rootContainer.loadAllContracts();
+	}
+	
 	
 	
 	public RootContainer getRoot() {
@@ -241,8 +247,9 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 		}
 		
 		void loadAllContracts(){
-			List<ExContract> contracts=contractProvider.getAll();
-			for(ExContract contract:contracts){
+			List<IbContract> contracts=contractProvider.getAll();
+			exContractRoot.getChildren().clear();
+			for(IbContract contract:contracts){
 				exContractRoot.addExContract(contract);
 			}
 		}
@@ -256,7 +263,16 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 		
 	}
 	
-	public class ExContractContainer extends ExContract{
+	public void addContract(IbContract contract){
+		rootContainer.getExContractRoot().addExContract(contract);
+	}
+	
+	public void removeContract(IbContract contract){
+		rootContainer.getExContractRoot().removeContract(contract);
+	}
+	
+	
+	public class ExContractContainer extends IbContract{
 		
 		/**
 		 * 
@@ -264,23 +280,23 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 		private static final long serialVersionUID = -7657341323960133574L;
 		
 		protected Object parent;
-		protected LinkedList<ExContract> children=new LinkedList<ExContract>();
+		protected LinkedList<IbContract> children=new LinkedList<IbContract>();
 		public Object getParent() {
 			return parent;
 		}
 		public void setParent(Object parent) {
 			this.parent = parent;
 		}
-		public LinkedList<ExContract> getChildren() {
+		public LinkedList<IbContract> getChildren() {
 			return children;
 		}
-		public void setChilds(LinkedList<ExContract> children) {
+		public void setChilds(LinkedList<IbContract> children) {
 			this.children = children;
 		}
 		
 		
 		private ExContractContainer getChild(SecType type){
-			for(ExContract child:children){
+			for(IbContract child:children){
 				if(child.getSecType()==type && child instanceof ExContractContainer)
 					return (ExContractContainer)child;
 			}
@@ -294,11 +310,33 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			
 		}
 		
-		public void addExContract(ExContract contract){
+		public void addExContract(IbContract contract){
 			SecType type=contract.getSecType();
 			ExContractContainer childContainer=this.getChild(type);
 			childContainer.getChildren().add(contract);
 		}
+		
+		
+		public void removeContract(IbContract contract){
+			SecType type=contract.getSecType();
+			ExContractContainer childContainer=this.getChild(type);
+			
+			System.out.println("Try to remove contract: "+contract.getLongName());
+			
+			if(childContainer !=null){
+				if(childContainer.getChildren().size()==1){
+					LinkedList<IbContract> rooTchildren=this.getChildren();
+					rooTchildren.remove(childContainer);
+					System.out.println("Number of root children: "+rooTchildren.size());
+					this.children=rooTchildren;
+				}
+				else{
+					childContainer.getChildren().remove(contract);
+				}
+			}
+		}
+		
+		
 	}
 	
 	

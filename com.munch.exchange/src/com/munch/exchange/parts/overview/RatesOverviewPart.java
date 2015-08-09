@@ -46,6 +46,7 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.parts.MyMDirtyable;
 import com.munch.exchange.parts.RateEditorPart;
 import com.munch.exchange.services.IBundleResourceLoader;
@@ -255,11 +256,17 @@ public class RatesOverviewPart {
 		}
 	}
 	
+	
+	
+	
+	
 	@Inject
 	private void deleteRate(@Optional  @UIEventTopic(IEventConstant.RATE_DELETE) ExchangeRate rate ){
 		if(treeViewer!=null && rate!=null){
 			contentProvider.deleteExChangeRate(rate);
 			Object[] elements=treeViewer.getExpandedElements();
+			
+			
 			treeViewer.refresh();
 			treeViewer.setExpandedElements(elements);
 		}
@@ -289,6 +296,36 @@ public class RatesOverviewPart {
 		logger.info("Message recieved: Quote loaded!");
 	}
 	*/
+	//
+	//CONTRACT EVENT
+	//
+	
+	@Inject
+	private void addContract(@Optional  @UIEventTopic(IEventConstant.CONTRACT_NEW) IbContract contract ){
+		
+		if(treeViewer!=null && contract!=null){
+			contentProvider.addContract(contract);
+			
+			Object[] elements=treeViewer.getExpandedElements();
+			treeViewer.refresh();
+			treeViewer.setExpandedElements(elements);
+		}
+	}
+	
+	@Inject
+	private void removeContract(@Optional  @UIEventTopic(IEventConstant.CONTRACT_DELETE) IbContract contract ){
+		
+		if(treeViewer!=null && contract!=null){
+			//contentProvider.removeContract(contract);
+			
+			Object[] elements=treeViewer.getExpandedElements();
+			contentProvider.relaodContracts();
+			treeViewer.setInput(contentProvider.getRoot());
+			treeViewer.refresh();
+			treeViewer.setExpandedElements(elements);
+		}
+	}
+	
 	
 	
 	

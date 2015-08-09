@@ -2,9 +2,9 @@ package com.munch.exchange.services.ejb.interfaces;
 
 import java.util.List;
 
-import com.munch.exchange.model.core.ib.ExContract;
-import com.munch.exchange.model.core.ib.bar.ExBar;
-import com.munch.exchange.model.core.ib.bar.ExContractBars;
+import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 
 public interface IIBHistoricalDataProvider extends HistoricalDataBeanRemote {
 	

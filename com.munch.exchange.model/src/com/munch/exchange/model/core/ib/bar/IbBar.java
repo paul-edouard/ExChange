@@ -26,12 +26,12 @@ import com.ib.controller.Bar;
 import com.ib.controller.Formats;
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.IbContract;
 
 @Entity
 @Inheritance
 @DiscriminatorColumn(name="BAR_TYPE")
-public abstract  class ExBar implements Serializable{
+public abstract  class IbBar implements Serializable{
 	
 	/**
 	 * 
@@ -54,7 +54,7 @@ public abstract  class ExBar implements Serializable{
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="PARENT_ID")
-	private ExBar parent;
+	private IbBar parent;
 	
 	@Enumerated(EnumType.STRING)
 	private BarSize size;
@@ -62,10 +62,10 @@ public abstract  class ExBar implements Serializable{
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="ROOT_ID")
-	private ExContractBars root;
+	private IbBarContainer root;
 	
 	@OneToMany(mappedBy="parent",cascade=CascadeType.ALL)
-	private List<ExBar> childBars;
+	private List<IbBar> childBars;
 	
 	
 	private  long time;
@@ -77,11 +77,11 @@ public abstract  class ExBar implements Serializable{
 	private  long volume;
 	private  int count;
 	
-	public ExBar(){
+	public IbBar(){
 		
 	}
 	
-	public ExBar( long time, double high, double low, double open, double close, double wap, long volume, int count) {
+	public IbBar( long time, double high, double low, double open, double close, double wap, long volume, int count) {
 		this.setTime( time  );
 		this.high = high;
 		this.low = low;
@@ -92,7 +92,7 @@ public abstract  class ExBar implements Serializable{
 		this.count = count;
 	}
 	
-	public ExBar(Bar bar){
+	public IbBar(Bar bar){
 		this.init(bar);
 	}
 	
@@ -107,7 +107,7 @@ public abstract  class ExBar implements Serializable{
 		this.count = bar.count();
 	}
 	
-	public void copyData(ExBar bar){
+	public void copyData(IbBar bar){
 		this.setTime( bar.time);
 		this.high = bar.high;
 		this.low = bar.low;
@@ -123,7 +123,7 @@ public abstract  class ExBar implements Serializable{
 	}
 	
 	
-	public void setRootAndParent(ExContractBars root,ExBar parent){
+	public void setRootAndParent(IbBarContainer root,IbBar parent){
 		setParent(parent);
 		setRoot(root);
 		setType(root.getType());
@@ -146,22 +146,22 @@ public abstract  class ExBar implements Serializable{
 	}
 	*/
 
-	public List<ExBar> getChildBars() {
+	public List<IbBar> getChildBars() {
 		if(childBars==null || childBars.isEmpty()){
-			childBars=new LinkedList<ExBar>();
+			childBars=new LinkedList<IbBar>();
 		}
 		return childBars;
 	}
 
-	public void setChildBars(List<ExBar> childBars) {
+	public void setChildBars(List<IbBar> childBars) {
 		this.childBars = childBars;
 	}
 
-	public ExContractBars getRoot() {
+	public IbBarContainer getRoot() {
 		return root;
 	}
 
-	public void setRoot(ExContractBars root) {
+	public void setRoot(IbBarContainer root) {
 		this.root = root;
 		setType(root.getType());
 		
@@ -191,9 +191,9 @@ public abstract  class ExBar implements Serializable{
 
 	public void setId(long id) {this.id = id;}
 	
-	public ExBar getParent() {return parent;}
+	public IbBar getParent() {return parent;}
 
-	public void setParent(ExBar parent) {this.parent = parent;}
+	public void setParent(IbBar parent) {this.parent = parent;}
 
 	public long getTime() {
 		return this.time;

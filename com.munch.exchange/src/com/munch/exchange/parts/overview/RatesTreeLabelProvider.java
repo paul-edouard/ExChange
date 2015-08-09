@@ -11,7 +11,7 @@ import com.munch.exchange.IImageKeys;
 import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
-import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.ExContractContainer;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IBundleResourceLoader;
@@ -183,8 +183,8 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 			ExContractContainer container=(ExContractContainer) element;
 			cell.setText(container.getLongName()+ " ["+container.getChildren().size()+"]");
 		}
-		else if(element instanceof ExContract){
-			ExContract contract=(ExContract) element;
+		else if(element instanceof IbContract){
+			IbContract contract=(IbContract) element;
 			cell.setText(contract.getLongName()+" ["+contract.getExchange()+", "+contract.getCurrency()+"]");
 		}
 		

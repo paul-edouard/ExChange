@@ -9,19 +9,19 @@ import com.ib.controller.Bar;
 import com.ib.controller.Types.BarSize;
 
 @Entity
-public class ExMinuteBar extends ExBar {
+public class IbMinuteBar extends IbBar {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 2310035118704239560L;
 	
-	public ExMinuteBar(){
+	public IbMinuteBar(){
 		super();
 		this.setSize(BarSize._1_min);
 	}
 	
-	public ExMinuteBar(Bar bar) {
+	public IbMinuteBar(Bar bar) {
 		super(bar);
 		this.setSize(BarSize._1_min);
 		// TODO Auto-generated constructor stub

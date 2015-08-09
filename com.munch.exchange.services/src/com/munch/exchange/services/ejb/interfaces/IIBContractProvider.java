@@ -3,7 +3,7 @@ package com.munch.exchange.services.ejb.interfaces;
 import java.util.List;
 
 import com.ib.controller.Types.SecType;
-import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.IbContract;
 
 public interface IIBContractProvider {
 	
@@ -11,15 +11,15 @@ public interface IIBContractProvider {
 	void init();
 	
 	//Search
-	List<ExContract> searchContracts(String symbol, SecType secType);
+	List<IbContract> searchContracts(String symbol, SecType secType);
 	
 	
 	//JPA Methodes
-	List<ExContract> getAll();
-	public ExContract create(ExContract contract);
-	public ExContract update(ExContract contract);
+	List<IbContract> getAll();
+	public IbContract create(IbContract contract);
+	public IbContract update(IbContract contract);
 	public void remove(int id);
-	public ExContract getContract(int id);
+	public IbContract getContract(int id);
 	
 	
 }

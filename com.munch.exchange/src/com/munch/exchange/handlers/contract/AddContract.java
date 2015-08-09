@@ -14,10 +14,10 @@ import org.eclipse.swt.widgets.Shell;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddContractDialog;
 import com.munch.exchange.dialog.AddRateDialog;
-import com.munch.exchange.model.core.ib.ExContract;
-import com.munch.exchange.model.core.ib.bar.ExBar;
-import com.munch.exchange.model.core.ib.bar.ExContractBars;
-import com.munch.exchange.model.core.ib.bar.ExSecondeBar;
+import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 

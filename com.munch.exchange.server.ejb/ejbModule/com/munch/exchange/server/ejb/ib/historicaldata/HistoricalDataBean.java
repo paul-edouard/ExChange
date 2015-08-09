@@ -11,9 +11,9 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 
-import com.munch.exchange.model.core.ib.ExContract;
-import com.munch.exchange.model.core.ib.bar.ExBar;
-import com.munch.exchange.model.core.ib.bar.ExContractBars;
+import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.services.ejb.interfaces.HistoricalDataBeanRemote;
 
 /**
@@ -41,22 +41,22 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 
 
 	@Override
-	public List<ExContractBars> getAllExContractBars(ExContract exContract) {
+	public List<IbBarContainer> getAllExContractBars(IbContract exContract) {
 		
 		//log.info("getAllExContractBars server called!");
 		
-		ExContract ex_contract=em.find(ExContract.class, exContract.getId());
+		IbContract ex_contract=em.find(IbContract.class, exContract.getId());
 		ex_contract.getBars().size();
 		
-		List<ExContractBars> contractBars= ex_contract.getBars();
+		List<IbBarContainer> contractBars= ex_contract.getBars();
 		
 		return contractBars;
 		}
 
 
 	@Override
-	public ExBar getFirstBar(ExContractBars exContractBars,
-			Class<? extends ExBar> exBarClass) {
+	public IbBar getFirstBar(IbBarContainer exContractBars,
+			Class<? extends IbBar> exBarClass) {
 		Query query=em.createQuery("SELECT MIN(b.time),b.id " +
 				"FROM "+exBarClass.getSimpleName()+" b WHERE b.root="+exContractBars.getId());
 		
@@ -65,10 +65,10 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		if(rows.size()!=1)return null;
 		
 		long min_id=(long) rows.get(0)[1];
-		ExBar bar=em.find(exBarClass, min_id);
+		IbBar bar=em.find(exBarClass, min_id);
 		
 		try {
-			ExBar copy = exBarClass.newInstance();
+			IbBar copy = exBarClass.newInstance();
 			copy.copyData(bar);
 			return copy;
 		} catch (InstantiationException | IllegalAccessException e) {
@@ -80,8 +80,8 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 
 
 	@Override
-	public ExBar getLastBar(ExContractBars exContractBars,
-		Class<? extends ExBar> exBarClass) {
+	public IbBar getLastBar(IbBarContainer exContractBars,
+		Class<? extends IbBar> exBarClass) {
 		
 		Query query=em.createQuery("SELECT MAX(b.time),b.id " +
 				"FROM "+exBarClass.getSimpleName()+" b WHERE b.root="+exContractBars.getId());
@@ -91,10 +91,10 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		if(rows.size()!=1)return null;
 		
 		long max_id=(long) rows.get(0)[1];
-		ExBar bar=em.find(exBarClass, max_id);
+		IbBar bar=em.find(exBarClass, max_id);
 		
 		try {
-			ExBar copy = exBarClass.newInstance();
+			IbBar copy = exBarClass.newInstance();
 			copy.copyData(bar);
 			return copy;
 		} catch (InstantiationException | IllegalAccessException e) {

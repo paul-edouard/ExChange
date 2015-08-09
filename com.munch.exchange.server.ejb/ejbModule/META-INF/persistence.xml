@@ -2,14 +2,14 @@
 <persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
 	<persistence-unit name="com.munch.exchange.server.ejb">
 	<jta-data-source>java:jboss/datasources/exchange</jta-data-source>
-	<class>com.munch.exchange.model.core.ib.ExContract</class>
-	<class>com.munch.exchange.model.core.ib.ExTagValue</class>
-	<class>com.munch.exchange.model.core.ib.bar.ExBar</class>
-	<class>com.munch.exchange.model.core.ib.bar.ExSecondeBar</class>
-	<class>com.munch.exchange.model.core.ib.bar.ExMinuteBar</class>
-	<class>com.munch.exchange.model.core.ib.bar.ExHourBar</class>
-	<class>com.munch.exchange.model.core.ib.bar.ExDayBar</class>
-	<class>com.munch.exchange.model.core.ib.bar.ExContractBars</class>
+	<class>com.munch.exchange.model.core.ib.IbContract</class>
+	<class>com.munch.exchange.model.core.ib.bar.IbBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.IbDayBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.IbHourBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.IbMinuteBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.IbSecondeBar</class>
+	<class>com.munch.exchange.model.core.ib.IbTagValue</class>
+	<class>com.munch.exchange.model.core.ib.bar.IbBarContainer</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

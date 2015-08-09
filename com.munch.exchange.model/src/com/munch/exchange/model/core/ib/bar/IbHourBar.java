@@ -8,7 +8,7 @@ import com.ib.controller.Types.BarSize;
 
 
 @Entity
-public class ExHourBar extends ExBar{
+public class IbHourBar extends IbBar{
 
 	/**
 	 * 
@@ -16,12 +16,12 @@ public class ExHourBar extends ExBar{
 	private static final long serialVersionUID = -5073661063360288597L;
 	
 	
-	public ExHourBar(){
+	public IbHourBar(){
 		super();
 		this.setSize(BarSize._1_hour);
 	}
 	
-	public ExHourBar(Bar bar) {
+	public IbHourBar(Bar bar) {
 		super(bar);
 		this.setSize(BarSize._1_hour);
 	}

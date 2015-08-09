@@ -21,10 +21,10 @@ import org.jfree.util.Log;
 import org.osgi.service.prefs.BackingStoreException;
 
 import com.munch.exchange.dialog.WorkspaceDialog;
-import com.munch.exchange.model.core.ib.ExContract;
-import com.munch.exchange.model.core.ib.bar.ExBar;
-import com.munch.exchange.model.core.ib.bar.ExContractBars;
-import com.munch.exchange.model.core.ib.bar.ExSecondeBar;
+import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IWatchlistProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;

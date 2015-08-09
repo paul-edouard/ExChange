@@ -5,7 +5,7 @@ import java.util.List;
 import org.jboss.security.authorization.resources.EJBResource;
 
 import com.ib.controller.Types.SecType;
-import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
@@ -20,7 +20,7 @@ public class IBContractProvider implements IIBContractProvider {
 	}
 
 	@Override
-	public List<ExContract> getAll() {
+	public List<IbContract> getAll() {
 		return beanRemote.getService().getAllContracts();
 	}
 
@@ -31,17 +31,17 @@ public class IBContractProvider implements IIBContractProvider {
 	}
 
 	@Override
-	public List<ExContract> searchContracts(String symbol, SecType secType) {
+	public List<IbContract> searchContracts(String symbol, SecType secType) {
 		return beanRemote.getService().searchContract(symbol, secType);
 	}
 
 	@Override
-	public ExContract create(ExContract contract) {
+	public IbContract create(IbContract contract) {
 		return beanRemote.getService().create(contract);
 	}
 
 	@Override
-	public ExContract update(ExContract contract) {
+	public IbContract update(IbContract contract) {
 		return beanRemote.getService().update(contract);
 	}
 
@@ -51,7 +51,7 @@ public class IBContractProvider implements IIBContractProvider {
 	}
 
 	@Override
-	public ExContract getContract(int id) {
+	public IbContract getContract(int id) {
 		return beanRemote.getService().getContract(id);
 	}
 

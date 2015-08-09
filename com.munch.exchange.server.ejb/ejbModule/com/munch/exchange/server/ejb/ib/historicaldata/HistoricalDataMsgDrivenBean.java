@@ -38,14 +38,13 @@ import com.ib.controller.Bar;
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.SecType;
 import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.model.core.ib.ExContract;
-import com.munch.exchange.model.core.ib.bar.ExBar;
-import com.munch.exchange.model.core.ib.bar.ExBar_;
-import com.munch.exchange.model.core.ib.bar.ExContractBars;
-import com.munch.exchange.model.core.ib.bar.ExDayBar;
-import com.munch.exchange.model.core.ib.bar.ExHourBar;
-import com.munch.exchange.model.core.ib.bar.ExMinuteBar;
-import com.munch.exchange.model.core.ib.bar.ExSecondeBar;
+import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.IbDayBar;
+import com.munch.exchange.model.core.ib.bar.IbHourBar;
+import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
+import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
 import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataLoaders.BarLoader;
 
 /**
@@ -106,11 +105,11 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 			// Init the His. Data Loaders
 			long time = msg
 					.getLongProperty(HistoricalDataTimerBean.TIME_STRING);
-			List<ExContract> allContracts = em.createNamedQuery(
-					"ExContract.getAll", ExContract.class).getResultList();
-			List<ExContractBars> allBars = new LinkedList<ExContractBars>();
+			List<IbContract> allContracts = em.createNamedQuery(
+					"IbContract.getAll", IbContract.class).getResultList();
+			List<IbBarContainer> allBars = new LinkedList<IbBarContainer>();
 
-			for (ExContract exContract : allContracts) {
+			for (IbContract exContract : allContracts) {
 				allBars.addAll(getBarsFrom(exContract));
 			}
 
@@ -154,16 +153,16 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	//--------------------------------
     	//- 1. Search the last day bars  -
     	//--------------------------------
-    	long lastDayBar=searchLastSavedBar(loader.getBars(), ExDayBar.class);
+    	long lastDayBar=searchLastSavedBar(loader.getBars(), IbDayBar.class);
     	log.info("Last day found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastDayBar) ));
-    	List<ExBar> newDayBars=new LinkedList<>();
-    	if(loader.getTime()-lastDayBar>new ExDayBar().getIntervall()){
+    	List<IbBar> newDayBars=new LinkedList<>();
+    	if(loader.getTime()-lastDayBar>new IbDayBar().getIntervall()){
     		//Search the number of years!!
     		
     		List<Bar> dayBars=loader.loadLastBars(lastDayBar, BarSize._1_day);
     		log.info("Number of new days found: "+dayBars.size());
     		for(Bar bar:dayBars){
-    			ExDayBar exDayBar=new ExDayBar(bar);
+    			IbDayBar exDayBar=new IbDayBar(bar);
     			exDayBar.setRootAndParent(loader.getBars(), loader.getBars());
     			newDayBars.add(exDayBar);
     		}
@@ -176,11 +175,11 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	//----------------------------------
     	//- 2. Search the last hour bars -
     	//----------------------------------
-    	List<ExBar> newHourBars= loadNewChildBars(	loader,
+    	List<IbBar> newHourBars= loadNewChildBars(	loader,
     												newDayBars,
-    												ExHourBar.class,
+    												IbHourBar.class,
     												BarSize._1_hour,
-    												new ExHourBar().getIntervall()
+    												new IbHourBar().getIntervall()
     												);
     	
     	//----------------------------------
@@ -208,7 +207,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     }
     
     //@TransactionAttribute(value=TransactionAttributeType.REQUIRES_NEW)
-    private List<ExBar> loadNewChildBars(BarLoader loader, List<ExBar> parentBars,Class<? extends ExBar> childClass, BarSize childBarSize, long childIntervall){
+    private List<IbBar> loadNewChildBars(BarLoader loader, List<IbBar> parentBars,Class<? extends IbBar> childClass, BarSize childBarSize, long childIntervall){
     	
     	
     	//boolean flushEM=false;
@@ -218,12 +217,12 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	
     	//Set the parent of the last hour bars
     	if(!parentBars.isEmpty()){
-    		ExBar firstParent=parentBars.get(0);
-    		List<ExBar> childBars=searchExBarsFromToDateWithoutParent(loader.getBars(),
+    		IbBar firstParent=parentBars.get(0);
+    		List<IbBar> childBars=searchExBarsFromToDateWithoutParent(loader.getBars(),
     				firstParent.getTime()-firstParent.getIntervall(), lastChildBar, childClass);
     		log.info(childBars.size()+" bars will be assigned to the parent: "+firstParent.getClass().getSimpleName()+ ": "+
     				HistoricalDataLoaders.FORMAT.format( new Date(firstParent.getTime()) ));
-    		for(ExBar h_bar : childBars){
+    		for(IbBar h_bar : childBars){
     			h_bar.setParent(firstParent);
     			firstParent.getChildBars().add(h_bar);
     			//em.merge(h_bar);
@@ -234,12 +233,12 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	}
     	
     	//Add the new hour bar for each new days
-    	List<ExBar> newChildBars=new LinkedList<>();
+    	List<IbBar> newChildBars=new LinkedList<>();
     	//List<ExBar> reloadedParent=new LinkedList<>();
     	
     	
     	
-    	for(ExBar parent_bar:parentBars){
+    	for(IbBar parent_bar:parentBars){
     		if(lastChildBar>parent_bar.getTime())continue;
     		
     		//try {
@@ -251,11 +250,11 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		List<Bar> childBars=loader.loadBarsFromTo(parent_bar.getTime()-parent_bar.getIntervall(), parent_bar.getTime(), childBarSize);
     		log.info(childBars.size()+" new bars were found and will be assigned to the parent: "+parent_bar.getClass().getSimpleName()+ ": "+
     				HistoricalDataLoaders.FORMAT.format( new Date(parent_bar.getTime()) ));
-    		List<ExBar> localChildBars=new LinkedList<>();
+    		List<IbBar> localChildBars=new LinkedList<>();
     		
     		for(Bar childBar : childBars){
     			try {
-					ExBar exChildBar = childClass.newInstance();
+					IbBar exChildBar = childClass.newInstance();
 					exChildBar.init(childBar);
 					exChildBar.setRootAndParent(loader.getBars(), parent_bar);
 	    			
@@ -272,30 +271,30 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		}
     		//If new full hour found then load until the seconds
     		if(childBarSize==BarSize._1_hour){
-    			for(ExBar exHourBar:localChildBars){
+    			for(IbBar exHourBar:localChildBars){
     				List<Bar> minuteBars=loader.loadBarsFromTo(exHourBar.getTime()-exHourBar.getIntervall(), exHourBar.getTime(), BarSize._1_min);
-    				List<ExBar> exMinuteBars=new LinkedList<>();
+    				List<IbBar> exMinuteBars=new LinkedList<>();
     				for(Bar minuteBar : minuteBars){
-    					ExBar exMinuteBar = new ExMinuteBar(minuteBar);
+    					IbBar exMinuteBar = new IbMinuteBar(minuteBar);
     					exMinuteBar.setRootAndParent(loader.getBars(), exHourBar);
     					exMinuteBars.add(exMinuteBar);
     				}
-    				for(ExBar exMinuteBar:exMinuteBars){
+    				for(IbBar exMinuteBar:exMinuteBars){
     					List<Bar> secondeBars=loader.loadBarsFromTo(exMinuteBar.getTime()-exMinuteBar.getIntervall(), exMinuteBar.getTime(), BarSize._1_secs);
     					
     					for(Bar secondeBar : secondeBars){
-        					ExBar exSecondeBar = new ExSecondeBar(secondeBar);
+        					IbBar exSecondeBar = new IbSecondeBar(secondeBar);
         					exSecondeBar.setRootAndParent(loader.getBars(), exMinuteBar);
         				}
     				}
     			}
     		}
     		else if(childBarSize==BarSize._1_min){
-    			for(ExBar exMinuteBar:localChildBars){
+    			for(IbBar exMinuteBar:localChildBars){
 					List<Bar> secondeBars=loader.loadBarsFromTo(exMinuteBar.getTime()-exMinuteBar.getIntervall(), exMinuteBar.getTime(), BarSize._1_secs);
 					
 					for(Bar secondeBar : secondeBars){
-    					ExBar exSecondeBar = new ExSecondeBar(secondeBar);
+    					IbBar exSecondeBar = new IbSecondeBar(secondeBar);
     					exSecondeBar.setRootAndParent(loader.getBars(), exMinuteBar);
     				}
 				}
@@ -333,11 +332,11 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	if(loader.getTime()-lastChildBar>childIntervall){
     		List<Bar> childBars=loader.loadLastBars(lastChildBar, childBarSize);
     		log.info(childBars.size()+" new bars were found without any parent");
-    		List<ExBar> localChildBars=new LinkedList<>();
+    		List<IbBar> localChildBars=new LinkedList<>();
     		for(Bar bar:childBars){
     			try {
     				
-					ExBar exChildBar = childClass.newInstance();
+					IbBar exChildBar = childClass.newInstance();
 					exChildBar.init(bar);
 					exChildBar.setRoot(loader.getBars());
 					//exChildBar.setRootAndParent(loader.getBars(), loader.getBars());
@@ -363,12 +362,12 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	return newChildBars;
     }
     
-    private void saveBars(List<ExBar> bars,boolean withTransation){
+    private void saveBars(List<IbBar> bars,boolean withTransation){
     	
     	if(withTransation){
     	try {
 			ut.begin();
-			for(ExBar bar : bars){
+			for(IbBar bar : bars){
 				em.persist(bar);
 			}
 			ut.commit();
@@ -387,17 +386,17 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 		}
     	}
     	else{
-    		for(ExBar bar : bars){
+    		for(IbBar bar : bars){
 				em.persist(bar);
 			}
     	}
     	
     }
     
-    private void updateBars(List<ExBar> bars){
+    private void updateBars(List<IbBar> bars){
     	try {
 			ut.begin();
-			for(ExBar bar : bars){
+			for(IbBar bar : bars){
 				em.merge(bar);
 			}
 			ut.commit();
@@ -417,22 +416,22 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	
     }
     
-    private List<ExContractBars> getBarsFrom(ExContract exContract){
-    	List<ExContractBars> Allbars=exContract.getBars();
+    private List<IbBarContainer> getBarsFrom(IbContract exContract){
+    	List<IbBarContainer> Allbars=exContract.getBars();
     	if(Allbars==null || Allbars.isEmpty()){
-    		Allbars=new LinkedList<ExContractBars>();
+    		Allbars=new LinkedList<IbBarContainer>();
     		
     		//STOCK
     		if(exContract.getSecType()==SecType.STK){
-    			Allbars.add(new ExContractBars(exContract,WhatToShow.MIDPOINT));
-    			Allbars.add(new ExContractBars(exContract,WhatToShow.ASK));
+    			Allbars.add(new IbBarContainer(exContract,WhatToShow.MIDPOINT));
+    			Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
     		}
     		//INDICE
     		else if(exContract.getSecType()==SecType.IND){
-    			Allbars.add(new ExContractBars(exContract,WhatToShow.MIDPOINT));
+    			Allbars.add(new IbBarContainer(exContract,WhatToShow.MIDPOINT));
     		}
     		
-    		for(ExContractBars bars:Allbars){
+    		for(IbBarContainer bars:Allbars){
     			em.persist(bars);
     		}
     		em.flush();
@@ -447,7 +446,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     }
     */
     
-    private long searchLastSavedBar(ExContractBars exContractBars, Class<?> clazz){
+    private long searchLastSavedBar(IbBarContainer exContractBars, Class<?> clazz){
     	Query query=em.createQuery("SELECT MAX(b.time)" +
 				"FROM "+clazz.getSimpleName()+" b WHERE b.root="+exContractBars.getId());
 
@@ -473,14 +472,14 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     }
     */
     
-    private List<ExBar> searchExBarsFromToDateWithoutParent(ExContractBars exContractBars,long from, long to, Class<?> clazz){
+    private List<IbBar> searchExBarsFromToDateWithoutParent(IbBarContainer exContractBars,long from, long to, Class<?> clazz){
     	
-    	TypedQuery<ExBar> query=em.createQuery("SELECT b " +
+    	TypedQuery<IbBar> query=em.createQuery("SELECT b " +
 				"FROM "+clazz.getSimpleName()+" b "+
     			"WHERE b.root="+exContractBars.getId()+" "+
-				"AND b.time > "+from+" AND b.time <= "+to+" AND b.parent IS NULL",ExBar.class);
+				"AND b.time > "+from+" AND b.time <= "+to+" AND b.parent IS NULL",IbBar.class);
     	
-    	List<ExBar> bars=query.getResultList();
+    	List<IbBar> bars=query.getResultList();
     	
     	return bars;
     }

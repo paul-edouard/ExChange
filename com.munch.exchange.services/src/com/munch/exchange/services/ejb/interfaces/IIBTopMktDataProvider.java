@@ -1,6 +1,6 @@
 package com.munch.exchange.services.ejb.interfaces;
 
-import com.munch.exchange.model.core.ib.ExTopMktData;
+import com.munch.exchange.model.core.ib.IbTopMktData;
 
 public interface IIBTopMktDataProvider {
 	
@@ -9,8 +9,8 @@ public interface IIBTopMktDataProvider {
 	
 	
 	//Market Data registering
-	void registerTopMktData(ExTopMktData topMktData);
-	void unregisterTopMktData(ExTopMktData topMktData);
+	void registerTopMktData(IbTopMktData topMktData);
+	void unregisterTopMktData(IbTopMktData topMktData);
 	
 	
 

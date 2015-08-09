@@ -27,7 +27,7 @@ import org.eclipse.wb.swt.ResourceManager;
 
 import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ExchangeRate;
-import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
@@ -58,11 +58,11 @@ public class AddContractDialog extends TitleAreaDialog {
 	private Button btnSearch;
 	
 	IIBContractProvider contractProvider;
-	private ExContract contract;
+	private IbContract contract;
 	private Shell shell;
 	
 	private HashMap<String, SecType> secTypemap=new HashMap<>();
-	private HashMap<String, ExContract> contractMap=new HashMap<>();
+	private HashMap<String, IbContract> contractMap=new HashMap<>();
 	
 	/**
 	 * Create the dialog.
@@ -79,7 +79,7 @@ public class AddContractDialog extends TitleAreaDialog {
 	}
 	
 
-	public ExContract getContract() {
+	public IbContract getContract() {
 		return contract;
 	}
 
@@ -153,7 +153,7 @@ public class AddContractDialog extends TitleAreaDialog {
 				String symbol=SymbolText.getText();
 				SecType secType=secTypemap.get(comboType.getText());
 				
-				java.util.List<ExContract> contracts=contractProvider.searchContracts(symbol, secType);
+				java.util.List<IbContract> contracts=contractProvider.searchContracts(symbol, secType);
 				//java.util.List<ExContract> contracts=contractProvider.getAll();
 				buttonOk.setEnabled(false);
 				listViewerResults.setInput(contracts);
@@ -228,8 +228,8 @@ public class AddContractDialog extends TitleAreaDialog {
 		
 		//Test if the contract was allready added
 		//MessageDialog
-		java.util.List<ExContract> list=contractProvider.getAll();
-		for(ExContract testContract:list ){
+		java.util.List<IbContract> list=contractProvider.getAll();
+		for(IbContract testContract:list ){
 			if(testContract.compareWith(contract)){
 				MessageDialog.openWarning(shell, "Contract alleady in the database",
 						"The contract "+contract.getLongName()+" connot be added");
@@ -282,8 +282,8 @@ public class AddContractDialog extends TitleAreaDialog {
 		@Override
 		public void update(ViewerCell cell) {
 			Object element=cell.getElement();
-			if(element instanceof ExContract){
-				ExContract contract=(ExContract) element;
+			if(element instanceof IbContract){
+				IbContract contract=(IbContract) element;
 				cell.setText( contract.getLongName());
 			}
 			super.update(cell);
@@ -298,8 +298,8 @@ public class AddContractDialog extends TitleAreaDialog {
 		@Override
 		public String getText(Object element) {
 			
-			if(element instanceof ExContract){
-				ExContract contract=(ExContract) element;
+			if(element instanceof IbContract){
+				IbContract contract=(IbContract) element;
 				
 				String text="";
 				switch (contract.getSecType()) {

@@ -13,7 +13,7 @@ import javax.persistence.ManyToOne;
 import com.ib.client.TagValue;
 
 @Entity
-public class ExTagValue implements Serializable {
+public class IbTagValue implements Serializable {
 	
 	
 	/**
@@ -32,20 +32,20 @@ public class ExTagValue implements Serializable {
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="OWNER_ID")
-	private ExContract owner;
+	private IbContract owner;
 	
 	
-	public ExTagValue() {
+	public IbTagValue() {
 		super();
 	}
 	
-	public ExTagValue(String tag, String value) {
+	public IbTagValue(String tag, String value) {
 		super();
 		this.tag = tag;
 		this.value = value;
 	}
 	
-	public ExTagValue(TagValue tagValue) {
+	public IbTagValue(TagValue tagValue) {
 		super();
 		this.tag = tagValue.m_tag;
 		this.value = tagValue.m_value;
@@ -87,7 +87,7 @@ public class ExTagValue implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ExTagValue other = (ExTagValue) obj;
+		IbTagValue other = (IbTagValue) obj;
 		if (id != other.id)
 			return false;
 		return true;

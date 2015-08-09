@@ -19,7 +19,7 @@ import com.ib.controller.ApiController.IContractDetailsHandler;
 import com.ib.controller.Types.SecType;
 import com.ib.controller.NewContract;
 import com.ib.controller.NewContractDetails;
-import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.jpa.entity.Student;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
 
@@ -112,7 +112,7 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	*/
 	
 	@Override
-	public List<ExContract> searchContract(String symbol,SecType secType) {
+	public List<IbContract> searchContract(String symbol,SecType secType) {
 		
 	
 		NewContract m_contract = new NewContract();
@@ -134,14 +134,14 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 		
 		log.info("searchContractInfo Finished!");
 		
-		List<ExContract> ouputList=new LinkedList<>();
+		List<IbContract> ouputList=new LinkedList<>();
 		for(NewContractDetails details:list){
 			if(details.secIdList()!=null){
 				for(TagValue tagValue: details.secIdList()){
 					log.info("Tag: "+tagValue.m_tag+", Value: "+tagValue.m_value);
 				}
 			}
-			ouputList.add(new ExContract(details));
+			ouputList.add(new IbContract(details));
 		}
 		return ouputList;
 	}
@@ -166,13 +166,13 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	}
 
 	@Override
-	public ExContract create(ExContract contract) {
+	public IbContract create(IbContract contract) {
 		em.persist(contract);
 		return contract;
 	}
 
 	@Override
-	public ExContract update(ExContract contract) {
+	public IbContract update(IbContract contract) {
 		em.merge(contract);
 		return contract;
 	}
@@ -183,13 +183,13 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	}
 
 	@Override
-	public ExContract getContract(int id) {
-		return em.find(ExContract.class, id);
+	public IbContract getContract(int id) {
+		return em.find(IbContract.class, id);
 	}
 
 	@Override
-	public List<ExContract> getAllContracts() {
-		return em.createNamedQuery("ExContract.getAll", ExContract.class).getResultList();
+	public List<IbContract> getAllContracts() {
+		return em.createNamedQuery("IbContract.getAll", IbContract.class).getResultList();
 	}
 
 	

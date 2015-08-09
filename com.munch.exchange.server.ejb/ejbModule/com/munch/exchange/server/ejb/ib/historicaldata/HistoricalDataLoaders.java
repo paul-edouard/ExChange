@@ -19,10 +19,10 @@ import com.ib.controller.ApiController.IHistoricalDataHandler;
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.DurationUnit;
 import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.model.core.ib.ExContract;
-import com.munch.exchange.model.core.ib.bar.ExBar;
-import com.munch.exchange.model.core.ib.bar.ExContractBars;
-import com.munch.exchange.model.core.ib.bar.ExSecondeBar;
+import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
 
 public enum HistoricalDataLoaders {
@@ -38,10 +38,10 @@ public enum HistoricalDataLoaders {
 	
 	
 	
-	public void init(List<ExContractBars> allBars, long time){
+	public void init(List<IbBarContainer> allBars, long time){
 		
 		//Add new Contracts
-		for(ExContractBars c : allBars){			
+		for(IbBarContainer c : allBars){			
 			if(!loaderMap.containsKey(c.getId())){
 				log.info("Create a new Bar Loader");
 				loaderMap.put(c.getId(), new BarLoader(c));
@@ -52,7 +52,7 @@ public enum HistoricalDataLoaders {
 		List<Long> toDeleteList=new LinkedList<>();
 		for(Long i:loaderMap.keySet()){
 			boolean isValid=false;
-			for(ExContractBars c : allBars){
+			for(IbBarContainer c : allBars){
 				if(i==c.getId()){
 					isValid=true;
 					break;
@@ -97,14 +97,14 @@ public enum HistoricalDataLoaders {
 		private static final long TIMOUT=2000;
 		
 		private boolean isLoading=false;
-		private ExContractBars bars;
+		private IbBarContainer bars;
 		private long time;
 		
 		private long requestStartTime=0;
 		private List<Bar> recievedBars=new LinkedList<>();
 		private boolean finished=false;
 		
-		public BarLoader(ExContractBars bars ){
+		public BarLoader(IbBarContainer bars ){
 			
 			//try{
 			this.bars=bars;
@@ -181,7 +181,7 @@ public enum HistoricalDataLoaders {
 			return time;
 		}
 
-		public ExContractBars getBars() {
+		public IbBarContainer getBars() {
 			return bars;
 		}
 

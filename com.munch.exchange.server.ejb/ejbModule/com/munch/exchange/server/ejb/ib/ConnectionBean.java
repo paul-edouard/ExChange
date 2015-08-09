@@ -29,7 +29,7 @@ import com.ib.controller.ApiController;
 import com.ib.controller.ApiConnection.ILogger;
 import com.ib.controller.ApiController.IConnectionHandler;
 import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.server.ejb.ib.collectors.TopMktDataMsgSenderCollector;
 import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataBean;
 import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataLoaders;

@@ -16,40 +16,67 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.parts.overview.RatesTreeContentProvider.ExContractContainer;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IExchangeRateProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
 
 public class DeleteRateHandler {
 	
 	private boolean canExcecute=false;
 	private ExchangeRate selectedRate;
+	private IbContract selectedContract;
 	
 	@Inject
 	private IEventBroker eventBroker;
 	
 	@Execute
-	public void execute(Shell shell, IExchangeRateProvider rateProvider) {
+	public void execute(Shell shell, IExchangeRateProvider rateProvider, IIBContractProvider contractProvider) {
 	//	System.out.println("Selected Rate:"+selectedRate.getFullName());
-		if(selectedRate==null){
-			MessageDialog.openError(shell, "Selection error", "No rate selected");
+		if(selectedRate==null && selectedContract==null){
+			MessageDialog.openError(shell, "Selection error", "No correct selection?");
 			return;
 		}
+		
+		//Delete a rate
+		if(selectedRate!=null){
 		
 		boolean res = MessageDialog.openConfirm(shell, "Delete rate?",
 				"Do you really want to delete the project: \""+selectedRate.getFullName()+"\"?");
 		
 		if(!res)return;
 		
-		if(selectedRate!=null){
-			
 			if(!rateProvider.delete(selectedRate)){
 				MessageDialog.openWarning(shell, "Delete rate error", "Cannot delete the rate: "+selectedRate.getFullName());
 			}
 			else{
 				eventBroker.post(IEventConstant.RATE_DELETE,selectedRate);
 			}
-			
 		}
+		
+		//Delete a Contract
+		if(selectedContract!=null){
+			
+			boolean res = MessageDialog.openConfirm(shell, "Delete contract?",
+					"Do you really want to delete the project: \""+selectedContract.getLongName()+"\"?");
+			
+			if(!res)return;
+				
+				contractProvider.remove(selectedContract.getId());
+				eventBroker.post(IEventConstant.CONTRACT_DELETE,selectedContract);
+				
+				/*
+				if(!rateProvider.delete(selectedRate)){
+					MessageDialog.openWarning(shell, "Delete rate error", "Cannot delete the rate: "+selectedRate.getFullName());
+				}
+				else{
+					eventBroker.post(IEventConstant.RATE_DELETE,selectedRate);
+				}
+				*/
+		}
+		
+		
 		
 	}
 	
@@ -63,16 +90,25 @@ public class DeleteRateHandler {
 	public void analyseSelection(@Optional @Named(IServiceConstants.ACTIVE_SELECTION) 
 	ISelection selection){
 		if(selection instanceof IStructuredSelection){
+			
+			selectedRate=null;
+			selectedContract=null;
+			canExcecute=false;
+			
+			
 			IStructuredSelection sel=(IStructuredSelection) selection;
 			if(sel.size()==1 && sel.getFirstElement() instanceof ExchangeRate && !(sel.getFirstElement() instanceof RateContainer)){
 				selectedRate=(ExchangeRate)sel.getFirstElement();
 				canExcecute=true;
 				return;
 			}
+			else if(sel.size()==1 && sel.getFirstElement() instanceof IbContract && !(sel.getFirstElement() instanceof ExContractContainer)){
+				selectedContract=(IbContract) sel.getFirstElement();
+				canExcecute=true;
+				return;
+			}
 		}
 		
-		selectedRate=null;
-		canExcecute=false;
 	}
 		
 }

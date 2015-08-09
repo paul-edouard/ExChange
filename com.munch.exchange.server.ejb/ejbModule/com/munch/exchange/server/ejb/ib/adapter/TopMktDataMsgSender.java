@@ -19,8 +19,8 @@ import javax.jms.TopicConnectionFactory;
 import com.ib.controller.NewTickType;
 import com.ib.controller.ApiController.TopMktDataAdapter;
 import com.ib.controller.Types.MktDataType;
-import com.munch.exchange.model.core.ib.ExContract;
-import com.munch.exchange.model.core.ib.ExTopMktData;
+import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.IbTopMktData;
 
 public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyChangeListener{
 	
@@ -35,8 +35,8 @@ public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyCh
 	private Session session;
 	private MessageProducer msgProducer;
 	
-	private ExContract contract;
-	private ExTopMktData topMktData;
+	private IbContract contract;
+	private IbTopMktData topMktData;
 	
 	/*
 	private double m_bid;
@@ -50,11 +50,11 @@ public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyCh
 	private boolean m_frozen;
 	*/
 	
-	public TopMktDataMsgSender(ExContract contract,ConnectionFactory connectionFactory,Topic destination){
+	public TopMktDataMsgSender(IbContract contract,ConnectionFactory connectionFactory,Topic destination){
 		this.contract=contract;
 		this.connectionFactory=connectionFactory;
 		this.destination=destination;
-		topMktData=new ExTopMktData(this.contract);
+		topMktData=new IbTopMktData(this.contract);
 		//log.info(String.valueOf(topMktData.getContractId()));
 		topMktData.addPropertyChangeListener(this);
 		
@@ -90,7 +90,7 @@ public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyCh
 		try {
 			TextMessage msg=session.createTextMessage();
 			msg.setText("Top_Market_Data");
-			msg.setIntProperty(ExTopMktData.CONTRACT_ID, topMktData.getContractId());
+			msg.setIntProperty(IbTopMktData.CONTRACT_ID, topMktData.getContractId());
 			//msg.setStringProperty(ExTopMktData.CONTRACT_ID, String.valueOf(topMktData.getContractId()));
 			msg.setStringProperty(field, value);
 			msgProducer.send(msg);

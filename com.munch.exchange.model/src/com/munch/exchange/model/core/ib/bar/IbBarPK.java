@@ -7,7 +7,7 @@ import javax.persistence.Embeddable;
 import com.ib.controller.Types.WhatToShow;
 
 @Embeddable
-public class ExBarPK implements Serializable {
+public class IbBarPK implements Serializable {
 
 	/**
 	 * 
@@ -53,7 +53,7 @@ public class ExBarPK implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ExBarPK other = (ExBarPK) obj;
+		IbBarPK other = (IbBarPK) obj;
 		if (time != other.time)
 			return false;
 		if (type != other.type)

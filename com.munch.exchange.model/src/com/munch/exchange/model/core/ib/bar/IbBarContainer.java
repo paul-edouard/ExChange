@@ -11,13 +11,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.IbContract;
 
 
 
 
 @Entity
-public class ExContractBars extends ExBar {
+public class IbBarContainer extends IbBar {
 	
 	/**
 	 * 
@@ -27,40 +27,40 @@ public class ExContractBars extends ExBar {
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="CONTRACT_ID")
-	private ExContract contract;
+	private IbContract contract;
 	
 	
 	@OneToMany(mappedBy="root",cascade=CascadeType.ALL)
-	private List<ExBar> allBars;
+	private List<IbBar> allBars;
 	
 	
 	
-	public ExContractBars(ExContract contract, WhatToShow whatToShow) {
+	public IbBarContainer(IbContract contract, WhatToShow whatToShow) {
 		super();
 		this.contract = contract;
 		this.setType(whatToShow);
 		this.setTime(new Date().getTime());
 	}
 	
-	public ExContractBars() {
+	public IbBarContainer() {
 		super();
 	}
 	
 
-	public ExContract getContract() {
+	public IbContract getContract() {
 		return contract;
 	}
 
-	public void setContract(ExContract contract) {
+	public void setContract(IbContract contract) {
 		this.contract = contract;
 	}
 	
 
-	public List<ExBar> getAllBars() {
+	public List<IbBar> getAllBars() {
 		return allBars;
 	}
 
-	public void setAllBars(List<ExBar> allBars) {
+	public void setAllBars(List<IbBar> allBars) {
 		this.allBars = allBars;
 	}
 	

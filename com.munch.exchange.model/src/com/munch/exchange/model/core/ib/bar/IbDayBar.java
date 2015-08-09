@@ -8,7 +8,7 @@ import com.ib.controller.Types.BarSize;
 
 
 @Entity
-public class ExDayBar extends ExBar{
+public class IbDayBar extends IbBar{
 
 	/**
 	 * 
@@ -17,13 +17,13 @@ public class ExDayBar extends ExBar{
 	
 
 	
-	public ExDayBar() {
+	public IbDayBar() {
 		super();
 		this.setSize(BarSize._1_day);
 	}
 
 
-	public ExDayBar(Bar bar) {
+	public IbDayBar(Bar bar) {
 		super(bar);
 		this.setSize(BarSize._1_day);
 	}

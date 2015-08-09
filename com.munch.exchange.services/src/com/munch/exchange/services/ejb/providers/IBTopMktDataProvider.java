@@ -20,7 +20,7 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 
-import com.munch.exchange.model.core.ib.ExTopMktData;
+import com.munch.exchange.model.core.ib.IbTopMktData;
 import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataProvider;
 import com.munch.exchange.services.ejb.messages.Constants;
 
@@ -37,7 +37,7 @@ public class IBTopMktDataProvider implements IIBTopMktDataProvider, MessageListe
 	private Context context;
 	private JMSConsumer consumer;
 	
-	private HashMap<Integer, ExTopMktData> topMktDataMap=new HashMap<Integer, ExTopMktData>();
+	private HashMap<Integer, IbTopMktData> topMktDataMap=new HashMap<Integer, IbTopMktData>();
 	
 
 	@Override
@@ -80,13 +80,13 @@ public class IBTopMktDataProvider implements IIBTopMktDataProvider, MessageListe
 	
 
 	@Override
-	public void registerTopMktData(ExTopMktData topMktData) {
+	public void registerTopMktData(IbTopMktData topMktData) {
 		if(!topMktDataMap.containsKey(topMktData.getContractId()))
 			topMktDataMap.put(topMktData.getContractId(), topMktData);
 	}
 
 	@Override
-	public void unregisterTopMktData(ExTopMktData topMktData) {
+	public void unregisterTopMktData(IbTopMktData topMktData) {
 		if(topMktDataMap.containsKey(topMktData.getContractId()))
 			topMktDataMap.remove(topMktData.getContractId());
 

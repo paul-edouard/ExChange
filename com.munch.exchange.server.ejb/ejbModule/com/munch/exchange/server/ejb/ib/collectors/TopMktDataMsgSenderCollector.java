@@ -12,7 +12,7 @@ import javax.jms.TopicConnectionFactory;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
 import com.munch.exchange.server.ejb.ib.adapter.TopMktDataMsgSender;
 
@@ -37,21 +37,21 @@ public enum TopMktDataMsgSenderCollector {
 		this.destination=destination;
 		
 		log.info("Initialization");
-		List<ExContract> list=em.createNamedQuery("ExContract.getAll", ExContract.class).getResultList();
-		for(ExContract contract : list){
+		List<IbContract> list=em.createNamedQuery("IbContract.getAll", IbContract.class).getResultList();
+		for(IbContract contract : list){
 			//log.info(contract.toString());
 			addSender(contract);
 		}
 	}
 	
 	
-	public void addSender(ExContract contract){
+	public void addSender(IbContract contract){
 		TopMktDataMsgSender sender=new TopMktDataMsgSender(contract,connectionFactory,destination);
 		ConnectionBean.INSTANCE.controller().reqTopMktData(contract.getNewContract(), "", false, sender);
 		senders.put(contract.getId(), sender);
 	}
 	
-	public boolean removeSender(ExContract contract){
+	public boolean removeSender(IbContract contract){
 		if(senders.containsKey(contract.getId())){
 			ConnectionBean.INSTANCE.controller().cancelTopMktData(senders.get(contract.getId()));
 			senders.remove(contract.getId());

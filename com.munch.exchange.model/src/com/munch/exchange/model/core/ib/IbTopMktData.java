@@ -4,7 +4,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 
-public class ExTopMktData implements Serializable{
+public class IbTopMktData implements Serializable{
 	
 	/**
 	 * 
@@ -38,7 +38,7 @@ public class ExTopMktData implements Serializable{
 	private int volume;
 	private boolean frozen;
 	
-	public ExTopMktData(ExContract contract){
+	public IbTopMktData(IbContract contract){
 		contractId=contract.getId();
 	}
 	

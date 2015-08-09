@@ -7,7 +7,7 @@ import javax.naming.NamingException;
 
 import com.ib.controller.NewContractDetails;
 import com.ib.controller.Types.SecType;
-import com.munch.exchange.model.core.ib.ExContract;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
 
 
@@ -31,7 +31,7 @@ public class ContractInfoMB {
 		
 		//List<ExContract> list=contractInfoBeanRemote.searchContract("EUR",SecType.CASH);
 		log.info("Request started!");
-		List<ExContract> list=contractInfoBeanRemote.searchContract("BMW",SecType.STK);
+		List<IbContract> list=contractInfoBeanRemote.searchContract("BMW",SecType.STK);
 		//List<ExContract> list=contractInfoBeanRemote.searchContractExchange("IBM","SMART");
 		/*
 		for(ExContract contract: list){
@@ -40,7 +40,7 @@ public class ContractInfoMB {
 		}
 		*/
 		//List<ExContract> list=contractInfoBeanRemote.getAllContracts();
-		for(ExContract contract: list){
+		for(IbContract contract: list){
 			//System.out.println(contract.getSecIdType().getApiString());
 			System.out.println(contract);
 			System.out.println(contract.getSecType().getClass());
