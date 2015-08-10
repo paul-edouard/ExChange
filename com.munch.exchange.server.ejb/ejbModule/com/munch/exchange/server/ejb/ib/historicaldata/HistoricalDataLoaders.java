@@ -234,7 +234,7 @@ public enum HistoricalDataLoaders {
 					this);
 			
 			requestStartTime=new Date().getTime();
-			log.info("Search for Historical data Finished!");
+			log.info("Search for Historical data send!");
 			
 			//recievedBars=createDummyBars(from, to, barSize);
 			
@@ -248,6 +248,9 @@ public enum HistoricalDataLoaders {
 		
 		private int calculateDuration(long from, long to,BarSize barSize){
 			long diff=to-from;
+			
+			//log.info("1. Duration: "+ diff);
+			
 			if(barSize==BarSize._1_secs){
 				diff/=1000;
 			}
@@ -258,8 +261,13 @@ public enum HistoricalDataLoaders {
 				diff/=1000;
 			}
 			else if(barSize==BarSize._1_day){
-				diff/=1000*60*60*24;
+				long period=1000*60*60*24;
+				//log.info("2. Periode: "+ period);
+				diff=diff/period;
 			}
+			
+			//log.info("2. Duration: "+ diff);
+			//log.info("3. Duration: "+(int) diff);
 			
 			return (int) diff;
 		}
@@ -340,7 +348,13 @@ public enum HistoricalDataLoaders {
 		
 		private void waitForIbAnswer(){
 			
-			while( (!isTimeOut() && recievedBars.isEmpty()) || !finished ){
+			while( true ){
+				
+				if(finished)
+					break;
+				if(isTimeOut() && recievedBars.isEmpty())
+					break;
+				
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
@@ -358,7 +372,7 @@ public enum HistoricalDataLoaders {
 
 		@Override
 		public void historicalData(Bar bar, boolean hasGaps) {
-			log.info("New bar recieved: "+bar.toString());
+			//log.info("New bar recieved: "+bar.toString());
 			recievedBars.add(bar);
 			
 			//em.persist(exBar);

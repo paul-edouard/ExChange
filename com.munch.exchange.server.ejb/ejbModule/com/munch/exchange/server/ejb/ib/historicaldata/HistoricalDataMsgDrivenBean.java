@@ -159,12 +159,17 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	if(loader.getTime()-lastDayBar>new IbDayBar().getIntervall()){
     		//Search the number of years!!
     		
-    		List<Bar> dayBars=loader.loadLastBars(lastDayBar, BarSize._1_day);
-    		log.info("Number of new days found: "+dayBars.size());
-    		for(Bar bar:dayBars){
-    			IbDayBar exDayBar=new IbDayBar(bar);
-    			exDayBar.setRootAndParent(loader.getBars(), loader.getBars());
-    			newDayBars.add(exDayBar);
+    		List<Long> intervalls=createDayIntervalls(lastDayBar, loader.getTime());
+    		for(int i=0; i<intervalls.size()-1;i++){
+    			//loader.loadBarsFromTo(intervalls.get(i+1), intervalls.get(i), BarSize._1_day)
+    			List<Bar> dayBars=loader.loadBarsFromTo(intervalls.get(i+1), intervalls.get(i), BarSize._1_day);
+    			log.info("Number of new days found: "+dayBars.size());
+    			if(dayBars.isEmpty())break;
+    			for(Bar bar:dayBars){
+    				IbDayBar exDayBar=new IbDayBar(bar);
+    				exDayBar.setRootAndParent(loader.getBars(), loader.getBars());
+    				newDayBars.add(exDayBar);
+    			}
     		}
     	}
     	
@@ -206,6 +211,31 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	
     }
     
+    
+    private List<Long> createDayIntervalls(long startTime, long endTime){
+    	List<Long> intervalls=new LinkedList<>();
+    	long periode=100*24*60*60;
+    	periode*=1000;
+    	
+    	
+    	long current=endTime;
+    	while(current > startTime){
+    		intervalls.add(current);
+    		current-=periode;
+    	}
+    	
+    	intervalls.add(startTime);
+    	
+    	/*
+    	for(int i=0; i<intervalls.size();i++){
+    		log.info("Intervall: "+intervalls.get(i)+"Period: "+periode);
+    	}
+    	*/
+    	
+    	return intervalls;
+    }
+    
+    
     //@TransactionAttribute(value=TransactionAttributeType.REQUIRES_NEW)
     private List<IbBar> loadNewChildBars(BarLoader loader, List<IbBar> parentBars,Class<? extends IbBar> childClass, BarSize childBarSize, long childIntervall){
     	
@@ -219,7 +249,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	if(!parentBars.isEmpty()){
     		IbBar firstParent=parentBars.get(0);
     		List<IbBar> childBars=searchExBarsFromToDateWithoutParent(loader.getBars(),
-    				firstParent.getTime()-firstParent.getIntervall(), lastChildBar, childClass);
+    				firstParent.getTimeInMs()-firstParent.getIntervall(), lastChildBar, childClass);
     		log.info(childBars.size()+" bars will be assigned to the parent: "+firstParent.getClass().getSimpleName()+ ": "+
     				HistoricalDataLoaders.FORMAT.format( new Date(firstParent.getTime()) ));
     		for(IbBar h_bar : childBars){
@@ -247,7 +277,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		//ExBar reloadedParentBar=em.find(parent_bar.getClass(), parent_bar.getId());
     		//reloadedParent.add(reloadedParentBar);
     		
-    		List<Bar> childBars=loader.loadBarsFromTo(parent_bar.getTime()-parent_bar.getIntervall(), parent_bar.getTime(), childBarSize);
+    		List<Bar> childBars=loader.loadBarsFromTo(parent_bar.getTimeInMs()-parent_bar.getIntervall(), parent_bar.getTimeInMs(), childBarSize);
     		log.info(childBars.size()+" new bars were found and will be assigned to the parent: "+parent_bar.getClass().getSimpleName()+ ": "+
     				HistoricalDataLoaders.FORMAT.format( new Date(parent_bar.getTime()) ));
     		List<IbBar> localChildBars=new LinkedList<>();
@@ -272,7 +302,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		//If new full hour found then load until the seconds
     		if(childBarSize==BarSize._1_hour){
     			for(IbBar exHourBar:localChildBars){
-    				List<Bar> minuteBars=loader.loadBarsFromTo(exHourBar.getTime()-exHourBar.getIntervall(), exHourBar.getTime(), BarSize._1_min);
+    				List<Bar> minuteBars=loader.loadBarsFromTo(exHourBar.getTimeInMs()-exHourBar.getIntervall(), exHourBar.getTimeInMs(), BarSize._1_min);
     				List<IbBar> exMinuteBars=new LinkedList<>();
     				for(Bar minuteBar : minuteBars){
     					IbBar exMinuteBar = new IbMinuteBar(minuteBar);
@@ -280,7 +310,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     					exMinuteBars.add(exMinuteBar);
     				}
     				for(IbBar exMinuteBar:exMinuteBars){
-    					List<Bar> secondeBars=loader.loadBarsFromTo(exMinuteBar.getTime()-exMinuteBar.getIntervall(), exMinuteBar.getTime(), BarSize._1_secs);
+    					List<Bar> secondeBars=loader.loadBarsFromTo(exMinuteBar.getTimeInMs()-exMinuteBar.getIntervall(), exMinuteBar.getTimeInMs(), BarSize._1_secs);
     					
     					for(Bar secondeBar : secondeBars){
         					IbBar exSecondeBar = new IbSecondeBar(secondeBar);
@@ -291,7 +321,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		}
     		else if(childBarSize==BarSize._1_min){
     			for(IbBar exMinuteBar:localChildBars){
-					List<Bar> secondeBars=loader.loadBarsFromTo(exMinuteBar.getTime()-exMinuteBar.getIntervall(), exMinuteBar.getTime(), BarSize._1_secs);
+					List<Bar> secondeBars=loader.loadBarsFromTo(exMinuteBar.getTimeInMs()-exMinuteBar.getIntervall(), exMinuteBar.getTimeInMs(), BarSize._1_secs);
 					
 					for(Bar secondeBar : secondeBars){
     					IbBar exSecondeBar = new IbSecondeBar(secondeBar);
@@ -329,7 +359,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	
     	
     	//Search the last
-    	if(loader.getTime()-lastChildBar>childIntervall){
+    	if(loader.getTime()-lastChildBar>childIntervall && lastChildBar>0){
     		List<Bar> childBars=loader.loadLastBars(lastChildBar, childBarSize);
     		log.info(childBars.size()+" new bars were found without any parent");
     		List<IbBar> localChildBars=new LinkedList<>();
@@ -428,7 +458,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		}
     		//INDICE
     		else if(exContract.getSecType()==SecType.IND){
-    			Allbars.add(new IbBarContainer(exContract,WhatToShow.MIDPOINT));
+    			Allbars.add(new IbBarContainer(exContract,WhatToShow.TRADES));
     		}
     		
     		for(IbBarContainer bars:Allbars){

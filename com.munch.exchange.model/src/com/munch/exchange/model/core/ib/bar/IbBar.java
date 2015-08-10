@@ -199,6 +199,11 @@ public abstract  class IbBar implements Serializable{
 		return this.time;
 		//return this.pk.getTime();
 	}
+	
+	public long getTimeInMs() {
+		return this.time*1000;
+		//return this.pk.getTime();
+	}
 
 	public void setTime(long time) {
 		this.time = time;
