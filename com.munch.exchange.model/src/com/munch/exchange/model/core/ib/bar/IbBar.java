@@ -128,7 +128,7 @@ public abstract  class IbBar implements Serializable{
 		setRoot(root);
 		setType(root.getType());
 		
-		parent.getChildBars().add(this);
+		//parent.getChildBars().add(this);
 		//root.getAllBars().add(this);
 		
 	}

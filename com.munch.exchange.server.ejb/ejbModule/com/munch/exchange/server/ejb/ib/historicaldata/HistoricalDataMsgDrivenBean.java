@@ -92,16 +92,9 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 						+ message.getClass().getName());
 				return;
 			}
-			/*
-			if(HistoricalDataLoaders.INSTANCE.isLoading()){
-				log.info("Sorry the historical data are still loading!");
-				return;
-			}
-			*/
 			
 			ut.begin();
 			
-			//HistoricalDataLoaders.INSTANCE.setLoading(true);
 			// Init the His. Data Loaders
 			long time = msg
 					.getLongProperty(HistoricalDataTimerBean.TIME_STRING);
@@ -153,51 +146,33 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	//--------------------------------
     	//- 1. Search the last day bars  -
     	//--------------------------------
-    	long lastDayBar=searchLastSavedBar(loader.getBars(), IbDayBar.class);
-    	log.info("Last day found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastDayBar) ));
-    	List<IbBar> newDayBars=new LinkedList<>();
-    	if(loader.getTime()-lastDayBar>new IbDayBar().getIntervall()){
-    		//Search the number of years!!
-    		
-    		List<Long> intervalls=createDayIntervalls(lastDayBar, loader.getTime());
-    		for(int i=0; i<intervalls.size()-1;i++){
-    			//loader.loadBarsFromTo(intervalls.get(i+1), intervalls.get(i), BarSize._1_day)
-    			List<Bar> dayBars=loader.loadBarsFromTo(intervalls.get(i+1), intervalls.get(i), BarSize._1_day);
-    			log.info("Number of new days found: "+dayBars.size());
-    			if(dayBars.isEmpty())break;
-    			for(Bar bar:dayBars){
-    				IbDayBar exDayBar=new IbDayBar(bar);
-    				exDayBar.setRootAndParent(loader.getBars(), loader.getBars());
-    				newDayBars.add(exDayBar);
-    			}
-    		}
-    	}
-    	
-    	if(!newDayBars.isEmpty()){
-    		saveBars(newDayBars,true);
-    	}
+    	List<IbBar> newDayBars=loadTheDayBars(loader);
     	
     	//----------------------------------
     	//- 2. Search the last hour bars -
     	//----------------------------------
-    	List<IbBar> newHourBars= loadNewChildBars(	loader,
-    												newDayBars,
-    												IbHourBar.class,
-    												BarSize._1_hour,
-    												new IbHourBar().getIntervall()
-    												);
+    	List<IbBar> newHourBars=loadNewBars(	loader,
+    											BarSize._1_hour,
+    											new IbHourBar().getIntervall(),
+    											IbHourBar.class,
+    											30,
+    											new IbDayBar().getIntervall(),
+    											IbDayBar.class,
+    											newDayBars);
     	
     	//----------------------------------
     	//- 3. Search the last minute bars -
     	//----------------------------------
-    	/*
-    	List<ExBar> newMinuteBars= loadNewChildBars(	loader,
-    													newHourBars,
-														ExMinuteBar.class,
-														BarSize._1_min,
-														new ExMinuteBar().getIntervall()
-    													);
     	
+    	List<IbBar> newMinuteBars= loadNewBars(	loader,
+    											BarSize._1_min,
+    											new IbMinuteBar().getIntervall(),
+    											IbMinuteBar.class,
+    											24,
+    											new IbHourBar().getIntervall(),
+    											IbHourBar.class,
+    											newHourBars);
+    	/*
     	//----------------------------------
     	//- 4. Search the last second bars -
     	//----------------------------------
@@ -211,29 +186,138 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	
     }
     
+    private List<IbBar>  loadTheDayBars(BarLoader loader){
+    	long lastDayBar=searchLastSavedBar(loader.getBars(), IbDayBar.class);
+    	log.info("Last day found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastDayBar) ));
+    	if(lastDayBar==0){
+    		long days_300=300*24*60*60;days_300*=1000;
+    		lastDayBar=loader.getTime()-days_300;
+    	}
+    	//log.info("2. Last day found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastDayBar) ));
+    	
+    	List<IbBar> newDayBars=new LinkedList<>();
+    	if(loader.getTime()-lastDayBar>new IbDayBar().getIntervall()){
+    		//Load the Days
+    		List<Bar> dayBars=loader.loadBarsFromTo(lastDayBar, loader.getTime(), BarSize._1_day);
+    		log.info("Number of new days found: "+dayBars.size());
+    		
+    		//Create the Ib Day Bars
+    		for(Bar bar:dayBars){
+    			IbDayBar exDayBar=new IbDayBar(bar);
+    			exDayBar.setRootAndParent(loader.getBars(), loader.getBars());
+    			newDayBars.add(exDayBar);
+    		}
+    	}
+    	
+    	if(!newDayBars.isEmpty()){
+    		//Save the bars in the DATABASE
+    		saveBars(newDayBars,true);
+    	}
+    	
+    	return newDayBars;
+    }
     
-    private List<Long> createDayIntervalls(long startTime, long endTime){
+    
+    private List<IbBar> loadNewBars(BarLoader loader,BarSize barSize, long intervall, Class<? extends IbBar> clazz,
+    		long period,long parentIntervall, Class<?> parentClazz, List<IbBar> parentBars ){
+    	
+    	
+    	//Set the last bar found date
+    	long lastBar=searchLastSavedBar(loader.getBars(), clazz);
+    	log.info("Last hour found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastBar)));
+    	if(lastBar==0){
+    		long firstDay=searchFirstSavedBar(loader.getBars(), parentClazz);
+    		if(firstDay==0)return null;
+    		lastBar=firstDay-parentIntervall;
+    	}
+    	
+    	
+    	//Search the new Bars
+    	List<IbBar> newBars=new LinkedList<>();
+    	if(loader.getTime()-lastBar>intervall && lastBar>0){
+    		
+    		//Create the search intervalls
+    		List<Long> intervalls=createIntervalls(lastBar, loader.getTime(),parentIntervall*period);
+    		
+    		for(int i=0;i<intervalls.size()-1;i++){
+    			//Load the bars from the given intervall
+    			List<Bar> bars=loader.loadBarsFromTo(intervalls.get(i), intervalls.get(i+1), barSize);
+        		log.info("Number of "+clazz.getSimpleName() +" found: "+bars.size());
+    			for(Bar bar : bars){
+    				if(bar.time()>lastBar/1000){
+						try {
+							IbBar exBar = clazz.newInstance();
+							exBar.init(bar);
+	    					exBar.setRootAndParent(loader.getBars(), loader.getBars());
+	    					
+	    					newBars.add(exBar);
+						} catch (InstantiationException
+								| IllegalAccessException e) {
+							e.printStackTrace();
+						}
+    					
+    				}
+    			}
+    		}
+    	}
+    	
+    	//Search bars without parents
+    	List<IbBar> bars_withoutParents=searchExBarsWithoutParent(loader.getBars(), clazz);
+    	if(bars_withoutParents!=null){
+    		searchAndSetParent(loader, bars_withoutParents, parentBars, parentClazz);
+    		updateBars(bars_withoutParents);
+    	}
+    	
+    	//Search and set the parents of the new bars
+    	searchAndSetParent(loader, newBars, parentBars, parentClazz);
+    	//Save the bars in the database
+    	saveBars(newBars,true);
+    	
+    	
+    	return newBars;
+    }
+    
+    private List<Long> createIntervalls(long startTime, long endTime, long period){
     	List<Long> intervalls=new LinkedList<>();
-    	long periode=100*24*60*60;
-    	periode*=1000;
-    	
-    	
+    
     	long current=endTime;
     	while(current > startTime){
-    		intervalls.add(current);
-    		current-=periode;
+    		intervalls.add(0,current);
+    		current-=period;
     	}
     	
-    	intervalls.add(startTime);
-    	
-    	/*
-    	for(int i=0; i<intervalls.size();i++){
-    		log.info("Intervall: "+intervalls.get(i)+"Period: "+periode);
-    	}
-    	*/
+    	intervalls.add(0,startTime);
     	
     	return intervalls;
     }
+    
+    private void searchAndSetParent(BarLoader loader,List<IbBar> bars,List<IbBar> parentBars, Class<?> parentClazz){
+    	for(IbBar bar : bars){
+    		IbBar parent=null;
+    		for(IbBar parentBar: parentBars){
+    			if(bar.getTime()>parentBar.getTime())continue;
+    			
+    			if(parent==null){parent=parentBar;continue;}
+    			
+    			if(parent.getTime()>parentBar.getTime())
+    				parent=parentBar;
+    		}
+    		
+    		//Search the parent in the database
+    		if(parent==null){
+    			IbBar new_parent=searchParentOf(bar, loader.getBars(), parentClazz);
+    			if(new_parent!=null){
+    				parent=new_parent;
+    				parentBars.add(parent);
+    			}
+    		}
+    		
+    		//Set the parent
+    		bar.setParent(parent);
+    		
+    	}
+    }
+    
     
     
     //@TransactionAttribute(value=TransactionAttributeType.REQUIRES_NEW)
@@ -452,13 +536,34 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		Allbars=new LinkedList<IbBarContainer>();
     		
     		//STOCK
-    		if(exContract.getSecType()==SecType.STK){
+    		if(exContract.getSecType()==SecType.STK ){
     			Allbars.add(new IbBarContainer(exContract,WhatToShow.MIDPOINT));
-    			Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.TRADES));
+    			
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.HISTORICAL_VOLATILITY));
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.OPTION_IMPLIED_VOLATILITY));
+    		}
+    		else if(exContract.getSecType()==SecType.CASH || 
+    				exContract.getSecType()==SecType.CMDTY){
+    			Allbars.add(new IbBarContainer(exContract,WhatToShow.MIDPOINT));
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
+    		}
+    		else if(exContract.getSecType()==SecType.OPT ||
+    				exContract.getSecType()==SecType.FUT){
+    			Allbars.add(new IbBarContainer(exContract,WhatToShow.MIDPOINT));
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.TRADES));
     		}
     		//INDICE
     		else if(exContract.getSecType()==SecType.IND){
     			Allbars.add(new IbBarContainer(exContract,WhatToShow.TRADES));
+    			
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.HISTORICAL_VOLATILITY));
+    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.OPTION_IMPLIED_VOLATILITY));
     		}
     		
     		for(IbBarContainer bars:Allbars){
@@ -467,14 +572,11 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		em.flush();
     	}
     	
+    	//List<IbBarContainer> Allbars
+    	//for(IbBarContainer container:)
+    	
     	return Allbars;
     }
-    
-    /*
-    private long searchLastSavedSecondeBar(ExContractBars exContractBars){
-    	return searchLastSavedBar(exContractBars,ExSecondeBar.class);
-    }
-    */
     
     private long searchLastSavedBar(IbBarContainer exContractBars, Class<?> clazz){
     	Query query=em.createQuery("SELECT MAX(b.time)" +
@@ -485,22 +587,44 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		return 0;
 
     	log.info("Result: "+singleResult.toString());
-    	return (long) singleResult;
+    	long time=(long) singleResult;
+    	return time*1000;
     }
     
-    /*
-    private List<ExBar> searchExBarsFromToDate(ExContractBars exContractBars,long from, long to, Class<?> clazz){
-    	
-    	TypedQuery<ExBar> query=em.createQuery("SELECT b " +
-				"FROM "+clazz.getSimpleName()+" b "+
-    			"WHERE b.root="+exContractBars.getId()+" "+
-				"AND b.time > "+from+" AND b.time <= "+to,ExBar.class);
-    	
-    	List<ExBar> bars=query.getResultList();
-    	
-    	return bars;
+    private long searchFirstSavedBar(IbBarContainer exContractBars, Class<?> clazz){
+    	Query query=em.createQuery("SELECT MIN(b.time)" +
+				"FROM "+clazz.getSimpleName()+" b WHERE b.root="+exContractBars.getId());
+
+    	Object singleResult=query.getSingleResult();
+    	if(singleResult==null)
+    		return 0;
+
+    	log.info("Result: "+singleResult.toString());
+    	long time=(long) singleResult;
+    	return time*1000;
     }
-    */
+    
+    private IbBar searchParentOf(IbBar child, IbBarContainer exContractBars,Class<?> parentClazz){
+    	
+    	TypedQuery<IbBar> query=em.createQuery("SELECT b " +
+				"FROM "+parentClazz.getSimpleName()+" b "+
+    			"WHERE b.root="+exContractBars.getId()+" "+
+				"AND b.time > "+child.getTime(),IbBar.class);
+    	
+    	List<IbBar> bars=query.getResultList();
+    	if(bars==null || bars.isEmpty())return null;
+    	IbBar parent=bars.get(0);
+    	for(IbBar bar:bars){
+    		if(bar.getTime()<parent.getTime()){
+    			parent=bar;
+    		}
+    	}
+    	
+    	return parent;
+    	
+    }
+    
+
     
     private List<IbBar> searchExBarsFromToDateWithoutParent(IbBarContainer exContractBars,long from, long to, Class<?> clazz){
     	
@@ -514,30 +638,21 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	return bars;
     }
     
+    private List<IbBar> searchExBarsWithoutParent(IbBarContainer exContractBars, Class<?> clazz){
+    	
+    	TypedQuery<IbBar> query=em.createQuery("SELECT b " +
+				"FROM "+clazz.getSimpleName()+" b "+
+    			"WHERE b.root="+exContractBars.getId()+" "+
+				"AND b.parent IS NULL",IbBar.class);
+    	
+    	List<IbBar> bars=query.getResultList();
+    	
+    	return bars;
+    }
     
     
-    /*
-	private ExBar getLastSavedBar(ExContractBars exContractBars, BarSize barSize) {
-		// TODO Auto-generated method stub
-		
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<ExContractBars> cq=cb.createQuery(ExContractBars.class);
-		Root<ExContractBars> c=cq.from(ExContractBars.class);
-		cq.select(c);
-		
-		TypedQuery<ExContractBars> typedQuery = em.createQuery(cq);
-		List<ExContractBars> bars=typedQuery.getResultList();
-		
-		for(ExBar bar : bars)
-			log.info(bar.toString());
-		
-		//if(bars.size()>0)
-		//	return bars.get(0);
-		
-		return null;
-	}
-	*/
     
+  
     
     
 

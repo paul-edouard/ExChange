@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -36,6 +37,35 @@ public enum HistoricalDataLoaders {
 	private HashMap<Long, BarLoader> loaderMap=new HashMap<Long, BarLoader>();
 	private boolean isLoading=false;
 	
+	private LinkedList<Long> lastRequests=new LinkedList<>();
+	private long minRequestIntervall=10*60*1000;
+	
+	private synchronized boolean acceptNewRequest(){
+		
+		if(lastRequests.size()>2){
+			long diff=lastRequests.getLast()-lastRequests.getFirst();
+			Calendar cal=Calendar.getInstance();cal.setTimeInMillis(diff);
+			log.info("Number of request: "+lastRequests.size()+ " in the last: " +cal.get(Calendar.MINUTE)+"min "+cal.get(Calendar.SECOND)+"s ");
+			
+		}
+		
+		
+		Calendar date=Calendar.getInstance();
+		if(lastRequests.size()<=60){
+			lastRequests.add(date.getTimeInMillis());
+			return true;
+		}
+		
+		long first=lastRequests.getFirst();
+		long diff=date.getTimeInMillis()-first;
+		if(diff > minRequestIntervall){
+			lastRequests.remove(0);
+			lastRequests.addLast(date.getTimeInMillis());
+			return true;
+		}
+		
+		return false;
+	}
 	
 	
 	public void init(List<IbBarContainer> allBars, long time){
@@ -187,37 +217,23 @@ public enum HistoricalDataLoaders {
 
 		public List<Bar> loadLastBars(long last,BarSize barSize){
 			return loadBarsFromTo(last, this.time, barSize);
-			
-			/*
-			recievedBars.clear();
-			finished=false;
-			
-			String date=FORMAT.format( new Date(this.time) );
-			int duration=(int) (this.time-last)/1000;
-			log.info("Date: "+date);
-			ConnectionBean.INSTANCE.controller().reqHistoricalData(bars.getContract().getNewContract(),
-					date, 							//The new Data
-					duration,						//duration in secondes
-					DurationUnit.SECOND,			//secondes
-					barSize,						//bar Size
-					bars.getType(), 				//Ex MIDPOINT, BID, ASK
-					false,							//RTh only
-					this);
-			
-			requestStartTime=new Date().getTime();
-			log.info("Search for Historical data Finished!");
-			
-			//Wait of the ib answer
-			waitForIbAnswer();
-			
-			
-			return recievedBars;
-			*/
-			
 		}
 		
 		public List<Bar> loadBarsFromTo(long from, long to,BarSize barSize){
 			recievedBars.clear();
+			
+			//Test if more than 60 historical data were starter in the last 60 minutes
+			while(!acceptNewRequest()){
+				log.info("New request denied!");
+				//return recievedBars;
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					break;
+				}
+			}
+			
 			finished=false;
 			
 			
@@ -258,12 +274,17 @@ public enum HistoricalDataLoaders {
 				diff/=1000;
 			}
 			else if(barSize==BarSize._1_hour){
-				diff/=1000;
+				long period=1000*60*60*24;
+				diff=diff/period;
+				if(diff==0)
+					diff=1;
 			}
 			else if(barSize==BarSize._1_day){
 				long period=1000*60*60*24;
 				//log.info("2. Periode: "+ period);
 				diff=diff/period;
+				if(diff==0)
+					diff=1;
 			}
 			
 			//log.info("2. Duration: "+ diff);
@@ -280,7 +301,7 @@ public enum HistoricalDataLoaders {
 				return DurationUnit.SECOND;
 			}
 			else if(barSize==BarSize._1_hour){
-				return DurationUnit.SECOND;
+				return DurationUnit.DAY;
 			}
 			else if(barSize==BarSize._1_day){
 				return DurationUnit.DAY;
