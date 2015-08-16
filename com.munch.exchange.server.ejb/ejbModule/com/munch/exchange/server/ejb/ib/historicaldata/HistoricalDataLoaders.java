@@ -58,6 +58,10 @@ public enum HistoricalDataLoaders {
 		
 		long first=lastRequests.getFirst();
 		long diff=date.getTimeInMillis()-first;
+		
+		log.info("Diff: "+diff+ " min intervall: " +minRequestIntervall );
+		
+		
 		if(diff > minRequestIntervall){
 			lastRequests.remove(0);
 			lastRequests.addLast(date.getTimeInMillis());

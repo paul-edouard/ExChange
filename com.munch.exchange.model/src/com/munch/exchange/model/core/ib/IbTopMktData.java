@@ -3,6 +3,10 @@ package com.munch.exchange.model.core.ib;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import com.ib.controller.Formats;
 
 public class IbTopMktData implements Serializable{
 	
@@ -10,6 +14,8 @@ public class IbTopMktData implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = -5627050802382737686L;
+	private static final SimpleDateFormat FORMAT = new SimpleDateFormat( "HH:mm:ss"); // format for historical query
+
 	
 	public static final String CONTRACT_ID="CONTRACT_ID";
 	
@@ -40,6 +46,10 @@ public class IbTopMktData implements Serializable{
 	
 	public IbTopMktData(IbContract contract){
 		contractId=contract.getId();
+	}
+	
+	public IbTopMktData(int contractId){
+		this.contractId=contractId;
 	}
 	
 	
@@ -158,6 +168,25 @@ public class IbTopMktData implements Serializable{
 				+ last + ", lastTime=" + lastTime + ", bidSize=" + bidSize
 				+ ", askSize=" + askSize + ", close=" + close + ", volume="
 				+ volume + ", frozen=" + frozen + "]";
+	}
+	
+	
+	public String toStrLine(){
+		return "[bid=" + bid
+				+ ", ask=" + ask
+				+ ", last="+ last
+				+ ", lastTime=" + formattedTime()
+				+ ", bidSize=" + bidSize
+				+ ", askSize=" + askSize
+				+ ", close=" + close
+				+ ", volume="+ volume
+				+ "]";
+	}
+	
+	private String formattedTime() {
+		
+		return FORMAT.format( new Date(this.lastTime));
+		
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener l) {

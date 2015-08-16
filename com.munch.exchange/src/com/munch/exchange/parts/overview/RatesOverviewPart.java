@@ -1,6 +1,7 @@
  
 package com.munch.exchange.parts.overview;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -31,11 +32,14 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.jfree.util.Log;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.IImageKeys;
@@ -47,12 +51,16 @@ import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.IbTopMktData;
 import com.munch.exchange.parts.MyMDirtyable;
 import com.munch.exchange.parts.RateEditorPart;
 import com.munch.exchange.services.IBundleResourceLoader;
+import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataListener;
+import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataProvider;
 
 
-public class RatesOverviewPart {
+public class RatesOverviewPart implements IIBTopMktDataListener{
 	
 	private static Logger logger = Logger
 			.getLogger(RatesOverviewPart.class);
@@ -78,10 +86,17 @@ public class RatesOverviewPart {
 	@Inject
 	IBundleResourceLoader bundleResourceLoader;
 	
+	@Inject
+	IIBTopMktDataProvider ibTopMktDataProvider;
+	
+	
 	
 	private TreeViewer treeViewer;
 	private RatesTreeContentProvider contentProvider;
+	private RatesTreeLabelProvider labelProvider;
 	private QuoteLoader quoteLoader;
+	
+	
 	
 	@Inject
 	public RatesOverviewPart() {
@@ -129,7 +144,8 @@ public class RatesOverviewPart {
 		
 		contentProvider=ContextInjectionFactory.make( RatesTreeContentProvider.class,context);
 		treeViewer.setContentProvider(contentProvider);
-		treeViewer.setLabelProvider(ContextInjectionFactory.make( RatesTreeLabelProvider.class,context));
+		labelProvider=ContextInjectionFactory.make( RatesTreeLabelProvider.class,context);
+		treeViewer.setLabelProvider(labelProvider);
 		//treeViewer.setLabelProvider(new TestLabelProvider());
 		
 		treeViewer.setInput(contentProvider.getRoot());
@@ -144,6 +160,10 @@ public class RatesOverviewPart {
 		
 		//Create and start the quote loader
 		quoteLoader=ContextInjectionFactory.make( QuoteLoader.class,context);
+		
+		
+		//Add a listener
+		ibTopMktDataProvider.addIbTopMktDataListener(this);
 		
 	}
 	
@@ -340,6 +360,8 @@ public class RatesOverviewPart {
 			e.printStackTrace();
 		}
 		
+		//remove a listener
+		ibTopMktDataProvider.removeIbTopMktDataListener(this);
 		
 	}
 	
@@ -353,6 +375,39 @@ public class RatesOverviewPart {
 	@Persist
 	public void save() {
 		//TODO Your code here
+	}
+
+	@Override
+	public void ibTopMktDataChanged(IbTopMktData ibTopMktData) {
+		labelProvider.getTopMktDataMap().put(ibTopMktData.getContractId(), ibTopMktData);
+		
+		Display.getDefault().asyncExec(new mktDataUpdater(ibTopMktData.getContractId())); 
+		
+	}
+	
+	private class mktDataUpdater implements Runnable{
+		
+		int contractId;
+		
+		
+
+		public mktDataUpdater(int contractId) {
+			super();
+			this.contractId = contractId;
+		}
+
+
+
+		@Override
+		public void run() {
+			IbContract contract=contentProvider.getRoot().searchIbContract(contractId);
+			if(contract==null)return;
+			
+			treeViewer.update(contract, null);
+			
+			
+		}
+		
 	}
 	
 	

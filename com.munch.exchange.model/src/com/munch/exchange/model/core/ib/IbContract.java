@@ -18,6 +18,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
+import org.hibernate.validator.constraints.Length;
+
 import com.ib.client.TagValue;
 import com.ib.controller.NewContract;
 import com.ib.controller.NewContractDetails;
@@ -74,6 +76,8 @@ public class IbContract implements Serializable{
 	private String marketName;
 	private double minTick;
 	private int priceMagnifier;
+	
+	@Length(max=1000)
 	private String orderTypes;
 	private String validExchanges;
 	private int underConid;

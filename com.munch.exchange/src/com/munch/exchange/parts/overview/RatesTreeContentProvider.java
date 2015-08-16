@@ -250,6 +250,7 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			List<IbContract> contracts=contractProvider.getAll();
 			exContractRoot.getChildren().clear();
 			for(IbContract contract:contracts){
+				//System.out.println("Add new contract: "+contract.getId());
 				exContractRoot.addExContract(contract);
 			}
 		}
@@ -259,6 +260,21 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			children[0]=exContractRoot;
 			children[1]=rateRoot;
 			return children;
+		}
+		
+		public IbContract searchIbContract(int contractId){
+			for(IbContract contract :exContractRoot.getChildren() ){
+				if(contract instanceof ExContractContainer){
+					ExContractContainer container=(ExContractContainer) contract;
+					for(IbContract c :container.getChildren() ){
+						//System.out.println("Contract Id: "+c.getId());
+						if(contractId==c.getId())return c;
+					}
+				}
+			}
+			
+			
+			return null;
 		}
 		
 	}

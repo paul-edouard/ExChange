@@ -5,6 +5,8 @@ import java.util.HashMap;
 //import java.util.logging.Logger;
 
 
+import java.util.HashSet;
+
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
@@ -21,6 +23,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 
 import com.munch.exchange.model.core.ib.IbTopMktData;
+import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataListener;
 import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataProvider;
 import com.munch.exchange.services.ejb.messages.Constants;
 
@@ -38,6 +41,7 @@ public class IBTopMktDataProvider implements IIBTopMktDataProvider, MessageListe
 	private JMSConsumer consumer;
 	
 	private HashMap<Integer, IbTopMktData> topMktDataMap=new HashMap<Integer, IbTopMktData>();
+	private HashSet<IIBTopMktDataListener> ibTopMktDataListeners=new HashSet<>();
 	
 
 	@Override
@@ -105,20 +109,76 @@ public class IBTopMktDataProvider implements IIBTopMktDataProvider, MessageListe
 			
 			@SuppressWarnings("unchecked")
 			Enumeration<String> propList= msg.getPropertyNames();
-			String content="";
+			//String content="";
+			HashMap<String, String> propMap=new HashMap<>();
 			while(propList.hasMoreElements()){
 				String prop=propList.nextElement();
 				String value=msg.getStringProperty(prop);
-				//topMktData.setValue(prop, value);
-				content+=prop+"="+value+", ";
+				propMap.put(prop, value);
+				//content+=prop+"="+value+", ";
 			}
+			reactOnNewIbTopMktData(propMap);
 			
-			System.out.println(content);
+			//System.out.println(content);
 		} catch (JMSException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	private void reactOnNewIbTopMktData(HashMap<String, String> propMap){
+		if( !propMap.containsKey(IbTopMktData.CONTRACT_ID))return;
 		
+		int contractId=Integer.parseInt(propMap.get(IbTopMktData.CONTRACT_ID));
+		
+		if( !topMktDataMap.containsKey(contractId))
+			topMktDataMap.put(contractId, new IbTopMktData(contractId));
+		
+		//Reset the new data
+		IbTopMktData ibTopMktData=topMktDataMap.get(contractId);
+		if(propMap.containsKey(IbTopMktData.ASK)){
+			ibTopMktData.setAsk(Double.parseDouble(propMap.get(IbTopMktData.ASK)));
+		}
+		else if(propMap.containsKey(IbTopMktData.ASK_SIZE)){
+			ibTopMktData.setAskSize(Integer.parseInt(propMap.get(IbTopMktData.ASK_SIZE)));
+		}
+		else if(propMap.containsKey(IbTopMktData.BID)){
+			ibTopMktData.setBid(Double.parseDouble(propMap.get(IbTopMktData.BID)));
+		}
+		else if(propMap.containsKey(IbTopMktData.BID_SIZE)){
+			ibTopMktData.setBidSize(Integer.parseInt(propMap.get(IbTopMktData.BID_SIZE)));
+		}
+		else if(propMap.containsKey(IbTopMktData.CLOSE)){
+			ibTopMktData.setClose(Double.parseDouble(propMap.get(IbTopMktData.CLOSE)));
+		}
+		else if(propMap.containsKey(IbTopMktData.LAST)){
+			ibTopMktData.setLast(Double.parseDouble(propMap.get(IbTopMktData.LAST)));
+		}
+		else if(propMap.containsKey(IbTopMktData.LAST_TIME)){
+			ibTopMktData.setLastTime(Long.parseLong(propMap.get(IbTopMktData.LAST_TIME)));
+		}
+		else if(propMap.containsKey(IbTopMktData.VOLUME)){
+			ibTopMktData.setVolume(Integer.parseInt(propMap.get(IbTopMktData.VOLUME)));
+		}
+		
+		
+		//Send the new top mkt data
+		for(IIBTopMktDataListener listener:ibTopMktDataListeners){
+			listener.ibTopMktDataChanged(ibTopMktData);
+		}
+		
+		
+	}
+	
+	
+	@Override
+	public void addIbTopMktDataListener(IIBTopMktDataListener listener) {
+		this.ibTopMktDataListeners.add(listener);
+	}
+
+	@Override
+	public void removeIbTopMktDataListener(IIBTopMktDataListener listener) {
+		this.ibTopMktDataListeners.remove(listener);
 	}
 
 	

@@ -1,5 +1,7 @@
 package com.munch.exchange.parts.overview;
 
+import java.util.HashMap;
+
 import javax.inject.Inject;
 
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
@@ -12,6 +14,7 @@ import com.munch.exchange.model.core.EconomicData;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.IbTopMktData;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.ExContractContainer;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IBundleResourceLoader;
@@ -36,8 +39,20 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 	@Inject
 	IBundleResourceLoader loader;
 	
+	
+	private HashMap<Integer, IbTopMktData> topMktDataMap=new HashMap<Integer, IbTopMktData>();
+	private HashMap<Integer, IbContract> viewerCellMap=new HashMap<Integer, IbContract>();
+	
 
 	
+	public HashMap<Integer, IbContract> getViewerCellMap() {
+		return viewerCellMap;
+	}
+
+	public HashMap<Integer, IbTopMktData> getTopMktDataMap() {
+		return topMktDataMap;
+	}
+
 	private Image getRateContainerImage() {
 		if(rateContainerImage==null){
 			rateContainerImage=loader.loadImage(getClass(),IImageKeys.RATE_CONTAINER );
@@ -185,7 +200,19 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 		}
 		else if(element instanceof IbContract){
 			IbContract contract=(IbContract) element;
-			cell.setText(contract.getLongName()+" ["+contract.getExchange()+", "+contract.getCurrency()+"]");
+			viewerCellMap.put(contract.getId(), contract);
+			
+			
+			String txt=contract.getLongName()+" ["+contract.getExchange()+", "+contract.getCurrency()+"]";
+			if(topMktDataMap.containsKey(contract.getId())){
+				IbTopMktData ibTopMktData=topMktDataMap.get(contract.getId());
+				//txt+=", ["+ibTopMktData.getAsk()+", "+ibTopMktData.getBid()+"]";
+				
+				txt+=", "+ibTopMktData.toStrLine();
+				
+			}
+			
+			cell.setText(txt);
 		}
 		
 	}

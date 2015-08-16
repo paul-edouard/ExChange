@@ -1,10 +1,8 @@
 package com.munch.exchange.server.ejb.ib;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.ejb.LocalBean;
@@ -12,15 +10,13 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import apidemo.ApiDemo;
-
 import com.ib.client.TagValue;
 import com.ib.controller.ApiController.IContractDetailsHandler;
 import com.ib.controller.Types.SecType;
 import com.ib.controller.NewContract;
 import com.ib.controller.NewContractDetails;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.jpa.entity.Student;
+import com.munch.exchange.server.ejb.ib.collectors.TopMktDataMsgSenderCollector;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
 
 /**
@@ -168,6 +164,8 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	@Override
 	public IbContract create(IbContract contract) {
 		em.persist(contract);
+		//Add message sender
+		TopMktDataMsgSenderCollector.INSTANCE.addSender(contract);
 		return contract;
 	}
 
@@ -180,6 +178,8 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	@Override
 	public void remove(int id) {
 		em.remove(getContract(id));
+		//Remove a message sender
+		TopMktDataMsgSenderCollector.INSTANCE.removeSender(getContract(id));
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.munch.exchange.server.ejb.ib.collectors;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -44,6 +45,13 @@ public enum TopMktDataMsgSenderCollector {
 		}
 	}
 	
+	public boolean contains(IbContract contract){
+		return senders.containsKey(contract.getId());
+	}
+	
+	public Set<Integer> getIds(){
+		return senders.keySet();
+	}
 	
 	public void addSender(IbContract contract){
 		TopMktDataMsgSender sender=new TopMktDataMsgSender(contract,connectionFactory,destination);
@@ -52,14 +60,17 @@ public enum TopMktDataMsgSenderCollector {
 	}
 	
 	public boolean removeSender(IbContract contract){
-		if(senders.containsKey(contract.getId())){
-			ConnectionBean.INSTANCE.controller().cancelTopMktData(senders.get(contract.getId()));
-			senders.remove(contract.getId());
+		return removeSender(contract.getId());
+	}
+	
+	public boolean removeSender(int id){
+		if(senders.containsKey(id)){
+			ConnectionBean.INSTANCE.controller().cancelTopMktData(senders.get(id));
+			senders.remove(id);
 			return true;
 		}
 		
 		return false;
-		
 	}
 	
 	public void clearAll(){

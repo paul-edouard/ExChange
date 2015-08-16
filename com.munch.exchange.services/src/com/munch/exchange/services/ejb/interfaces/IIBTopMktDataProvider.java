@@ -12,6 +12,9 @@ public interface IIBTopMktDataProvider {
 	void registerTopMktData(IbTopMktData topMktData);
 	void unregisterTopMktData(IbTopMktData topMktData);
 	
+	//Top Mkt data Listerners
+	void addIbTopMktDataListener(IIBTopMktDataListener listener);
+	void removeIbTopMktDataListener(IIBTopMktDataListener listener);
 	
 
 }

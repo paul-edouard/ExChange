@@ -321,6 +321,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     
     
     //@TransactionAttribute(value=TransactionAttributeType.REQUIRES_NEW)
+    /*
     private List<IbBar> loadNewChildBars(BarLoader loader, List<IbBar> parentBars,Class<? extends IbBar> childClass, BarSize childBarSize, long childIntervall){
     	
     	
@@ -419,22 +420,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		//em.merge(arg0)
     		//em.persist(reloadedParentBar);
     		saveBars(localChildBars,true);
-        	/*
-    		ut.commit();
-    		} catch (NotSupportedException | SystemException | SecurityException |
-    				IllegalStateException | RollbackException | HeuristicMixedException | HeuristicRollbackException e) {
-    			log.warning(e.toString());
-    			e.printStackTrace();
-    			try {
-    				ut.rollback();
-    			} catch (IllegalStateException | SecurityException
-    					| SystemException e1) {
-    				log.warning(e1.toString());
-    				e1.printStackTrace();
-    			}
-    			
-    		}
-    		*/
+        	
     		
     		//parentBuffered.clear();
     		//reloadedParent.clear();
@@ -475,6 +461,10 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	
     	return newChildBars;
     }
+    */
+    
+    
+    
     
     private void saveBars(List<IbBar> bars,boolean withTransation){
     	
@@ -538,9 +528,9 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		//STOCK
     		if(exContract.getSecType()==SecType.STK ){
     			Allbars.add(new IbBarContainer(exContract,WhatToShow.MIDPOINT));
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.TRADES));
+    			Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
+    			Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
+    			Allbars.add(new IbBarContainer(exContract,WhatToShow.TRADES));
     			
     			//Allbars.add(new IbBarContainer(exContract,WhatToShow.HISTORICAL_VOLATILITY));
     			//Allbars.add(new IbBarContainer(exContract,WhatToShow.OPTION_IMPLIED_VOLATILITY));
