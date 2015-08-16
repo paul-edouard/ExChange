@@ -86,10 +86,10 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 		try {
 			if (message instanceof TextMessage) {
 				msg = (TextMessage) message;
-				log.info("Recieved Message from topic: " + msg.getText());
+				//log.info("Recieved Message from topic: " + msg.getText());
 			} else {
-				log.info("Message of wrong type: "
-						+ message.getClass().getName());
+				//log.info("Message of wrong type: "
+				//		+ message.getClass().getName());
 				return;
 			}
 			
@@ -224,7 +224,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	
     	//Set the last bar found date
     	long lastBar=searchLastSavedBar(loader.getBars(), clazz);
-    	log.info("Last hour found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastBar)));
+    	//log.info("Last hour found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastBar)));
     	if(lastBar==0){
     		long firstDay=searchFirstSavedBar(loader.getBars(), parentClazz);
     		if(firstDay==0)return null;
@@ -576,7 +576,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	if(singleResult==null)
     		return 0;
 
-    	log.info("Result: "+singleResult.toString());
+    	//log.info("Result: "+singleResult.toString());
     	long time=(long) singleResult;
     	return time*1000;
     }

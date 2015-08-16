@@ -1,7 +1,6 @@
  
 package com.munch.exchange.parts.overview;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,6 +40,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.jfree.util.Log;
 
+import com.ib.controller.Types.SecType;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.IImageKeys;
 import com.munch.exchange.job.quote.QuoteLoader;
@@ -54,6 +54,7 @@ import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.IbTopMktData;
 import com.munch.exchange.parts.MyMDirtyable;
 import com.munch.exchange.parts.RateEditorPart;
+import com.munch.exchange.parts.chart.ChartEditorPart;
 import com.munch.exchange.services.IBundleResourceLoader;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataListener;
@@ -132,9 +133,11 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 					
 					if(item instanceof ExchangeRate){
 						ExchangeRate rate=(ExchangeRate)item;
-						//logger.info("Double click on: "+rate.getFullName());
-						openRateEditor(rate);
-						
+						openRateEditor(rate);	
+					}
+					else if(item instanceof IbContract){
+						IbContract contract=(IbContract) item;
+						openGraphEditor(contract);
 					}
 					
 				}
@@ -168,6 +171,10 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 	}
 	
 	
+	//
+	//OPEN RATE EDITOR FUNCTIONS
+	//
+	
 	/**
 	 * Open a new Rate Editor,
 	 * If the Editor already exist it will be bring to the top
@@ -196,6 +203,7 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 	
 		
 	}
+	
 	
 	private MPart createRateEditorPart(ExchangeRate rate){
 		MPart part = partService.createPart(RateEditorPart.RATE_EDITOR_ID);
@@ -256,6 +264,76 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 		return parts;
 	}
 	
+	//
+	//OPEN GRAPH EDITOR FUNCTIONS
+	//
+	
+	private void openGraphEditor(IbContract contract){
+		
+		MPart part=searchPart(ChartEditorPart.CHART_EDITOR_ID,String.valueOf(contract.getId()));
+		if(part!=null &&  part.getContributionURI()!=null){
+			if(part.getContext()==null){
+				setGraphEditorContext(part,contract);
+			}
+			
+				partService.bringToTop(part);
+				return;
+		}
+		
+		//Create the part
+		part=createGraphEditorPart(contract);
+		
+		//add the part to the corresponding Stack
+		MPartStack myStack=(MPartStack)modelService.find("com.munch.exchange.partstack.rightup", application);
+		myStack.getChildren().add(part);
+		//Open the part
+		partService.showPart(part, PartState.ACTIVATE);	
+	}
+	
+	private MPart createGraphEditorPart(IbContract contract){
+		MPart part = partService.createPart(ChartEditorPart.CHART_EDITOR_ID);
+		
+		//MPart part =MBasicFactory.INSTANCE.createPartDescrip;
+		
+		part.setLabel(contract.getLongName());
+		part.setIconURI(getIconURI(contract));
+		part.setVisible(true);
+		part.setDirty(false);
+		part.getTags().add(String.valueOf(contract.getId()));
+		part.getTags().add(EPartService.REMOVE_ON_HIDE_TAG);
+		
+		setGraphEditorContext(part,contract);
+		
+		return part;
+	}
+	
+	private void setGraphEditorContext(MPart part,IbContract contract){
+		part.setContext(context.createChild());
+		part.getContext().set(IbContract.class, contract);
+		//part.getContext().set(MDirtyable.class, new MyMDirtyable(part));
+	}
+	
+	private String getIconURI(IbContract contract){
+		if(contract.getSecType()==SecType.STK){
+			return bundleResourceLoader.getImageURI(getClass(),IImageKeys.RATE_STOCK).toString();
+		}
+		else if(contract.getSecType()==SecType.CMDTY){
+			return bundleResourceLoader.getImageURI(getClass(),IImageKeys.RATE_COMMODITY).toString();
+		}
+		else if(contract.getSecType()==SecType.FUND){
+			return bundleResourceLoader.getImageURI(getClass(),IImageKeys.RATE_FUND).toString();
+		}
+		else if(contract.getSecType()==SecType.CASH){
+			return bundleResourceLoader.getImageURI(getClass(),IImageKeys.RATE_CURRENCY).toString();
+		}
+		else if(contract.getSecType()==SecType.IND){
+			return bundleResourceLoader.getImageURI(getClass(),IImageKeys.RATE_INDICE).toString();
+		}
+		
+		return bundleResourceLoader.getImageURI(getClass(),IImageKeys.RATE_COMMON).toString();
+	}
+	
+	
 	
 	@Inject
 	private void openRate(@Optional  @UIEventTopic(IEventConstant.RATE_OPEN) ExchangeRate rate ){
@@ -275,10 +353,6 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 			treeViewer.setExpandedElements(elements);
 		}
 	}
-	
-	
-	
-	
 	
 	@Inject
 	private void deleteRate(@Optional  @UIEventTopic(IEventConstant.RATE_DELETE) ExchangeRate rate ){

@@ -243,7 +243,7 @@ public enum HistoricalDataLoaders {
 			
 			String date=FORMAT.format( new Date(to) );
 			//int duration=(int) (to-from)/1000;
-			log.info("Date: "+date);
+			//log.info("Date: "+date);
 			ConnectionBean.INSTANCE.controller().reqHistoricalData(bars.getContract().getNewContract(),
 					date, 									//The new Data
 					calculateDuration(from, to, barSize),	//duration in secondes
@@ -254,7 +254,7 @@ public enum HistoricalDataLoaders {
 					this);
 			
 			requestStartTime=new Date().getTime();
-			log.info("Search for Historical data send!");
+			//log.info("Search for Historical data send!");
 			
 			//recievedBars=createDummyBars(from, to, barSize);
 			
@@ -408,30 +408,8 @@ public enum HistoricalDataLoaders {
 
 		@Override
 		public void historicalDataEnd() {
-			log.info("historicalDataEnd");
-			
+			//log.info("historicalDataEnd");
 			finished=true;
-			
-			/*
-			try{
-				//ut.begin();
-				//em.persist(bars);
-				//ut.commit();
-			}catch(Exception ex){
-				log.warning(ex.toString());
-				
-				try{
-					ut.rollback();
-				}
-				catch(IllegalStateException | SecurityException | SystemException e){
-					log.warning(e.toString());
-					
-				}
-				
-				//em.getTransaction().rollback();
-			}
-			*/
-			
 		}
 		
 	}

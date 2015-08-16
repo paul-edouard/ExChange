@@ -129,6 +129,7 @@
     </toolbar>
   </descriptors>
   <descriptors xmi:id="_MinrgOBJEeSlDfuPT9K5MQ" elementId="com.munch.exchange.partdescriptor.neuralnetwork.regularizarion.error.editor" label="Regularization Error Editor" iconURI="platform:/plugin/com.munch.exchange/icons/24/network.png" tooltip="Regularization Error Editor" allowMultiple="true" closeable="true" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.error.NeuralNetworkRegularizationErrorPart"/>
+  <descriptors xmi:id="_XYfVkEQlEeWQt7su7sg-Iw" elementId="com.munch.exchange.partdescriptor.charteditor" label="Chart Editor Part" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png" tooltip="Chart Editor Part" allowMultiple="true" closeable="true" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.chart.ChartEditorPart"/>
   <commands xmi:id="_hCNcM2TNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.file.exit" commandName="quitCommand"/>
   <commands xmi:id="_hCNcN2TNEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.open" commandName="openCommand"/>
   <commands xmi:id="_hCNcOmTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.file.save" commandName="saveCommand"/>

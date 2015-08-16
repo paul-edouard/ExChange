@@ -1,6 +1,7 @@
 package com.munch.exchange.server.ejb.ib.historicaldata;
 
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -10,6 +11,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+
+
+import javax.persistence.TypedQuery;
 
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
@@ -57,41 +61,91 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	@Override
 	public IbBar getFirstBar(IbBarContainer exContractBars,
 			Class<? extends IbBar> exBarClass) {
-		Query query=em.createQuery("SELECT MIN(b.time),b.id " +
-				"FROM "+exBarClass.getSimpleName()+" b WHERE b.root="+exContractBars.getId());
-		
-		@SuppressWarnings("unchecked")
-		List<Object[]> rows=query.getResultList();
-		if(rows.size()!=1)return null;
-		
-		long min_id=(long) rows.get(0)[1];
-		IbBar bar=em.find(exBarClass, min_id);
-		
-		try {
-			IbBar copy = exBarClass.newInstance();
-			copy.copyData(bar);
-			return copy;
-		} catch (InstantiationException | IllegalAccessException e) {
-			log.warning(e.toString());
-		}
-		
-		return null;
+		long time=getFirstBarTime(exContractBars, exBarClass);
+    	if(time==0)return null;
+    	
+		return searchBarOfTime(exContractBars, exBarClass, time);
 	}
+	
+	@Override
+	public long getFirstBarTime(IbBarContainer exContractBars,
+			Class<? extends IbBar> exBarClass) {
+		Query query=em.createQuery("SELECT MIN(b.time)" +
+				"FROM "+exBarClass.getSimpleName()+" b WHERE b.root="+exContractBars.getId());
+
+    	Object singleResult=query.getSingleResult();
+    	if(singleResult==null)return 0;
+    	
+    	long time=(long) singleResult;
+    	//log.info("Max Time: "+time);
+    	
+    	return time;
+	}
+	
 
 
 	@Override
 	public IbBar getLastBar(IbBarContainer exContractBars,
 		Class<? extends IbBar> exBarClass) {
 		
-		Query query=em.createQuery("SELECT MAX(b.time),b.id " +
+    	long time=getLastBarTime(exContractBars, exBarClass);
+    	if(time==0)return null;
+    	
+		return searchBarOfTime(exContractBars, exBarClass, time);
+		
+	}
+	
+	@Override
+	public long getLastBarTime(IbBarContainer exContractBars,
+			Class<? extends IbBar> exBarClass) {
+		Query query=em.createQuery("SELECT MAX(b.time)" +
 				"FROM "+exBarClass.getSimpleName()+" b WHERE b.root="+exContractBars.getId());
+
+    	Object singleResult=query.getSingleResult();
+    	if(singleResult==null)return 0;
+    	
+    	long time=(long) singleResult;
+    	//log.info("Max Time: "+time);
+    	
+    	return time;
+	}
+
+
+	@Override
+	public List<IbBar> getAllBars(IbBarContainer exContractBars,
+			Class<? extends IbBar> exBarClass) {
+		TypedQuery<IbBar> query=em.createQuery("SELECT b " +
+				"FROM "+exBarClass.getSimpleName()+" b "+
+    			"WHERE b.root="+exContractBars.getId(),IbBar.class);
+    	
+    	List<IbBar> bars=query.getResultList();
+    	List<IbBar> copies=new LinkedList<IbBar>();
+    	for(IbBar bar:bars){
+    		IbBar copy;
+			try {
+				copy = exBarClass.newInstance();
+				copy.copyData(bar);
+	    		copies.add(copy);
+			} catch (InstantiationException | IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+    	}
+    	
+    	return copies;
+	}
+
+
+	@Override
+	public IbBar searchBarOfTime(IbBarContainer exContractBars,
+			Class<? extends IbBar> exBarClass, long time) {
+		Query query=em.createQuery("SELECT b " +
+				"FROM "+exBarClass.getSimpleName()+" b WHERE b.time="+time+" AND b.root="+exContractBars.getId());
+    	Object singleResult=query.getSingleResult();
+    	if(singleResult==null)return null;
 		
-		@SuppressWarnings("unchecked")
-		List<Object[]> rows=query.getResultList();
-		if(rows.size()!=1)return null;
-		
-		long max_id=(long) rows.get(0)[1];
-		IbBar bar=em.find(exBarClass, max_id);
+    	IbBar bar=(IbBar) singleResult;
 		
 		try {
 			IbBar copy = exBarClass.newInstance();
@@ -102,8 +156,13 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		}
 		
 		return null;
-		
 	}
+
+
+	
+
+
+	
 
 
 }

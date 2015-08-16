@@ -18,12 +18,17 @@ public interface HistoricalDataBeanRemote {
 	//JPA Methodes
 	public List<IbBarContainer> getAllExContractBars(IbContract exContract);
 	
-	public IbBar getFirstBar(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
 	
-	//public ExSecondeBar getFirstSecondeBar(ExContractBars exContractBars);
+	public IbBar searchBarOfTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass,long time);
+	
+	public IbBar getFirstBar(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
+	public long getFirstBarTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
 	
 	
 	public IbBar getLastBar(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
+	public long getLastBarTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
+	
+	public List<IbBar> getAllBars(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
 	
 	
 }

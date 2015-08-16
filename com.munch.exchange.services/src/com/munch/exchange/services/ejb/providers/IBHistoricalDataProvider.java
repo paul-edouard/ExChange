@@ -37,6 +37,31 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 		return beanRemote.getService().getLastBar(exContractBars,exBarClass);
 	}
 
+	@Override
+	public List<IbBar> getAllBars(IbBarContainer exContractBars,
+			Class<? extends IbBar> exBarClass) {
+		return beanRemote.getService().getAllBars(exContractBars,exBarClass);
+	}
+
+	@Override
+	public IbBar searchBarOfTime(IbBarContainer exContractBars,
+			Class<? extends IbBar> exBarClass, long time) {
+		// TODO Auto-generated method stub
+		return beanRemote.getService().searchBarOfTime(exContractBars,exBarClass,time);
+	}
+
+	@Override
+	public long getFirstBarTime(IbBarContainer exContractBars,
+			Class<? extends IbBar> exBarClass) {
+		return beanRemote.getService().getFirstBarTime(exContractBars,exBarClass);
+	}
+
+	@Override
+	public long getLastBarTime(IbBarContainer exContractBars,
+			Class<? extends IbBar> exBarClass) {
+		return beanRemote.getService().getLastBarTime(exContractBars,exBarClass);
+	}
+
 	
 
 	
