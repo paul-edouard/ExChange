@@ -1,11 +1,8 @@
 package com.munch.exchange.lifecycle;
 
 
-import java.util.List;
-
 import javax.inject.Inject;
 
-import org.apache.log4j.BasicConfigurator;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.e4.ui.workbench.lifecycle.PostContextCreate;
@@ -17,14 +14,9 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
-import org.jfree.util.Log;
 import org.osgi.service.prefs.BackingStoreException;
 
 import com.munch.exchange.dialog.WorkspaceDialog;
-import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
-import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IWatchlistProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
