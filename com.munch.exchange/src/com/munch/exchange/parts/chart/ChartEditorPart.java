@@ -4,6 +4,7 @@ package com.munch.exchange.parts.chart;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -34,8 +35,16 @@ import com.munch.exchange.services.ejb.providers.IBHistoricalDataProvider;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.SWT;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.DateTickUnit;
+import org.jfree.chart.axis.DateTickUnitType;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.event.MarkerChangeEvent;
+import org.jfree.chart.event.MarkerChangeListener;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
+import org.jfree.chart.plot.Marker;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -45,6 +54,9 @@ import org.jfree.data.time.ohlc.OHLCSeries;
 import org.jfree.data.time.ohlc.OHLCSeriesCollection;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
+import org.jfree.ui.LengthAdjustmentType;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.TextAnchor;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Label;
@@ -75,6 +87,7 @@ public class ChartEditorPart {
 	
 	private JFreeChart chart;
 	private Composite compositeChart;
+	private ValueMarker threshold;
 	
 	
 	@Inject
@@ -118,15 +131,20 @@ public class ChartEditorPart {
 	}
 	
 	 private JFreeChart createChart() {
+		
+		threshold=createMarker(); 
+		 
 		//====================
 	    //===  Main Axis   ===
 	    //====================
-	    NumberAxis domainAxis =createDomainAxis();
+		ValueAxis domainAxis =createDomainAxis();
 	    	
 	    //====================
 	    //===  Main Plot   ===
 	    //====================
 	    XYPlot mainPlot = createMainPlot(domainAxis);
+	    
+	    mainPlot.addRangeMarker(threshold);
 	    
 	    //=========================
     	//=== Create the Chart  ===
@@ -140,18 +158,37 @@ public class ChartEditorPart {
 	  
 	 }
 	
-	private NumberAxis createDomainAxis(){
+	private ValueAxis createDomainAxis(){
     	 //Axis
-        NumberAxis domainAxis = new NumberAxis("Day");
-        domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        //domainAxis.setAutoRange(true);
-        domainAxis.setLowerMargin(0.1);
-        domainAxis.setUpperMargin(0.1);
+		DateAxis domainAxis = new DateAxis("Time");
+        domainAxis.setTickUnit(
+        		new DateTickUnit(DateTickUnitType.HOUR, 1, 
+        				new SimpleDateFormat("HH:mm")));
         
-        domainAxis.setAutoRangeIncludesZero(false);
+        //domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        //domainAxis.setAutoRange(true);
+        domainAxis.setLowerMargin(0.01);
+        domainAxis.setUpperMargin(0.01);
+        //domainAxis.setAutoRangeIncludesZero(false);
+        
         
         return domainAxis;
     }
+	
+	private ValueMarker createMarker(){
+	// add a labelled marker for the safety threshold...
+	ValueMarker threshold = new ValueMarker(690);
+    threshold.setLabelOffsetType(LengthAdjustmentType.EXPAND);
+    threshold.setPaint(Color.red);
+    threshold.setStroke(new BasicStroke(1.0f));
+    threshold.setLabel("Price");
+    //threshold.setLabelFont(new Font("SansSerif", Font.PLAIN, 11));
+    threshold.setLabelPaint(Color.red);
+    threshold.setLabelAnchor(RectangleAnchor.TOP_LEFT);
+    threshold.setLabelTextAnchor(TextAnchor.BOTTOM_LEFT);
+    return threshold;
+	}
+    //plot.addRangeMarker(threshold);
 	
 	
 		
@@ -161,7 +198,7 @@ public class ChartEditorPart {
      * 
      * @return
      */
-    private XYPlot createMainPlot( NumberAxis domainAxis){
+    private XYPlot createMainPlot( ValueAxis domainAxis){
     	
     	//====================
     	//=== Main Curves  ===
@@ -219,9 +256,10 @@ public class ChartEditorPart {
 		if(bars==null)return ;
 		
 		for(IbBar bar:bars){
-			logger.info(bar);
+			//logger.info(bar);
 			// if(point.get(Type.CLOSE)>point.get(Type.OPEN)){
 			series.add(new Second(new Date(bar.getTimeInMs())),bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
+			threshold.setValue(bar.getClose());
 		}
 		
 		
