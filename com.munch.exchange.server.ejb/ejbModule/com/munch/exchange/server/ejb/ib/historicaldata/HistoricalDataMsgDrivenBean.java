@@ -2,6 +2,7 @@ package com.munch.exchange.server.ejb.ib.historicaldata;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -138,8 +139,6 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     }
     
     
-   // @TransactionAttribute(value=TransactionAttributeType.REQUIRES_NEW)
-   // @Asynchronous
     private void loadLastBars(BarLoader loader){
     	log.info("Start of loading the historical data of "+
     				loader.getBars().getContract().getLongName()+", What to show: "+loader.getBars().getType());
@@ -153,10 +152,10 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	//----------------------------------
     	List<IbBar> newHourBars=loadNewBars(	loader,
     											BarSize._1_hour,
-    											new IbHourBar().getIntervall(),
+    											IbBar.getIntervallInMs(BarSize._1_hour),
     											IbHourBar.class,
     											30,
-    											new IbDayBar().getIntervall(),
+    											IbBar.getIntervallInMs(BarSize._1_day),
     											IbDayBar.class,
     											newDayBars);
     	
@@ -166,10 +165,10 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	
     	List<IbBar> newMinuteBars= loadNewBars(	loader,
     											BarSize._1_min,
-    											new IbMinuteBar().getIntervall(),
+    											IbBar.getIntervallInMs(BarSize._1_min),
     											IbMinuteBar.class,
     											24,
-    											new IbHourBar().getIntervall(),
+    											IbBar.getIntervallInMs(BarSize._1_hour),
     											IbHourBar.class,
     											newHourBars);
     	/*
@@ -196,7 +195,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	//log.info("2. Last day found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastDayBar) ));
     	
     	List<IbBar> newDayBars=new LinkedList<>();
-    	if(loader.getTime()-lastDayBar>new IbDayBar().getIntervall()){
+    	if(loader.getTime()-lastDayBar>IbBar.getIntervallInMs(BarSize._1_day)){
     		//Load the Days
     		List<Bar> dayBars=loader.loadBarsFromTo(lastDayBar, loader.getTime(), BarSize._1_day);
     		log.info("Number of new days found: "+dayBars.size());
@@ -471,6 +470,23 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	if(withTransation){
     	try {
 			ut.begin();
+			
+			//Clean the bar list from double bars
+			HashSet<Long> timeSet=new HashSet<>();
+			LinkedList<IbBar> toDel=new LinkedList<>();
+			for(IbBar bar : bars){
+				if(!timeSet.contains(bar.getTime())){
+					timeSet.add(bar.getTime());
+				}
+				else{
+					toDel.add(bar);
+				}
+			}
+			for(IbBar bar : toDel){
+				bars.remove(bar);
+			}
+			
+			//Save each bars
 			for(IbBar bar : bars){
 				em.persist(bar);
 			}

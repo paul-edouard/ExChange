@@ -30,11 +30,6 @@ public class IbSecondeBar extends IbBar{
 		this.setSize(BarSize._1_secs);
 	}
 
-	@Override
-	public long getIntervall() {
-		return 1000;
-	}
-	
 	
 
 	

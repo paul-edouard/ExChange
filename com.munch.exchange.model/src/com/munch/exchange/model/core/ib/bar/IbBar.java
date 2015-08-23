@@ -74,8 +74,8 @@ public abstract  class IbBar implements Serializable{
 	private  double open;
 	private  double close;
 	private  double wap;
-	private  long volume;
-	private  int count;
+	private  long volume=0;
+	private  int count=0;
 	
 	public IbBar(){
 		
@@ -122,6 +122,18 @@ public abstract  class IbBar implements Serializable{
 		this.id=bar.id;
 	}
 	
+	public void integrateData(IbBar bar){
+		this.setTime( bar.time);
+		this.high = Math.max(bar.high, this.high);
+		this.low = Math.min(bar.low, this.low);
+		//this.open = bar.open;
+		this.close = bar.close;
+		this.wap = bar.wap;
+		this.volume += bar.volume;
+		this.count += bar.count;
+		
+	}
+	
 	
 	public void setRootAndParent(IbBarContainer root,IbBar parent){
 		setParent(parent);
@@ -133,8 +145,15 @@ public abstract  class IbBar implements Serializable{
 		
 	}
 	
-	public abstract long getIntervall();
+	//public abstract long getIntervall();
 	
+	public long getIntervallInSec(){
+		return getIntervallInSec(size);
+	}
+	
+	public long getIntervallInMs(){
+		return 1000L*getIntervallInSec();
+	}
 	
 	/*
 	public ExBarPK getPk() {
@@ -286,8 +305,133 @@ public abstract  class IbBar implements Serializable{
 	
 	
 
+	public static long getIntervallInSec(BarSize size){
+		switch (size) {
+		
+		case _1_secs:
+			return 1;
+		case _5_secs:
+			return 5;
+		case _10_secs:
+			return 10;
+		case _15_secs:
+			return 15;
+		case _30_secs:
+			return 30;
+			
+		case _1_min:
+			return 60;
+		case _2_mins:
+			return 2*60;
+		case _3_mins:
+			return 3*60;
+		case _5_mins:
+			return 5*60;
+		case _10_mins:
+			return 10*60;
+		case _15_mins:
+			return 15*60;
+		case _20_mins:
+			return 20*60;
+		case _30_mins:
+			return 30*60;
+		
+		case _1_hour:
+			return 3600L;
+		case _4_hours:
+			return 4L*3600L;
+		
+		case _1_day:
+			return 3600L*24L;
+		case _1_week:
+			return 7L*3600L*24L;
+		
+		default:
+			return Long.MAX_VALUE;
+		}
+	}
+	
+	public static long getIntervallInMs(BarSize size){
+		return 1000L*getIntervallInSec(size);
+	}
+	
+	public static List<IbBar> convertIbBars(List<IbBar> bars, BarSize targetSize){
+		List<IbBar> convertedBars=new LinkedList<IbBar>();
+		if(bars==null || bars.isEmpty())return convertedBars;
+		
+		long targetInterval=getIntervallInSec(targetSize);
+		long startInterval=bars.get(0).getIntervallInSec();
+		
+		IbBar converted=null;
+		for(IbBar bar:bars){
+			if(bar.getTime()%targetInterval==0 && converted!=null){
+				converted.integrateData(bar);
+				convertedBars.add(converted);
+				converted=null;
+			}
+			else if(bar.getTime()%targetInterval==startInterval ){
+				converted=createNewInstance(targetSize);
+				converted.copyData(bar);
+			}
+			else if(converted!=null){
+				converted.integrateData(bar);
+			}
+		}
+		
+		return convertedBars;
+	}
+	
+	public static Class<? extends IbBar> searchCorrespondingBarClass(BarSize size){
+		if(		size==BarSize._1_secs ||
+				size==BarSize._5_secs ||
+				size==BarSize._10_secs ||
+				size==BarSize._15_secs ||
+				size==BarSize._30_secs ){
+			return IbSecondeBar.class;
+		}
+		else if(size==BarSize._1_min ||
+				size==BarSize._2_mins ||
+				size==BarSize._3_mins ||
+				size==BarSize._5_mins ||
+				size==BarSize._10_mins ||
+				size==BarSize._15_mins ||
+				size==BarSize._20_mins ||
+				size==BarSize._30_mins ){
+			return IbMinuteBar.class;
+		}
+		else if(size==BarSize._1_hour ||
+				size==BarSize._4_hours ){
+			return IbHourBar.class;
+		}
+		else{
+			return IbDayBar.class;
+		}
+	}
+	
+	public static IbBar createNewInstance(BarSize size){
+		Class<? extends IbBar> ibBarClass=IbBar.searchCorrespondingBarClass(size);
+		
+		try {
+			return ibBarClass.newInstance();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
 	
+	public static void main(String[] args){
+		int a=13;
+		int b=10;
+		
+		int c=a%b;
+		
+		System.out.println(c);
+		
+		
+	}
 	
 
 }

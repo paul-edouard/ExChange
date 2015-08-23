@@ -29,9 +29,5 @@ public class IbDayBar extends IbBar{
 	}
 
 	
-	@Override
-	public long getIntervall() {
-		return 1000*60*60*24;
-	}
 
 }

@@ -26,10 +26,12 @@ public class IbHourBar extends IbBar{
 		this.setSize(BarSize._1_hour);
 	}
 	
+	/*
 	@Override
 	public long getIntervall() {
 		return 1000*60*60;
 	}
+	*/
 	
 	
 }

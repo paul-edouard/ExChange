@@ -6,6 +6,8 @@ import java.awt.Color;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -19,6 +21,8 @@ import javax.annotation.PreDestroy;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 
+import com.ib.controller.Types.BarSize;
+import com.munch.exchange.ExchangeChartComposite;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
@@ -32,6 +36,8 @@ import com.munch.exchange.parts.RateEditorPart;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 import com.munch.exchange.services.ejb.providers.IBHistoricalDataProvider;
 
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.SWT;
 import org.jfree.chart.JFreeChart;
@@ -88,6 +94,15 @@ public class ChartEditorPart {
 	private JFreeChart chart;
 	private Composite compositeChart;
 	private ValueMarker threshold;
+	private OHLCSeries candleStickSeries= new OHLCSeries(CANDLESTICK);
+	
+	
+	private IbBarContainer barContainer;
+	private List<IbBar> bars=null;
+	
+	private long[] period=new long[2];
+	private long[] minMaxperiod=new long[2];
+	
 	
 	
 	@Inject
@@ -97,6 +112,12 @@ public class ChartEditorPart {
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
+		
+		setBarContainer();
+		setMinMaxPeriod();
+		threshold=createMarker();
+		updateSeries();
+		
 		GridLayout gl_parent = new GridLayout(1, false);
 		gl_parent.marginWidth = 0;
 		gl_parent.marginHeight = 0;
@@ -112,27 +133,85 @@ public class ChartEditorPart {
 		compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 		
-		
-		//TODO Your code here
-		/*
-		logger.info("Contract: "+contract.getLongName());
-		List<IbBarContainer> containers=provider.getAllExContractBars(contract);
-		for(IbBarContainer container:containers){
-			//List<IbBar> bars=provider.getAllBars(container, IbMinuteBar.class);
-			//for(IbBar bar:bars)
-			//	logger.info("bar: "+bar.toString());
-			IbBar firstBar=provider.getFirstBar(container, IbMinuteBar.class);
-			IbBar lastBar=provider.getLastBar(container, IbMinuteBar.class);
-			logger.info("Fisrt bar: "+firstBar.toString());
-			logger.info("Last bar: "+lastBar.toString());
-		}
-		*/
-		
 	}
 	
-	 private JFreeChart createChart() {
+	
+	private void setBarContainer(){
+		List<IbBarContainer> containers=provider.getAllExContractBars(contract);
+		if(containers==null || containers.size()==0)return;
 		
-		threshold=createMarker(); 
+		barContainer=containers.get(0);
+	}
+	
+	private void setMinMaxPeriod(){
+		minMaxperiod[0]=provider.getFirstBarTime(barContainer, IbMinuteBar.class);
+		minMaxperiod[1]=provider.getLastBarTime(barContainer, IbMinuteBar.class);
+		
+		period[1]=minMaxperiod[1];
+		period[0]=Math.max(minMaxperiod[0], minMaxperiod[1]-60*60*24);
+	}
+	
+	private void scalePeriode(int fac,double posFac){
+    
+    	period[1]=Math.min(minMaxperiod[1], period[1]+ (long)( fac*(1-posFac)));
+    	period[0]=Math.max(minMaxperiod[0], period[0]- (long)( fac*posFac));
+    	
+    	updateSeries();
+    }
+	
+	private void updateSeries(){
+		if(bars==null){
+			bars=provider.getAllBars(barContainer, BarSize._10_mins);
+			logger.info("Number of bars: "+bars.size());
+			HashMap<Long, IbBar> map=new HashMap<>();
+			List<IbBar> toDel=new LinkedList<IbBar>();
+			for(IbBar bar:bars){
+				if(!map.containsKey(bar.getTime())){
+					map.put(bar.getTime(), bar);
+				}
+				else{
+					logger.info("Error: bar are double!");
+					logger.info("Error: bar1: "+bar.toString());
+					logger.info("Error: bar2: "+map.get(bar.getTime()).toString());
+					toDel.add(bar);
+				}
+			}
+			
+			for(IbBar bar:toDel){
+				provider.removeBar(bar.getId());
+				bars.remove(bar);
+			}
+		}
+		
+		
+		if(bars==null)return ;
+		candleStickSeries.clear();
+		for(IbBar bar:bars){
+			//logger.info(bar);
+			if(bar.getTime()>=period[0] && bar.getTime()<=period[1]){
+			candleStickSeries.add(new Second(new Date(bar.getTimeInMs())),bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
+			threshold.setValue(bar.getClose());
+			}
+		}
+	}
+	
+	private void setPeriod(long start, long end){
+		
+		if(end>minMaxperiod[1])return;
+		if(start<minMaxperiod[0])return;
+		
+		period[1]=Math.min(minMaxperiod[1],end);
+    	period[0]=Math.max(minMaxperiod[0],start);
+    	
+    	
+    	updateSeries();
+    	
+	}
+	
+	
+	private JFreeChart createChart() {
+		
+		
 		 
 		//====================
 	    //===  Main Axis   ===
@@ -171,6 +250,7 @@ public class ChartEditorPart {
         domainAxis.setUpperMargin(0.01);
         //domainAxis.setAutoRangeIncludesZero(false);
         
+        //domainAxis.get
         
         return domainAxis;
     }
@@ -246,24 +326,8 @@ public class ChartEditorPart {
 	
     
     private void createPosOHLCSeries(){
-    	OHLCSeries series = new OHLCSeries(CANDLESTICK);
-    	List<IbBarContainer> containers=provider.getAllExContractBars(contract);
-    	List<IbBar> bars=null;
-		for(IbBarContainer container:containers){
-			bars=provider.getAllBars(container, IbMinuteBar.class);
-			break;
-		}
-		if(bars==null)return ;
-		
-		for(IbBar bar:bars){
-			//logger.info(bar);
-			// if(point.get(Type.CLOSE)>point.get(Type.OPEN)){
-			series.add(new Second(new Date(bar.getTimeInMs())),bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
-			threshold.setValue(bar.getClose());
-		}
-		
-		
-		oHLCSeriesCollection.addSeries(series);
+    	
+		oHLCSeriesCollection.addSeries(candleStickSeries);
 		int fiel_pos=oHLCSeriesCollection.indexOf(CANDLESTICK);
 		if(fiel_pos>=0){
 			candlestickRenderer.setSeriesPaint(fiel_pos, Color.black);
@@ -290,4 +354,109 @@ public class ChartEditorPart {
 	public void save() {
 		//TODO Your code here
 	}
+	
+	
+	
+	//################################
+  	//##       Chart Composite      ##
+  	//################################
+	
+	class ChartComposite extends ExchangeChartComposite{
+		
+		int x=-1;
+		double trans=0;
+		long startP=0;
+		long endP=0;
+		double w=0;
+		
+		public ChartComposite(Composite comp, int style, JFreeChart chart) {
+			super(comp, style, chart);
+		}
+		
+		@Override
+		public void mouseDown(MouseEvent event) {
+			// TODO Auto-generated method stub
+			//logger.info("mouseDown: "+event);
+			if(event.button==1){
+				x=event.x;
+				w=this.getChartRenderingInfo().getPlotInfo().getDataArea().getWidth();
+				trans=0;
+				startP=period[0];
+				endP=period[1];
+			}
+			/*
+			else{
+				resetPeriode();
+				updateSeries();
+			}
+			*/
+		}
+
+		@Override
+		public void mouseUp(MouseEvent event) {
+			// TODO Auto-generated method stub
+			//super.mouseUp(event);
+			if(x>0){
+				
+				double fac=((double)(x-event.x))/((double) w);
+				double diff=(endP-startP);
+				trans=fac*diff;
+				
+				setPeriod(startP+(long)(trans), endP+(long)(trans));
+				
+				x=-1;
+			}
+		}
+		
+		
+		
+
+		@Override
+		public void mouseMove(MouseEvent event) {
+			
+			
+			if(x>0){
+				
+				double fac=((double)(x-event.x))/((double) w);
+				double diff=(endP-startP);
+				trans=fac*diff;
+				
+				setPeriod(startP+(long)(trans), endP+(long)(trans));
+				
+				//logger.info("Rec: "+rec.width+", fac: "+fac+", trans: "+trans);
+				
+				//setPeriod(startP+(long)(trans), endP+(long)(trans));
+				//x=event.x;
+			}
+			
+		}
+
+		@Override
+		public void mouseScrolled(MouseEvent event) {
+			// TODO Auto-generated method stub
+			//logger.info("mouseScrolled: "+e);
+			//w=this.getChartRenderingInfo().getPlotInfo().getDataArea().getWidth();
+			
+			w=this.getChartRenderingInfo().getPlotInfo().getPlotArea().getWidth();
+			
+			//w=this.getChartRenderingInfo().getChartArea().getWidth();
+			
+			
+			
+			
+			double fac=((double)event.x)/((double) w);
+			logger.info("fac: "+fac);
+		
+			scalePeriode(event.count*( (int) (period[1]-period[0])/10),fac);
+			
+			super.mouseScrolled(event);
+		}
+		
+	}
+	
+	
+	
+	
+	
+	
 }

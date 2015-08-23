@@ -15,4 +15,5 @@ public interface IIBHistoricalDataProvider extends HistoricalDataBeanRemote {
 	
 	
 	
+	
 }

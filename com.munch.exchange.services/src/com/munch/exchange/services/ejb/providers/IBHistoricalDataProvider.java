@@ -2,6 +2,7 @@ package com.munch.exchange.services.ejb.providers;
 
 import java.util.List;
 
+import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
@@ -39,8 +40,8 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 
 	@Override
 	public List<IbBar> getAllBars(IbBarContainer exContractBars,
-			Class<? extends IbBar> exBarClass) {
-		return beanRemote.getService().getAllBars(exContractBars,exBarClass);
+			BarSize size) {
+		return beanRemote.getService().getAllBars(exContractBars,size);
 	}
 
 	@Override
@@ -60,6 +61,22 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 	public long getLastBarTime(IbBarContainer exContractBars,
 			Class<? extends IbBar> exBarClass) {
 		return beanRemote.getService().getLastBarTime(exContractBars,exBarClass);
+	}
+
+	@Override
+	public List<IbBar> getBarsFromTo(IbBarContainer exContractBars,
+			BarSize size, long from, long to) {
+		return beanRemote.getService().getBarsFromTo(exContractBars,size,from,to);
+	}
+
+	@Override
+	public void removeBar(long id) {
+		beanRemote.getService().removeBar(id);
+	}
+
+	@Override
+	public IbBar getBar(long id) {
+		return beanRemote.getService().getBar(id);
 	}
 
 	

@@ -64,10 +64,6 @@ public class IbBarContainer extends IbBar {
 		this.allBars = allBars;
 	}
 	
-	@Override
-	public long getIntervall() {
-		return Long.MAX_VALUE;
-	}
 	
 	
 	

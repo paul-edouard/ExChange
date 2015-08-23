@@ -15,9 +15,15 @@ import javax.persistence.Query;
 
 import javax.persistence.TypedQuery;
 
+import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.IbDayBar;
+import com.munch.exchange.model.core.ib.bar.IbHourBar;
+import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
+import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
+import com.munch.exchange.model.jpa.entity.Student;
 import com.munch.exchange.services.ejb.interfaces.HistoricalDataBeanRemote;
 
 /**
@@ -105,17 +111,19 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
     	if(singleResult==null)return 0;
     	
     	long time=(long) singleResult;
-    	//log.info("Max Time: "+time);
     	
     	return time;
 	}
 
 
 	@Override
-	public List<IbBar> getAllBars(IbBarContainer exContractBars,
-			Class<? extends IbBar> exBarClass) {
+	public List<IbBar> getAllBars(IbBarContainer exContractBars,BarSize size) {
+		
+		
+		Class<? extends IbBar> ibBarClass=IbBar.searchCorrespondingBarClass(size);
+		
 		TypedQuery<IbBar> query=em.createQuery("SELECT b " +
-				"FROM "+exBarClass.getSimpleName()+" b "+
+				"FROM "+ibBarClass.getSimpleName()+" b "+
     			"WHERE b.root="+exContractBars.getId(),IbBar.class);
     	
     	List<IbBar> bars=query.getResultList();
@@ -123,14 +131,20 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
     	for(IbBar bar:bars){
     		IbBar copy;
 			try {
-				copy = exBarClass.newInstance();
+				copy = ibBarClass.newInstance();
 				copy.copyData(bar);
 	    		copies.add(copy);
 			} catch (InstantiationException | IllegalAccessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
+    	}
+    	
+    	if(copies.isEmpty())return copies;
+    	
+    	BarSize copySize=copies.get(0).getSize();
+    	if(copySize!=size){
+    		return IbBar.convertIbBars(copies, size);
     	}
     	
     	return copies;
@@ -158,6 +172,104 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		return null;
 	}
 
+
+	@Override
+	public List<IbBar> getBarsFromTo(IbBarContainer exContractBars,
+			BarSize size, long from, long to) {
+		Class<? extends IbBar> ibBarClass=IbBar.searchCorrespondingBarClass(size);
+		
+		TypedQuery<IbBar> query=em.createQuery("SELECT b " +
+				"FROM "+ibBarClass.getSimpleName()+" b "+
+    			"WHERE b.root="+exContractBars.getId()+" "+
+				"AND b.time>="+from+ " "+
+    			"ANS b.time<="+to,
+				IbBar.class);
+    	
+    	List<IbBar> bars=query.getResultList();
+    	List<IbBar> copies=new LinkedList<IbBar>();
+    	for(IbBar bar:bars){
+    		IbBar copy;
+			try {
+				copy = ibBarClass.newInstance();
+				copy.copyData(bar);
+	    		copies.add(copy);
+			} catch (InstantiationException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
+			
+    	}
+    	
+    	if(copies.isEmpty())return copies;
+    	
+    	BarSize copySize=copies.get(0).getSize();
+    	if(copySize!=size){
+    		return IbBar.convertIbBars(copies, size);
+    	}
+    	
+    	return copies;
+		
+	}
+	
+	private int getCompressRate(BarSize size){
+		switch (size) {
+		
+		case _1_secs:
+			return 1;
+		case _5_secs:
+			return 5;
+		case _10_secs:
+			return 10;
+		case _15_secs:
+			return 15;
+		case _30_secs:
+			return 30;
+			
+		case _1_min:
+			return 1;
+		case _2_mins:
+			return 2;
+		case _3_mins:
+			return 3;
+		case _5_mins:
+			return 5;
+		case _10_mins:
+			return 10;
+		case _15_mins:
+			return 15;
+		case _20_mins:
+			return 20;
+		case _30_mins:
+			return 30;
+		
+		case _1_hour:
+			return 1;
+		case _4_hours:
+			return 4;
+		
+		case _1_day:
+			return 1;
+		case _1_week:
+			return 7;
+		
+		default:
+			return 1;
+		}
+		
+	}
+	
+
+
+	@Override
+	public void removeBar(long id) {
+		em.remove(getBar(id));
+	}
+
+
+	@Override
+	public IbBar getBar(long id) {
+		return em.find(IbBar.class, id);
+	}
+	
 
 	
 

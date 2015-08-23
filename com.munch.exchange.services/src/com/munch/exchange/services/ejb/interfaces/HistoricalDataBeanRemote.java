@@ -24,11 +24,17 @@ public interface HistoricalDataBeanRemote {
 	public IbBar getFirstBar(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
 	public long getFirstBarTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
 	
-	
 	public IbBar getLastBar(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
 	public long getLastBarTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
 	
-	public List<IbBar> getAllBars(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
+	public List<IbBar> getAllBars(IbBarContainer exContractBars,BarSize size);
+	public List<IbBar> getBarsFromTo(IbBarContainer exContractBars,BarSize size,long from, long to);
+	
+	
+	
+	void removeBar(long id);
+	public IbBar getBar(long id);
+	
 	
 	
 }

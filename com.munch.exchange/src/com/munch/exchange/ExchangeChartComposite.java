@@ -1746,8 +1746,8 @@ public class ExchangeChartComposite extends Composite implements ChartChangeList
         ChartEntity entity = null;
         int x = (int) ((event.x - getClientArea().x) / this.scaleX);
         int y = (int) ((event.y - getClientArea().y) / this.scaleY);
-        System.out.println("scaleX: "+this.scaleX);
-        System.out.println("scaleY: "+this.scaleY);
+        //System.out.println("scaleX: "+this.scaleX);
+        //System.out.println("scaleY: "+this.scaleY);
         //TODO
 
         if (this.info != null) {

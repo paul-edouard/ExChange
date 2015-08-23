@@ -28,10 +28,7 @@ public class IbMinuteBar extends IbBar {
 	}
 	
 	
-	@Override
-	public long getIntervall() {
-		return 1000*60;
-	}
+	
 	
 	
 }
