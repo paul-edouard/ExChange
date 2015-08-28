@@ -177,9 +177,11 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 
 	@Override
 	public void remove(int id) {
+		TopMktDataMsgSenderCollector.INSTANCE.removeSender(getContract(id));
+		
 		em.remove(getContract(id));
 		//Remove a message sender
-		TopMktDataMsgSenderCollector.INSTANCE.removeSender(getContract(id));
+		
 	}
 
 	@Override

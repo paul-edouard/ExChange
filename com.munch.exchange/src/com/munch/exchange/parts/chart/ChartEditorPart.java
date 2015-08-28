@@ -66,6 +66,9 @@ import org.jfree.ui.TextAnchor;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.ModifyEvent;
 
 
 public class ChartEditorPart {
@@ -93,6 +96,7 @@ public class ChartEditorPart {
 	
 	private JFreeChart chart;
 	private Composite compositeChart;
+	private DateAxis dateAxis;
 	private ValueMarker threshold;
 	private OHLCSeries candleStickSeries= new OHLCSeries(CANDLESTICK);
 	
@@ -102,6 +106,7 @@ public class ChartEditorPart {
 	
 	private long[] period=new long[2];
 	private long[] minMaxperiod=new long[2];
+	private Combo comboBarSize;
 	
 	
 	
@@ -113,15 +118,28 @@ public class ChartEditorPart {
 	@PostConstruct
 	public void postConstruct(Composite parent) {
 		
+		
+		
+		GridLayout gl_parent = new GridLayout(1, false);
+		gl_parent.horizontalSpacing = 0;
+		gl_parent.verticalSpacing = 0;
+		gl_parent.marginWidth = 0;
+		gl_parent.marginHeight = 0;
+		parent.setLayout(gl_parent);
+		
 		setBarContainer();
 		setMinMaxPeriod();
 		threshold=createMarker();
 		updateSeries();
 		
-		GridLayout gl_parent = new GridLayout(1, false);
-		gl_parent.marginWidth = 0;
-		gl_parent.marginHeight = 0;
-		parent.setLayout(gl_parent);
+		Composite composite = new Composite(parent, SWT.NONE);
+		GridLayout gl_composite = new GridLayout(1, false);
+		gl_composite.horizontalSpacing = 1;
+		gl_composite.marginHeight = 1;
+		gl_composite.verticalSpacing = 1;
+		gl_composite.marginWidth = 1;
+		composite.setLayout(gl_composite);
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		
 		
@@ -131,6 +149,17 @@ public class ChartEditorPart {
 		chart = createChart();
 		compositeChart = new ChartComposite(parent, SWT.NONE,chart);
 		compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		
+		
+		comboBarSize = new Combo(composite, SWT.NONE);
+		comboBarSize.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				
+			}
+		});
+		comboBarSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
 		
 		
 	}
@@ -156,12 +185,15 @@ public class ChartEditorPart {
     	period[1]=Math.min(minMaxperiod[1], period[1]+ (long)( fac*(1-posFac)));
     	period[0]=Math.max(minMaxperiod[0], period[0]- (long)( fac*posFac));
     	
+    	dateAxis.setRange(period[0]*1000, period[1]*1000);
+    	
+    	
     	updateSeries();
     }
 	
 	private void updateSeries(){
 		if(bars==null){
-			bars=provider.getAllBars(barContainer, BarSize._10_mins);
+			bars=provider.getAllBars(barContainer, BarSize._1_min);
 			logger.info("Number of bars: "+bars.size());
 			HashMap<Long, IbBar> map=new HashMap<>();
 			List<IbBar> toDel=new LinkedList<IbBar>();
@@ -203,6 +235,7 @@ public class ChartEditorPart {
 		period[1]=Math.min(minMaxperiod[1],end);
     	period[0]=Math.max(minMaxperiod[0],start);
     	
+    	dateAxis.setRange(period[0]*1000, period[1]*1000);
     	
     	updateSeries();
     	
@@ -239,20 +272,16 @@ public class ChartEditorPart {
 	
 	private ValueAxis createDomainAxis(){
     	 //Axis
-		DateAxis domainAxis = new DateAxis("Time");
-        domainAxis.setTickUnit(
-        		new DateTickUnit(DateTickUnitType.HOUR, 1, 
-        				new SimpleDateFormat("HH:mm")));
+		dateAxis = new DateAxis("Time");
+		dateAxis.setTickUnit(
+        		new ChartDateTickUnit(DateTickUnitType.HOUR, 1, 
+        				new SimpleDateFormat("HH:mm"), new SimpleDateFormat("yyyy-MM-dd")));
         
-        //domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        //domainAxis.setAutoRange(true);
-        domainAxis.setLowerMargin(0.01);
-        domainAxis.setUpperMargin(0.01);
-        //domainAxis.setAutoRangeIncludesZero(false);
+		//dateAxis.setAutoRange(true);
+		dateAxis.setLowerMargin(0.01);
+		dateAxis.setUpperMargin(0.01);
         
-        //domainAxis.get
-        
-        return domainAxis;
+        return dateAxis;
     }
 	
 	private ValueMarker createMarker(){

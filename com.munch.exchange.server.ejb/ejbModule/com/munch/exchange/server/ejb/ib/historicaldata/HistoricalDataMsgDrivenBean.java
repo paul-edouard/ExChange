@@ -167,10 +167,11 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     											BarSize._1_min,
     											IbBar.getIntervallInMs(BarSize._1_min),
     											IbMinuteBar.class,
-    											24,
+    											20,
     											IbBar.getIntervallInMs(BarSize._1_hour),
     											IbHourBar.class,
     											newHourBars);
+    											
     	/*
     	//----------------------------------
     	//- 4. Search the last second bars -
@@ -235,13 +236,16 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	List<IbBar> newBars=new LinkedList<>();
     	if(loader.getTime()-lastBar>intervall && lastBar>0){
     		
-    		//Create the search intervalls
+    		//Create the search intervals
     		List<Long> intervalls=createIntervalls(lastBar, loader.getTime(),parentIntervall*period);
     		
     		for(int i=0;i<intervalls.size()-1;i++){
-    			//Load the bars from the given intervall
+    			//Load the bars from the given interval
     			List<Bar> bars=loader.loadBarsFromTo(intervalls.get(i), intervalls.get(i+1), barSize);
-        		log.info("Number of "+clazz.getSimpleName() +" found: "+bars.size());
+        		log.info("Number of "+clazz.getSimpleName() +" found: "+bars.size()
+        				+" in the intervall ["+Bar.format(intervalls.get(i))+", "+Bar.format(intervalls.get(i+1))+"]");
+        		if(bars.size()==0)break;
+        		
     			for(Bar bar : bars){
     				if(bar.time()>lastBar/1000){
 						try {

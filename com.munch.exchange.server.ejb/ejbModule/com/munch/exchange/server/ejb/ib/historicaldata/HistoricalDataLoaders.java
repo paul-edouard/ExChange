@@ -45,8 +45,7 @@ public enum HistoricalDataLoaders {
 		if(lastRequests.size()>2){
 			long diff=lastRequests.getLast()-lastRequests.getFirst();
 			Calendar cal=Calendar.getInstance();cal.setTimeInMillis(diff);
-			log.info("Number of request: "+lastRequests.size()+ " in the last: " +cal.get(Calendar.MINUTE)+"min "+cal.get(Calendar.SECOND)+"s ");
-			
+			//log.info("Number of request: "+lastRequests.size()+ " in the last: " +cal.get(Calendar.MINUTE)+"min "+cal.get(Calendar.SECOND)+"s ");
 		}
 		
 		
