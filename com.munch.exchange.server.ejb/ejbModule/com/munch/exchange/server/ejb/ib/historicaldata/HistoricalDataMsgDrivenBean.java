@@ -46,6 +46,7 @@ import com.munch.exchange.model.core.ib.bar.IbDayBar;
 import com.munch.exchange.model.core.ib.bar.IbHourBar;
 import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
 import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
+import com.munch.exchange.server.ejb.ib.Constants;
 import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataLoaders.BarLoader;
 
 /**
@@ -53,11 +54,11 @@ import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataLoaders.Bar
  */
 @MessageDriven(
 		activationConfig = {
-				@ActivationConfigProperty(propertyName = "destination", propertyValue = "java:/jms/topic/HistoricalData"),
+				@ActivationConfigProperty(propertyName = "destination", propertyValue =Constants.JMS_TOPIC_HISTORICAL_DATA),
 				@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
 				@ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
 		}, 
-		mappedName = "java:/jms/topic/HistoricalData")
+		mappedName = Constants.JMS_TOPIC_HISTORICAL_DATA)
 @TransactionManagement(value=TransactionManagementType.BEAN)
 public class HistoricalDataMsgDrivenBean implements MessageListener {
 	
@@ -104,7 +105,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 			List<IbBarContainer> allBars = new LinkedList<IbBarContainer>();
 
 			for (IbContract exContract : allContracts) {
-				allBars.addAll(getBarsFrom(exContract));
+				allBars.addAll(getBarsFrom(exContract,em));
 			}
 
 			HistoricalDataLoaders.INSTANCE.init(allBars, time);
@@ -540,7 +541,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	
     }
     
-    private List<IbBarContainer> getBarsFrom(IbContract exContract){
+    public static List<IbBarContainer> getBarsFrom(IbContract exContract,EntityManager em){
     	List<IbBarContainer> Allbars=exContract.getBars();
     	if(Allbars==null || Allbars.isEmpty()){
     		Allbars=new LinkedList<IbBarContainer>();
@@ -576,11 +577,17 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     			//Allbars.add(new IbBarContainer(exContract,WhatToShow.OPTION_IMPLIED_VOLATILITY));
     		}
     		
+    		
     		for(IbBarContainer bars:Allbars){
     			em.persist(bars);
     		}
     		em.flush();
+    		
+    		exContract.setBars(Allbars);
+    		
     	}
+    	
+    	
     	
     	//List<IbBarContainer> Allbars
     	//for(IbBarContainer container:)

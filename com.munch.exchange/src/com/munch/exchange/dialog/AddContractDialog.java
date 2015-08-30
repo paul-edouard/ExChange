@@ -317,6 +317,8 @@ public class AddContractDialog extends TitleAreaDialog {
 					break;
 				
 				default:
+					text= contract.getLongName()+", "+contract.getLocalSymbol()+" ["+contract.getMarketName()
+					+", "+contract.getExchange()+"] "+contract.getCurrency();
 					break;
 				}
 				

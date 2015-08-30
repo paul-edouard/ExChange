@@ -22,6 +22,7 @@ import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 
 import com.ib.controller.Types.BarSize;
+import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.ExchangeChartComposite;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
@@ -33,7 +34,10 @@ import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.bar.IbHourBar;
 import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
 import com.munch.exchange.parts.RateEditorPart;
+import com.munch.exchange.services.IBundleResourceLoader;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarListener;
+import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarProvider;
 import com.munch.exchange.services.ejb.providers.IBHistoricalDataProvider;
 
 import org.eclipse.swt.events.MouseEvent;
@@ -54,8 +58,10 @@ import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.ComparableObjectItem;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.Second;
+import org.jfree.data.time.ohlc.OHLCItem;
 import org.jfree.data.time.ohlc.OHLCSeries;
 import org.jfree.data.time.ohlc.OHLCSeriesCollection;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -65,13 +71,14 @@ import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.TextAnchor;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.ModifyEvent;
 
 
-public class ChartEditorPart {
+public class ChartEditorPart{
 	
 	private static Logger logger = Logger.getLogger(ChartEditorPart.class);
 	
@@ -83,7 +90,15 @@ public class ChartEditorPart {
 	IbContract contract;
 	
 	@Inject
-	IIBHistoricalDataProvider provider;
+	IIBHistoricalDataProvider hisDataProvider;
+	
+	@Inject
+	IIBRealTimeBarProvider realTimeBarProvider;
+	
+	IIBRealTimeBarListener realTimeBarListener;
+	
+	HashMap<WhatToShow, LinkedList<IbBar>> barMap=new HashMap<WhatToShow, LinkedList<IbBar>>();
+	
 	
 	//The renderers
 	private XYLineAndShapeRenderer mainPlotRenderer=new XYLineAndShapeRenderer(true, false);
@@ -115,10 +130,45 @@ public class ChartEditorPart {
 		//TODO Your code here
 	}
 	
+	
+	private void addRealTimeBarListener(){
+		
+		realTimeBarListener=new IIBRealTimeBarListener() {
+			
+			@Override
+			public void realTimeBarChanged(IbBar bar) {
+				//logger.info("New Bar: "+bar);
+				if(!barMap.containsKey(bar.getType()))
+					barMap.put(bar.getType(), new LinkedList<IbBar>());
+				
+				LinkedList<IbBar> bars=barMap.get(bar.getType());
+				if(bars.isEmpty() || bars.getLast().getTime()!=bar.getTime()){
+					bars.add(bar);
+				}
+				else{
+					bars.set(bars.size()-1, bar);
+				}
+				
+				if(bar.getType()==barContainer.getType())
+					Display.getDefault().asyncExec(new realTimeBarUpdater(bars)); 
+				
+			
+			}
+			
+			@Override
+			public int getContractId() {
+				return contract.getId();
+			}
+		};
+		
+		realTimeBarProvider.addIbRealTimeBarListener(realTimeBarListener);
+		
+	}
+	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
 		
-		
+		addRealTimeBarListener();
 		
 		GridLayout gl_parent = new GridLayout(1, false);
 		gl_parent.horizontalSpacing = 0;
@@ -166,15 +216,15 @@ public class ChartEditorPart {
 	
 	
 	private void setBarContainer(){
-		List<IbBarContainer> containers=provider.getAllExContractBars(contract);
+		List<IbBarContainer> containers=hisDataProvider.getAllExContractBars(contract);
 		if(containers==null || containers.size()==0)return;
 		
 		barContainer=containers.get(0);
 	}
 	
 	private void setMinMaxPeriod(){
-		minMaxperiod[0]=provider.getFirstBarTime(barContainer, IbMinuteBar.class);
-		minMaxperiod[1]=provider.getLastBarTime(barContainer, IbMinuteBar.class);
+		minMaxperiod[0]=hisDataProvider.getFirstBarTime(barContainer, IbMinuteBar.class);
+		minMaxperiod[1]=hisDataProvider.getLastBarTime(barContainer, IbMinuteBar.class);
 		
 		period[1]=minMaxperiod[1];
 		period[0]=Math.max(minMaxperiod[0], minMaxperiod[1]-60*60*24);
@@ -193,7 +243,7 @@ public class ChartEditorPart {
 	
 	private void updateSeries(){
 		if(bars==null){
-			bars=provider.getAllBars(barContainer, BarSize._1_min);
+			bars=hisDataProvider.getAllBars(barContainer, BarSize._1_min);
 			logger.info("Number of bars: "+bars.size());
 			HashMap<Long, IbBar> map=new HashMap<>();
 			List<IbBar> toDel=new LinkedList<IbBar>();
@@ -210,7 +260,7 @@ public class ChartEditorPart {
 			}
 			
 			for(IbBar bar:toDel){
-				provider.removeBar(bar.getId());
+				hisDataProvider.removeBar(bar.getId());
 				bars.remove(bar);
 			}
 		}
@@ -222,7 +272,7 @@ public class ChartEditorPart {
 			//logger.info(bar);
 			if(bar.getTime()>=period[0] && bar.getTime()<=period[1]){
 			candleStickSeries.add(new Second(new Date(bar.getTimeInMs())),bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
-			threshold.setValue(bar.getClose());
+			
 			}
 		}
 	}
@@ -280,6 +330,7 @@ public class ChartEditorPart {
 		//dateAxis.setAutoRange(true);
 		dateAxis.setLowerMargin(0.01);
 		dateAxis.setUpperMargin(0.01);
+		//dateAxis.setAutoTickUnitSelection(true);
         
         return dateAxis;
     }
@@ -369,7 +420,7 @@ public class ChartEditorPart {
 	
 	@PreDestroy
 	public void preDestroy() {
-		//TODO Your code here
+		realTimeBarProvider.removeRealTimeBarListener(realTimeBarListener);
 	}
 	
 	
@@ -485,7 +536,47 @@ public class ChartEditorPart {
 	
 	
 	
+	//######################################
+  	//##       Real Time Bar Updater      ##
+  	//######################################
 	
+	private class realTimeBarUpdater implements Runnable{
+		
+		LinkedList<IbBar> bars;
+
+		public realTimeBarUpdater(LinkedList<IbBar> bars) {
+			super();
+			this.bars=bars;
+		}
+
+
+
+		@Override
+		public void run() {
+			
+			IbBar bar=bars.getLast();
+			
+			//if(period[1]==minMaxperiod[1]){
+				period[1]=bar.getTime();
+				dateAxis.setRange(period[0]*1000, period[1]*1000+30*1000);
+			//}
+			minMaxperiod[1]=bar.getTime();
+			Second sec=new Second(new Date(bar.getTimeInMs()));
+			
+			
+			int index=candleStickSeries.indexOf(sec);
+			if(index>0){
+				candleStickSeries.remove(index);
+			}
+			
+			candleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
+			candleStickSeries.fireSeriesChanged();
+			
+			threshold.setValue(bar.getClose());
+			
+		}
+		
+	}
 	
 	
 }

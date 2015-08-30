@@ -202,14 +202,24 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 			IbContract contract=(IbContract) element;
 			viewerCellMap.put(contract.getId(), contract);
 			
+			String txt="";
 			
-			String txt=contract.getLongName()+" ["+contract.getExchange()+", "+contract.getCurrency()+"]";
+			switch (contract.getSecType()) {
+				case STK:
+					txt=contract.getLongName()+" ["+contract.getExchange()+", "+contract.getCurrency()+"]";
+					break;
+				case CASH:
+					txt=contract.getLocalSymbol()+", "+contract.getLongName()+" ["+contract.getExchange()+"]";
+					break;
+				default:
+					txt=contract.getLongName()+" ["+contract.getExchange()+", "+contract.getCurrency()+"]";
+					break;
+			}
+			
+		
 			if(topMktDataMap.containsKey(contract.getId())){
 				IbTopMktData ibTopMktData=topMktDataMap.get(contract.getId());
-				//txt+=", ["+ibTopMktData.getAsk()+", "+ibTopMktData.getBid()+"]";
-				
 				txt+=", "+ibTopMktData.toStrLine();
-				
 			}
 			
 			cell.setText(txt);

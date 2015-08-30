@@ -10,6 +10,7 @@ public class Constants {
 	 public static final String DEFAULT_USERNAME = "jmsuser";
 	 public static final String DEFAULT_PASSWORD = "Password1!";
 	 public static final String DEFAULT_CLIENT_ID = "12345";
+	 
 	 private static final String INITIAL_CONTEXT_FACTORY = "org.jboss.naming.remote.client.InitialContextFactory";
 	 private static final String PROVIDER_URL = "http-remoting://localhost:8080";
 	 
@@ -17,6 +18,9 @@ public class Constants {
 	 //Destinations
 	 private static final String DEFAULT_DESTINATION = "java:/jms/topic/demoTopic";
 	 public static final String TOP_MARKET_DATA = "java:/jms/topic/MktData";
+	 
+	 public static final String REAL_TIME_BAR = "java:/jms/topic/RealTimeBar";
+	 public static final String REAL_TIME_BAR_CLIENT_ID = "12346";
 	 
 	 public static Properties getContextProperties(){
 		 final Properties env = new Properties();

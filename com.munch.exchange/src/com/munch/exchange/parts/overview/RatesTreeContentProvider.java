@@ -444,7 +444,7 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 				}
 				
 				container.setLoadingState(loading_str);
-				eventBroker.post(IEventConstant.RATE_LOADING,container);
+				//eventBroker.post(IEventConstant.RATE_LOADING,container);
 				
 				i++;
 				if(i>3)i=0;

@@ -220,7 +220,7 @@ public abstract  class IbBar implements Serializable{
 	}
 	
 	public long getTimeInMs() {
-		return this.time*1000;
+		return this.time*1000L;
 		//return this.pk.getTime();
 	}
 

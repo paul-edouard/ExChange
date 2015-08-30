@@ -100,28 +100,18 @@ public class IBTopMktDataProvider implements IIBTopMktDataProvider, MessageListe
 	public void onMessage(Message arg0) {
 		try {
 			TextMessage msg=(TextMessage) arg0;
-			/*
-			int contractId=msg.getIntProperty(ExTopMktData.CONTRACT_ID);
-			if(contractId==0)return;
-			ExTopMktData topMktData=topMktDataMap.get(contractId);
-			if(topMktData==null)return;
-			*/
 			
 			@SuppressWarnings("unchecked")
 			Enumeration<String> propList= msg.getPropertyNames();
-			//String content="";
 			HashMap<String, String> propMap=new HashMap<>();
 			while(propList.hasMoreElements()){
 				String prop=propList.nextElement();
 				String value=msg.getStringProperty(prop);
 				propMap.put(prop, value);
-				//content+=prop+"="+value+", ";
 			}
 			reactOnNewIbTopMktData(propMap);
 			
-			//System.out.println(content);
 		} catch (JMSException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

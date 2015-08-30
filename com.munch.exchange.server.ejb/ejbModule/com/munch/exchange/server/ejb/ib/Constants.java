@@ -14,6 +14,7 @@ public class Constants {
 	public static final String JMS_TOPIC_EXCHANGE="java:/jms/topic/exChangeTopic";
 	public static final String JMS_TOPIC_MARKET_DATA="java:/jms/topic/MktData";
 	public static final String JMS_TOPIC_HISTORICAL_DATA="java:/jms/topic/HistoricalData";
+	public static final String JMS_TOPIC_REAL_TIME_BAR="java:/jms/topic/RealTimeBar";
 	
 
 }

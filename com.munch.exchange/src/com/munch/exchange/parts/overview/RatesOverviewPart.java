@@ -369,7 +369,7 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 	@Inject
 	private void loadingRate(@Optional  @UIEventTopic(IEventConstant.RATE_LOADING) ExchangeRate rate ){
 		if(treeViewer!=null && rate!=null){
-			treeViewer.refresh();
+			//treeViewer.refresh();
 		}
 	}
 	

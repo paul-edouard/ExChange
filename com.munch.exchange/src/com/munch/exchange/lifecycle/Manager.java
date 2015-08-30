@@ -21,6 +21,7 @@ import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.IWatchlistProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataProvider;
 
 @SuppressWarnings("restriction")
@@ -62,7 +63,8 @@ public class Manager {
 			IWatchlistProvider watchlistProvider,
 			IIBContractProvider contractProvider,
 			IIBTopMktDataProvider topMktDataProvider,
-			IIBHistoricalDataProvider ibHistoricalDataProvider) {
+			IIBHistoricalDataProvider ibHistoricalDataProvider,
+			IIBRealTimeBarProvider ibRealTimeBarProvider) {
 		
 		
 		//BasicConfigurator.configure();
@@ -71,6 +73,7 @@ public class Manager {
 		contractProvider.init();
 		topMktDataProvider.init();
 		ibHistoricalDataProvider.init();
+		ibRealTimeBarProvider.init();
 		
 		//testIBProviders(contractProvider, topMktDataProvider, ibHistoricalDataProvider);
 		
@@ -139,9 +142,11 @@ public class Manager {
 	
 	
 	@PreSave
-	public void preSave(IIBTopMktDataProvider topMktDataProvider){
+	public void preSave(IIBTopMktDataProvider topMktDataProvider,
+			IIBRealTimeBarProvider realTimeBarPrivider){
 		System.out.println("Application is going to close!");
 		topMktDataProvider.close();
+		realTimeBarPrivider.close();
 	}
 	
 	

@@ -16,7 +16,7 @@ import com.ib.controller.Types.SecType;
 import com.ib.controller.NewContract;
 import com.ib.controller.NewContractDetails;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.server.ejb.ib.collectors.TopMktDataMsgSenderCollector;
+import com.munch.exchange.server.ejb.ib.topmktdata.TopMktDataMsgSenderCollector;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
 
 /**
@@ -158,6 +158,10 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 			}
 			else break;
 			i++;
+		}
+		
+		if(this.list==null){
+			this.list=new ArrayList<NewContractDetails>();
 		}
 	}
 

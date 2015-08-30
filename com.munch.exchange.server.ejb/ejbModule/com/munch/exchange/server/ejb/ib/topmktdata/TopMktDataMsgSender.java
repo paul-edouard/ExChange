@@ -1,7 +1,8 @@
-package com.munch.exchange.server.ejb.ib.adapter;
+package com.munch.exchange.server.ejb.ib.topmktdata;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Calendar;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -21,12 +22,13 @@ import com.ib.controller.ApiController.TopMktDataAdapter;
 import com.ib.controller.Types.MktDataType;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.IbTopMktData;
+import com.munch.exchange.model.core.ib.bar.IbBar;
 
 public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyChangeListener{
 	
 	private static final Logger log = Logger.getLogger(TopMktDataMsgSender.class.getName());
 	
-	
+	public static final String MSG_HEADER="Top_Market_Data";
 	
 	ConnectionFactory connectionFactory;
 	Topic destination;
@@ -89,7 +91,7 @@ public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyCh
 		
 		try {
 			TextMessage msg=session.createTextMessage();
-			msg.setText("Top_Market_Data");
+			msg.setText(MSG_HEADER);
 			msg.setIntProperty(IbTopMktData.CONTRACT_ID, topMktData.getContractId());
 			//msg.setStringProperty(ExTopMktData.CONTRACT_ID, String.valueOf(topMktData.getContractId()));
 			msg.setStringProperty(field, value);
@@ -116,6 +118,7 @@ public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyCh
 			case CLOSE:
 				topMktData.setClose(price);
 				break;
+			
 			default:
 				break;
 		}
@@ -145,6 +148,10 @@ public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyCh
 		switch( tickType) {
 			case LAST_TIMESTAMP:
 				topMktData.setLastTime(Long.parseLong( value) * 1000);
+				//Calendar cal=Calendar.getInstance();
+				//log.info("Recieved Bar: "+IbBar.format(Long.parseLong( value) * 1000)+", current time: "+IbBar.format(cal.getTimeInMillis()));
+				break;
+			default:
 				break;
 		}
 	}

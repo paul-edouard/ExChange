@@ -30,9 +30,12 @@ import com.ib.controller.ApiConnection.ILogger;
 import com.ib.controller.ApiController.IConnectionHandler;
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.server.ejb.ib.collectors.TopMktDataMsgSenderCollector;
 import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataBean;
 import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataLoaders;
+import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataMsgDrivenBean;
+import com.munch.exchange.server.ejb.ib.realtimebar.RealTimeBarCollector;
+import com.munch.exchange.server.ejb.ib.realtimebar.RealTimeBarsSenderCollector;
+import com.munch.exchange.server.ejb.ib.topmktdata.TopMktDataMsgSenderCollector;
 
 /**
  * Session Bean implementation class ConnectionBean
@@ -59,6 +62,12 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
 	@Resource(lookup=Constants.JMS_TOPIC_MARKET_DATA)
 	private Topic destination;
 	
+	@Resource(lookup=Constants.JMS_TOPIC_REAL_TIME_BAR)
+	private Topic realTimeBardestination;
+	
+	
+	
+	
 	
     /**
      * Default constructor. 
@@ -79,6 +88,14 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
     	
     	//TODO remove
     	log.info("Initialization of bars");
+    	
+    	RealTimeBarCollector.INSTANCE.init(connectionFactory, realTimeBardestination);
+    	
+    	//allContracts=em.createNamedQuery("IbContract.getAll", IbContract.class).getResultList();
+    	//for(IbContract contract : allContracts){
+    	//	HistoricalDataMsgDrivenBean.getBarsFrom(contract, em);
+    	//}
+    	
 		//historicalDataBean.searchNewBars(null, WhatToShow.BID_ASK);
     }
     
@@ -92,19 +109,13 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
 	
     
 
+    //private List<IbContract> allContracts;
 	@Override
 	public void connected() {
 		log.info("Connected!");
 		//Start the Message sender collector
 		TopMktDataMsgSenderCollector.INSTANCE.init(em,connectionFactory,destination);
-		
-		
-		//Start of the update of the historical data
-		//HistoricalDataCollector.INSTANCE.init(em);
-		
-		//log.info("Initialization of bars");
-		//historicalDataBean.searchNewBars(null, WhatToShow.BID_ASK);
-		
+		//RealTimeBarsSenderCollector.INSTANCE.init(em, connectionFactory, destination,allContracts);
 		
 	}
 
@@ -112,6 +123,7 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
 	public void disconnected() {
 		log.info("Disconnected!");
 		TopMktDataMsgSenderCollector.INSTANCE.clearAll();
+		//RealTimeBarsSenderCollector.INSTANCE.clearAll();
 	}
 
 	@Override
@@ -122,6 +134,7 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
 
 	@Override
 	public void error(Exception e) {
+		e.printStackTrace();
 		// TODO Auto-generated method stub
 		
 	}
@@ -133,13 +146,20 @@ public class ConnectionBean implements IConnectionHandler,ILogger{
 
 	@Override
 	public void show(String string) {
-		// TODO Auto-generated method stub
+		log.info(string);	
 		
 	}
-
+	
+	private String logStr="";
 	@Override
 	public void log(String valueOf) {
-		//log.info(valueOf);	
+		/*
+		logStr+=valueOf;
+		if(valueOf=="\n"){
+			log.info("LOG: "+logStr);
+			logStr="";
+		}
+		*/
 	}
 
 }

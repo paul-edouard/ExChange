@@ -73,7 +73,7 @@ public class TopMktDataClient implements MessageListener {
 				content+=prop+"="+value+", ";
 			}
 			
-			System.out.println(content);
+			//System.out.println(content);
 		} catch (JMSException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

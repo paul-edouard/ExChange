@@ -1,4 +1,4 @@
-package com.munch.exchange.server.ejb.ib.collectors;
+package com.munch.exchange.server.ejb.ib.topmktdata;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +15,6 @@ import javax.persistence.PersistenceContext;
 
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
-import com.munch.exchange.server.ejb.ib.adapter.TopMktDataMsgSender;
 
 public enum TopMktDataMsgSenderCollector {
 	

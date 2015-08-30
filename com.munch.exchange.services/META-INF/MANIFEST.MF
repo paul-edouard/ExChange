@@ -12,8 +12,8 @@ Require-Bundle: com.munch.exchange.model;bundle-version="1.0.0",
  com.munch.exchange.libs;bundle-version="1.0.0",
  com.munch.exchange.utils;bundle-version="1.0.0",
  com.ib.api;bundle-version="1.0.0"
-Service-Component: Component/ExchangeRateProvider.xml,Component/AnalystEstimationProvider.xml,Component/DividentProvider.xml,Component/FinancialsProvider.xml,Component/HistoricalDataProvider.xml,Component/KeyStatisticProvider.xml,Component/QuoteProvider.xml,Component/BundleResource.xml,Component/OptimizationResultsProvider.xml,Component/WatchlistProvider.xml,Component/NeuralNetworkProvider.xml,Component/IBContractProvider.xml,Component/IBTopMktDataProvider.xml,
- Component/IBHistoricalDataProvider.xml
+Service-Component: Component/ExchangeRateProvider.xml,Component/AnalystEstimationProvider.xml,Component/DividentProvider.xml,Component/FinancialsProvider.xml,Component/HistoricalDataProvider.xml,Component/KeyStatisticProvider.xml,Component/QuoteProvider.xml,Component/BundleResource.xml,Component/OptimizationResultsProvider.xml,Component/WatchlistProvider.xml,Component/NeuralNetworkProvider.xml,Component/IBContractProvider.xml,Component/IBTopMktDataProvider.xml,Component/IBHistoricalDataProvider.xml,
+ Component/IBRealTimeBarProvider.xml
 Export-Package: com.munch.exchange.services;uses:="org.eclipse.jface.resource,org.eclipse.swt.graphics,com.munch.exchange.model.core",
  com.munch.exchange.services.ejb.beans,
  com.munch.exchange.services.ejb.interfaces,
