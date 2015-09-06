@@ -1,6 +1,7 @@
 package com.munch.exchange.server.ejb.ib.historicaldata;
 
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -15,6 +16,7 @@ import javax.persistence.Query;
 
 import javax.persistence.TypedQuery;
 
+import com.ib.controller.Bar;
 import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
@@ -24,6 +26,7 @@ import com.munch.exchange.model.core.ib.bar.IbHourBar;
 import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
 import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
 import com.munch.exchange.model.jpa.entity.Student;
+import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataLoaders.BarLoader;
 import com.munch.exchange.services.ejb.interfaces.HistoricalDataBeanRemote;
 
 /**
@@ -46,9 +49,8 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
     /**
      * Default constructor. 
      */
-     public HistoricalDataBean() {
+    public HistoricalDataBean() {
     }
-
 
 	@Override
 	public List<IbBarContainer> getAllExContractBars(IbContract exContract) {
@@ -62,7 +64,6 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		
 		return contractBars;
 		}
-
 
 	@Override
 	public IbBar getFirstBar(IbBarContainer exContractBars,
@@ -88,8 +89,6 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
     	return time;
 	}
 	
-
-
 	@Override
 	public IbBar getLastBar(IbBarContainer exContractBars,
 		Class<? extends IbBar> exBarClass) {
@@ -114,7 +113,6 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
     	
     	return time;
 	}
-
 
 	@Override
 	public List<IbBar> getAllBars(IbBarContainer exContractBars,BarSize size) {
@@ -150,7 +148,6 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
     	return copies;
 	}
 
-
 	@Override
 	public IbBar searchBarOfTime(IbBarContainer exContractBars,
 			Class<? extends IbBar> exBarClass, long time) {
@@ -171,7 +168,6 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		
 		return null;
 	}
-
 
 	@Override
 	public List<IbBar> getBarsFromTo(IbBarContainer exContractBars,
@@ -210,6 +206,51 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		
 	}
 	
+	@Override
+	public List<IbBar> downloadLastBars(IbBarContainer exContractBars, BarSize size) {
+		List<IbBar> ibBars=new LinkedList<>();
+		
+		
+		Class<? extends IbBar> ibBarClass=IbBar.searchCorrespondingBarClass(size);
+		long lastBarTime=this.getLastBarTime(exContractBars, ibBarClass);
+		long lastBarTimeMs=lastBarTime*1000;
+		long time=new Date().getTime();
+		
+		BarLoader loader=HistoricalDataLoaders.INSTANCE.getLoaderFrom(exContractBars);
+		
+		if(loader==null)return ibBars;
+		if(loader.isLoading())return ibBars;
+		
+		loader.setLoading(true);
+		List<Bar> bars=loader.loadBarsFromTo(lastBarTimeMs, time, size);
+		loader.setLoading(false);
+		
+		for(Bar bar:bars){
+			try {
+			IbBar exBar = ibBarClass.newInstance();
+			exBar.init(bar);
+			ibBars.add(exBar);
+			} catch (InstantiationException
+					| IllegalAccessException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+		if(ibBars.isEmpty())return ibBars;
+		
+		BarSize copySize=ibBars.get(0).getSize();
+    	if(copySize!=size){
+    		return IbBar.convertIbBars(ibBars, size);
+    	}
+		
+		return ibBars;
+	}
+	
+	
+	
+	
+	/*
 	private int getCompressRate(BarSize size){
 		switch (size) {
 		
@@ -256,7 +297,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		}
 		
 	}
-	
+	*/
 
 
 	@Override
@@ -269,6 +310,9 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	public IbBar getBar(long id) {
 		return em.find(IbBar.class, id);
 	}
+
+
+	
 	
 
 	

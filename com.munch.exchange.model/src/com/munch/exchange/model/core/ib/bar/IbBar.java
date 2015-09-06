@@ -355,8 +355,8 @@ public abstract  class IbBar implements Serializable{
 		return 1000L*getIntervallInSec(size);
 	}
 	
-	public static List<IbBar> convertIbBars(List<IbBar> bars, BarSize targetSize){
-		List<IbBar> convertedBars=new LinkedList<IbBar>();
+	public static LinkedList<IbBar> convertIbBars(List<IbBar> bars, BarSize targetSize){
+		LinkedList<IbBar> convertedBars=new LinkedList<IbBar>();
 		if(bars==null || bars.isEmpty())return convertedBars;
 		
 		long targetInterval=getIntervallInSec(targetSize);
@@ -408,7 +408,59 @@ public abstract  class IbBar implements Serializable{
 		}
 	}
 	
-	public static IbBar createNewInstance(BarSize size){
+	public static List<String> getAllBarSizesAsString(){
+		List<String> barSizes=new LinkedList<String>();
+		
+		barSizes.add("1 minute");
+		barSizes.add("2 minutes");
+		barSizes.add("3 minutes");
+		barSizes.add("5 minutes");
+		barSizes.add("10 minutes");
+		barSizes.add("15 minutes");
+		barSizes.add("20 minutes");
+		barSizes.add("30 minutes");
+		
+		barSizes.add("1 hour");
+		barSizes.add("4 hours");
+		
+		barSizes.add("1 day");
+		
+		return barSizes;
+		
+	}
+	
+	public static BarSize getBarSizeFromString(String sizeStr){
+		if(sizeStr.equals("1 minute")){return BarSize._1_min;}
+		else if(sizeStr.equals("2 minutes")){return BarSize._2_mins;}
+		else if(sizeStr.equals("3 minutes")){return BarSize._3_mins;}
+		else if(sizeStr.equals("5 minutes")){return BarSize._5_mins;}
+		else if(sizeStr.equals("10 minutes")){return BarSize._10_mins;}
+		else if(sizeStr.equals("15 minutes")){return BarSize._15_mins;}
+		else if(sizeStr.equals("20 minutes")){return BarSize._20_mins;}
+		else if(sizeStr.equals("30 minutes")){return BarSize._30_mins;}
+		
+		if(sizeStr.equals("1 hour")){return BarSize._1_hour;}
+		else if(sizeStr.equals("4 hours")){return BarSize._4_hours;}
+		
+		return BarSize._1_day;
+	}
+	
+	public static WhatToShow getWhatToShowFromString(String whatToShowStr){
+		if(whatToShowStr.equals("TRADES")){return WhatToShow.TRADES;}
+		else if(whatToShowStr.equals("MIDPOINT")){return WhatToShow.MIDPOINT;}
+		else if(whatToShowStr.equals("BID")){return WhatToShow.BID;}
+		else if(whatToShowStr.equals("ASK")){return WhatToShow.ASK;}
+		else if(whatToShowStr.equals("BID_ASK")){return WhatToShow.BID_ASK;}
+		else if(whatToShowStr.equals("HISTORICAL_VOLATILITY")){return WhatToShow.HISTORICAL_VOLATILITY;}
+		else if(whatToShowStr.equals("OPTION_IMPLIED_VOLATILITY")){return WhatToShow.OPTION_IMPLIED_VOLATILITY;}
+		else if(whatToShowStr.equals("YIELD_ASK")){return WhatToShow.YIELD_ASK;}
+		else if(whatToShowStr.equals("YIELD_BID")){return WhatToShow.YIELD_BID;}
+		else if(whatToShowStr.equals("YIELD_BID_ASK")){return WhatToShow.YIELD_BID_ASK;}
+		else if(whatToShowStr.equals("YIELD_LAST")){return WhatToShow.YIELD_LAST;}
+		else{return WhatToShow.TRADES;}
+	}
+	
+ 	public static IbBar createNewInstance(BarSize size){
 		Class<? extends IbBar> ibBarClass=IbBar.searchCorrespondingBarClass(size);
 		
 		try {

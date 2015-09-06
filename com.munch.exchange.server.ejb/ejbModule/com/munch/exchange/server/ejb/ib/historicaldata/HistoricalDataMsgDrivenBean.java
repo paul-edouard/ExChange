@@ -544,39 +544,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     public static List<IbBarContainer> getBarsFrom(IbContract exContract,EntityManager em){
     	List<IbBarContainer> Allbars=exContract.getBars();
     	if(Allbars==null || Allbars.isEmpty()){
-    		Allbars=new LinkedList<IbBarContainer>();
-    		
-    		//STOCK
-    		if(exContract.getSecType()==SecType.STK ){
-    			Allbars.add(new IbBarContainer(exContract,WhatToShow.MIDPOINT));
-    			Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
-    			Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
-    			Allbars.add(new IbBarContainer(exContract,WhatToShow.TRADES));
-    			
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.HISTORICAL_VOLATILITY));
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.OPTION_IMPLIED_VOLATILITY));
-    		}
-    		else if(exContract.getSecType()==SecType.CASH || 
-    				exContract.getSecType()==SecType.CMDTY){
-    			Allbars.add(new IbBarContainer(exContract,WhatToShow.MIDPOINT));
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
-    		}
-    		else if(exContract.getSecType()==SecType.OPT ||
-    				exContract.getSecType()==SecType.FUT){
-    			Allbars.add(new IbBarContainer(exContract,WhatToShow.MIDPOINT));
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.TRADES));
-    		}
-    		//INDICE
-    		else if(exContract.getSecType()==SecType.IND){
-    			Allbars.add(new IbBarContainer(exContract,WhatToShow.TRADES));
-    			
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.HISTORICAL_VOLATILITY));
-    			//Allbars.add(new IbBarContainer(exContract,WhatToShow.OPTION_IMPLIED_VOLATILITY));
-    		}
-    		
+    		Allbars=IbContract.getAllAvailableIbBarContainers(exContract);
     		
     		for(IbBarContainer bars:Allbars){
     			em.persist(bars);

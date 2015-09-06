@@ -27,8 +27,10 @@ public interface HistoricalDataBeanRemote {
 	public IbBar getLastBar(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
 	public long getLastBarTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
 	
+	
 	public List<IbBar> getAllBars(IbBarContainer exContractBars,BarSize size);
 	public List<IbBar> getBarsFromTo(IbBarContainer exContractBars,BarSize size,long from, long to);
+	public List<IbBar> downloadLastBars(IbBarContainer exContractBars,BarSize size);
 	
 	
 	

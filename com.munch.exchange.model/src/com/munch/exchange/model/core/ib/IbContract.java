@@ -26,6 +26,7 @@ import com.ib.controller.NewContractDetails;
 import com.ib.controller.Types.Right;
 import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
+import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 
@@ -629,6 +630,48 @@ public class IbContract implements Serializable{
 				+ ", nextOptionPartial=" + nextOptionPartial + ", notes="
 				+ notes + "]";
 	}
+	
+	
+	//######################################
+  	//##              STATIC              ##
+  	//######################################
+	public static List<IbBarContainer> getAllAvailableIbBarContainers(IbContract contract){
+		List<IbBarContainer> Allbars=new LinkedList<IbBarContainer>();
+		//STOCK
+		if(contract.getSecType()==SecType.STK ){
+			Allbars.add(new IbBarContainer(contract,WhatToShow.MIDPOINT));
+			Allbars.add(new IbBarContainer(contract,WhatToShow.ASK));
+			Allbars.add(new IbBarContainer(contract,WhatToShow.BID));
+			Allbars.add(new IbBarContainer(contract,WhatToShow.TRADES));
+			
+			//Allbars.add(new IbBarContainer(exContract,WhatToShow.HISTORICAL_VOLATILITY));
+			//Allbars.add(new IbBarContainer(exContract,WhatToShow.OPTION_IMPLIED_VOLATILITY));
+		}
+		else if(contract.getSecType()==SecType.CASH || 
+				contract.getSecType()==SecType.CMDTY){
+			Allbars.add(new IbBarContainer(contract,WhatToShow.MIDPOINT));
+			//Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
+			//Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
+		}
+		else if(contract.getSecType()==SecType.OPT ||
+				contract.getSecType()==SecType.FUT){
+			Allbars.add(new IbBarContainer(contract,WhatToShow.MIDPOINT));
+			//Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
+			//Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
+			//Allbars.add(new IbBarContainer(exContract,WhatToShow.TRADES));
+		}
+		//INDICE
+		else if(contract.getSecType()==SecType.IND){
+			Allbars.add(new IbBarContainer(contract,WhatToShow.TRADES));
+			
+			//Allbars.add(new IbBarContainer(exContract,WhatToShow.HISTORICAL_VOLATILITY));
+			//Allbars.add(new IbBarContainer(exContract,WhatToShow.OPTION_IMPLIED_VOLATILITY));
+		}
+		
+		return Allbars;
+		
+	}
+	
 	
 	
 }

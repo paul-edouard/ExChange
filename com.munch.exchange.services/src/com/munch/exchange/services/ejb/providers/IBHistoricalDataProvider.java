@@ -79,6 +79,12 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 		return beanRemote.getService().getBar(id);
 	}
 
+	@Override
+	public List<IbBar> downloadLastBars(IbBarContainer exContractBars,
+			BarSize size) {
+		return beanRemote.getService().downloadLastBars(exContractBars, size);
+	}
+
 	
 
 	

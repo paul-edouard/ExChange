@@ -107,7 +107,6 @@ public enum HistoricalDataLoaders {
 	}
 	
 	
-	
 	public synchronized boolean isLoading() {
 		return isLoading;
 	}
@@ -117,13 +116,17 @@ public enum HistoricalDataLoaders {
 		this.isLoading = isLoading;
 	}
 
-
-
 	public Collection<BarLoader> getLoaders(){
 		return loaderMap.values();
 	}
 	
-	
+	public BarLoader getLoaderFrom(IbBarContainer c){
+		if(loaderMap.containsKey(c.getId())){
+			return loaderMap.get(c.getId());
+		}
+		return null;
+	}
+		
 	public class BarLoader implements IHistoricalDataHandler{
 		
 
