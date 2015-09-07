@@ -117,7 +117,7 @@ public abstract  class IbBar implements Serializable{
 		this.volume = bar.volume;
 		this.count = bar.count;
 		
-		this.size=bar.size;
+		//this.size=bar.size;
 		this.type=bar.type;
 		this.id=bar.id;
 	}
@@ -376,7 +376,16 @@ public abstract  class IbBar implements Serializable{
 			else if(converted!=null){
 				converted.integrateData(bar);
 			}
+			else{
+				converted=createNewInstance(targetSize);
+				converted.copyData(bar);
+			}
 		}
+		
+		if(converted!=null){
+			convertedBars.add(converted);
+		}
+		
 		
 		return convertedBars;
 	}
@@ -464,7 +473,10 @@ public abstract  class IbBar implements Serializable{
 		Class<? extends IbBar> ibBarClass=IbBar.searchCorrespondingBarClass(size);
 		
 		try {
-			return ibBarClass.newInstance();
+			IbBar instance=ibBarClass.newInstance();  
+			instance.setSize(size);
+			//System.out.println("Target Size: "+size);
+			return instance;
 		} catch (InstantiationException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
