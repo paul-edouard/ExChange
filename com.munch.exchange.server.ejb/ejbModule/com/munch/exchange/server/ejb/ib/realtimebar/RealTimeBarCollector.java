@@ -68,6 +68,8 @@ public enum RealTimeBarCollector {
 		try {
     		//TextMessage msg=session.createTextMessage();
     		for(IbBar bar:bars){
+    			bar.setRealTime(true);
+    			bar.setCompleted(false);
     			ObjectMessage objMsg=session.createObjectMessage();
     			objMsg.setObject(bar);
     			objMsg.setIntProperty(IbTopMktData.CONTRACT_ID, contractId);
@@ -87,6 +89,7 @@ public enum RealTimeBarCollector {
 		if(!contractBars.containsKey(whatToShow)){
 			IbBar bar=new IbMinuteBar();
 			bar.setType(whatToShow);
+			//bar.setRealTime(true);
 			contractBars.put(whatToShow, bar);
 		}
 		
@@ -114,9 +117,9 @@ public enum RealTimeBarCollector {
 		}
 		else{
 			bar.setTime(time);
-			if(bar.getClose()>0)
-				bar.setOpen(bar.getClose());
-			else
+			//if(bar.getClose()>0)
+			//	bar.setOpen(bar.getClose());
+			//else
 				bar.setOpen(value);
 			bar.setClose(value);
 			bar.setHigh(value);

@@ -47,6 +47,7 @@ public class IBRealTimeBarProvider implements IIBRealTimeBarProvider,
 			
 			int contractId=msg.getIntProperty(IbTopMktData.CONTRACT_ID);
 			IbBar bar=(IbBar) msg.getObject();
+			bar.setRealTime(true);
 			
 			for(IIBRealTimeBarListener listener:listeners){
 				if(listener.getContractId()!=contractId)continue;

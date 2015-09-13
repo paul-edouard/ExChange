@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorColumn;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -20,18 +19,17 @@ import javax.persistence.Inheritance;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.validation.constraints.NotNull;
+import javax.persistence.Transient;
 
 import com.ib.controller.Bar;
 import com.ib.controller.Formats;
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.model.core.ib.IbContract;
 
 @Entity
 @Inheritance
 @DiscriminatorColumn(name="BAR_TYPE")
-public abstract  class IbBar implements Serializable{
+public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 	
 	/**
 	 * 
@@ -67,6 +65,11 @@ public abstract  class IbBar implements Serializable{
 	@OneToMany(mappedBy="parent",cascade=CascadeType.ALL)
 	private List<IbBar> childBars;
 	
+	@Transient
+	private boolean isRealTime=false;
+	
+	@Transient
+	private boolean isCompleted=true;
 	
 	private  long time;
 	private  double high;
@@ -120,10 +123,13 @@ public abstract  class IbBar implements Serializable{
 		//this.size=bar.size;
 		this.type=bar.type;
 		this.id=bar.id;
+		
+		this.isRealTime=bar.isRealTime;
+		this.isCompleted=bar.isCompleted;
 	}
 	
 	public void integrateData(IbBar bar){
-		this.setTime( bar.time);
+		//this.setTime( bar.time);
 		this.high = Math.max(bar.high, this.high);
 		this.low = Math.min(bar.low, this.low);
 		//this.open = bar.open;
@@ -147,10 +153,27 @@ public abstract  class IbBar implements Serializable{
 	
 	//public abstract long getIntervall();
 	
+
 	public long getIntervallInSec(){
 		return getIntervallInSec(size);
 	}
 	
+	public boolean isRealTime() {
+		return isRealTime;
+	}
+
+	public void setRealTime(boolean isRealTime) {
+		this.isRealTime = isRealTime;
+	}
+
+	public boolean isCompleted() {
+		return isCompleted;
+	}
+
+	public void setCompleted(boolean isCompleted) {
+		this.isCompleted = isCompleted;
+	}
+
 	public long getIntervallInMs(){
 		return 1000L*getIntervallInSec();
 	}
@@ -300,10 +323,18 @@ public abstract  class IbBar implements Serializable{
 		return "ExBar [id=" + id + ", type=" + type + ", parent=" + parent
 				+ ", size=" + size + ", root=" + root + ", time=" + time +", formated time="+this.formattedTime()+ ", high=" + high + ", low="
 				+ low + ", open=" + open + ", close=" + close + ", wap=" + wap
-				+ ", volume=" + volume + ", count=" + count + "]";
+				+ ", volume=" + volume + ", count=" + count + ", real time=" + isRealTime + "]";
 	}
 	
 	
+
+	@Override
+	public int compareTo(IbBar o) {
+		long diff=this.time-o.time;
+		if(diff>0)return 1;
+		else if(diff==0)return 0;
+		return -1;
+	}
 
 	public static long getIntervallInSec(BarSize size){
 		switch (size) {
@@ -359,6 +390,11 @@ public abstract  class IbBar implements Serializable{
 		LinkedList<IbBar> convertedBars=new LinkedList<IbBar>();
 		if(bars==null || bars.isEmpty())return convertedBars;
 		
+		if(bars.get(0).getSize()==targetSize){
+			convertedBars.addAll(bars);
+			return convertedBars;
+		}
+		
 		long targetInterval=getIntervallInSec(targetSize);
 		long startInterval=bars.get(0).getIntervallInSec();
 		
@@ -372,6 +408,7 @@ public abstract  class IbBar implements Serializable{
 			else if(bar.getTime()%targetInterval==startInterval ){
 				converted=createNewInstance(targetSize);
 				converted.copyData(bar);
+				converted.setTime(bar.getTime()-startInterval+targetInterval);
 			}
 			else if(converted!=null){
 				converted.integrateData(bar);
@@ -379,12 +416,17 @@ public abstract  class IbBar implements Serializable{
 			else{
 				converted=createNewInstance(targetSize);
 				converted.copyData(bar);
+				if(bar.getTime()%targetInterval>0)
+					converted.setTime(bar.getTime()-bar.getTime()%targetInterval+targetInterval);
 			}
 		}
 		
 		if(converted!=null){
+			converted.setCompleted(false);
 			convertedBars.add(converted);
 		}
+		//for(IbBar bar:convertedBars)
+		//	System.out.println("Intervall: "+bar.getTime()%targetInterval);
 		
 		
 		return convertedBars;

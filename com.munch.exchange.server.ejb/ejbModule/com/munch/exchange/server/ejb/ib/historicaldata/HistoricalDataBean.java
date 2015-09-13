@@ -178,7 +178,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 				"FROM "+ibBarClass.getSimpleName()+" b "+
     			"WHERE b.root="+exContractBars.getId()+" "+
 				"AND b.time>="+from+ " "+
-    			"ANS b.time<="+to,
+    			"AND b.time<="+to,
 				IbBar.class);
     	
     	List<IbBar> bars=query.getResultList();

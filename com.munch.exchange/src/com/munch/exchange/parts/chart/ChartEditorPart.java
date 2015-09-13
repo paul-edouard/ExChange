@@ -36,6 +36,8 @@ import com.munch.exchange.model.core.historical.HistoricalPoint.Type;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.IbBarRecorder;
+import com.munch.exchange.model.core.ib.bar.IbBarRecorderListener;
 import com.munch.exchange.model.core.ib.bar.IbHourBar;
 import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
 import com.munch.exchange.parts.RateEditorPart;
@@ -118,26 +120,16 @@ public class ChartEditorPart{
 	private DateAxis dateAxis;
 	private ValueMarker threshold;
 	private OHLCSeries candleStickSeries= new OHLCSeries(CANDLESTICK);
-	private OHLCSeries liveCandleStickSeries= new OHLCSeries(LIVE_CANDLESTICK);
 	
-	
-	//private IbBarContainer barContainer;
 	private List<IbBarContainer> barContainers;
-	private List<IbBar> bars=null;
-	private BarSize barSize=BarSize._1_min;
-	private WhatToShow whatToShow=WhatToShow.MIDPOINT;
+	private IbBarRecorder barRecorder=new IbBarRecorder();
+	
 	private HashMap<WhatToShow, LinkedList<IbBar>> liveBarMap=new HashMap<WhatToShow, LinkedList<IbBar>>();
 	private DataUpdater dataUpdater=new DataUpdater();
 	
 	
-	//private long[] period=new long[2];
-	//private long[] minMaxperiod=new long[2];
-	private long firstBarTime;
-	private long lastBarTime=new Date().getTime();
 	private Combo comboBarSize;
 	private Combo comboWhatToShow;
-	
-	
 	
 	@Inject
 	public ChartEditorPart() {}
@@ -182,13 +174,15 @@ public class ChartEditorPart{
 		for(IbBarContainer container:barContainers)
 			comboWhatToShow.add(container.getType().toString());
 		comboWhatToShow.setText(comboWhatToShow.getItem(0));
-		whatToShow=IbBar.getWhatToShowFromString(comboWhatToShow.getText());
+		barRecorder.setWhatToShow(IbBar.getWhatToShowFromString(comboWhatToShow.getText()));
+		//whatToShow=IbBar.getWhatToShowFromString(comboWhatToShow.getText());
 		comboWhatToShow.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				logger.info(comboWhatToShow.getText());
 				WhatToShow newWhatToShow=IbBar.getWhatToShowFromString(comboWhatToShow.getText());
-				if(newWhatToShow==whatToShow)return;
-				whatToShow=newWhatToShow;
+				if(newWhatToShow==barRecorder.getWhatToShow())return;
+				
+				barRecorder.setWhatToShow(newWhatToShow);
 				
 				comboWhatToShow.setEnabled(false);
 				comboBarSize.setEnabled(false);
@@ -206,8 +200,8 @@ public class ChartEditorPart{
 			public void modifyText(ModifyEvent e) {
 				logger.info(comboBarSize.getText());
 				BarSize newBarSize=IbBar.getBarSizeFromString(comboBarSize.getText());
-				if(newBarSize==barSize)return;
-				barSize=newBarSize;
+				if(newBarSize==barRecorder.getBarSize())return;
+				barRecorder.setBarSize(newBarSize);
 				
 				comboWhatToShow.setEnabled(false);
 				comboBarSize.setEnabled(false);
@@ -216,6 +210,7 @@ public class ChartEditorPart{
 		});
 		
 		addRealTimeBarListener();
+		addBarRecorderListener();
 		dataUpdater.schedule();
 		
 	}
@@ -225,15 +220,11 @@ public class ChartEditorPart{
 		barContainers=hisDataProvider.getAllExContractBars(contract);
 		if(barContainers==null || barContainers.size()==0)return;
 		
-		firstBarTime=hisDataProvider.getFirstBarTime(getBarContainer(),
-									IbBar.searchCorrespondingBarClass(barSize));
-		firstBarTime*=1000L;
-		
 	}
 	
 	private IbBarContainer getBarContainer(){
 		for(IbBarContainer container: barContainers){
-			if(container.getType()==whatToShow)
+			if(container.getType()==barRecorder.getWhatToShow())
 				return container;
 		}
 		return barContainers.get(0);
@@ -245,11 +236,14 @@ public class ChartEditorPart{
 		double upper=dateAxis.getRange().getUpperBound();
 		
 		
-		upper=Math.min(lastBarTime, upper+ (double)( fac*(1-posFac)));
-		lower=Math.max(firstBarTime, lower- (double)( fac*posFac));
+		upper=Math.min(barRecorder.getLastReceivedBar().getTimeInMs()+IbBar.getIntervallInMs(barRecorder.getBarSize())/2,
+						upper+ (double)( fac*(1-posFac)));
+		lower=Math.max(barRecorder.getFirstReceivedBar().getTimeInMs(),
+						lower- (double)( fac*posFac));
     	
     	dateAxis.setRange(lower, upper);
     	
+    	dataUpdater.checkSafetyInterval();
     	dataUpdater.schedule();
     }
 	
@@ -282,11 +276,14 @@ public class ChartEditorPart{
 		//if(end>lastBarTime)return;
 		//if(start<firstBarTime)return;
 		
-		upper=Math.min(lastBarTime+60*1000,end);
-		lower=Math.max(firstBarTime,start);
+		upper=Math.min(barRecorder.getLastReceivedBar().getTimeInMs()+IbBar.getIntervallInMs(barRecorder.getBarSize())/2,
+						end);
+		lower=Math.max(barRecorder.getFirstReceivedBar().getTimeInMs(),
+						start);
     	
     	dateAxis.setRange(lower, upper);
     	
+    	dataUpdater.checkSafetyInterval();
     	dataUpdater.schedule();
     	
 	}
@@ -332,7 +329,7 @@ public class ChartEditorPart{
 		//dateAxis.setAutoTickUnitSelection(true);
 		Date upper=new Date();
 		Date lower=new Date();
-		lower.setTime(upper.getTime()-IbBar.getIntervallInMs(barSize)*200);
+		lower.setTime(upper.getTime()-IbBar.getIntervallInMs(barRecorder.getBarSize())*200);
 		
 		dateAxis.setRange(lower,upper);
         
@@ -415,13 +412,6 @@ public class ChartEditorPart{
 			candlestickRenderer.setSeriesStroke(fiel_pos,new BasicStroke(1.5f));
 		}
 		
-		//Add the live Candle Stick
-		oHLCSeriesCollection.addSeries(liveCandleStickSeries);
-		fiel_pos=oHLCSeriesCollection.indexOf(LIVE_CANDLESTICK);
-		if(fiel_pos>=0){
-			candlestickRenderer.setSeriesPaint(fiel_pos, Color.blue);
-			candlestickRenderer.setSeriesStroke(fiel_pos,new BasicStroke(1.5f));
-		}
 		
     }
 	
@@ -548,7 +538,7 @@ public class ChartEditorPart{
 	
 	
 	//######################################
-  	//##       Real Time Bar Updater      ##
+  	//##        Bar Updaters              ##
   	//######################################
 	
 	private void addRealTimeBarListener(){
@@ -572,9 +562,11 @@ public class ChartEditorPart{
 				//Call the Real Time Bar Updater
 				if(bar.getType()==getBarContainer().getType()){
 					//logger.info("New Bar: "+bar);
-					LinkedList<IbBar> liveBars=IbBar.convertIbBars(bars, barSize);
-					lastBarTime=bar.getTimeInMs();
-					Display.getDefault().asyncExec(new realTimeBarUpdater(liveBars));
+					LinkedList<IbBar> realTimeBars=IbBar.convertIbBars(bars, barRecorder.getBarSize());
+					if(realTimeBars==null ||realTimeBars.isEmpty())return;
+					barRecorder.addBar(realTimeBars.getLast());
+					//lastBarTime=bar.getTimeInMs();
+					//Display.getDefault().asyncExec(new realTimeBarUpdater(liveBars));
 				}
 			}
 			
@@ -589,50 +581,105 @@ public class ChartEditorPart{
 	}
 	
 	
-	private class realTimeBarUpdater implements Runnable{
-		
-		LinkedList<IbBar> liveBars;
-
-		public realTimeBarUpdater(LinkedList<IbBar> liveBars) {
-			super();
-			this.liveBars=liveBars;
-		}
-
-
-
-		@Override
-		public void run() {
-			//logger.info("1. Run");
-			if(liveBars==null || liveBars.isEmpty())return;
-			//logger.info("2. Run");
-			IbBar bar=liveBars.getLast();
-			if(bar==null)return;
-			//logger.info("3. Run");
-			if(dateAxis==null)return;
+	private void addBarRecorderListener(){
+		barRecorder.addListener(new IbBarRecorderListener() {
 			
-			double diff=bar.getTimeInMs()-dateAxis.getRange().getUpperBound();
-			//logger.info("Diff: "+diff);
-			if(diff>=0 && diff<=bar.getIntervallInMs()){
-				dateAxis.setRange(dateAxis.getRange().getLowerBound(),bar.getTimeInMs()+bar.getIntervallInMs()/2);
+			private IbBar lastBar=null;
+			private List<IbBar> addedBars=null;
+			private List<IbBar> replacedBars=null;
+			
+			@Override
+			public void newCompletedBar(IbBar bar) {
+				// TODO Auto-generated method stub
 			}
-			//minMaxperiod[1]=bar.getTime();
-			Second sec=new Second(new Date(bar.getTimeInMs()));
 			
-			
-			int index=liveCandleStickSeries.indexOf(sec);
-			if(index>=0){
-				liveCandleStickSeries.remove(index);
+			@Override
+			public void barReplaced(List<IbBar> bars) {
+				
+				//logger.info("Bar Replaced!");
+				
+				replacedBars=bars;
+				Display.getDefault().asyncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						//candleStickSeries.clear();
+						for(IbBar bar:replacedBars){
+							Second sec=new Second(new Date(bar.getTimeInMs()));
+							int index=candleStickSeries.indexOf(sec);
+							//logger.info("Index of: "+index);
+							if(index>=0){
+								candleStickSeries.remove(index);
+								candleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
+							}
+							
+						}
+						candleStickSeries.fireSeriesChanged();
+					}
+				});
+				
 			}
-			//logger.info("Index of: "+index);
-			liveCandleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
-			liveCandleStickSeries.fireSeriesChanged();
 			
+			@Override
+			public void barAdded(List<IbBar> bars) {
+				addedBars=bars;
+				
+				//logger.info("Bar Added!");
+				
+				Display.getDefault().asyncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						//candleStickSeries.clear();
+						for(IbBar bar:addedBars){
+							Second sec=new Second(new Date(bar.getTimeInMs()));
+							candleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
+						}
+						
+						double diff=barRecorder.getLastReceivedBar().getTimeInMs()-dateAxis.getRange().getUpperBound();
+						//logger.info("Diff: "+diff);
+						if(diff>=0 && diff<=barRecorder.getLastReceivedBar().getIntervallInMs()){
+							dateAxis.setRange(dateAxis.getRange().getLowerBound(),
+									barRecorder.getLastReceivedBar().getTimeInMs()+barRecorder.getLastReceivedBar().getIntervallInMs()/2);
+						}
+						
+						candleStickSeries.fireSeriesChanged();
+						threshold.setValue(lastBar.getClose());
+						
+						
+						comboWhatToShow.setEnabled(true);
+						comboBarSize.setEnabled(true);
+					}
+				});
+				
+			}
 			
-			threshold.setValue(bar.getClose());
-			
-		}
-		
+			@Override
+			public void allBarsCleared() {
+				Display.getDefault().asyncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						candleStickSeries.clear();
+					}
+				});
+				
+			}
+
+			@Override
+			public void lastBarUpdated(IbBar bar) {
+				lastBar=bar;
+				Display.getDefault().asyncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						threshold.setValue(lastBar.getClose());
+					}
+				});
+			}
+		});
 	}
+	
 	
 	
 	//######################################
@@ -640,35 +687,38 @@ public class ChartEditorPart{
   	//######################################
 	private class DataUpdater extends Job{
 		
+		private long from;
+		private long to;
+		
+		private final static long loadingSize=1000;
+		private boolean loadPastValues=false;
+		private boolean pastValueAvailable=true;
+		
 		public DataUpdater() {
 			super("Data Updater");
 		}
 
-
-		private boolean dataUpdateNeeded(){
-			
-			if(bars==null)return true;
-			if(bars.isEmpty())return true;
-			
-			IbBar bar=bars.get(0);
-			if(bar.getType()!=whatToShow)return true;
-			if(bar.getSize()!=barSize)return true;
-			
-			return false;
+		public void checkSafetyInterval(){
+			double lastSec=barRecorder.getFirstReceivedBar().getTime();
+			double lowerRangeSec=dateAxis.getRange().getLowerBound()/1000L;
+			double diff=Math.abs(lowerRangeSec-lastSec);
+			if(diff<loadingSize/4)
+				loadPastValues=true;
 		}
-		
 
 		@Override
 		public IStatus run(IProgressMonitor monitor) {
-			//dateAxis.getRange();
-			boolean clearCandleStick=false;
-			if(dataUpdateNeeded()){
+			
+			if(barRecorder.isEmpty()){
+				long intervall=IbBar.getIntervallInSec(barRecorder.getBarSize());
+				to=new Date().getTime()/1000;
+				from=to-loadingSize*intervall;
 				
-				bars=hisDataProvider.getAllBars(getBarContainer(), barSize);
-				List<IbBar> newBars=hisDataProvider.downloadLastBars(getBarContainer(),barSize);
-				logger.info("Number of bars: "+bars.size());
-				logger.info("Number of new bars: "+newBars.size());
-				
+				List<IbBar> bars=hisDataProvider.getBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
+				List<IbBar> newBars=hisDataProvider.downloadLastBars(getBarContainer(),barRecorder.getBarSize());
+				//logger.info("Number of bars: "+bars.size());
+				//logger.info("Number of new bars: "+newBars.size());
+					
 				List<IbBar> toAdd=new LinkedList<IbBar>();
 				if(!bars.isEmpty() && !newBars.isEmpty()){
 					for(IbBar bar:newBars){
@@ -678,62 +728,28 @@ public class ChartEditorPart{
 					}
 					bars.addAll(toAdd);
 				}
+				pastValueAvailable=true;
+				barRecorder.addBars(bars);
+			}
+			else if(loadPastValues && pastValueAvailable){
+				long intervall=IbBar.getIntervallInSec(barRecorder.getBarSize());
+				to=barRecorder.getFirstReceivedBar().getTime();
+				from=to-loadingSize*intervall;
+				List<IbBar> bars=hisDataProvider.getBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
 				
-				clearCandleStick=true;
+				if(bars.size()==0){
+					pastValueAvailable=false;
+					return Status.OK_STATUS;
+				}
+				barRecorder.addBars(bars);
+				loadPastValues=false;
 			}
 			
-			Display.getDefault().asyncExec(new GraphUpdater(clearCandleStick));
 			return Status.OK_STATUS;
 		}
 		
 	}
 	
-	//######################################
-  	//##           Graph Updater          ##
-  	//######################################
-	private class GraphUpdater implements Runnable{
-		
-		boolean clearCandleStickSeries=false;
-		
-		
-		public GraphUpdater(boolean clearCandleStickSeries){
-			this.clearCandleStickSeries=clearCandleStickSeries;
-		}
-		
-
-		@Override
-		public void run() {
-			
-			//logger.info("Graph updater Started");
-			
-			if(bars==null)return ;
-			
-			if(clearCandleStickSeries){
-				candleStickSeries.clear();
-			}
-			double lower=dateAxis.getRange().getLowerBound();
-			double upper=dateAxis.getRange().getUpperBound();
-			//candleStickSeries.getDataItem(index)
-			
-			for(IbBar bar:bars){
-				Second sec=new Second(new Date(bar.getTimeInMs()));
-				if(bar.getTimeInMs()>=lower && bar.getTime()<=upper){
-					if(candleStickSeries.indexOf(sec)>=0)continue;
-					
-					candleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
-				}
-			}
-			
-			//candlestickRenderer.setAutoWidthFactor(0.7);
-			//candlestickRenderer.setAutoWidthMethod(CandlestickRenderer.WIDTHMETHOD_AVERAGE);
-			
-			//candlestickRenderer.set
-			
-			comboWhatToShow.setEnabled(true);
-			comboBarSize.setEnabled(true);
-			
-		}
-		
-	}
+	
 	
 }
