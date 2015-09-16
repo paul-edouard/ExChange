@@ -330,7 +330,7 @@ public class TimeSeries extends XmlParameterElement{
 	
 	
 	//****************************************
-	//***      GETTER AND SETTER           ****
+	//***      GETTER AND SETTER          ****
 	//****************************************
 	
 	public ChartIndicator getIndicator() {

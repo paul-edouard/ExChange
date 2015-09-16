@@ -512,15 +512,8 @@ public class ChartEditorPart{
 
 		@Override
 		public void mouseScrolled(MouseEvent event) {
-			// TODO Auto-generated method stub
-			//logger.info("mouseScrolled: "+e);
-			//w=this.getChartRenderingInfo().getPlotInfo().getDataArea().getWidth();
 			
 			w=this.getChartRenderingInfo().getPlotInfo().getPlotArea().getWidth();
-			
-			//w=this.getChartRenderingInfo().getChartArea().getWidth();
-			
-			
 			
 			
 			double fac=((double)event.x)/((double) w);
@@ -529,7 +522,7 @@ public class ChartEditorPart{
 			double lower=dateAxis.getRange().getLowerBound();
 			double upper=dateAxis.getRange().getUpperBound();
 			
-			scalePeriode(event.count*( (int) (upper-lower)/10),fac);
+			scalePeriode(-event.count*( (int) (upper-lower)/10),fac);
 			
 			super.mouseScrolled(event);
 		}
@@ -605,7 +598,7 @@ public class ChartEditorPart{
 					public void run() {
 						//candleStickSeries.clear();
 						for(IbBar bar:replacedBars){
-							Second sec=new Second(new Date(bar.getTimeInMs()));
+							Second sec=new Second(new Date(bar.getTimeInMs() - bar.getIntervallInMs()/2));
 							int index=candleStickSeries.indexOf(sec);
 							//logger.info("Index of: "+index);
 							if(index>=0){
@@ -632,7 +625,7 @@ public class ChartEditorPart{
 					public void run() {
 						//candleStickSeries.clear();
 						for(IbBar bar:addedBars){
-							Second sec=new Second(new Date(bar.getTimeInMs()));
+							Second sec=new Second(new Date(bar.getTimeInMs() - bar.getIntervallInMs()/2));
 							candleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
 						}
 						
