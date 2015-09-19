@@ -28,17 +28,20 @@ public class IbChartParameter implements Serializable{
 	private int id;
 	
 	@Enumerated(EnumType.STRING)
-	private ParameterType type;
+	private ParameterType ptype;
+	
+	
 	private String name;
-	private double value;
-	private double defaultValue;
-	private double minValue;
-	private double maxValue;
-	private int scalarFactor;
+	
+	private double currentValue=0;
+	private double defaultValue=0;
+	private double _minValue=0;
+	private double _maxValue=0;
+	private int scalarFactor=0;
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="INDICATOR_ID")
-	private IbChartIndicator indicator;
+	private IbChartIndicator parent;
 
 	public int getId() {
 		return id;
@@ -49,11 +52,11 @@ public class IbChartParameter implements Serializable{
 	}
 
 	public ParameterType getType() {
-		return type;
+		return ptype;
 	}
 
 	public void setType(ParameterType type) {
-		this.type = type;
+		this.ptype = type;
 	}
 
 	public String getName() {
@@ -65,11 +68,11 @@ public class IbChartParameter implements Serializable{
 	}
 
 	public double getValue() {
-		return value;
+		return currentValue;
 	}
 
 	public void setValue(double value) {
-		this.value = value;
+		this.currentValue = value;
 	}
 
 	public double getDefaultValue() {
@@ -81,19 +84,19 @@ public class IbChartParameter implements Serializable{
 	}
 
 	public double getMinValue() {
-		return minValue;
+		return _minValue;
 	}
 
 	public void setMinValue(double minValue) {
-		this.minValue = minValue;
+		this._minValue = minValue;
 	}
 
 	public double getMaxValue() {
-		return maxValue;
+		return _maxValue;
 	}
 
 	public void setMaxValue(double maxValue) {
-		this.maxValue = maxValue;
+		this._maxValue = maxValue;
 	}
 
 	public int getScalarFactor() {
@@ -105,11 +108,11 @@ public class IbChartParameter implements Serializable{
 	}
 
 	public IbChartIndicator getIndicator() {
-		return indicator;
+		return parent;
 	}
 
 	public void setIndicator(IbChartIndicator indicator) {
-		this.indicator = indicator;
+		this.parent = indicator;
 	}
 	
 	

@@ -6,10 +6,13 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
@@ -34,13 +37,16 @@ public abstract class IbChartIndicator implements Serializable{
 	private boolean isDirty=false;
 	
 	
-	@OneToMany(mappedBy="indicator",cascade=CascadeType.ALL)
+	@OneToMany(mappedBy="parent",cascade=CascadeType.ALL)
 	private List<IbChartParameter> parameters;
+	
 	
 	@OneToMany(mappedBy="indicator",cascade=CascadeType.ALL)
 	private List<IbChartSerie> series;
 	
-	
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="GROUP_ID")
+	private IbChartIndicatorGroup group;
 
 
 	public int getId() {
@@ -90,6 +96,26 @@ public abstract class IbChartIndicator implements Serializable{
 
 	public void setParameters(List<IbChartParameter> parameters) {
 		this.parameters = parameters;
+	}
+
+
+	public List<IbChartSerie> getSeries() {
+		return series;
+	}
+
+
+	public void setSeries(List<IbChartSerie> series) {
+		this.series = series;
+	}
+
+
+	public IbChartIndicatorGroup getGroup() {
+		return group;
+	}
+
+
+	public void setGroup(IbChartIndicatorGroup group) {
+		this.group = group;
 	}
 	
 	

@@ -12,6 +12,7 @@
 	<class>com.munch.exchange.model.core.ib.bar.IbBarContainer</class>
 	<class>com.munch.exchange.model.core.ib.chart.IbChartParameter</class>
 	<class>com.munch.exchange.model.core.ib.chart.IbChartIndicator</class>
+	<class>com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup</class>
 	<class>com.munch.exchange.model.core.ib.chart.IbChartSerie</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>

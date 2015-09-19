@@ -12,6 +12,7 @@ import javax.persistence.OneToMany;
 
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 
 
 
@@ -33,6 +34,8 @@ public class IbBarContainer extends IbBar {
 	@OneToMany(mappedBy="root",cascade=CascadeType.ALL)
 	private List<IbBar> allBars;
 	
+	
+	private IbChartIndicatorGroup indicatorGroup;
 	
 	
 	public IbBarContainer(IbContract contract, WhatToShow whatToShow) {
@@ -65,7 +68,15 @@ public class IbBarContainer extends IbBar {
 	}
 	
 	
+
+	public IbChartIndicatorGroup getIndicatorGroup() {
+		return indicatorGroup;
+	}
+
 	
+	public void setIndicatorGroup(IbChartIndicatorGroup indicatorGroup) {
+		this.indicatorGroup = indicatorGroup;
+	}
 	
 	
 	
