@@ -39,7 +39,7 @@ public class IbChartParameter implements Serializable{
 	private double _maxValue=0;
 	private int scalarFactor=0;
 	
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="INDICATOR_ID")
 	private IbChartIndicator parent;
 

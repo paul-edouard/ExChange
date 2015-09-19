@@ -38,7 +38,7 @@ public class IbChartIndicatorGroup implements Serializable{
 	@OneToMany(mappedBy="parent",cascade=CascadeType.ALL)
 	private List<IbChartIndicatorGroup> children;
 	
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="PARENT_ID")
 	private IbChartIndicatorGroup parent;
 

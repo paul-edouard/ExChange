@@ -44,7 +44,7 @@ public class IbChartSerie implements Serializable{
 	private RendererType rendererType;
 	
 	
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="INDICATOR_ID")
 	private IbChartIndicator indicator;
 	

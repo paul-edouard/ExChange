@@ -44,7 +44,7 @@ public abstract class IbChartIndicator implements Serializable{
 	@OneToMany(mappedBy="indicator",cascade=CascadeType.ALL)
 	private List<IbChartSerie> series;
 	
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="GROUP_ID")
 	private IbChartIndicatorGroup group;
 
