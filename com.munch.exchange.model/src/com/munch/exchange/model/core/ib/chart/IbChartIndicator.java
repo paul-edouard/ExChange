@@ -16,9 +16,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
+import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
+
 @Entity
 @Inheritance
-@DiscriminatorColumn(name="BAR_TYPE")
+@DiscriminatorColumn(name="CHART_TYPE")
 public abstract class IbChartIndicator implements Serializable{
 	
 	/**
@@ -38,15 +40,35 @@ public abstract class IbChartIndicator implements Serializable{
 	
 	
 	@OneToMany(mappedBy="parent",cascade=CascadeType.ALL)
-	private List<IbChartParameter> parameters;
+	protected List<IbChartParameter> parameters;
 	
 	
 	@OneToMany(mappedBy="indicator",cascade=CascadeType.ALL)
-	private List<IbChartSerie> series;
+	protected List<IbChartSerie> series;
 	
 	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="GROUP_ID")
 	private IbChartIndicatorGroup group;
+	
+	public IbChartIndicator(IbChartIndicatorGroup group) {
+		super();
+		
+		setGroup(group);
+		initName();
+		createSeries();
+		createParameters();
+		
+	}
+	
+	public IbChartIndicator() {
+		super();
+		
+		initName();
+		createSeries();
+		createParameters();
+		
+	}
+	
 
 
 	public int getId() {
@@ -115,9 +137,17 @@ public abstract class IbChartIndicator implements Serializable{
 
 
 	public void setGroup(IbChartIndicatorGroup group) {
-		this.group = group;
+		this.group=group;
+		if(this.group!=null)
+		this.group.getIndicators().add(this);
+
 	}
 	
 	
+	public abstract void initName();
+	
+	public abstract void createSeries();
+	
+	public abstract void createParameters();
 
 }

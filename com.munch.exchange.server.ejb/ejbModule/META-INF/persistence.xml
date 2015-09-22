@@ -14,6 +14,7 @@
 	<class>com.munch.exchange.model.core.ib.chart.IbChartIndicator</class>
 	<class>com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup</class>
 	<class>com.munch.exchange.model.core.ib.chart.IbChartSerie</class>
+	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

@@ -21,6 +21,7 @@ public class IbChartIndicatorGroup implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = -6625769451330452530L;
+	public static final String ROOT="ROOT";
 	
 	
 	@Id
@@ -41,6 +42,17 @@ public class IbChartIndicatorGroup implements Serializable{
 	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="PARENT_ID")
 	private IbChartIndicatorGroup parent;
+	
+	
+	public IbChartIndicatorGroup(IbChartIndicatorGroup parent,String name){
+		this.parent=parent;
+		this.name=name;
+		
+		if(this.parent!=null)
+			this.parent.getChildren().add(this);
+	}
+	
+	
 
 	public int getId() {
 		return id;
@@ -64,6 +76,14 @@ public class IbChartIndicatorGroup implements Serializable{
 
 	public void setDirty(boolean isDirty) {
 		this.isDirty = isDirty;
+		if(this.isDirty){
+			if(parent!=null)
+				parent.setDirty(isDirty);
+		}
+		else{
+			for(IbChartIndicatorGroup child:children)
+				child.setDirty(isDirty);
+		}
 	}
 
 	public List<IbChartIndicator> getIndicators() {

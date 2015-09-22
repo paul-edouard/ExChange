@@ -14,6 +14,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.munch.exchange.model.core.chart.ChartIndicator;
+import com.munch.exchange.model.core.chart.ChartSerie.RendererType;
+
 
 @Entity
 public class IbChartSerie implements Serializable{
@@ -37,8 +40,9 @@ public class IbChartSerie implements Serializable{
 	private boolean isMain;
 	private boolean isActivated;
 	
-	//@ElementCollection
-	//private List<Integer> color;
+	private int color_R;
+	private int color_G;
+	private int color_B;
 	
 	@Enumerated(EnumType.STRING)
 	private RendererType rendererType;
@@ -47,6 +51,20 @@ public class IbChartSerie implements Serializable{
 	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="INDICATOR_ID")
 	private IbChartIndicator indicator;
+	
+	public IbChartSerie(IbChartIndicator parent,String name,RendererType type,boolean isMain, boolean isActivated,int[] color ){
+		this.name=name;
+		
+		this.isMain=isMain;
+		this.isActivated=isActivated;
+		this.color_R=color[0];
+		this.color_G=color[1];
+		this.color_B=color[2];
+		this.rendererType=type;
+		
+		this.indicator=parent;
+	
+	}
 	
 	public int getId() {
 		return id;
@@ -87,16 +105,6 @@ public class IbChartSerie implements Serializable{
 	public void setActivated(boolean isActivated) {
 		this.isActivated = isActivated;
 	}
-	
-	/*
-	public List<Integer> getColor() {
-		return color;
-	}
-
-	public void setColor(List<Integer> color) {
-		this.color = color;
-	}
-	*/
 
 	public RendererType getRendererType() {
 		return rendererType;
@@ -106,7 +114,6 @@ public class IbChartSerie implements Serializable{
 		this.rendererType = rendererType;
 	}
 	
-	/*
 	public IbChartIndicator getIndicator() {
 		return indicator;
 	}
@@ -114,7 +121,37 @@ public class IbChartSerie implements Serializable{
 	public void setIndicator(IbChartIndicator indicator) {
 		this.indicator = indicator;
 	}
-	*/
+	
+
+	public int getColor_R() {
+		return color_R;
+	}
+	
+
+	public void setColor_R(int color_R) {
+		this.color_R = color_R;
+	}
+	
+
+	public int getColor_G() {
+		return color_G;
+	}
+	
+
+	public void setColor_G(int color_G) {
+		this.color_G = color_G;
+	}
+	
+
+	public int getColor_B() {
+		return color_B;
+	}
+	
+
+	public void setColor_B(int color_B) {
+		this.color_B = color_B;
+	}
+	
 	
 	
 

@@ -12,6 +12,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.munch.exchange.model.core.chart.ChartIndicator;
+import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
+
 
 @Entity
 public class IbChartParameter implements Serializable{
@@ -28,20 +31,32 @@ public class IbChartParameter implements Serializable{
 	private int id;
 	
 	@Enumerated(EnumType.STRING)
-	private ParameterType ptype;
+	private ParameterType type;
 	
 	
 	private String name;
 	
-	private double currentValue=0;
+	private double value=0;
 	private double defaultValue=0;
-	private double _minValue=0;
-	private double _maxValue=0;
+	private double minValue=0;
+	private double maxValue=0;
 	private int scalarFactor=0;
 	
 	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="INDICATOR_ID")
 	private IbChartIndicator parent;
+	
+	public IbChartParameter(IbChartIndicator parent,String name,ParameterType type,  double val, double minValue, double maxValue, int  scalarFac){
+		this.value=val;
+		this.defaultValue=val;
+		this.maxValue=maxValue;
+		this.minValue=minValue;
+		this.type=type;
+		this.name=name;
+		this.parent=parent;
+		
+		this.scalarFactor=scalarFac;
+	}
 
 	public int getId() {
 		return id;
@@ -52,11 +67,11 @@ public class IbChartParameter implements Serializable{
 	}
 
 	public ParameterType getType() {
-		return ptype;
+		return type;
 	}
 
 	public void setType(ParameterType type) {
-		this.ptype = type;
+		this.type = type;
 	}
 
 	public String getName() {
@@ -68,11 +83,11 @@ public class IbChartParameter implements Serializable{
 	}
 
 	public double getValue() {
-		return currentValue;
+		return value;
 	}
 
 	public void setValue(double value) {
-		this.currentValue = value;
+		this.value = value;
 	}
 
 	public double getDefaultValue() {
@@ -84,19 +99,19 @@ public class IbChartParameter implements Serializable{
 	}
 
 	public double getMinValue() {
-		return _minValue;
+		return minValue;
 	}
 
 	public void setMinValue(double minValue) {
-		this._minValue = minValue;
+		this.minValue = minValue;
 	}
 
 	public double getMaxValue() {
-		return _maxValue;
+		return maxValue;
 	}
 
 	public void setMaxValue(double maxValue) {
-		this._maxValue = maxValue;
+		this.maxValue = maxValue;
 	}
 
 	public int getScalarFactor() {
