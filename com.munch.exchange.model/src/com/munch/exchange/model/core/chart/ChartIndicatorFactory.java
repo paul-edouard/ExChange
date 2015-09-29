@@ -8,7 +8,6 @@ import com.munch.exchange.model.core.chart.trend.ChartAdaptiveMovingAverage;
 import com.munch.exchange.model.core.chart.trend.ChartDoubleLinearWeigthedMovingAverage;
 import com.munch.exchange.model.core.chart.trend.ChartSimpleMovingAverage;
 import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeries;
-import com.munch.exchange.model.core.neuralnetwork.timeseries.TimeSeriesGroup;
 
 public class ChartIndicatorFactory {
 	

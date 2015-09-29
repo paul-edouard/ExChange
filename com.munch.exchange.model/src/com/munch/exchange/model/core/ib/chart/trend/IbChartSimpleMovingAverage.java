@@ -23,6 +23,12 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 	 */
 	private static final long serialVersionUID = -828064667118819957L;
 	
+	
+	public IbChartSimpleMovingAverage() {
+		super();
+	}
+	
+	
 	public IbChartSimpleMovingAverage(IbChartIndicatorGroup group) {
 		super(group);
 	}
@@ -35,7 +41,11 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 
 	@Override
 	public void createSeries() {
-		int[] color={50,44,89};
+		int[] color=new int[3];
+		color[0]=50;
+		color[1]=44;
+		color[2]=89;
+		//int[] color={50,44,89};
 		IbChartSerie serie=new IbChartSerie(this,SMA,RendererType.MAIN,true,false,color);
 		this.series.add(serie);
 		

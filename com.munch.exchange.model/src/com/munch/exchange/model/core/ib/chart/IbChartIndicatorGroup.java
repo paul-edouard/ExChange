@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib.chart;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -12,7 +13,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Transient;
+
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 
 @Entity
 public class IbChartIndicatorGroup implements Serializable{
@@ -43,6 +47,13 @@ public class IbChartIndicatorGroup implements Serializable{
 	@JoinColumn(name="PARENT_ID")
 	private IbChartIndicatorGroup parent;
 	
+	@OneToOne
+	@JoinColumn(name="CONTAINER_ID")
+	private IbBarContainer container;
+	
+	public IbChartIndicatorGroup(){
+		
+	}
 	
 	public IbChartIndicatorGroup(IbChartIndicatorGroup parent,String name){
 		this.parent=parent;
@@ -76,17 +87,21 @@ public class IbChartIndicatorGroup implements Serializable{
 
 	public void setDirty(boolean isDirty) {
 		this.isDirty = isDirty;
-		if(this.isDirty){
+		if(this.isDirty==true){
 			if(parent!=null)
-				parent.setDirty(isDirty);
+				parent.setDirty(true);
 		}
-		else{
+		/*
+		else if(children!=null){
 			for(IbChartIndicatorGroup child:children)
 				child.setDirty(isDirty);
 		}
+		*/
 	}
 
 	public List<IbChartIndicator> getIndicators() {
+		if(indicators==null)
+			indicators=new LinkedList<IbChartIndicator>();
 		return indicators;
 	}
 
@@ -95,6 +110,8 @@ public class IbChartIndicatorGroup implements Serializable{
 	}
 
 	public List<IbChartIndicatorGroup> getChildren() {
+		if(children==null)
+			children=new LinkedList<IbChartIndicatorGroup>();
 		return children;
 	}
 
@@ -109,5 +126,15 @@ public class IbChartIndicatorGroup implements Serializable{
 	public void setParent(IbChartIndicatorGroup parent) {
 		this.parent = parent;
 	}
+
+
+	public IbBarContainer getContainer() {
+		return container;
+	}
+
+	public void setContainer(IbBarContainer container) {
+		this.container = container;
+	}
+		
 	
 }

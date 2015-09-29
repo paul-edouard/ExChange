@@ -36,10 +36,10 @@ public class IbChartParameter implements Serializable{
 	
 	private String name;
 	
-	private double value=0;
+	private double currentValue=0;
 	private double defaultValue=0;
-	private double minValue=0;
-	private double maxValue=0;
+	private double _minValue=0;
+	private double _maxValue=0;
 	private int scalarFactor=0;
 	
 	@ManyToOne(fetch=FetchType.EAGER)
@@ -47,10 +47,10 @@ public class IbChartParameter implements Serializable{
 	private IbChartIndicator parent;
 	
 	public IbChartParameter(IbChartIndicator parent,String name,ParameterType type,  double val, double minValue, double maxValue, int  scalarFac){
-		this.value=val;
+		this.currentValue=val;
 		this.defaultValue=val;
-		this.maxValue=maxValue;
-		this.minValue=minValue;
+		this._maxValue=maxValue;
+		this._minValue=minValue;
 		this.type=type;
 		this.name=name;
 		this.parent=parent;
@@ -83,11 +83,11 @@ public class IbChartParameter implements Serializable{
 	}
 
 	public double getValue() {
-		return value;
+		return currentValue;
 	}
 
 	public void setValue(double value) {
-		this.value = value;
+		this.currentValue = value;
 	}
 
 	public double getDefaultValue() {
@@ -99,19 +99,19 @@ public class IbChartParameter implements Serializable{
 	}
 
 	public double getMinValue() {
-		return minValue;
+		return _minValue;
 	}
 
 	public void setMinValue(double minValue) {
-		this.minValue = minValue;
+		this._minValue = minValue;
 	}
 
 	public double getMaxValue() {
-		return maxValue;
+		return _maxValue;
 	}
 
 	public void setMaxValue(double maxValue) {
-		this.maxValue = maxValue;
+		this._maxValue = maxValue;
 	}
 
 	public int getScalarFactor() {

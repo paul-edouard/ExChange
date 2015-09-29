@@ -25,6 +25,8 @@ import com.munch.exchange.model.core.ib.bar.IbDayBar;
 import com.munch.exchange.model.core.ib.bar.IbHourBar;
 import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
 import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicatorFactory;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.jpa.entity.Student;
 import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataLoaders.BarLoader;
 import com.munch.exchange.services.ejb.interfaces.HistoricalDataBeanRemote;
@@ -59,11 +61,21 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		
 		IbContract ex_contract=em.find(IbContract.class, exContract.getId());
 		ex_contract.getBars().size();
-		
 		List<IbBarContainer> contractBars= ex_contract.getBars();
 		
-		return contractBars;
+		//Load and update the Chart indicators
+		for(IbBarContainer container:contractBars){
+			IbChartIndicatorGroup rootGroup=container.getIndicatorGroup();
+			if(!IbChartIndicatorFactory.updateRoot(rootGroup, container))continue;
+			
+			if(rootGroup.isDirty()){
+				em.persist(rootGroup);
+				rootGroup.setDirty(false);
+			}
 		}
+		
+		return contractBars;
+	}
 
 	@Override
 	public IbBar getFirstBar(IbBarContainer exContractBars,
@@ -246,8 +258,6 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		
 		return ibBars;
 	}
-	
-	
 	
 	
 	/*

@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib.chart;
 
 
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
 
 public class IbChartIndicatorFactory {
@@ -10,7 +11,7 @@ public class IbChartIndicatorFactory {
 		return new IbChartIndicatorGroup(null, IbChartIndicatorGroup.ROOT);
 	}
 	
-	public static boolean updateRoot(IbChartIndicatorGroup root){
+	public static boolean updateRoot(IbChartIndicatorGroup root, IbBarContainer container){
 		if(!root.getName().equals(IbChartIndicatorGroup.ROOT))return false;
 		
 		//TREND
@@ -18,8 +19,10 @@ public class IbChartIndicatorFactory {
 		
 		IbChartIndicatorGroup movingAverage=searchOrCreateSubGroup(trend,"Moving Average");
 		addChartIndicator(movingAverage, IbChartSimpleMovingAverage.class);
+		//addChartIndicator(movingAverage, new IbChartSimpleMovingAverage());
 		
-		return false;
+		
+		return true;
 	}
 	
 	private static IbChartIndicatorGroup searchOrCreateSubGroup(IbChartIndicatorGroup parent,String subGroupName){
@@ -32,6 +35,17 @@ public class IbChartIndicatorFactory {
 	}
 	
 	private static void addChartIndicator(IbChartIndicatorGroup parent,Class<? extends IbChartIndicator> indClass){
+	//private static void addChartIndicator(IbChartIndicatorGroup parent,IbChartIndicator chartIndicator){
+		
+		/*
+		for(IbChartIndicator c_ind:parent.getIndicators()){
+			if(c_ind.getName().equals(chartIndicator.getName()))return ;
+		}
+		
+		parent.setDirty(true);
+		chartIndicator.setGroup(parent);
+		*/
+			
 		//Class<?> c = Class.forName("mypackage.MyClass");
 		
 		try {

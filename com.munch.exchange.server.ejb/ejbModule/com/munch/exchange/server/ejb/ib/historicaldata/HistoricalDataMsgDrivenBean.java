@@ -227,9 +227,9 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	long lastBar=searchLastSavedBar(loader.getBars(), clazz);
     	//log.info("Last hour found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastBar)));
     	if(lastBar==0){
-    		long firstDay=searchFirstSavedBar(loader.getBars(), parentClazz);
-    		if(firstDay==0)return null;
-    		lastBar=firstDay-parentIntervall;
+    		long first=searchFirstSavedBar(loader.getBars(), parentClazz);
+    		if(first==0)return null;
+    		lastBar=first-parentIntervall;
     	}
     	
     	
@@ -240,12 +240,20 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		//Create the search intervals
     		List<Long> intervalls=createIntervalls(lastBar, loader.getTime(),parentIntervall*period);
     		
+    		
+    		boolean isWorking=false;
     		for(int i=0;i<intervalls.size()-1;i++){
     			//Load the bars from the given interval
     			List<Bar> bars=loader.loadBarsFromTo(intervalls.get(i), intervalls.get(i+1), barSize);
         		log.info("Number of "+clazz.getSimpleName() +" found: "+bars.size()
         				+" in the intervall ["+Bar.format(intervalls.get(i))+", "+Bar.format(intervalls.get(i+1))+"]");
-        		if(bars.size()==0)break;
+        		
+        		if(isWorking && bars.size()==0)
+        			break;
+        		
+        		if(bars.size()>0)
+        			isWorking=true;
+        		
         		
     			for(Bar bar : bars){
     				if(bar.time()>lastBar/1000){

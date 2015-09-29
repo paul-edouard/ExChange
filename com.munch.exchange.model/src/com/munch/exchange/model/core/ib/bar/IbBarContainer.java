@@ -9,9 +9,11 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicatorFactory;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 
 
@@ -34,7 +36,7 @@ public class IbBarContainer extends IbBar {
 	@OneToMany(mappedBy="root",cascade=CascadeType.ALL)
 	private List<IbBar> allBars;
 	
-	
+	@OneToOne(mappedBy="container",cascade=CascadeType.ALL)
 	private IbChartIndicatorGroup indicatorGroup;
 	
 	
@@ -70,6 +72,10 @@ public class IbBarContainer extends IbBar {
 	
 
 	public IbChartIndicatorGroup getIndicatorGroup() {
+		if(indicatorGroup==null){
+			indicatorGroup=IbChartIndicatorFactory.createRoot();
+			indicatorGroup.setContainer(this);
+		}
 		return indicatorGroup;
 	}
 

@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib.chart;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -40,11 +41,11 @@ public abstract class IbChartIndicator implements Serializable{
 	
 	
 	@OneToMany(mappedBy="parent",cascade=CascadeType.ALL)
-	protected List<IbChartParameter> parameters;
+	protected List<IbChartParameter> parameters=new LinkedList<IbChartParameter>();
 	
 	
 	@OneToMany(mappedBy="indicator",cascade=CascadeType.ALL)
-	protected List<IbChartSerie> series;
+	protected List<IbChartSerie> series=new LinkedList<IbChartSerie>();
 	
 	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="GROUP_ID")

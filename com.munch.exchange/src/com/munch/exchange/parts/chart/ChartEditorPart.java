@@ -40,6 +40,7 @@ import com.munch.exchange.model.core.ib.bar.IbBarRecorder;
 import com.munch.exchange.model.core.ib.bar.IbBarRecorderListener;
 import com.munch.exchange.model.core.ib.bar.IbHourBar;
 import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.parts.RateEditorPart;
 import com.munch.exchange.services.IBundleResourceLoader;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
@@ -219,6 +220,11 @@ public class ChartEditorPart{
 	private void initBarContainers(){
 		barContainers=hisDataProvider.getAllExContractBars(contract);
 		if(barContainers==null || barContainers.size()==0)return;
+		
+		for(IbBarContainer container:barContainers){
+			IbChartIndicatorGroup root=container.getIndicatorGroup();
+			logger.info("IbChartIndicatorGroup: "+root.getName());
+		}
 		
 	}
 	
