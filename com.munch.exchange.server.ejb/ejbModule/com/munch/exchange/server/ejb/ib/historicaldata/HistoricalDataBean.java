@@ -66,11 +66,18 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		//Load and update the Chart indicators
 		for(IbBarContainer container:contractBars){
 			IbChartIndicatorGroup rootGroup=container.getIndicatorGroup();
+			
+			//log.info("1. Group is Dirty: "+rootGroup.isDirty());
+			
 			if(!IbChartIndicatorFactory.updateRoot(rootGroup, container))continue;
+			
+			//log.info("2. Group is Dirty: "+rootGroup.isDirty());
 			
 			if(rootGroup.isDirty()){
 				em.persist(rootGroup);
 				rootGroup.setDirty(false);
+				
+				//log.info("3. Group is Dirty: "+rootGroup.isDirty());
 			}
 		}
 		

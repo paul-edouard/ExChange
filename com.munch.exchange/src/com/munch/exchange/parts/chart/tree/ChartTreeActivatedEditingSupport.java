@@ -10,16 +10,25 @@ import org.eclipse.swt.SWT;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartSerie;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
+import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 
 public class ChartTreeActivatedEditingSupport extends EditingSupport {
 	
 	TreeViewer viewer;
-	ChartTreeComposite parent;
+	ChartTreeComposite parent=null;
+	ChartTreeEditorPart part=null;
 
 	public ChartTreeActivatedEditingSupport(TreeViewer viewer,ChartTreeComposite parent) {
 		super(viewer);
 		this.viewer=viewer;
 		this.parent=parent;
+	}
+	
+	public ChartTreeActivatedEditingSupport(TreeViewer viewer,ChartTreeEditorPart part) {
+		super(viewer);
+		this.viewer=viewer;
+		this.part=part;
 	}
 
 	@Override
@@ -35,6 +44,12 @@ public class ChartTreeActivatedEditingSupport extends EditingSupport {
 		else if(element instanceof ChartIndicator){
 			return true;
 		}
+		else if(element instanceof IbChartSerie){
+			return true;
+		}
+		else if(element instanceof IbChartIndicator){
+			return true;
+		}
 		return false;
 	}
 
@@ -48,6 +63,15 @@ public class ChartTreeActivatedEditingSupport extends EditingSupport {
 			ChartIndicator el=(ChartIndicator) element;
 			return el.isActivated();
 		}
+		else if(element instanceof IbChartSerie){
+			IbChartSerie el=(IbChartSerie) element;
+			return el.isActivated();
+		}
+		else if(element instanceof IbChartIndicator){
+			IbChartIndicator el=(IbChartIndicator) element;
+			return el.isActivated();
+		}
+		
 		return null;
 	}
 
@@ -62,10 +86,26 @@ public class ChartTreeActivatedEditingSupport extends EditingSupport {
 			el.setActivated((Boolean) value);
 			parent.getEventBroker().post(IEventConstant.CHART_INDICATOR_ACTIVATION_CHANGED, el);
 		}
+		else if(element instanceof IbChartSerie){
+			IbChartSerie el=(IbChartSerie) element;
+			el.setActivated((Boolean) value);
+		}
+		else if(element instanceof IbChartIndicator){
+			IbChartIndicator el=(IbChartIndicator) element;
+			el.setActivated((Boolean) value);
+			parent.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED, el);
+		}
 		
-		 viewer.refresh();
-		 parent.refresh();
-		 parent.setDity();
+		viewer.refresh();
+		if(parent!=null){
+			parent.refresh();
+			parent.setDity();
+		}
+			
+		if(part!=null){
+			part.refresh();
+			part.setDity();
+		}
 	}
 
 }

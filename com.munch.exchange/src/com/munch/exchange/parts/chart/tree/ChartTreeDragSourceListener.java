@@ -8,6 +8,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.chart.ChartIndicator;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 
 public class ChartTreeDragSourceListener implements DragSourceListener  {
 	
@@ -18,6 +19,10 @@ public class ChartTreeDragSourceListener implements DragSourceListener  {
 		super();
 		this.treeViewer = treeViewer;
 		this.rate=rate;
+	}
+	public ChartTreeDragSourceListener(TreeViewer treeViewer) {
+		super();
+		this.treeViewer = treeViewer;
 	}
 	
 
@@ -39,6 +44,12 @@ public class ChartTreeDragSourceListener implements DragSourceListener  {
 	    		ChartIndicator indicator = (ChartIndicator) array[j];
 	    		if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
 	    			dataString += rate.getUUID()+";"+indicator.toCsvString()+"\n"; 
+	    		}
+	    	}
+	    	else if(array[j] instanceof IbChartIndicator){
+	    		IbChartIndicator indicator = (IbChartIndicator) array[j];
+	    		if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+	    			dataString += String.valueOf(indicator.getId())+"\n"; 
 	    		}
 	    	}
 	    }

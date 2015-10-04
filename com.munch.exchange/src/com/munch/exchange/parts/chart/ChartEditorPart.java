@@ -174,7 +174,8 @@ public class ChartEditorPart{
 		comboWhatToShow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		for(IbBarContainer container:barContainers)
 			comboWhatToShow.add(container.getType().toString());
-		comboWhatToShow.setText(comboWhatToShow.getItem(0));
+		if(comboWhatToShow.getItems().length>0)
+			comboWhatToShow.setText(comboWhatToShow.getItem(0));
 		barRecorder.setWhatToShow(IbBar.getWhatToShowFromString(comboWhatToShow.getText()));
 		//whatToShow=IbBar.getWhatToShowFromString(comboWhatToShow.getText());
 		comboWhatToShow.addModifyListener(new ModifyListener() {
@@ -221,10 +222,13 @@ public class ChartEditorPart{
 		barContainers=hisDataProvider.getAllExContractBars(contract);
 		if(barContainers==null || barContainers.size()==0)return;
 		
+		/*
+		 * Test if the indicators are well loaded!
 		for(IbBarContainer container:barContainers){
 			IbChartIndicatorGroup root=container.getIndicatorGroup();
 			logger.info("IbChartIndicatorGroup: "+root.getName());
 		}
+		*/
 		
 	}
 	

@@ -21,7 +21,6 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(movingAverage, IbChartSimpleMovingAverage.class);
 		//addChartIndicator(movingAverage, new IbChartSimpleMovingAverage());
 		
-		
 		return true;
 	}
 	

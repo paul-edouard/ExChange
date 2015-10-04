@@ -45,6 +45,9 @@
                 </children>
               </toolbar>
             </children>
+            <children xsi:type="basic:Part" xmi:id="_Qxi2AGqhEeWLb4P4H0rpqA" elementId="com.munch.exchange.part.chart.tree.editor" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.chart.tree.ChartTreeEditorPart" label="Chart Tree Editor" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/type.gif" tooltip="Edit all available indicator of the selected bar container">
+              <toolbar xmi:id="_nWaxIGqhEeWLb4P4H0rpqA" elementId="com.munch.exchange.toolbar.1"/>
+            </children>
           </children>
           <children xsi:type="basic:PartSashContainer" xmi:id="_jXbLEIjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partsashcontainer.rigth" containerData="75">
             <children xsi:type="basic:PartStack" xmi:id="_l_ZS4IjzEeOSs_sLuwXLrA" elementId="com.munch.exchange.partstack.rightup" containerData="80">

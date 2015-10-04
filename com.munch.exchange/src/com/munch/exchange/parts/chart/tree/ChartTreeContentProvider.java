@@ -8,6 +8,8 @@ import org.eclipse.jface.viewers.Viewer;
 
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 
 public class ChartTreeContentProvider implements IStructuredContentProvider,
 		ITreeContentProvider {
@@ -37,6 +39,17 @@ public class ChartTreeContentProvider implements IStructuredContentProvider,
 			ChartIndicator indicator=(ChartIndicator) parentElement;
 			return indicator.getChartSeries().toArray();
 		}
+		else if(parentElement instanceof IbChartIndicatorGroup){
+			IbChartIndicatorGroup group=(IbChartIndicatorGroup) parentElement;
+			LinkedList<Object> children=new LinkedList<Object>();
+			children.addAll(group.getChildren());
+			children.addAll(group.getIndicators());
+			return children.toArray();
+		}
+		else if(parentElement instanceof IbChartIndicator){
+			IbChartIndicator indicator=(IbChartIndicator) parentElement;
+			return indicator.getSeries().toArray();
+		}
 		return null;
 	}
 
@@ -56,6 +69,14 @@ public class ChartTreeContentProvider implements IStructuredContentProvider,
 			ChartIndicator indicator=(ChartIndicator) element;
 			return indicator.getChartSeries().size()>0;
 		}
+		else if(element instanceof IbChartIndicatorGroup){
+			IbChartIndicatorGroup group=(IbChartIndicatorGroup) element;
+			return group.getChildren().size()>0 || group.getIndicators().size()>0;
+		}
+		else if(element instanceof IbChartIndicator){
+			IbChartIndicator indicator=(IbChartIndicator) element;
+			return indicator.getSeries().size()>0;
+		}
 		
 		return false;
 	}
@@ -63,7 +84,9 @@ public class ChartTreeContentProvider implements IStructuredContentProvider,
 	@Override
 	public Object[] getElements(Object inputElement) {
 		if(inputElement instanceof ChartIndicatorGroup 
-				|| inputElement instanceof ChartIndicator){
+				|| inputElement instanceof ChartIndicator
+				|| inputElement instanceof IbChartIndicator
+				|| inputElement instanceof IbChartIndicatorGroup){
 			return this.getChildren(inputElement);
 		}
 		return null;

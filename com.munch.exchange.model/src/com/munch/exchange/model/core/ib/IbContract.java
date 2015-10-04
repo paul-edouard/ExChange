@@ -197,6 +197,7 @@ public class IbContract implements Serializable{
 		
 		n_contract.conid(this.conId);
 		n_contract.symbol(this.symbol);
+		//if(this.secType!=SecType.STK)
 		n_contract.secType(this.secType);
 		n_contract.expiry(this.expiry);
 		n_contract.strike(this.strike);
@@ -205,6 +206,7 @@ public class IbContract implements Serializable{
 		n_contract.exchange(this.exchange);
 		n_contract.currency(this.currency);
 		n_contract.localSymbol(this.localSymbol);
+		//if(this.secType!=SecType.STK)
 		n_contract.tradingClass(this.tradingClass);
 		n_contract.primaryExch(this.primaryExch);
 		n_contract.secIdType(this.secIdType);
