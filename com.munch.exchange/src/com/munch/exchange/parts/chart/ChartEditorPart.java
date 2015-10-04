@@ -23,12 +23,17 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.ExchangeChartComposite;
+import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
@@ -42,6 +47,8 @@ import com.munch.exchange.model.core.ib.bar.IbHourBar;
 import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.parts.RateEditorPart;
+import com.munch.exchange.parts.chart.parameter.ChartParameterEditorPart;
+import com.munch.exchange.parts.chart.tree.ChartTreeEditorPart;
 import com.munch.exchange.services.IBundleResourceLoader;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarListener;
@@ -95,6 +102,8 @@ public class ChartEditorPart{
 	public static final String CANDLESTICK="Candlestick";
 	public static final String LIVE_CANDLESTICK="Live Candlestick";
 	
+	private static IbChartIndicatorGroup selectedGroup=null;
+	
 	@Inject
 	IbContract contract;
 	
@@ -105,6 +114,12 @@ public class ChartEditorPart{
 	IIBRealTimeBarProvider realTimeBarProvider;
 	
 	IIBRealTimeBarListener realTimeBarListener;
+	
+	@Inject
+	private IEventBroker eventBroker;
+	
+	@Inject
+	EPartService partService;
 	
 	
 	//The renderers
@@ -174,8 +189,9 @@ public class ChartEditorPart{
 		comboWhatToShow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		for(IbBarContainer container:barContainers)
 			comboWhatToShow.add(container.getType().toString());
-		if(comboWhatToShow.getItems().length>0)
+		if(comboWhatToShow.getItems().length>0){
 			comboWhatToShow.setText(comboWhatToShow.getItem(0));
+		}
 		barRecorder.setWhatToShow(IbBar.getWhatToShowFromString(comboWhatToShow.getText()));
 		//whatToShow=IbBar.getWhatToShowFromString(comboWhatToShow.getText());
 		comboWhatToShow.addModifyListener(new ModifyListener() {
@@ -183,6 +199,8 @@ public class ChartEditorPart{
 				logger.info(comboWhatToShow.getText());
 				WhatToShow newWhatToShow=IbBar.getWhatToShowFromString(comboWhatToShow.getText());
 				if(newWhatToShow==barRecorder.getWhatToShow())return;
+				
+				chartGroupSelected();
 				
 				barRecorder.setWhatToShow(newWhatToShow);
 				
@@ -215,6 +233,34 @@ public class ChartEditorPart{
 		addBarRecorderListener();
 		dataUpdater.schedule();
 		
+		openChartTreeEditor();
+		chartGroupSelected();
+		
+	}
+	
+	private void chartGroupSelected(){
+		IbBarContainer container=getCurrentContainer();
+		if(container!=null && selectedGroup!= container.getIndicatorGroup()){	
+			selectedGroup=container.getIndicatorGroup();
+			eventBroker.post(IEventConstant.IB_CHART_INDICATOR_GROUP_SELECTED, container.getIndicatorGroup());
+		}
+	}
+	
+	private void openChartTreeEditor(){
+		MPart part=partService.findPart(ChartTreeEditorPart.CHART_TREE_EDITOR_ID);
+		if(part!=null){
+			partService.showPart(part, PartState.CREATE);
+			partService.bringToTop(part);
+		}
+	}
+	
+	private IbBarContainer getCurrentContainer(){
+		WhatToShow newWhatToShow=IbBar.getWhatToShowFromString(comboWhatToShow.getText());
+		for(IbBarContainer container:barContainers){
+			if(container.getType()==newWhatToShow)
+				return container;
+		}
+		return null;
 	}
 	
 	
@@ -434,7 +480,7 @@ public class ChartEditorPart{
 	
 	@Focus
 	public void onFocus() {
-		//TODO Your code here
+		chartGroupSelected();
 	}
 	
 	

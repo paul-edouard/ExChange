@@ -25,6 +25,7 @@ import com.munch.exchange.model.core.ib.bar.IbDayBar;
 import com.munch.exchange.model.core.ib.bar.IbHourBar;
 import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
 import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorFactory;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.jpa.entity.Student;
@@ -79,10 +80,26 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 				
 				//log.info("3. Group is Dirty: "+rootGroup.isDirty());
 			}
+			
+			loadChildGroup(rootGroup);
+			
 		}
 		
 		return contractBars;
 	}
+	
+	private void loadChildGroup(IbChartIndicatorGroup group){
+		for(IbChartIndicatorGroup child:group.getChildren()){
+			loadChildGroup(child);
+		}
+		for(IbChartIndicator ind:group.getIndicators()){
+			ind.getParameters().size();
+			ind.getSeries().size();
+		}
+		
+	}
+	
+	
 
 	@Override
 	public IbBar getFirstBar(IbBarContainer exContractBars,

@@ -52,6 +52,10 @@ public class IbChartSerie implements Serializable{
 	@JoinColumn(name="INDICATOR_ID")
 	private IbChartIndicator indicator;
 	
+	public IbChartSerie(){
+		
+	}
+	
 	public IbChartSerie(IbChartIndicator parent,String name,RendererType type,boolean isMain, boolean isActivated,int[] color ){
 		this.name=name;
 		

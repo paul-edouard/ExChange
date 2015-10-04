@@ -108,7 +108,15 @@ public class ChartTreeEditorPart {
 		if(lblSelection!=null && !lblSelection.isDisposed())
 			lblSelection.dispose();
 		
+		if(treeViewer!=null && !treeViewer.getTree().isDisposed())
+			treeViewer.getTree().dispose();
+		
+		
 		parent.update();
+		parent.setLayout(new GridLayout(1, false));
+		
+		
+		
 	}
 	
 	private void update(){
@@ -156,8 +164,12 @@ public class ChartTreeEditorPart {
 		treeViewer.refresh();
 		
 		MPart part=partService.findPart(ChartParameterEditorPart.CHART_PARAMETER_EDITOR_ID);
-		if(part!=null)
+		if(part!=null){
 			partService.showPart(part, PartState.CREATE);
+			partService.bringToTop(part);
+		}
+		
+		parent.layout();
 		
 		
 	}

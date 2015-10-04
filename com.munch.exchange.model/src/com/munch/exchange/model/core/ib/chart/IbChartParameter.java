@@ -46,6 +46,11 @@ public class IbChartParameter implements Serializable{
 	@JoinColumn(name="INDICATOR_ID")
 	private IbChartIndicator parent;
 	
+	public IbChartParameter(){
+		
+	}
+	
+	
 	public IbChartParameter(IbChartIndicator parent,String name,ParameterType type,  double val, double minValue, double maxValue, int  scalarFac){
 		this.currentValue=val;
 		this.defaultValue=val;
