@@ -36,7 +36,11 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 	 */
 	private static final long serialVersionUID = 5123539832141701792L;
 	private static final SimpleDateFormat FORMAT = new SimpleDateFormat( "yyyyMMdd HH:mm:ss"); // format for historical query
-
+	
+	public static enum DataType {
+		HIGH, LOW, OPEN, CLOSE, WAP, VOLUME, TIME;
+	}
+	
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -153,6 +157,19 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 	
 	//public abstract long getIntervall();
 	
+	public double getData(DataType dataType){
+		switch (dataType) {
+			case HIGH:return high;
+			case LOW:return low;
+			case OPEN:return open;
+			case CLOSE:return close;
+			case WAP:return wap;
+			case VOLUME:return (double)volume;
+			case TIME:return (double)time;
+			default:return 0;
+		}
+		
+	}
 
 	public long getIntervallInSec(){
 		return getIntervallInSec(size);

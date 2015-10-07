@@ -701,6 +701,8 @@ public class ChartEditorPart{
 					}
 				});
 				
+				//barRecorder.getAllBars();
+				//Udate the Series
 			}
 			
 			@Override

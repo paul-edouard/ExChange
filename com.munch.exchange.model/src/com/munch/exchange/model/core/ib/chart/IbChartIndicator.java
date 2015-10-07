@@ -18,6 +18,10 @@ import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
+import com.munch.exchange.model.core.chart.ChartParameter;
+import com.munch.exchange.model.core.chart.ChartSerie;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
 
 @Entity
 @Inheritance
@@ -70,12 +74,9 @@ public abstract class IbChartIndicator implements Serializable{
 		
 	}
 	
-
-
 	public int getId() {
 		return id;
 	}
-
 
 	public void setId(int id) {
 		this.id = id;
@@ -86,7 +87,6 @@ public abstract class IbChartIndicator implements Serializable{
 		return name;
 	}
 
-
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -95,7 +95,6 @@ public abstract class IbChartIndicator implements Serializable{
 	public boolean isActivated() {
 		return isActivated;
 	}
-
 
 	public void setActivated(boolean isActivated) {
 		this.isActivated = isActivated;
@@ -106,7 +105,6 @@ public abstract class IbChartIndicator implements Serializable{
 		return isDirty;
 	}
 
-
 	public void setDirty(boolean isDirty) {
 		this.isDirty = isDirty;
 	}
@@ -116,7 +114,6 @@ public abstract class IbChartIndicator implements Serializable{
 		return parameters;
 	}
 
-
 	public void setParameters(List<IbChartParameter> parameters) {
 		this.parameters = parameters;
 	}
@@ -125,7 +122,6 @@ public abstract class IbChartIndicator implements Serializable{
 	public List<IbChartSerie> getSeries() {
 		return series;
 	}
-
 
 	public void setSeries(List<IbChartSerie> series) {
 		this.series = series;
@@ -145,10 +141,69 @@ public abstract class IbChartIndicator implements Serializable{
 	}
 	
 	
+	public IbChartParameter getChartParameter(String paramName){
+		for(IbChartParameter param:parameters){
+			if(param.getName().equals(paramName)){
+				return param;
+			}
+		}
+		return null;
+	}
+	
+	public IbChartSerie getChartSerie(String serieName){
+		for(IbChartSerie serie:series){
+			if(serie.getName().equals(serieName)){
+				return serie;
+			}
+		}
+		return null;
+	}
+	
+	public IbChartSerie getMainChartSerie(){
+		for(IbChartSerie serie:series){
+			if(serie.isMain())return serie;
+		}
+		return null;
+	}
+	
+	
 	public abstract void initName();
 	
 	public abstract void createSeries();
 	
 	public abstract void createParameters();
+	
+	public abstract void compute(List<IbBar> bars);
+	
+	public abstract void computeLast(List<IbBar> bars);
+	
+	protected double[] barsToDoubleArray(List<IbBar> bars,DataType dataType){
+		return barsToDoubleArray(bars, dataType, bars.size());
+	}
+	
+	protected double[] barsToDoubleArray(List<IbBar> bars,DataType dataType,int numberOfValues){
+		int min=Math.min(bars.size(), numberOfValues);
+		int last=bars.size()-min;
+		double[] array=new double[min];
+		for(int i=bars.size()-1;i>=last;i--){
+			array[i-last]=bars.get(i).getData(dataType);
+		}
+		return array;
+	}
+	
+	protected long[] getTimeArray(List<IbBar> bars,int numberOfValues){
+		int min=Math.min(bars.size(), numberOfValues);
+		int last=bars.size()-min;
+		long[] array=new long[min];
+		for(int i=bars.size()-1;i>=last;i--){
+			array[i-last]=bars.get(i).getTimeInMs();
+		}
+		return array;
+	}
+	
+	protected long[] getTimeArray(List<IbBar> bars){
+		return getTimeArray(bars, bars.size());
+	}
 
+	
 }

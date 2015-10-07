@@ -90,6 +90,10 @@ public class IbChartParameter implements Serializable{
 	public double getValue() {
 		return currentValue;
 	}
+	
+	public int getIntegerValue() {
+		return (int) currentValue;
+	}
 
 	public void setValue(double value) {
 		this.currentValue = value;

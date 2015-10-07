@@ -1,6 +1,8 @@
 package com.munch.exchange.model.core.ib.chart;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.ElementCollection;
@@ -13,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartSerie.RendererType;
@@ -34,6 +37,11 @@ public class IbChartSerie implements Serializable{
 	private int id;
 	
 	private String name;
+	
+	@Transient
+	private List<IbChartPoint> points=new LinkedList<IbChartPoint>();
+	
+	
 	//private double[] values;
 	//private ValuePointList valuePointList=new ValuePointList();
 	private int validAtPosition;
@@ -70,7 +78,21 @@ public class IbChartSerie implements Serializable{
 	
 	}
 	
-	public int getId() {
+	public void setPointValues(long[] times,double[] values){
+		if(values.length!=times.length)return;
+		
+		points.clear();
+		for(int i=0;i<values.length;i++){
+			points.add(new IbChartPoint(times[i], values[i]));
+		}
+	}
+	
+	public void addPoint(long time,double value){
+		points.add(new IbChartPoint(time, value));
+	}
+	
+	
+ 	public int getId() {
 		return id;
 	}
 
