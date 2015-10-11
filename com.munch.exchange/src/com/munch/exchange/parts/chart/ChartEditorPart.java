@@ -811,11 +811,21 @@ public class ChartEditorPart{
 	
 	@Inject
 	public void chartIndicatorActivationChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED) IbChartIndicator indicator){
-		
+		logger.info("chartIndicatorActivationChanged");
 	    if(isCompositeAbleToReact()){
 	    	refreshSeries();
 	    }
 	}
+	
+	@Inject
+	public void chartIndicatorParameterChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED) IbChartIndicator indicator){
+		//logger.info("chartIndicatorActivationChanged");
+	    if(isCompositeAbleToReact()){
+	    	refreshSeries();
+	    }
+	}
+
+	
 	
 	@Inject
 	public void chartSerieActivationChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_SERIE_ACTIVATION_CHANGED) IbChartSerie serie){

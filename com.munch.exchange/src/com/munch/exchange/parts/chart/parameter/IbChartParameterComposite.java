@@ -23,10 +23,10 @@ public class IbChartParameterComposite {
 	private Label lblAlpha;
 	
 	
-	public IbChartParameterComposite(ChartParameterEditorPart parent,Composite parentComposite, IbChartParameter param) {
+	public IbChartParameterComposite(ChartParameterEditorPart p,Composite parentComposite, IbChartParameter param) {
 		//super(parentComposite, SWT.NONE);
 		
-		this.parent=parent;
+		this.parent=p;
 		this.parameter=param;
 		
 		//this.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -56,8 +56,7 @@ public class IbChartParameterComposite {
 			public void widgetSelected(SelectionEvent e) {
 				parameter.setValue((((double)slider.getSelection())/Math.pow(10, parameter.getScalarFactor())));
 				valueLabel.setText(getStringValue());
-				//if(parent.getActivatorBtn().isEnabled())
-				//	parent.fireCollectionRemoved();
+				parent.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED, parameter.getIndicator());
 				
 			}
 		});
@@ -84,7 +83,8 @@ public class IbChartParameterComposite {
 		if(value>=parameter.getMinValue() && value<=parameter.getMaxValue()){
 			parameter.setValue(value);
 			refresh();
-			parent.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED, parameter.getIndicator());
+			//System.out.println("Set value");
+			//parent.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED, parameter.getIndicator());
 		}
 	}
 	
@@ -97,6 +97,7 @@ public class IbChartParameterComposite {
 	}
 	
 	public void refresh(){
+		//System.out.println("Set value");
 		valueLabel.setText(getStringValue());
 		slider.setSelection((int) (parameter.getValue()*Math.pow(10, parameter.getScalarFactor())));
 	}
