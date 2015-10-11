@@ -74,6 +74,14 @@ public abstract class IbChartIndicator implements Serializable{
 		
 	}
 	
+	
+	public void resetDefault(){
+		for(IbChartParameter p:parameters){
+			p.resetDefault();
+		}
+	}
+	
+	
 	public int getId() {
 		return id;
 	}

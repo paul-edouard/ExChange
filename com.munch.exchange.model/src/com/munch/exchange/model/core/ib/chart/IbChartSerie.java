@@ -1,11 +1,9 @@
 package com.munch.exchange.model.core.ib.chart;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -17,8 +15,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
-import com.munch.exchange.model.core.chart.ChartIndicator;
-import com.munch.exchange.model.core.chart.ChartSerie.RendererType;
 
 
 @Entity
@@ -92,7 +88,11 @@ public class IbChartSerie implements Serializable{
 	}
 	
 	
- 	public int getId() {
+ 	public List<IbChartPoint> getPoints() {
+		return points;
+	}
+
+	public int getId() {
 		return id;
 	}
 

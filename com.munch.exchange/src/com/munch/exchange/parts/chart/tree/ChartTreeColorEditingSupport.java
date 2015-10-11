@@ -9,6 +9,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 
+import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.chart.ChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 
@@ -75,6 +76,7 @@ public class ChartTreeColorEditingSupport extends EditingSupport {
 			serie.setColor_R(color.red);
 			serie.setColor_G(color.green);
 			serie.setColor_B(color.blue);
+			part.getEventBroker().post(IEventConstant.IB_CHART_SERIE_COLOR_CHANGED, serie);
 		}
 		
 		viewer.update(element, null);
@@ -83,11 +85,12 @@ public class ChartTreeColorEditingSupport extends EditingSupport {
 			parent.refresh();
 			parent.setDity();
 		}
-		
+		/*
 		if(part!=null){
 			part.refresh();
 			part.setDity();
 		}
+		*/
 	}
 
 }

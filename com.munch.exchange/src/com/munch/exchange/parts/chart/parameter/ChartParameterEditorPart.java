@@ -9,6 +9,7 @@ import javax.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.services.IServiceConstants;
@@ -29,6 +30,8 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartParameter;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
+import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.parts.chart.tree.ChartTreeComposite;
 
@@ -41,14 +44,21 @@ public class ChartParameterEditorPart {
 	@Inject
 	private Shell shell;
 	
+	@Inject
+	private IEventBroker eventBroker;
+	
 	private Label lblSelection;
 	
 	private ChartIndicator chartIndicator;
+	private IbChartIndicator ibChartIndicator;
+	
 	private Composite parent;
 	private Button btnReset;
 	
 	private LinkedList<ChartParameterComposite> parameterComposites=new LinkedList<ChartParameterComposite>();
-
+	private LinkedList<IbChartParameterComposite> ibParameterComposites=new LinkedList<IbChartParameterComposite>();
+	
+	
 	public ChartParameterEditorPart() {
 	}
 
@@ -90,22 +100,42 @@ public class ChartParameterEditorPart {
 			p.dispose();
 		parameterComposites.clear();
 		
+		for(IbChartParameterComposite p:ibParameterComposites)
+			p.dispose();
+		ibParameterComposites.clear();
+		
 		
 		parent.update();
 		parent.setLayout(new GridLayout(3, false));
-		for(ChartParameter param:this.chartIndicator.getChartParameters()){
-			ChartParameterComposite pc=new ChartParameterComposite(this,parent , param);
-			pc.getSlider().setEnabled(this.chartIndicator.isActivated());
-			parameterComposites.add(pc);
+		if(this.chartIndicator!=null){
+			for(ChartParameter param:this.chartIndicator.getChartParameters()){
+				ChartParameterComposite pc=new ChartParameterComposite(this,parent , param);
+				pc.getSlider().setEnabled(this.chartIndicator.isActivated());
+				parameterComposites.add(pc);
+			}
+		}
+		else if(this.ibChartIndicator!=null){
+			for(IbChartParameter param:this.ibChartIndicator.getParameters()){
+				IbChartParameterComposite pc=new IbChartParameterComposite(this,parent , param);
+				pc.getSlider().setEnabled(this.ibChartIndicator.isActivated());
+				ibParameterComposites.add(pc);
+			}
 		}
 		
 		btnReset = new Button(parent, SWT.NONE);
 		btnReset.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				chartIndicator.resetDefault();
-				for(ChartParameterComposite p:parameterComposites)
-					p.refresh();
+				if(chartIndicator!=null){
+					chartIndicator.resetDefault();
+					for(ChartParameterComposite p:parameterComposites)
+						p.refresh();
+				}
+				else if(ibChartIndicator!=null){
+					ibChartIndicator.resetDefault();
+					for(IbChartParameterComposite p:ibParameterComposites)
+						p.refresh();
+				}
 			}
 		});
 		btnReset.setText("Reset");
@@ -117,6 +147,10 @@ public class ChartParameterEditorPart {
 		
 	}
 	
+	public IEventBroker getEventBroker() {
+		return eventBroker;
+	}
+	
 	
 	//################################
   	//##       Event Reaction       ##
@@ -125,7 +159,7 @@ public class ChartParameterEditorPart {
 			if (shell.isDisposed())
 				return false;
 			
-			if(chartIndicator==null)return false;
+			if(ibChartIndicator==null && chartIndicator==null)return false;
 			//if(archi.getParent()==null)return false;
 			
 			//Stock stock=archi.getParent().getParent();
@@ -158,11 +192,41 @@ public class ChartParameterEditorPart {
 		 
 		 
 		chartIndicator=selIndic;
+		ibChartIndicator=null;
 	    if(isCompositeAbleToReact()){
 	    	//logger.info("Selcted recieved: "+chartIndicator.getName());
 	    		update();
 	    }
 	}
+	
+	
+	@Inject
+	public void analyseIbSelection( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_SELECTED) IbChartIndicator selIndic){
+		
+		 logger.info("Analyse IB Chart Indiator selection!!");
+		 
+		 if(ibChartIndicator!=null && ibChartIndicator==selIndic)
+			return;
+		 
+		 
+		chartIndicator=null;
+		ibChartIndicator=selIndic;
+	    if(isCompositeAbleToReact()){
+	    	//logger.info("Selcted recieved: "+chartIndicator.getName());
+	    		update();
+	    }
+	}
+	
+	 @Inject
+	 public void activationIbChanged(@Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED) IbChartIndicator selIndic){
+		 if(ibChartIndicator!=selIndic)return;
+		 
+		 if(!isCompositeAbleToReact())return;
+		 
+		 for(IbChartParameterComposite p:ibParameterComposites)
+			 p.getSlider().setEnabled(ibChartIndicator.isActivated());
+	 }
+	
 	
 	
 	

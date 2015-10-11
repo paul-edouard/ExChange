@@ -131,10 +131,10 @@ public class ChartTreeEditorPart {
 				ISelection selection=event.getSelection();
 				if(selection instanceof IStructuredSelection){
 					IStructuredSelection sel=(IStructuredSelection) selection;
-					if(sel.size()==1 && sel.getFirstElement() instanceof ChartIndicator){
-						ChartIndicator selInd=(ChartIndicator) sel.getFirstElement();
+					if(sel.size()==1 && sel.getFirstElement() instanceof IbChartIndicator){
+						IbChartIndicator selInd=(IbChartIndicator) sel.getFirstElement();
 						//logger.info("Chart indicator selected");
-						eventBroker.post(IEventConstant.CHART_INDICATOR_SELECTED, selInd);
+						eventBroker.post(IEventConstant.IB_CHART_INDICATOR_SELECTED, selInd);
 							
 					}
 				}
@@ -217,6 +217,11 @@ public class ChartTreeEditorPart {
 	@Persist
 	public void save() {
 		//TODO Your code here
+	}
+	
+	
+	public IEventBroker getEventBroker() {
+		return eventBroker;
 	}
 	
 	public void setDity(){

@@ -23,9 +23,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
+import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
@@ -36,6 +38,9 @@ import com.munch.exchange.ExchangeChartComposite;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
+import com.munch.exchange.model.core.chart.ChartIndicator;
+import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
+import com.munch.exchange.model.core.chart.ChartSerie;
 import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.core.historical.HistoricalPoint.Type;
 import com.munch.exchange.model.core.ib.IbContract;
@@ -45,7 +50,10 @@ import com.munch.exchange.model.core.ib.bar.IbBarRecorder;
 import com.munch.exchange.model.core.ib.bar.IbBarRecorderListener;
 import com.munch.exchange.model.core.ib.bar.IbHourBar;
 import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.IbChartPoint;
+import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.parts.RateEditorPart;
 import com.munch.exchange.parts.chart.parameter.ChartParameterEditorPart;
 import com.munch.exchange.parts.chart.tree.ChartTreeEditorPart;
@@ -68,10 +76,13 @@ import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.event.MarkerChangeEvent;
 import org.jfree.chart.event.MarkerChangeListener;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
+import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.Marker;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.CandlestickRenderer;
+import org.jfree.chart.renderer.xy.DeviationRenderer;
+import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.ComparableObjectItem;
 import org.jfree.data.time.Millisecond;
@@ -79,7 +90,9 @@ import org.jfree.data.time.Second;
 import org.jfree.data.time.ohlc.OHLCItem;
 import org.jfree.data.time.ohlc.OHLCSeries;
 import org.jfree.data.time.ohlc.OHLCSeriesCollection;
+import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.xy.YIntervalSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 import org.jfree.ui.LengthAdjustmentType;
 import org.jfree.ui.RectangleAnchor;
@@ -89,6 +102,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.ModifyEvent;
 
@@ -124,16 +138,35 @@ public class ChartEditorPart{
 	
 	//The renderers
 	private XYLineAndShapeRenderer mainPlotRenderer=new XYLineAndShapeRenderer(true, false);
+	private XYLineAndShapeRenderer secondPlotrenderer=new XYLineAndShapeRenderer(true, false);
+	private XYLineAndShapeRenderer percentPlotrenderer=new XYLineAndShapeRenderer(true, false);
+	private XYErrorRenderer errorPlotRenderer=new XYErrorRenderer();
+	private DeviationRenderer deviationPercentPlotRenderer=new DeviationRenderer();
+	private DeviationRenderer deviationRenderer = new DeviationRenderer(true, false);
 	private CandlestickRenderer candlestickRenderer=new CandlestickRenderer(0.0);
+	
 	
 	//The Series Collections
 	private XYSeriesCollection mainCollection=new XYSeriesCollection();
+	private XYSeriesCollection secondCollection=new XYSeriesCollection();
+	private XYSeriesCollection percentCollection=new XYSeriesCollection();
+	private YIntervalSeriesCollection errorCollection=new YIntervalSeriesCollection();
+	private YIntervalSeriesCollection deviationPercentCollection=new YIntervalSeriesCollection();
+	private YIntervalSeriesCollection deviationCollection=new YIntervalSeriesCollection();
 	private OHLCSeriesCollection oHLCSeriesCollection=new OHLCSeriesCollection();
+	
+	
+	//Plots
+	CombinedDomainXYPlot combinedPlot=null;
+	XYPlot mainPlot=null;
+	XYPlot secondPlot=null;
+	
+	//Axis
+	private DateAxis dateAxis;
 	
 	
 	private JFreeChart chart;
 	private Composite compositeChart;
-	private DateAxis dateAxis;
 	private ValueMarker threshold;
 	private OHLCSeries candleStickSeries= new OHLCSeries(CANDLESTICK);
 	
@@ -146,6 +179,9 @@ public class ChartEditorPart{
 	
 	private Combo comboBarSize;
 	private Combo comboWhatToShow;
+	
+	@Inject
+	private Shell shell;
 	
 	@Inject
 	public ChartEditorPart() {}
@@ -344,27 +380,37 @@ public class ChartEditorPart{
     	
 	}
 	
+	//################################
+	//##       CHART CREATION      ##
+	//################################    
+	
 	private JFreeChart createChart() {
 		
-		
-		 
 		//====================
 	    //===  Main Axis   ===
 	    //====================
-		ValueAxis domainAxis =createDomainAxis();
+		createDomainAxis();
 	    	
 	    //====================
 	    //===  Main Plot   ===
 	    //====================
-	    XYPlot mainPlot = createMainPlot(domainAxis);
+	    createMainPlot();
 	    
-	    mainPlot.addRangeMarker(threshold);
+	    //======================
+	    //===  Second Plot   ===
+	    //======================
+	    createSecondPlot();
+	    
+	    //====================
+	    //===  Combined Plot   ===
+	    //====================
+	    createCombinedDomainXYPlot();
 	    
 	    //=========================
     	//=== Create the Chart  ===
     	//=========================
         chart = new JFreeChart(contract.getLongName(),
-                JFreeChart.DEFAULT_TITLE_FONT, mainPlot, false);
+                JFreeChart.DEFAULT_TITLE_FONT, combinedPlot, false);
         chart.setBackgroundPaint(Color.white);
         chart.getTitle().setVisible(false);
       
@@ -372,7 +418,7 @@ public class ChartEditorPart{
 	  
 	 }
 	
-	private ValueAxis createDomainAxis(){
+	private DateAxis createDomainAxis(){
     	 //Axis
 		dateAxis = new DateAxis("Time");
 		dateAxis.setTickUnit(
@@ -411,7 +457,7 @@ public class ChartEditorPart{
      * 
      * @return
      */
-    private XYPlot createMainPlot( ValueAxis domainAxis){
+    private void createMainPlot( ){
     	
     	//====================
     	//=== Main Curves  ===
@@ -430,22 +476,41 @@ public class ChartEditorPart{
         rangeAxis1.setAutoRangeIncludesZero(false);
         
         //Plot
-        XYPlot plot1 = new XYPlot(mainCollection, domainAxis, rangeAxis1, mainPlotRenderer);
-        plot1.setBackgroundPaint(Color.lightGray);
+        mainPlot = new XYPlot(mainCollection, dateAxis, rangeAxis1, mainPlotRenderer);
+        mainPlot.setBackgroundPaint(Color.lightGray);
         //plot1.setBackgroundPaint(Color.BLACK);
-        plot1.setDomainGridlinePaint(Color.white);
-        plot1.setRangeGridlinePaint(Color.white);
+        mainPlot.setDomainGridlinePaint(Color.white);
+        mainPlot.setRangeGridlinePaint(Color.white);
         
         
         int i=1;
+        //Add the error renderer and collection
+		addErrorGraph(mainPlot, rangeAxis1, i);i++;
+		//Add the deviation Graph
+		addDevGraph(mainPlot, rangeAxis1, i);i++;
 		//Add the Candle Stick Graph
-		addCandleStickGraph(plot1, rangeAxis1, i);i++;
+		addCandleStickGraph(mainPlot, rangeAxis1, i);i++;
         
 		
 		createPosOHLCSeries();
+		
+		mainPlot.addRangeMarker(threshold);
         
-        return plot1;
+		
+    }
+    
+    private void addDevGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
+    	plot.setDataset(i,deviationCollection);
+    	plot.setRenderer(i, deviationRenderer);
+    }
+    
+    private void addErrorGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
     	
+    	plot.setDataset(i,errorCollection);
+    	plot.setRenderer(i, errorPlotRenderer);
+    	
+    	errorPlotRenderer.setBaseLinesVisible(true);
+		errorPlotRenderer.setBaseShapesVisible(false);
     }
     
     private void addCandleStickGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
@@ -457,7 +522,6 @@ public class ChartEditorPart{
 		
     }
 	
-    
     private void createPosOHLCSeries(){
     	
     	//Add the history Candle stick
@@ -472,6 +536,305 @@ public class ChartEditorPart{
     }
 	
 	
+    /**
+     * Create the Second Plot
+     * 
+     * @return
+     */
+    private void createSecondPlot(){
+    	
+    	secondPlotrenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
+                StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
+                new DecimalFormat("0.0"), new DecimalFormat("0.00")));
+        
+        if (secondPlotrenderer instanceof XYLineAndShapeRenderer) {
+            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) secondPlotrenderer;
+            renderer.setBaseStroke(new BasicStroke(2.0f));
+            renderer.setAutoPopulateSeriesStroke(false);
+            renderer.setSeriesPaint(0, Color.BLUE);
+            renderer.setSeriesPaint(1, Color.DARK_GRAY);
+            //renderer.setSeriesPaint(2, new Color(0xFDAE61));
+        }
+        
+        //Axis Profit
+        NumberAxis rangeAxis1 = new NumberAxis("Profit");
+        //rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
+        DecimalFormat format = new DecimalFormat("00.00");
+        rangeAxis1.setNumberFormatOverride(format);
+        rangeAxis1.setAutoRangeIncludesZero(false);
+        
+        //Plot Profit
+        secondPlot = new XYPlot(secondCollection, null, rangeAxis1, secondPlotrenderer);
+        secondPlot.setBackgroundPaint(Color.lightGray);
+        secondPlot.setDomainGridlinePaint(Color.white);
+        secondPlot.setRangeGridlinePaint(Color.white);
+        
+        //Axis Percent
+        NumberAxis rangeAxis2 = new NumberAxis("Percent");
+        rangeAxis2.setNumberFormatOverride(format);
+        rangeAxis2.setAutoRangeIncludesZero(false);
+        
+        int i=1;
+        //Add percent graph
+        addPercentGraph(secondPlot,rangeAxis2,i);i++;
+        
+        //Add the deviation Graph
+        addDeviationPercentGraph(secondPlot, rangeAxis2, i);
+		i++;
+    }
+    
+    private void addPercentGraph(XYPlot plot, NumberAxis rangeAxis, int i){
+    	
+    	plot.setDataset(i,percentCollection);
+        plot.setRenderer(i, percentPlotrenderer);
+        plot.setRangeAxis(i, rangeAxis);
+        plot.mapDatasetToRangeAxis(i, i);
+    	
+    }
+    
+    private void addDeviationPercentGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
+    	
+    	//plot.setRangeAxis(i, rangeAxis1);
+    	plot.setDataset(i,deviationPercentCollection);
+    	plot.setRenderer(i, deviationPercentPlotRenderer);
+    	plot.mapDatasetToRangeAxis(i, 1);
+    	
+    	deviationPercentPlotRenderer.setBaseLinesVisible(true);
+    	deviationPercentPlotRenderer.setBaseShapesVisible(false);
+    	
+    }
+    
+    
+    /**
+     * create the Combined Plot
+     * 
+     * @param domainAxis
+     * @param plot1
+     * @param plot2
+     * @return
+     */
+    private void createCombinedDomainXYPlot(){
+    	 combinedPlot = new CombinedDomainXYPlot(dateAxis);
+    	 combinedPlot.add(mainPlot, 5);
+	        //cplot.add(plot2, 2);
+    	 combinedPlot.setGap(8.0);
+    	 combinedPlot.setDomainGridlinePaint(Color.white);
+    	 combinedPlot.setDomainGridlinesVisible(true);
+    	 combinedPlot.setDomainPannable(true);
+    }
+    
+    private void addSecondPlot(){
+    	combinedPlot.add(secondPlot, 2);
+    }
+    
+    private void removeSecondPlot(){
+    	combinedPlot.remove(secondPlot);
+    }
+    
+	//################################
+	//##     Series operations      ##
+	//################################
+    
+    public void refreshSeries() {
+		clearSeries();
+		
+		createSeries();
+	}
+    
+    private void createSeries(){
+		for(IbChartSerie serie:searchSeriesToAdd(getCurrentContainer().getIndicatorGroup()))
+			addSerie(serie);
+	}
+    
+    private void addSerie(IbChartSerie serie){
+		XYSeries xySerie=createXYSerie(serie);
+		int pos=0;
+		
+		switch (serie.getRendererType()) {
+		case MAIN:
+			mainCollection.addSeries(xySerie);
+			pos=mainCollection.indexOf(serie.getName());
+			if(pos>=0){
+				mainPlotRenderer.setSeriesShapesVisible(pos, false);
+				mainPlotRenderer.setSeriesLinesVisible(pos, true);
+				mainPlotRenderer.setSeriesStroke(pos,new BasicStroke(2.0f));
+				mainPlotRenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
+			}
+			break;
+		case SECOND:
+			secondCollection.addSeries(xySerie);
+			pos=secondCollection.indexOf(serie.getName());
+			if(pos>=0){
+				secondPlotrenderer.setSeriesShapesVisible(pos, false);
+				secondPlotrenderer.setSeriesLinesVisible(pos, true);
+				secondPlotrenderer.setSeriesStroke(pos,new BasicStroke(2.0f));
+				secondPlotrenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
+			}
+			break;
+		case PERCENT:
+			pos=percentCollection.indexOf(serie.getName());
+			if(pos>=0)percentCollection.removeSeries(pos);
+			break;
+		case ERROR:
+			pos=errorCollection.indexOf(serie.getName());
+			if(pos>=0)errorCollection.removeSeries(pos);
+			break;
+		case DEVIATION:
+			pos=deviationCollection.indexOf(serie.getName());
+			if(pos>=0)deviationCollection.removeSeries(pos);
+			break;
+		case DEVIATION_PERCENT:
+			pos=deviationPercentCollection.indexOf(serie.getName());
+			if(pos>=0)deviationPercentCollection.removeSeries(pos);
+			break;
+		default:
+			break;
+		}
+		
+		
+	}
+    
+    
+    private XYSeries  createXYSerie(IbChartSerie serie){
+		XYSeries r_series =new XYSeries(serie.getName());
+		for(IbChartPoint point:serie.getPoints()){
+			r_series.add(point.getTime(),point.getValue());
+		}
+		
+		return 	r_series;
+	}
+    
+    
+    private LinkedList<IbChartSerie> searchSeriesToAdd(IbChartIndicatorGroup group){
+		LinkedList<IbChartSerie> toAddList=new LinkedList<IbChartSerie>();
+		if(group==null)return toAddList;
+		
+		for(IbChartIndicatorGroup subGroup:group.getChildren()){
+			toAddList.addAll(searchSeriesToAdd(subGroup));
+		}
+		
+		for(IbChartIndicator indicator:group.getIndicators()){
+			if(!indicator.isActivated())continue;
+			//Compute the series
+			indicator.compute(barRecorder.getAllBars());
+			
+			for(IbChartSerie serie:indicator.getSeries()){
+				if(serie.isActivated() && serie.getPoints().size()>0){
+					toAddList.add(serie);
+				}
+			}
+		}
+		return toAddList;
+		
+	}
+    
+    
+    private void clearSeries(){
+		for(IbChartSerie serie:searchSeriesToRemove(getCurrentContainer().getIndicatorGroup()))
+			removeChartSerie(serie);
+	}
+	
+	private LinkedList<IbChartSerie> searchSeriesToRemove(IbChartIndicatorGroup group){
+		LinkedList<IbChartSerie> toRemoveList=new LinkedList<IbChartSerie>();
+		
+		
+		if(group==null)return toRemoveList;
+		
+		
+		for(IbChartIndicatorGroup subGroup:group.getChildren()){
+			toRemoveList.addAll(searchSeriesToRemove(subGroup));
+		}
+		
+		for(IbChartIndicator indicator:group.getIndicators()){
+			for(IbChartSerie serie:indicator.getSeries()){
+				//if(!serie.isActivated()){
+					toRemoveList.add(serie);
+				//}
+			}
+		}
+		return toRemoveList;
+		
+	}
+	
+	private void removeChartSerie(IbChartSerie serie){
+		int pos=0;
+		switch (serie.getRendererType()) {
+		case MAIN:
+			pos=mainCollection.indexOf(serie.getName());
+			if(pos>=0)mainCollection.removeSeries(pos);
+			break;
+		case SECOND:
+			pos=secondCollection.indexOf(serie.getName());
+			if(pos>=0)secondCollection.removeSeries(pos);
+			break;
+		case PERCENT:
+			pos=percentCollection.indexOf(serie.getName());
+			if(pos>=0)percentCollection.removeSeries(pos);
+			break;
+		case ERROR:
+			pos=errorCollection.indexOf(serie.getName());
+			if(pos>=0)errorCollection.removeSeries(pos);
+			break;
+		case DEVIATION:
+			pos=deviationCollection.indexOf(serie.getName());
+			if(pos>=0)deviationCollection.removeSeries(pos);
+			break;
+		case DEVIATION_PERCENT:
+			pos=deviationPercentCollection.indexOf(serie.getName());
+			if(pos>=0)deviationPercentCollection.removeSeries(pos);
+			break;
+
+		default:
+			break;
+		}
+		
+		
+	}
+    
+    
+	//################################
+  	//##       Event Reaction       ##
+  	//################################
+	
+	private boolean isCompositeAbleToReact(){
+		if (shell.isDisposed())
+			return false;
+		
+		if(comboWhatToShow==null)return false;
+		
+		if(comboWhatToShow.isDisposed())return false;
+		
+		if(chart==null)return false;
+		
+		return true;
+	}
+	
+	@Inject
+	public void chartIndicatorActivationChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED) IbChartIndicator indicator){
+		
+	    if(isCompositeAbleToReact()){
+	    	refreshSeries();
+	    }
+	}
+	
+	@Inject
+	public void chartSerieActivationChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_SERIE_ACTIVATION_CHANGED) IbChartSerie serie){
+		
+	    if(isCompositeAbleToReact()){
+	    	refreshSeries();
+	    }
+	}
+	
+	@Inject
+	public void chartSerieColorChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_SERIE_COLOR_CHANGED) IbChartSerie serie){
+		
+	    if(isCompositeAbleToReact()){
+	    	refreshSeries();
+	    }
+	}
+	
+    
+    
 	@PreDestroy
 	public void preDestroy() {
 		realTimeBarProvider.removeRealTimeBarListener(realTimeBarListener);
@@ -695,6 +1058,8 @@ public class ChartEditorPart{
 						candleStickSeries.fireSeriesChanged();
 						threshold.setValue(lastBar.getClose());
 						
+						refreshSeries();
+						
 						
 						comboWhatToShow.setEnabled(true);
 						comboBarSize.setEnabled(true);
@@ -800,6 +1165,8 @@ public class ChartEditorPart{
 		}
 		
 	}
+	
+	
 	
 	
 	

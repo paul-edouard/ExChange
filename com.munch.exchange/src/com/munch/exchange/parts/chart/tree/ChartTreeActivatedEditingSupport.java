@@ -89,11 +89,12 @@ public class ChartTreeActivatedEditingSupport extends EditingSupport {
 		else if(element instanceof IbChartSerie){
 			IbChartSerie el=(IbChartSerie) element;
 			el.setActivated((Boolean) value);
+			part.getEventBroker().post(IEventConstant.IB_CHART_SERIE_ACTIVATION_CHANGED, el);
 		}
 		else if(element instanceof IbChartIndicator){
 			IbChartIndicator el=(IbChartIndicator) element;
 			el.setActivated((Boolean) value);
-			parent.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED, el);
+			part.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED, el);
 		}
 		
 		viewer.refresh();
@@ -101,11 +102,13 @@ public class ChartTreeActivatedEditingSupport extends EditingSupport {
 			parent.refresh();
 			parent.setDity();
 		}
-			
+		
+		/*
 		if(part!=null){
 			part.refresh();
 			part.setDity();
 		}
+		*/
 	}
 
 }

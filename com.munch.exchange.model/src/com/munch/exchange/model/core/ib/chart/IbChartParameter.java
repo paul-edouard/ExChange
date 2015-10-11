@@ -62,7 +62,12 @@ public class IbChartParameter implements Serializable{
 		
 		this.scalarFactor=scalarFac;
 	}
-
+	
+	public void resetDefault(){
+		this.setValue(this.defaultValue);
+	}
+	
+	
 	public int getId() {
 		return id;
 	}

@@ -628,6 +628,7 @@ public class RateChart extends Composite {
 	    	//======================
 	        CombinedDomainXYPlot cplot = createCombinedDomainXYPlot(domainAxis,plot1,plot2);
 	        
+	        
 	        //=========================
 	    	//=== Create the Chart  ===
 	    	//=========================
@@ -805,7 +806,6 @@ public class RateChart extends Composite {
 	    
 	    private void addErrorGraph(XYPlot plot, NumberAxis rangeAxis1, int i){
 	    	
-	    	//TODO
 	    	plot.setDataset(i,errorCollection);
 	    	plot.setRenderer(i, errorPlotRenderer);
 	    	
