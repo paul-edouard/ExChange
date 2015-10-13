@@ -52,6 +52,7 @@ import com.munch.exchange.model.core.ib.bar.IbHourBar;
 import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.parts.RateEditorPart;
@@ -297,6 +298,10 @@ public class ChartEditorPart{
 				return container;
 		}
 		return null;
+	}
+	
+	private IbChartIndicatorGroup getCurrentIndicatorGroup(){
+		return getCurrentContainer().getIndicatorGroup();
 	}
 	
 	
@@ -647,6 +652,8 @@ public class ChartEditorPart{
 	}
     
     private void addSerie(IbChartSerie serie){
+    //	logger.info("Serie Added: "+serie.getName());
+    	
 		XYSeries xySerie=createXYSerie(serie);
 		int pos=0;
 		
@@ -691,9 +698,9 @@ public class ChartEditorPart{
 			break;
 		}
 		
-		
+		//xySerie.fireSeriesChanged();
+		//candleStickSeries.fireSeriesChanged();
 	}
-    
     
     private XYSeries  createXYSerie(IbChartSerie serie){
 		XYSeries r_series =new XYSeries(serie.getName());
@@ -703,7 +710,6 @@ public class ChartEditorPart{
 		
 		return 	r_series;
 	}
-    
     
     private LinkedList<IbChartSerie> searchSeriesToAdd(IbChartIndicatorGroup group){
 		LinkedList<IbChartSerie> toAddList=new LinkedList<IbChartSerie>();
@@ -727,7 +733,6 @@ public class ChartEditorPart{
 		return toAddList;
 		
 	}
-    
     
     private void clearSeries(){
 		for(IbChartSerie serie:searchSeriesToRemove(getCurrentContainer().getIndicatorGroup()))
@@ -787,8 +792,60 @@ public class ChartEditorPart{
 		default:
 			break;
 		}
-		
-		
+	}
+	
+	private void resetChartSerieColor(IbChartSerie serie){
+		int pos=0;
+		switch (serie.getRendererType()) {
+		case MAIN:
+			pos=mainCollection.indexOf(serie.getName());
+			if(pos>=0)
+				mainPlotRenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
+			break;
+		case SECOND:
+			pos=secondCollection.indexOf(serie.getName());
+			if(pos>=0)
+				secondPlotrenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
+			break;
+		case PERCENT:
+			pos=percentCollection.indexOf(serie.getName());
+			if(pos>=0)
+				percentPlotrenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
+			break;
+		case ERROR:
+			pos=errorCollection.indexOf(serie.getName());
+			if(pos>=0)
+				errorPlotRenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
+			break;
+		case DEVIATION:
+			pos=deviationCollection.indexOf(serie.getName());
+			if(pos>=0)
+				deviationRenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
+			break;
+		case DEVIATION_PERCENT:
+			pos=deviationPercentCollection.indexOf(serie.getName());
+			if(pos>=0)
+				deviationPercentPlotRenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
+			break;
+
+		default:
+			break;
+		}
+	}
+	
+	private void clearAllSeriesOfIndicator(IbChartIndicator indicator){
+		for(IbChartSerie serie:indicator.getSeries()){
+    		this.removeChartSerie(serie);
+    	}
+	}
+	
+	private void addAllSeriesOfIndicatior(IbChartIndicator indicator){
+		indicator.compute(barRecorder.getAllBars());
+		for(IbChartSerie serie:indicator.getSeries()){
+    		if(!serie.isActivated())continue;
+    		if(serie.getPoints().size()==0)continue;
+    		this.addSerie(serie);
+    	}
 	}
     
     
@@ -811,18 +868,41 @@ public class ChartEditorPart{
 	
 	@Inject
 	public void chartIndicatorActivationChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED) IbChartIndicator indicator){
-		logger.info("chartIndicatorActivationChanged");
-	    if(isCompositeAbleToReact()){
-	    	refreshSeries();
+		//logger.info("chartIndicatorActivationChanged");
+	    if(!isCompositeAbleToReact())return;
+	    
+	    IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
+	    //logger.info("Search the indicator");
+	    if(!indGroup.containsIndicator(indicator))return;
+	    
+	    //logger.info("Test the activation");
+	    if(indicator.isActivated()){
+	    	addAllSeriesOfIndicatior(indicator);
 	    }
+	    else{
+	    	clearAllSeriesOfIndicator(indicator);
+	    }
+	    
+	    //refreshSeries();
+	    
 	}
 	
 	@Inject
 	public void chartIndicatorParameterChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED) IbChartIndicator indicator){
-		//logger.info("chartIndicatorActivationChanged");
-	    if(isCompositeAbleToReact()){
-	    	refreshSeries();
-	    }
+		
+		if(!isCompositeAbleToReact())return;
+	    
+	    IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
+	    if(!indGroup.containsIndicator(indicator))return;
+	    
+	    if(!indicator.isActivated())return;
+	    
+	    //for(IbChartParameter param:indicator.getParameters())
+	    //	logger.info("Param: "+param.getValue());
+	    
+	    clearAllSeriesOfIndicator(indicator);
+	    addAllSeriesOfIndicatior(indicator);
+	    
 	}
 
 	
@@ -830,17 +910,30 @@ public class ChartEditorPart{
 	@Inject
 	public void chartSerieActivationChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_SERIE_ACTIVATION_CHANGED) IbChartSerie serie){
 		
-	    if(isCompositeAbleToReact()){
-	    	refreshSeries();
+		if(!isCompositeAbleToReact())return;
+	    
+	    IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
+	    if(!indGroup.containsSerie(serie))return;
+	    
+	    if(serie.isActivated()){
+	    	this.addSerie(serie);
 	    }
+	    else{
+	    	this.removeChartSerie(serie);
+	    }
+	    
+	    
 	}
 	
 	@Inject
 	public void chartSerieColorChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_SERIE_COLOR_CHANGED) IbChartSerie serie){
 		
-	    if(isCompositeAbleToReact()){
-	    	refreshSeries();
-	    }
+		if(!isCompositeAbleToReact())return;
+	    
+	    IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
+	    if(!indGroup.containsSerie(serie))return;
+	    
+	    resetChartSerieColor(serie);
 	}
 	
     

@@ -45,7 +45,8 @@ public class ChartTreeActivatedEditingSupport extends EditingSupport {
 			return true;
 		}
 		else if(element instanceof IbChartSerie){
-			return true;
+			IbChartSerie serie=(IbChartSerie) element;
+			return serie.getIndicator().isActivated();
 		}
 		else if(element instanceof IbChartIndicator){
 			return true;

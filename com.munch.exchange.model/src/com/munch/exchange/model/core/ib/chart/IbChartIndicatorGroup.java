@@ -64,6 +64,28 @@ public class IbChartIndicatorGroup implements Serializable{
 	}
 	
 	
+	public boolean containsIndicator(IbChartIndicator indicator){
+		for(IbChartIndicatorGroup child:children){
+			if(child.containsIndicator(indicator))return true;
+		}
+		
+		for(IbChartIndicator ind:indicators){
+			if(ind.getId()==indicator.getId())return true;
+		}
+		return false;
+	}
+	
+	public boolean containsSerie(IbChartSerie serie){
+		for(IbChartIndicatorGroup child:children){
+			if(child.containsSerie(serie))return true;
+		}
+		
+		for(IbChartIndicator ind:indicators){
+			if(ind.containsSerie(serie))return true;
+		}
+		return false;
+	}
+	
 
 	public int getId() {
 		return id;

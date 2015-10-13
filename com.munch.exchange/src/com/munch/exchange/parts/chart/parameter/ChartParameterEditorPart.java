@@ -135,6 +135,7 @@ public class ChartParameterEditorPart {
 					ibChartIndicator.resetDefault();
 					for(IbChartParameterComposite p:ibParameterComposites)
 						p.refresh();
+					eventBroker.post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED, ibChartIndicator);
 				}
 			}
 		});

@@ -82,6 +82,14 @@ public abstract class IbChartIndicator implements Serializable{
 	}
 	
 	
+	public boolean containsSerie(IbChartSerie serie){
+		for(IbChartSerie s:series){
+			if(s.getId()==serie.getId())return true;
+		}
+		return false;
+	}
+	
+	
 	public int getId() {
 		return id;
 	}

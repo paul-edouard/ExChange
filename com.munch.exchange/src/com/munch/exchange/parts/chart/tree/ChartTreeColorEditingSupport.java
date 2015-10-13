@@ -41,7 +41,8 @@ public class ChartTreeColorEditingSupport extends EditingSupport {
 			return true;
 		}
 		else if(element instanceof IbChartSerie){
-			return true;
+			IbChartSerie serie=(IbChartSerie) element;
+			return serie.getIndicator().isActivated();
 		}
 		return false;
 	}

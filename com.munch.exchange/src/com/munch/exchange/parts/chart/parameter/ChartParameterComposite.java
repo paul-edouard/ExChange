@@ -1,6 +1,8 @@
 package com.munch.exchange.parts.chart.parameter;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -50,6 +52,7 @@ public class ChartParameterComposite /*extends Composite*/ {
 		slider.setThumb(1);
 		slider.setSelection((int) (this.parameter.getValue()*Math.pow(10, this.parameter.getScalarFactor())));
 		slider.setEnabled(false);
+		/*
 		slider.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -59,6 +62,31 @@ public class ChartParameterComposite /*extends Composite*/ {
 				//	parent.fireCollectionRemoved();
 				
 			}
+		});
+		*/
+		slider.addMouseListener(new MouseListener() {
+			
+			
+			@Override
+			public void mouseDown(MouseEvent e) {
+				
+			}
+
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseUp(MouseEvent e) {
+				if(e.button==1){
+					parameter.setValue((((double)slider.getSelection())/Math.pow(10, parameter.getScalarFactor())));
+					valueLabel.setText(getStringValue());
+				}
+			}
+			
+			
 		});
 		
 		
