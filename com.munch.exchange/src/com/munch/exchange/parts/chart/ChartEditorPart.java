@@ -652,7 +652,7 @@ public class ChartEditorPart{
 	}
     
     private void addSerie(IbChartSerie serie){
-    //	logger.info("Serie Added: "+serie.getName());
+    	//logger.info("Serie Added: "+serie.getName());
     	
 		XYSeries xySerie=createXYSerie(serie);
 		int pos=0;
@@ -705,6 +705,7 @@ public class ChartEditorPart{
     private XYSeries  createXYSerie(IbChartSerie serie){
 		XYSeries r_series =new XYSeries(serie.getName());
 		for(IbChartPoint point:serie.getPoints()){
+			//logger.info("Point: "+point.getTime()+", "+point.getValue());
 			r_series.add(point.getTime(),point.getValue());
 		}
 		

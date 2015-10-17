@@ -22,5 +22,8 @@
             <dependent-object/>
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="MOEAFramework-2.6.jar" deploy-path="/lib" handle="module:/resource/MOEAFramework-2.6/MOEAFramework-2.6">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
     </wb-module>
 </project-modules>

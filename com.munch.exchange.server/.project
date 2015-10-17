@@ -9,6 +9,7 @@
 		<project>com.munch.exchange.model</project>
 		<project>com.ib.api</project>
 		<project>com.munch.exchange.server.ejb</project>
+		<project>MOEAFramework-2.6</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

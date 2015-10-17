@@ -2,6 +2,7 @@ package com.munch.exchange.model.core.ib.chart;
 
 
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
 
 public class IbChartIndicatorFactory {
@@ -20,6 +21,10 @@ public class IbChartIndicatorFactory {
 		IbChartIndicatorGroup movingAverage=searchOrCreateSubGroup(trend,"Moving Average");
 		addChartIndicator(movingAverage, IbChartSimpleMovingAverage.class);
 		//addChartIndicator(movingAverage, new IbChartSimpleMovingAverage());
+		
+		//TREND LINE
+		IbChartIndicatorGroup trendLine=searchOrCreateSubGroup(trend,"Trend Line");
+		addChartIndicator(trendLine, IbChartDownwardTrendLine.class);
 		
 		return true;
 	}
