@@ -62,11 +62,11 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 	@Override
 	public void createParameters() {
 		//Period
-		IbChartParameter paramP=new IbChartParameter(this, PERIOD,ParameterType.INTEGER, 12, 1, 200, 0);
+		IbChartParameter paramP=new IbChartParameter(this, PERIOD,ParameterType.INTEGER, 12, 1, 1000, 0);
 		this.parameters.add(paramP);
 		
 		//Offset
-		IbChartParameter paramO=new IbChartParameter(this, OFFSET,ParameterType.INTEGER, 0, 0, 200, 0);
+		IbChartParameter paramO=new IbChartParameter(this, OFFSET,ParameterType.INTEGER, 0, 0, 1000, 0);
 		this.parameters.add(paramO);
 
 	}
@@ -104,11 +104,11 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		
 		calculateTrendLineParameters(times, prices);
 		
-		double[] YValues=calculateYValues(Etimes, Eprices, ab);
-		//double[] YValues=calculateYValues(times, prices, ab);
+		//double[] YValues=calculateYValues(Etimes, Eprices, ab);
+		double[] YValues=calculateYValues(times, prices, ab);
 		
 		
-		this.getChartSerie(DTL).setPointValues(Etimes,YValues);
+		this.getChartSerie(DTL).setPointValues(times,YValues);
 		this.getChartSerie(DTL).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
 		
 		setDirty(false);
@@ -141,7 +141,7 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		
 		for(int i=0;i<times.length;i++){
 			YValues[i]=ab[0]*(times[i]-times[0])+ab[1];
-			System.out.println("YValue: "+YValues[i]+", x="+times[i]);
+			//System.out.println("YValue: "+YValues[i]+", x="+times[i]);
 		}
 		
 		
@@ -224,11 +224,11 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 			}
 			
 			double a_x=(max-min)/(time_max-time_min);
-			double b_x=max-a_x*(time_max-startTime);
+			//double b_x=max-a_x*(time_max-startTime);
 			
 			double a_diff=Math.abs(a_x-a);
 			//double b_diff=Math.abs(b_x-b);max-min
-			double b_diff=Math.abs(max-min);
+			double b_diff=Math.abs(max-min)*2;
 			
 			a_min=a-a_diff;
 			a_max=a+a_diff;
