@@ -32,6 +32,7 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 	public static final String DTL="DTL";
 	public static final String PERIOD="Period";
 	public static final String OFFSET="Offset";
+	public static final String FACTOR="Factor";
 	
 	
 	
@@ -68,6 +69,10 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		//Offset
 		IbChartParameter paramO=new IbChartParameter(this, OFFSET,ParameterType.INTEGER, 0, 0, 1000, 0);
 		this.parameters.add(paramO);
+		
+		//Factor
+		IbChartParameter paramF=new IbChartParameter(this, FACTOR,ParameterType.DOUBLE, 1000, 10, 5000, 0);
+		this.parameters.add(paramF);
 
 	}
 
@@ -76,6 +81,7 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
 		int numberOfValues=period+
 				this.getChartParameter(OFFSET).getIntegerValue();
+		double factor=this.getChartParameter(FACTOR).getValue();
 		
 		double[] Eprices=this.barsToDoubleArray(bars, DataType.HIGH,numberOfValues);
 		long[] Etimes=this.getTimeArray(bars,numberOfValues);
@@ -89,7 +95,7 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		
 		
 		NondominatedPopulation result = new Executor()
-		.withProblemClass(DownwardTrandLineProblem.class, times,prices)
+		.withProblemClass(DownwardTrendLineProblem.class, times,prices,factor)
 		.withAlgorithm("NSGAII")
 		.withMaxEvaluations(10000)
 		.distributeOnAllCores()
@@ -99,10 +105,10 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		ab[0]=((RealVariable)result.get(0).getVariable(0)).getValue();
 		ab[1]=((RealVariable)result.get(0).getVariable(1)).getValue();
 		
-		System.out.println("Opt a="+ab[0]);
-		System.out.println("Opt b="+ab[1]);
+		//System.out.println("Opt a="+ab[0]);
+		//System.out.println("Opt b="+ab[1]);
 		
-		calculateTrendLineParameters(times, prices);
+		//calculateTrendLineParameters(times, prices);
 		
 		//double[] YValues=calculateYValues(Etimes, Eprices, ab);
 		double[] YValues=calculateYValues(times, prices, ab);
@@ -150,7 +156,6 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 	}
 	
 	
-	
 	@Override
 
 	public void computeLast(List<IbBar> bars) {
@@ -158,9 +163,8 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 
 	}
 	
-	public static class DownwardTrandLineProblem extends AbstractProblem {
+	public static class DownwardTrendLineProblem extends AbstractProblem {
 		
-		private double rangeFactor=1.5;
 		
 		private double a_min;
 		private double a_max;
@@ -173,17 +177,18 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		private double[] prices;
 		private long[] times;
 		
-		private double k1=10;
-		private double k2=100;
+		//private double k1=10;
+		private double factor;
 		
 		
 		//List<IbBar> bars;
 		
 
-		public DownwardTrandLineProblem(long[] times,double[] prices) {
+		public DownwardTrendLineProblem(long[] times,double[] prices,double factor) {
 			super(2, 1);
 			this.prices=prices;
 			this.times=times;
+			this.factor=factor;
 			
 			calculateABMinMaxValues();
 			
@@ -223,7 +228,8 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 				}
 			}
 			
-			double a_x=(max-min)/(time_max-time_min);
+			//double a_x=(max-min)/(time_max-time_min);
+			double a_x=(max-min)/(times[1]-times[0]);
 			//double b_x=max-a_x*(time_max-startTime);
 			
 			double a_diff=Math.abs(a_x-a);
@@ -256,10 +262,10 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 				double abs_quad=abs*abs;
 				
 				if(abs>0){
-					F+=k1*abs_quad;
+					F+=abs_quad;
 				}
 				else{
-					F+=k2*k2*abs_quad;
+					F+=factor*abs_quad;
 				}
 			}
 			
