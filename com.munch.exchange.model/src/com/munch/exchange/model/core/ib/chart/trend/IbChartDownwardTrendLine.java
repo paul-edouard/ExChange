@@ -1,5 +1,6 @@
 package com.munch.exchange.model.core.ib.chart.trend;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -59,7 +60,6 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		this.series.add(serie);
 	}
 
-	
 	@Override
 	public void createParameters() {
 		//Period
@@ -71,7 +71,7 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		this.parameters.add(paramO);
 		
 		//Factor
-		IbChartParameter paramF=new IbChartParameter(this, FACTOR,ParameterType.DOUBLE, 1000, 10, 5000, 0);
+		IbChartParameter paramF=new IbChartParameter(this, FACTOR,ParameterType.DOUBLE, 3, 0, 5, 0);
 		this.parameters.add(paramF);
 
 	}
@@ -105,14 +105,27 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		ab[0]=((RealVariable)result.get(0).getVariable(0)).getValue();
 		ab[1]=((RealVariable)result.get(0).getVariable(1)).getValue();
 		
-		//System.out.println("Opt a="+ab[0]);
-		//System.out.println("Opt b="+ab[1]);
 		
+		//Gradient Optimization
+		System.out.println("Stating gradient optimization");
+		double[] variables=this.calculateStartVariables(times, prices);
+		TrendLineFunction func=new TrendLineFunction(variables, times, prices, factor);
+		func.setDownwardTrend();
+		GradientOptimizer optimizer=new GradientOptimizer(0.0001, 0.00025, func);
+		optimizer.optimize();
+		//double[] newVariables=optimizer.getFunc().getVariables();
+		
+		System.out.println("Opt a="+ab[0]);
+		System.out.println("Opt b="+ab[1]);
+		double[] copy=Arrays.copyOf(func.getVariables(), func.getVariables().length);
+		func.setVariables(ab);
+		System.out.println("Value after other opt="+func.calculate());
+		//func.setVariables(ab);
+		//func.setVariables(ab);
 		//calculateTrendLineParameters(times, prices);
 		
 		//double[] YValues=calculateYValues(Etimes, Eprices, ab);
-		double[] YValues=calculateYValues(times, prices, ab);
-		
+		double[] YValues=calculateYValues(times, prices, copy);
 		
 		this.getChartSerie(DTL).setPointValues(times,YValues);
 		this.getChartSerie(DTL).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
@@ -121,6 +134,24 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		
 	}
 
+	private double[] calculateStartVariables(long[] times,double[] prices){
+		double[] variables=new double[2];
+		
+		if(prices.length<2)return variables;
+		
+		double startValue=prices[0];
+		double endValue=prices[prices.length-1];
+		
+		long startTime=times[0];
+		long endTime=times[times.length-1];
+		
+		variables[0]=(startValue-endValue)/(startTime-endTime);
+		//b=startValue-a*startTime;
+		variables[1]=startValue;
+		
+		return variables;
+	}
+	
 	private double[] calculateTrendLineParameters(long[] times,double[] prices){
 		double[] ab=new double[2];
 		
@@ -265,7 +296,7 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 					F+=abs_quad;
 				}
 				else{
-					F+=factor*abs_quad;
+					F+=Math.pow(10, factor)*abs_quad;
 				}
 			}
 			
