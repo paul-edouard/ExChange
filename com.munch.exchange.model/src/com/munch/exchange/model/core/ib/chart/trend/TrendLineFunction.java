@@ -43,7 +43,8 @@ public class TrendLineFunction extends DerivableFunction{
 				F+=abs_quad;
 			}
 			else{
-				F+=powFac*abs_quad;
+				//F+=powFac*abs_quad;
+				F+=abs_quad;
 			}
 		}
 		
@@ -68,8 +69,10 @@ public class TrendLineFunction extends DerivableFunction{
 				gradients[1]+=2*sign*abs;
 			}
 			else{
-				gradients[0]+=2*sign*diffTime*abs*powFac;
-				gradients[1]+=2*sign*abs*powFac;
+				//gradients[0]+=2*sign*diffTime*abs*powFac;
+				//gradients[1]+=2*sign*abs*powFac;
+				gradients[0]+=2*sign*diffTime*abs;
+				gradients[1]+=2*sign*abs;
 			}
 		}
 		

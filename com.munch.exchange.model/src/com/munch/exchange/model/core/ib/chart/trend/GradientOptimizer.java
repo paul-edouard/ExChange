@@ -27,7 +27,7 @@ public class GradientOptimizer {
 	
 	private double minChanges=0.001;
 	
-	private int maxIterartions=1000;
+	private int maxIterartions=10000;
 
 	public GradientOptimizer(double learningRate, double momentum,
 			DerivableFunction func) {
