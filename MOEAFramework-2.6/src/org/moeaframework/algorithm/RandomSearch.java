@@ -32,7 +32,7 @@ public class RandomSearch extends AbstractAlgorithm {
 	/**
 	 * The initialization routine used to generate random solutions.
 	 */
-	private final Initialization generator;
+	private Initialization generator;
 	
 	/**
 	 * The archive of non-dominated solutions.
@@ -53,6 +53,12 @@ public class RandomSearch extends AbstractAlgorithm {
 		this.generator = generator;
 		this.archive = archive;
 	}
+	
+	public void setGenerator(Initialization generator) {
+		this.generator = generator;
+	}
+
+
 
 	@Override
 	public NondominatedPopulation getResult() {

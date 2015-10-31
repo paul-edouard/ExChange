@@ -255,7 +255,7 @@ public class MOEAD extends AbstractAlgorithm {
 	/**
 	 * The initialization operator.
 	 */
-	private final Initialization initialization;
+	private Initialization initialization;
 
 	/**
 	 * The variation operator.
@@ -370,6 +370,12 @@ public class MOEAD extends AbstractAlgorithm {
 		this(problem, neighborhoodSize, weightGenerator, initialization,
 				variation, delta, eta, -1);
 	}
+	
+	
+	public void setInitialization(Initialization initialization) {
+		this.initialization = initialization;
+	}
+	
 
 	@Override
 	public void initialize() {

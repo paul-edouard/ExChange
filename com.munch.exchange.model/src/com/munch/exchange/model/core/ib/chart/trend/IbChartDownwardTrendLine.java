@@ -1,37 +1,17 @@
 package com.munch.exchange.model.core.ib.chart.trend;
 
-import java.util.Arrays;
-import java.util.LinkedList;
+
 import java.util.List;
-import java.util.Properties;
-import java.util.ServiceConfigurationError;
 
 import javax.persistence.Entity;
 
 import org.moeaframework.Executor;
-import org.moeaframework.algorithm.NSGAII;
-import org.moeaframework.core.Algorithm;
-import org.moeaframework.core.FrameworkException;
-import org.moeaframework.core.Initialization;
 import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.NondominatedSortingPopulation;
-import org.moeaframework.core.Problem;
 import org.moeaframework.core.Solution;
-import org.moeaframework.core.Variation;
-import org.moeaframework.core.comparator.ChainedComparator;
-import org.moeaframework.core.comparator.CrowdingComparator;
-import org.moeaframework.core.comparator.ParetoDominanceComparator;
-import org.moeaframework.core.operator.InjectedInitialization;
-import org.moeaframework.core.operator.RandomInitialization;
-import org.moeaframework.core.operator.TournamentSelection;
 import org.moeaframework.core.spi.AlgorithmFactory;
-import org.moeaframework.core.spi.AlgorithmProvider;
-import org.moeaframework.core.spi.OperatorFactory;
-import org.moeaframework.core.spi.ProviderNotFoundException;
 import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.RealVariable;
 import org.moeaframework.problem.AbstractProblem;
-import org.moeaframework.util.TypedProperties;
 
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
@@ -41,6 +21,7 @@ import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter.ParameterType;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
+import com.munch.exchange.model.core.moea.InjectedSolutionsAlgorithmFactory;
 
 @Entity
 public class IbChartDownwardTrendLine extends IbChartIndicator {
@@ -91,7 +72,7 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		this.parameters.add(paramO);
 		
 		//Factor
-		IbChartParameter paramF=new IbChartParameter(this, FACTOR,ParameterType.DOUBLE, 3, 0, 5, 0);
+		IbChartParameter paramF=new IbChartParameter(this, FACTOR,ParameterType.DOUBLE, 3, 0, 5, 1);
 		this.parameters.add(paramF);
 
 	}
@@ -120,7 +101,7 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		.withProblemClass(DownwardTrendLineProblem.class, times,prices,factor)
 		.withAlgorithm("NSGAII")
 		.usingAlgorithmFactory(factory)
-		.withMaxEvaluations(100000)
+		.withMaxEvaluations(10000)
 		.distributeOnAllCores()
 		.run();
 		
@@ -130,25 +111,6 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		ab[0]=((RealVariable)result.get(0).getVariable(0)).getValue();
 		ab[1]=((RealVariable)result.get(0).getVariable(1)).getValue();
 		
-		/*
-		//Gradient Optimization
-		System.out.println("Stating gradient optimization");
-		double[] variables=this.calculateStartVariables(times, prices);
-		TrendLineFunction func=new TrendLineFunction(variables, times, prices, factor);
-		func.setDownwardTrend();
-		GradientOptimizer optimizer=new GradientOptimizer(0.0001, 0.00025, func);
-		optimizer.optimize();
-		//double[] newVariables=optimizer.getFunc().getVariables();
-		
-		System.out.println("Opt a="+ab[0]);
-		System.out.println("Opt b="+ab[1]);
-		double[] copy=Arrays.copyOf(func.getVariables(), func.getVariables().length);
-		func.setVariables(ab);
-		System.out.println("Value after other opt="+func.calculate());
-		//func.setVariables(ab);
-		//func.setVariables(ab);
-		//calculateTrendLineParameters(times, prices);
-		*/
 		//double[] YValues=calculateYValues(Etimes, Eprices, ab);
 		double[] YValues=calculateYValues(times, prices, ab);
 		
@@ -163,6 +125,7 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		//double[] ab=this.calculateStartVariables(times, prices);
 		
 		DownwardTrendLineProblem problem=new DownwardTrendLineProblem(times, prices, factor);
+		
 		
 		Solution sol=new Solution(2, 1);
 		sol.setVariable(0, problem.createAVariable());
@@ -368,110 +331,6 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		
 	}
 	
-	public class InjectedSolutionsAlgorithms extends AlgorithmProvider{
-		
-		private List<Solution> injectedSolutions;
-		
-		public InjectedSolutionsAlgorithms(List<Solution> injectedSolutions){
-			this.injectedSolutions=injectedSolutions;
-		}
-		
-		public InjectedSolutionsAlgorithms(Solution injectedSolution){
-			this.injectedSolutions=new LinkedList<Solution>();
-			this.injectedSolutions.add(injectedSolution);
-		}
-		
-
-		@Override
-		public Algorithm getAlgorithm(String name, Properties properties,
-				Problem problem) {
-			TypedProperties typedProperties = new TypedProperties(properties);
-			try {
-				if (name.equalsIgnoreCase("NSGAII") ||
-						name.equalsIgnoreCase("NSGA-II") ||
-						name.equalsIgnoreCase("NSGA2")) {
-					return newNSGAII(typedProperties, problem);
-				} else {
-					return null;
-				}
-			} catch (FrameworkException e) {
-				throw new ProviderNotFoundException(name, e);
-			}
-		}
-		
-		/**
-		 * Returns a new {@link NSGAII} instance.
-		 * 
-		 * @param properties the properties for customizing the new {@code NSGAII}
-		 *        instance
-		 * @param problem the problem
-		 * @return a new {@code NSGAII} instance
-		 */
-		private Algorithm newNSGAII(TypedProperties properties, Problem problem) {
-			int populationSize = (int)properties.getDouble("populationSize", 100);
-
-			Initialization initialization = new InjectedInitialization(problem,
-					populationSize,this.injectedSolutions);
-			
-
-			NondominatedSortingPopulation population = 
-					new NondominatedSortingPopulation();
-
-			TournamentSelection selection = new TournamentSelection(2, 
-					new ChainedComparator(
-							new ParetoDominanceComparator(),
-							new CrowdingComparator()));
-
-			Variation variation = OperatorFactory.getInstance().getVariation(null, 
-					properties, problem);
-
-			return new NSGAII(problem, population, null, selection, variation,
-					initialization);
-		}
-		
-	}
 	
-	
-	public class InjectedSolutionsAlgorithmFactory extends AlgorithmFactory{
-		
-		private InjectedSolutionsAlgorithms injectedSolutionsAlgorithms;
-		
-		public InjectedSolutionsAlgorithmFactory(List<Solution> injectedSolutions){
-			injectedSolutionsAlgorithms=new InjectedSolutionsAlgorithms(injectedSolutions);
-		}
-		
-		public InjectedSolutionsAlgorithmFactory(Solution injectedSolution){
-			injectedSolutionsAlgorithms=new InjectedSolutionsAlgorithms(injectedSolution);
-		}
-
-		@Override
-		public synchronized Algorithm getAlgorithm(String name,
-				Properties properties, Problem problem) {
-			// TODO Auto-generated method stub
-			Algorithm algorithm = instantiateInjectedSolutionAlgorithm( name,
-					properties, problem);
-			
-			if (algorithm != null) {
-				return algorithm;
-			}
-			
-			
-			throw new ProviderNotFoundException(name);
-		}
-		
-		private Algorithm instantiateInjectedSolutionAlgorithm(
-				String name, Properties properties, Problem problem) {
-			try {
-				return injectedSolutionsAlgorithms.getAlgorithm(name, properties, problem);
-			} catch (ServiceConfigurationError e) {
-				System.err.println(e.getMessage());
-			}
-			
-			return null;
-		}
-		
-		
-		
-	}
 	
 }

@@ -54,7 +54,7 @@ public abstract class AbstractEvolutionaryAlgorithm extends AbstractAlgorithm
 	/**
 	 * The initialization operator.
 	 */
-	protected final Initialization initialization;
+	protected Initialization initialization;
 
 	/**
 	 * Constructs an abstract evolutionary algorithm.
@@ -72,6 +72,14 @@ public abstract class AbstractEvolutionaryAlgorithm extends AbstractAlgorithm
 		this.archive = archive;
 		this.initialization = initialization;
 	}
+	
+	
+
+	public void setInitialization(Initialization initialization) {
+		this.initialization = initialization;
+	}
+
+
 
 	@Override
 	public NondominatedPopulation getResult() {
