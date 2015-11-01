@@ -24,10 +24,11 @@ public class BeanRemote<T> {
 	
 	
 	
-	public static Context context=null;
+	public  Context context=null;
 	
 	private T instance=null;
 	private String beanName;
+	private String lookUpName;
 	
 	
 	public BeanRemote(String beanName,Class<?> viewClass) {
@@ -63,6 +64,11 @@ public class BeanRemote<T> {
 	
 	
 	public T getService() {
+		
+		//CloseContext();
+		//System.out.println("Search Service!!!");
+		//instance=reLookUp();
+		//System.out.println("Rellok up!");
 		return instance;
 	}
 
@@ -91,9 +97,12 @@ public class BeanRemote<T> {
 	public T doLookUp(String beanName,Class<?> viewClass){
 		
 		String viewClassName = viewClass.getName();
+		
+		lookUpName=APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME + "/" + beanName + "!" + viewClassName;
+		
 		//System.out.println(viewClassName);
 		try {
-			return (T)  getJndiContext().lookup( APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME + "/" + beanName + "!" + viewClassName);
+			return (T)  getJndiContext().lookup( lookUpName);
 		} catch (NamingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -102,8 +111,30 @@ public class BeanRemote<T> {
 		
 	}
 	
+	@SuppressWarnings("unchecked")
+	public T reLookUp(){
+		try {
+			return (T)  getJndiContext().lookup( lookUpName);
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
-	public static Context getJndiContext() throws NamingException {
+	public void CloseContext() {
+		if(context==null)return;
+		try {
+			context.close();
+			context=null;
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public Context getJndiContext() throws NamingException {
 
 		if (context == null) {
 

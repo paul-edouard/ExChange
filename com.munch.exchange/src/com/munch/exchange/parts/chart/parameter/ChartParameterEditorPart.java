@@ -135,6 +135,7 @@ public class ChartParameterEditorPart {
 					ibChartIndicator.resetDefault();
 					for(IbChartParameterComposite p:ibParameterComposites)
 						p.refresh();
+					//ibChartIndicator.fireParametersChanged();
 					eventBroker.post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED, ibChartIndicator);
 				}
 			}
@@ -156,7 +157,7 @@ public class ChartParameterEditorPart {
 	//################################
   	//##       Event Reaction       ##
   	//################################
-	 private boolean isCompositeAbleToReact(){
+	private boolean isCompositeAbleToReact(){
 			if (shell.isDisposed())
 				return false;
 			
@@ -170,9 +171,8 @@ public class ChartParameterEditorPart {
 			return true;
 	}
 	
-	 
 	 @Inject
-	 public void activationChanged(@Optional  @UIEventTopic(IEventConstant.CHART_INDICATOR_ACTIVATION_CHANGED) ChartIndicator selIndic){
+	public void activationChanged(@Optional  @UIEventTopic(IEventConstant.CHART_INDICATOR_ACTIVATION_CHANGED) ChartIndicator selIndic){
 		 if(chartIndicator!=selIndic)return;
 		 
 		 if(!isCompositeAbleToReact())return;
@@ -180,8 +180,6 @@ public class ChartParameterEditorPart {
 		 for(ChartParameterComposite p:parameterComposites)
 			 p.getSlider().setEnabled(chartIndicator.isActivated());
 	 }
-	 
-	 
 	 
 	@Inject
 	public void analyseSelection( @Optional  @UIEventTopic(IEventConstant.CHART_INDICATOR_SELECTED) ChartIndicator selIndic){
@@ -199,7 +197,6 @@ public class ChartParameterEditorPart {
 	    		update();
 	    }
 	}
-	
 	
 	@Inject
 	public void analyseIbSelection( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_SELECTED) IbChartIndicator selIndic){
@@ -219,7 +216,7 @@ public class ChartParameterEditorPart {
 	}
 	
 	 @Inject
-	 public void activationIbChanged(@Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED) IbChartIndicator selIndic){
+	public void activationIbChanged(@Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED) IbChartIndicator selIndic){
 		 if(ibChartIndicator!=selIndic)return;
 		 
 		 if(!isCompositeAbleToReact())return;
@@ -227,8 +224,6 @@ public class ChartParameterEditorPart {
 		 for(IbChartParameterComposite p:ibParameterComposites)
 			 p.getSlider().setEnabled(ibChartIndicator.isActivated());
 	 }
-	
-	
 	
 	
 }

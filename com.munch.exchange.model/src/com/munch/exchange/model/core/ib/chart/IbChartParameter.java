@@ -14,10 +14,11 @@ import javax.persistence.ManyToOne;
 
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
+import com.munch.exchange.model.core.ib.Copyable;
 
 
 @Entity
-public class IbChartParameter implements Serializable{
+public class IbChartParameter implements Serializable,Copyable<IbChartParameter>{
 	
 	/**
 	 * 
@@ -61,6 +62,23 @@ public class IbChartParameter implements Serializable{
 		this.parent=parent;
 		
 		this.scalarFactor=scalarFac;
+	}
+	
+	@Override
+	public IbChartParameter copy() {
+		IbChartParameter c=new IbChartParameter();
+		
+		c.id=this.id;
+		
+		c.type=this.type;
+		c.name=this.name;
+		c.currentValue=this.currentValue;
+		c.defaultValue=this.defaultValue;
+		c._minValue=this._minValue;
+		c._maxValue=this._maxValue;
+		c.scalarFactor=this.scalarFactor;
+	
+		return c;
 	}
 	
 	public void resetDefault(){
@@ -143,6 +161,19 @@ public class IbChartParameter implements Serializable{
 	public void setIndicator(IbChartIndicator indicator) {
 		this.parent = indicator;
 	}
+
+
+	public IbChartIndicator getParent() {
+		return parent;
+	}
+
+
+	public void setParent(IbChartIndicator parent) {
+		this.parent = parent;
+	}
+
+
+	
 	
 	
 	

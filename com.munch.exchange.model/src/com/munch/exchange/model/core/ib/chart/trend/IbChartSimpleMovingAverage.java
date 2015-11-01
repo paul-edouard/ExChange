@@ -37,6 +37,15 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 	}
 	
 	@Override
+	public IbChartIndicator copy() {
+		IbChartIndicator c=new IbChartSimpleMovingAverage();
+		c.copyData(this);
+		return c;
+	}
+	
+	
+	
+	@Override
 	public void initName() {
 		this.name="Simple Moving Average";
 	}
@@ -83,5 +92,6 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 		// TODO Auto-generated method stub
 		
 	}
+
 
 }

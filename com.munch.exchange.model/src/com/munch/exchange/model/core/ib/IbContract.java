@@ -1,20 +1,17 @@
 package com.munch.exchange.model.core.ib;
 
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
 import javax.persistence.CascadeType;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
@@ -27,13 +24,12 @@ import com.ib.controller.Types.Right;
 import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
 import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 
 
 @Entity
 @NamedQuery(name="IbContract.getAll",query="SELECT s FROM IbContract s")
-public class IbContract implements Serializable{
+public class IbContract implements Serializable,Copyable<IbContract>{
 
 	/**
 	 * 
@@ -173,10 +169,6 @@ public class IbContract implements Serializable{
 		nextOptionPartial =newContractDetails.nextOptionPartial();
 		notes=newContractDetails.notes();
 		
-		/*
-		coucou me revoila enfin sur Facebook. Ici il fait persque 40 degre et il n'y a personne dehors! On a installe une petite piscine pour Luisa sur le balcon. Je crois que c'est vraiment la seule qui se rejouit de cette chaleur. Et chez vous ca va un peu mieux au Luxembourg?
-				Tu as dit que tu avais fini tes
-		*/
 		
 	}
 	
@@ -214,6 +206,82 @@ public class IbContract implements Serializable{
 		//Missing Delta, ComboLegs
 		return n_contract;
 		
+	}
+	
+	
+	@Override
+	public IbContract copy() {
+		IbContract c=new IbContract();
+		
+		c.id=this.id;
+		
+		
+		
+		c.conId=this.conId;
+		c.symbol=this.symbol;
+		
+		c.secType=this.secType;
+		c.expiry=this.expiry;
+		c.strike=this.strike;
+		
+		c.m_right=this.m_right;
+		c.multiplier=this.multiplier;
+		c.exchange=this.exchange;
+		
+		c.currency=this.currency;
+		c.localSymbol=this.localSymbol;
+		c.tradingClass=this.tradingClass;
+		c.primaryExch=this.primaryExch;
+		
+		c.secIdType=this.secIdType;
+		c.secId=this.secId;
+		
+		///////////////////////////////
+		//From NewContract Details
+		//////////////////////////////
+		
+		c.marketName=this.marketName;
+		c.minTick=this.minTick;
+		c.priceMagnifier=this.priceMagnifier;
+		
+		c.orderTypes=this.orderTypes;
+		c.validExchanges=this.validExchanges;
+		c.underConid=this.underConid;
+		c.longName=this.longName;
+		c.contractMonth=this.contractMonth;
+		c.industry=this.industry;
+		c.category=this.category;
+		c.subcategory=this.subcategory;
+		c.timeZoneId=this.timeZoneId;
+		c.tradingHours=this.tradingHours;
+		c.liquidHours=this.liquidHours;
+		c.evRule=this.evRule;
+		c.evMultiplier=this.evMultiplier;
+		
+		c.secIdList=new LinkedList<IbTagValue>();
+		for(IbTagValue ibTagValue:this.secIdList){
+			IbTagValue v_c=ibTagValue.copy();
+			v_c.setOwner(c);
+			c.secIdList.add(v_c);
+		}
+		
+		c.cusip=this.cusip;
+		c.ratings=this.ratings;
+		c.descAppend=this.descAppend;
+		c.bondType=this.bondType;
+		c.couponType=this.couponType;
+		c.callable=this.callable;
+		c.putable=this.putable;
+		c.coupon=this.coupon;
+		c.convertible=this.convertible;
+		c.maturity=this.maturity;
+		c.issueDate=this.issueDate;
+		c.nextOptionDate=this.nextOptionDate;
+		c.nextOptionType=this.nextOptionType;
+		c.nextOptionPartial=this.nextOptionPartial;
+		c.notes=this.notes;
+		
+		return c;
 	}
 	
 	
@@ -673,6 +741,8 @@ public class IbContract implements Serializable{
 		return Allbars;
 		
 	}
+
+	
 	
 	
 	

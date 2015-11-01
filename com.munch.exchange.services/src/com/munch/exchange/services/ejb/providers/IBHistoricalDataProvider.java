@@ -41,7 +41,9 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 	@Override
 	public List<IbBar> getAllBars(IbBarContainer exContractBars,
 			BarSize size) {
-		return beanRemote.getService().getAllBars(exContractBars,size);
+		List<IbBar> bars=beanRemote.getService().getAllBars(exContractBars,size);
+		//beanRemote.CloseContext();
+		return bars;
 	}
 
 	@Override
@@ -66,7 +68,11 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 	@Override
 	public List<IbBar> getBarsFromTo(IbBarContainer exContractBars,
 			BarSize size, long from, long to) {
-		return beanRemote.getService().getBarsFromTo(exContractBars,size,from,to);
+		//return beanRemote.getService().getBarsFromTo(exContractBars,size,from,to);
+		//beanRemote.CloseContext();
+		List<IbBar> bars=beanRemote.getService().getBarsFromTo(exContractBars,size,from,to);
+		//beanRemote.CloseContext();
+		return bars;
 	}
 
 	@Override

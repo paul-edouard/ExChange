@@ -1,5 +1,6 @@
 package com.munch.exchange.model.core.ib.chart.trend;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -7,6 +8,7 @@ import javax.persistence.Entity;
 import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Solution;
+import org.moeaframework.core.spi.AlgorithmFactory;
 import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.RealVariable;
 import org.moeaframework.problem.AbstractProblem;
@@ -19,7 +21,7 @@ import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter.ParameterType;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
-import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine.DownwardTrendLineProblem;
+import com.munch.exchange.model.core.moea.InjectedSolutionsAlgorithmFactory;
 
 @Entity
 public class IbChartUpwardTrendLine extends IbChartIndicator {
@@ -41,6 +43,13 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 	
 	public IbChartUpwardTrendLine(IbChartIndicatorGroup group) {
 		super(group);
+	}
+	
+	@Override
+	public IbChartIndicator copy() {
+		IbChartIndicator c=new IbChartUpwardTrendLine();
+		c.copyData(this);
+		return c;
 	}
 	
 
@@ -71,7 +80,7 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 		this.parameters.add(paramO);
 				
 		//Factor
-		IbChartParameter paramF=new IbChartParameter(this, FACTOR,ParameterType.DOUBLE, 1000, 10, 5000, 0);
+		IbChartParameter paramF=new IbChartParameter(this, FACTOR,ParameterType.DOUBLE, 3, 0, 5, 1);
 		this.parameters.add(paramF);
 
 	}
@@ -93,9 +102,14 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 			times[i]=Etimes[i];
 		}
 		
+		TrendLineProblem problem=new TrendLineProblem(times, prices, factor);
+		AlgorithmFactory factory=new InjectedSolutionsAlgorithmFactory(problem.newStartSolutions());
+		
+		
 		NondominatedPopulation result = new Executor()
-		.withProblemClass(UpwardTrendLineProblem.class, times,prices,factor)
+		.withProblemClass(TrendLineProblem.class, times,prices,factor,1.0)
 		.withAlgorithm("NSGAII")
+		.usingAlgorithmFactory(factory)
 		.withMaxEvaluations(10000)
 		.distributeOnAllCores()
 		.run();
@@ -104,6 +118,7 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 		ab[0]=((RealVariable)result.get(0).getVariable(0)).getValue();
 		ab[1]=((RealVariable)result.get(0).getVariable(1)).getValue();
 		
+		System.out.println("Opt values: "+Arrays.toString(ab));
 		double[] YValues=calculateYValues(times, prices, ab);
 		
 		
@@ -134,134 +149,10 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 		// TODO Auto-generated method stub
 
 	}
+
 	
-	public static class UpwardTrendLineProblem extends AbstractProblem {
-		
-		
-		private double a_min;
-		private double a_max;
-		private double a;
-		
-		private double b_min;
-		private double b_max;
-		private double b;
-		
-		private double[] prices;
-		private long[] times;
-		
-		//private double k1=10;
-		private double factor;
-		
-		
-		//List<IbBar> bars;
-		
-
-		public UpwardTrendLineProblem(long[] times,double[] prices,double factor) {
-			super(2, 1);
-			this.prices=prices;
-			this.times=times;
-			this.factor=factor;
-			
-			calculateABMinMaxValues();
-			
-		}
-		
-		
-		private void calculateABMinMaxValues(){
-			
-			
-			if(prices.length<2)return ;
-			
-			double startValue=prices[0];
-			double endValue=prices[prices.length-1];
-			
-			long startTime=times[0];
-			long endTime=times[times.length-1];
-			
-			a=(startValue-endValue)/(startTime-endTime);
-			//b=startValue-a*startTime;
-			b=startValue;
-			
-			
-			double min=Double.MAX_VALUE;
-			double max=Double.MIN_VALUE;
-			long time_min=0;
-			long time_max=0;
-			
-			
-			for(int i=0;i<prices.length;i++){
-				if(prices[i]>max){
-					max=prices[i];
-					time_max=times[i];
-				}
-				if(prices[i]<min){
-					min=prices[i];
-					time_min=times[i];
-				}
-			}
-			
-			//double a_x=(max-min)/(time_max-time_min);
-			double a_x=(max-min)/(times[1]-times[0]);
-			//double b_x=max-a_x*(time_max-startTime);
-			
-			double a_diff=Math.abs(a_x-a);
-			//double b_diff=Math.abs(b_x-b);max-min
-			double b_diff=Math.abs(max-min)*2;
-			
-			a_min=a-a_diff;
-			a_max=a+a_diff;
-			
-			b_min=b-b_diff;
-			b_max=b+b_diff;
-			
-			System.out.println("a="+a+", a_min="+a_min+", a_max="+a_max);
-			System.out.println("b="+b+", b_min="+b_min+", b_max="+b_max);
-			
-		}
-		
-
-		@Override
-		public void evaluate(Solution solution) {
-			double[] ab = EncodingUtils.getReal(solution);
-			double F = 0;
-			
-			a=ab[0];b=ab[1];
-			
-			for(int i=0;i<prices.length;i++){
-				double y=a*(times[i]-times[0])+b;
-				
-				double abs=-(y-prices[i]);
-				double abs_quad=abs*abs;
-				
-				if(abs>0){
-					F+=abs_quad;
-				}
-				else{
-					F+=factor*abs_quad;
-				}
-			}
-			
-			//System.out.println("F="+F);
-			
-			double[] f = new double[numberOfObjectives];
-			f[0]=F;
-			solution.setObjectives(f);
-			
-		}
-
-		@Override
-		public Solution newSolution() {
-			Solution solution = new Solution(getNumberOfVariables(), 
-					getNumberOfObjectives());
-			
-			solution.setVariable(0, new RealVariable(a_min, a_max));
-			solution.setVariable(1, new RealVariable(b_min, b_max));
-			
-			return solution;
-			
-		}
-		
-	}
+	
+	
 	
 	
 

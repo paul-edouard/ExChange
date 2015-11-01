@@ -11,9 +11,6 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-
-
-
 import javax.persistence.TypedQuery;
 
 import com.ib.controller.Bar;
@@ -21,14 +18,9 @@ import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
-import com.munch.exchange.model.core.ib.bar.IbDayBar;
-import com.munch.exchange.model.core.ib.bar.IbHourBar;
-import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
-import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorFactory;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
-import com.munch.exchange.model.jpa.entity.Student;
 import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataLoaders.BarLoader;
 import com.munch.exchange.services.ejb.interfaces.HistoricalDataBeanRemote;
 
@@ -84,6 +76,13 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 			loadChildGroup(rootGroup);
 			
 		}
+		
+		/*
+		List<IbBarContainer> contractBarsCopies=new LinkedList<IbBarContainer>();
+		for(IbBarContainer container:contractBars){
+			contractBarsCopies.add(container.copy());
+		}
+		*/
 		
 		return contractBars;
 	}

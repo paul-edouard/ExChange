@@ -77,6 +77,7 @@ public class ChartTreeColorEditingSupport extends EditingSupport {
 			serie.setColor_R(color.red);
 			serie.setColor_G(color.green);
 			serie.setColor_B(color.blue);
+			//serie.fireColorChanged();
 			part.getEventBroker().post(IEventConstant.IB_CHART_SERIE_COLOR_CHANGED, serie);
 		}
 		

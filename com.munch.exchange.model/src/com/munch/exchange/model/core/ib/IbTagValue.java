@@ -13,7 +13,7 @@ import javax.persistence.ManyToOne;
 import com.ib.client.TagValue;
 
 @Entity
-public class IbTagValue implements Serializable {
+public class IbTagValue implements Serializable,Copyable<IbTagValue> {
 	
 	
 	/**
@@ -49,6 +49,18 @@ public class IbTagValue implements Serializable {
 		super();
 		this.tag = tagValue.m_tag;
 		this.value = tagValue.m_value;
+	}
+	
+	@Override
+	public IbTagValue copy() {
+		IbTagValue c=new IbTagValue();
+		
+		c.id=this.id;
+		c.tag=this.tag;
+		c.value=this.value;
+		//c.owner=this.owner;
+		
+		return null;
 	}
 	
 	
@@ -98,6 +110,16 @@ public class IbTagValue implements Serializable {
 		return "ExTagValue [id=" + id + ", tag=" + tag + ", value=" + value
 				+ "]";
 	}
+
+	public IbContract getOwner() {
+		return owner;
+	}
+
+	public void setOwner(IbContract owner) {
+		this.owner = owner;
+	}
+
+	
 	
 	
 	

@@ -90,11 +90,13 @@ public class ChartTreeActivatedEditingSupport extends EditingSupport {
 		else if(element instanceof IbChartSerie){
 			IbChartSerie el=(IbChartSerie) element;
 			el.setActivated((Boolean) value);
+			//el.fireActivationChanged();
 			part.getEventBroker().post(IEventConstant.IB_CHART_SERIE_ACTIVATION_CHANGED, el);
 		}
 		else if(element instanceof IbChartIndicator){
 			IbChartIndicator el=(IbChartIndicator) element;
 			el.setActivated((Boolean) value);
+			//el.fireActivationChanged();
 			part.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED, el);
 		}
 		

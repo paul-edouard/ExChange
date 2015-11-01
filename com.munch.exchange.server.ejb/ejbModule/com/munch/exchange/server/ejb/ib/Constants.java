@@ -4,7 +4,7 @@ public class Constants {
 	
 	//Interactive Broker Connection
 	public static final String 	IB_CONNECTION_HOST="127.0.0.1";
-	public static final int 	IB_CONNECTION_PORT=7497;
+	public static final int 	IB_CONNECTION_PORT=7496;
 	public static final int 	IB_CONNECTION_ID=1;
 	
 	

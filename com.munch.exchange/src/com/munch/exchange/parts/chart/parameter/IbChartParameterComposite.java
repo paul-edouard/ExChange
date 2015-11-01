@@ -56,6 +56,7 @@ public class IbChartParameterComposite {
 			public void widgetSelected(SelectionEvent e) {
 				parameter.setValue((((double)slider.getSelection())/Math.pow(10, parameter.getScalarFactor())));
 				valueLabel.setText(getStringValue());
+				//parameter.getIndicator().fireParametersChanged();
 				parent.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED, parameter.getIndicator());
 				
 			}
@@ -83,8 +84,7 @@ public class IbChartParameterComposite {
 		if(value>=parameter.getMinValue() && value<=parameter.getMaxValue()){
 			parameter.setValue(value);
 			refresh();
-			//System.out.println("Set value");
-			//parent.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED, parameter.getIndicator());
+			//System.out.println("Set value: "+parameter.getIndicator());
 		}
 	}
 	
@@ -110,7 +110,7 @@ public class IbChartParameterComposite {
 		switch (parameter.getType()) {
 		case INTEGER:
 			String val_str=String.valueOf((int) parameter.getValue());
-			String max_str=String.valueOf((int) parameter.getMaxValue());
+			//String max_str=String.valueOf((int) parameter.getMaxValue());
 			//while(val_str.length()<=max_str.length())
 			//	val_str="_"+val_str;
 			return val_str;

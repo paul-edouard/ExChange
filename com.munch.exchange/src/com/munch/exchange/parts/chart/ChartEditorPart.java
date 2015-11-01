@@ -7,18 +7,14 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.inject.Inject;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
-import org.eclipse.swt.widgets.Composite;
-
-import javax.annotation.PreDestroy;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -31,81 +27,55 @@ import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
-
-import com.ib.controller.Types.BarSize;
-import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.ExchangeChartComposite;
-import com.munch.exchange.IEventConstant;
-import com.munch.exchange.model.core.Indice;
-import com.munch.exchange.model.core.Stock;
-import com.munch.exchange.model.core.chart.ChartIndicator;
-import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
-import com.munch.exchange.model.core.chart.ChartSerie;
-import com.munch.exchange.model.core.historical.HistoricalPoint;
-import com.munch.exchange.model.core.historical.HistoricalPoint.Type;
-import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
-import com.munch.exchange.model.core.ib.bar.IbBarRecorder;
-import com.munch.exchange.model.core.ib.bar.IbBarRecorderListener;
-import com.munch.exchange.model.core.ib.bar.IbHourBar;
-import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
-import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
-import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
-import com.munch.exchange.model.core.ib.chart.IbChartParameter;
-import com.munch.exchange.model.core.ib.chart.IbChartPoint;
-import com.munch.exchange.model.core.ib.chart.IbChartSerie;
-import com.munch.exchange.parts.RateEditorPart;
-import com.munch.exchange.parts.chart.parameter.ChartParameterEditorPart;
-import com.munch.exchange.parts.chart.tree.ChartTreeEditorPart;
-import com.munch.exchange.services.IBundleResourceLoader;
-import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
-import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarListener;
-import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarProvider;
-import com.munch.exchange.services.ejb.providers.IBHistoricalDataProvider;
-
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
-import org.jfree.chart.axis.DateTickUnit;
 import org.jfree.chart.axis.DateTickUnitType;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.event.MarkerChangeEvent;
-import org.jfree.chart.event.MarkerChangeListener;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
-import org.jfree.chart.plot.Marker;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.ComparableObjectItem;
-import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.Second;
-import org.jfree.data.time.ohlc.OHLCItem;
 import org.jfree.data.time.ohlc.OHLCSeries;
 import org.jfree.data.time.ohlc.OHLCSeriesCollection;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeriesCollection;
-import org.jfree.experimental.chart.swt.ChartComposite;
 import org.jfree.ui.LengthAdjustmentType;
 import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.TextAnchor;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.ModifyEvent;
+
+import com.ib.controller.Types.BarSize;
+import com.ib.controller.Types.WhatToShow;
+import com.munch.exchange.ExchangeChartComposite;
+import com.munch.exchange.IEventConstant;
+import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.IbBarRecorder;
+import com.munch.exchange.model.core.ib.bar.IbBarRecorderListener;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.IbChartPoint;
+import com.munch.exchange.model.core.ib.chart.IbChartSerie;
+import com.munch.exchange.parts.chart.tree.ChartTreeEditorPart;
+import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarListener;
+import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarProvider;
 
 
 public class ChartEditorPart{
@@ -117,7 +87,7 @@ public class ChartEditorPart{
 	public static final String CANDLESTICK="Candlestick";
 	public static final String LIVE_CANDLESTICK="Live Candlestick";
 	
-	private static IbChartIndicatorGroup selectedGroup=null;
+	private IbChartIndicatorGroup selectedGroup=null;
 	
 	@Inject
 	IbContract contract;
@@ -268,18 +238,22 @@ public class ChartEditorPart{
 		
 		addRealTimeBarListener();
 		addBarRecorderListener();
-		dataUpdater.schedule();
+		
 		
 		openChartTreeEditor();
 		chartGroupSelected();
 		
+		dataUpdater.schedule();
 	}
 	
 	private void chartGroupSelected(){
 		IbBarContainer container=getCurrentContainer();
-		if(container!=null && selectedGroup!= container.getIndicatorGroup()){	
-			selectedGroup=container.getIndicatorGroup();
-			eventBroker.post(IEventConstant.IB_CHART_INDICATOR_GROUP_SELECTED, container.getIndicatorGroup());
+		if(container!=null &&
+				(selectedGroup==null || selectedGroup.getId()!= container.getIndicatorGroup().getId())){
+			if(selectedGroup!=null)
+				selectedGroup.removeAllListeners();
+			selectedGroup=container.getIndicatorGroup().copy();
+			eventBroker.post(IEventConstant.IB_CHART_INDICATOR_GROUP_SELECTED, selectedGroup);
 		}
 	}
 	
@@ -301,6 +275,9 @@ public class ChartEditorPart{
 	}
 	
 	private IbChartIndicatorGroup getCurrentIndicatorGroup(){
+		if(selectedGroup!=null)
+			return selectedGroup;
+		
 		return getCurrentContainer().getIndicatorGroup();
 	}
 	
@@ -647,7 +624,7 @@ public class ChartEditorPart{
 	}
     
     private void createSeries(){
-		for(IbChartSerie serie:searchSeriesToAdd(getCurrentContainer().getIndicatorGroup()))
+		for(IbChartSerie serie:searchSeriesToAdd(getCurrentIndicatorGroup()))
 			addSerie(serie);
 	}
     
@@ -864,25 +841,30 @@ public class ChartEditorPart{
 		
 		if(chart==null)return false;
 		
+		if(selectedGroup==null) return false;
+		
 		return true;
 	}
 	
 	@Inject
 	public void chartIndicatorActivationChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED) IbChartIndicator indicator){
-		//logger.info("chartIndicatorActivationChanged");
+		logger.info("chartIndicatorActivationChanged");
+		
+		
 	    if(!isCompositeAbleToReact())return;
 	    
-	    IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
+	    //IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
 	    //logger.info("Search the indicator");
-	    if(!indGroup.containsIndicator(indicator))return;
+	    if(!selectedGroup.containsIndicator(indicator))return;
 	    
-	    //logger.info("Test the activation");
+	    logger.info("Test the activation");
 	    if(indicator.isActivated()){
 	    	addAllSeriesOfIndicatior(indicator);
 	    }
 	    else{
 	    	clearAllSeriesOfIndicator(indicator);
 	    }
+	    
 	    
 	    //refreshSeries();
 	    
@@ -893,8 +875,8 @@ public class ChartEditorPart{
 		
 		if(!isCompositeAbleToReact())return;
 	    
-	    IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
-	    if(!indGroup.containsIndicator(indicator))return;
+	   // IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
+	    if(!selectedGroup.containsIndicator(indicator))return;
 	    
 	    if(!indicator.isActivated())return;
 	    
@@ -906,15 +888,13 @@ public class ChartEditorPart{
 	    
 	}
 
-	
-	
 	@Inject
 	public void chartSerieActivationChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_SERIE_ACTIVATION_CHANGED) IbChartSerie serie){
 		
 		if(!isCompositeAbleToReact())return;
 	    
-	    IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
-	    if(!indGroup.containsSerie(serie))return;
+	   // IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
+	    if(!selectedGroup.containsSerie(serie))return;
 	    
 	    if(serie.isActivated()){
 	    	this.addSerie(serie);
@@ -931,13 +911,12 @@ public class ChartEditorPart{
 		
 		if(!isCompositeAbleToReact())return;
 	    
-	    IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
-	    if(!indGroup.containsSerie(serie))return;
+	    //IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
+	    if(!selectedGroup.containsSerie(serie))return;
 	    
 	    resetChartSerieColor(serie);
 	}
 	
-    
     
 	@PreDestroy
 	public void preDestroy() {
@@ -1225,9 +1204,11 @@ public class ChartEditorPart{
 			if(diff<loadingSize/4)
 				loadPastValues=true;
 		}
-
+		
 		@Override
 		public IStatus run(IProgressMonitor monitor) {
+			
+			//selectedGroup.removeAllListeners();
 			
 			if(barRecorder.isEmpty()){
 				long intervall=IbBar.getIntervallInSec(barRecorder.getBarSize());
@@ -1236,8 +1217,8 @@ public class ChartEditorPart{
 				
 				List<IbBar> bars=hisDataProvider.getBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
 				List<IbBar> newBars=hisDataProvider.downloadLastBars(getBarContainer(),barRecorder.getBarSize());
-				//logger.info("Number of bars: "+bars.size());
-				//logger.info("Number of new bars: "+newBars.size());
+				logger.info("Number of bars: "+bars.size());
+				logger.info("Number of new bars: "+newBars.size());
 					
 				List<IbBar> toAdd=new LinkedList<IbBar>();
 				if(!bars.isEmpty() && !newBars.isEmpty()){
@@ -1255,23 +1236,24 @@ public class ChartEditorPart{
 				long intervall=IbBar.getIntervallInSec(barRecorder.getBarSize());
 				to=barRecorder.getFirstReceivedBar().getTime();
 				from=to-loadingSize*intervall;
+				logger.info("Ask historical data: ");
+				//hisDataProvider.init();
 				List<IbBar> bars=hisDataProvider.getBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
 				
 				if(bars.size()==0){
 					pastValueAvailable=false;
+					//selectedGroup.addListener(indicatorGroupListener);
 					return Status.OK_STATUS;
 				}
 				barRecorder.addBars(bars);
 				loadPastValues=false;
 			}
 			
+			//selectedGroup.addListener(indicatorGroupListener);
 			return Status.OK_STATUS;
 		}
 		
 	}
 	
-	
-	
-	
-	
+
 }

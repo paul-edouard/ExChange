@@ -12,6 +12,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import com.ib.controller.Types.WhatToShow;
+import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorFactory;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
@@ -20,7 +21,7 @@ import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 
 
 @Entity
-public class IbBarContainer extends IbBar {
+public class IbBarContainer extends IbBar implements Copyable<IbBarContainer>{
 	
 	/**
 	 * 
@@ -50,6 +51,18 @@ public class IbBarContainer extends IbBar {
 	public IbBarContainer() {
 		super();
 	}
+	
+	
+	@Override
+	public IbBarContainer copy() {
+		IbBarContainer c=new IbBarContainer();
+		c.copyData(this);
+		c.indicatorGroup=this.indicatorGroup.copy();
+		c.indicatorGroup.setContainer(c);
+		return c;
+	}
+	
+	
 	
 
 	public IbContract getContract() {
@@ -83,6 +96,8 @@ public class IbBarContainer extends IbBar {
 	public void setIndicatorGroup(IbChartIndicatorGroup indicatorGroup) {
 		this.indicatorGroup = indicatorGroup;
 	}
+
+	
 	
 	
 	

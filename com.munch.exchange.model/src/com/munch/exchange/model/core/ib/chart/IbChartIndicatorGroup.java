@@ -16,10 +16,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
+import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 
 @Entity
-public class IbChartIndicatorGroup implements Serializable{
+public class IbChartIndicatorGroup implements Serializable, Copyable<IbChartIndicatorGroup>{
 
 	/**
 	 * 
@@ -27,6 +28,8 @@ public class IbChartIndicatorGroup implements Serializable{
 	private static final long serialVersionUID = -6625769451330452530L;
 	public static final String ROOT="ROOT";
 	
+	@Transient
+	protected List<IbChartGroupChangeListener> listeners = new LinkedList<IbChartGroupChangeListener>();
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -64,6 +67,31 @@ public class IbChartIndicatorGroup implements Serializable{
 	}
 	
 	
+	public IbChartIndicatorGroup copy(){
+		IbChartIndicatorGroup group=new IbChartIndicatorGroup();
+		group.id=this.id;
+		group.name=this.name;
+		group.isDirty=this.isDirty;
+		group.container=this.container;
+		
+		group.children=new LinkedList<IbChartIndicatorGroup>();
+		for(IbChartIndicatorGroup child:this.children){
+			IbChartIndicatorGroup copyChild=child.copy();
+			copyChild.setParent(group);
+			group.children.add(copyChild);
+		}
+		
+		group.indicators=new LinkedList<IbChartIndicator>();
+		for(IbChartIndicator indicator:this.indicators){
+			//System.out.println("Copy Indicator: "+indicator.getName());
+			IbChartIndicator copyInd=indicator.copy();
+			copyInd.setGroup(group);
+			//group.indicators.add(copyInd);
+		}
+			
+		return group;
+	}
+	
 	public boolean containsIndicator(IbChartIndicator indicator){
 		for(IbChartIndicatorGroup child:children){
 			if(child.containsIndicator(indicator))return true;
@@ -84,6 +112,15 @@ public class IbChartIndicatorGroup implements Serializable{
 			if(ind.containsSerie(serie))return true;
 		}
 		return false;
+	}
+	
+	public IbChartIndicatorGroup getRoot(){
+		IbChartIndicatorGroup g=this;
+		while(!g.getName().equals(ROOT)){
+			g=g.getParent();
+		}
+		return g;
+		
 	}
 	
 
@@ -157,6 +194,50 @@ public class IbChartIndicatorGroup implements Serializable{
 	public void setContainer(IbBarContainer container) {
 		this.container = container;
 	}
-		
+	
+	//Listener
+	public void fireIndicatorActivationChanged(IbChartIndicator indicator){
+		for(IbChartGroupChangeListener l:this.listeners){
+			l.indicatorActivationChanged(indicator);
+		}
+	}
+	
+	public void fireIndicatorParameterChanged(IbChartIndicator indicator){
+		for(IbChartGroupChangeListener l:this.listeners){
+			l.indicatorParameterChanged(indicator);
+		}
+	}
+	
+	public void fireSerieActivationChanged(IbChartSerie serie){
+		for(IbChartGroupChangeListener l:this.listeners){
+			l.serieActivationChanged(serie);
+		}
+	}
+	
+	public void fireSerieColorChanged(IbChartSerie serie){
+		for(IbChartGroupChangeListener l:this.listeners){
+			l.serieColorChanged(serie);
+		}
+	}
+	
+	public void addListener(IbChartGroupChangeListener l) {
+		if(listeners==null)
+			listeners = new LinkedList<IbChartGroupChangeListener>();
+		listeners.add(l);
+	}
+
+	public void removeListener(IbChartGroupChangeListener l) {
+		if(listeners==null)
+			listeners = new LinkedList<IbChartGroupChangeListener>();
+		listeners.remove(l);
+	}
+	
+	public void removeAllListeners() {
+		if(listeners==null)
+			listeners = new LinkedList<IbChartGroupChangeListener>();
+		listeners.clear();
+	}
+	
+	
 	
 }

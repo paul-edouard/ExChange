@@ -15,10 +15,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
+import com.munch.exchange.model.core.ib.Copyable;
+
 
 
 @Entity
-public class IbChartSerie implements Serializable{
+public class IbChartSerie implements Serializable,Copyable<IbChartSerie>{
 
 	/**
 	 * 
@@ -73,6 +75,25 @@ public class IbChartSerie implements Serializable{
 		this.indicator=parent;
 	
 	}
+	
+	
+	@Override
+	public IbChartSerie copy() {
+		IbChartSerie c=new IbChartSerie();
+		
+		c.id=this.id;
+		
+		c.name=this.name;
+		c.isMain=this.isMain;
+		c.isActivated=this.isActivated;
+		c.color_R=this.color_R;
+		c.color_G=this.color_G;
+		c.color_B=this.color_B;
+		c.rendererType=this.rendererType;
+		
+		return c;
+	}
+	
 	
 	public void setPointValues(long[] times,double[] values){
 		if(values.length!=times.length)return;
@@ -131,6 +152,10 @@ public class IbChartSerie implements Serializable{
 	public void setActivated(boolean isActivated) {
 		this.isActivated = isActivated;
 	}
+	
+	public void fireActivationChanged(){
+		this.getIndicator().getGroup().getRoot().fireSerieActivationChanged(this);
+	}
 
 	public RendererType getRendererType() {
 		return rendererType;
@@ -179,6 +204,10 @@ public class IbChartSerie implements Serializable{
 	}
 	
 	
+	public void fireColorChanged(){
+		this.getIndicator().getGroup().getRoot().fireSerieColorChanged(this);
+	}
+
 	
 
 }

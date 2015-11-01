@@ -132,6 +132,7 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 		this.isCompleted=bar.isCompleted;
 	}
 	
+	
 	public void integrateData(IbBar bar){
 		//this.setTime( bar.time);
 		this.high = Math.max(bar.high, this.high);

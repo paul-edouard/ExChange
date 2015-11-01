@@ -20,13 +20,14 @@ import javax.persistence.Transient;
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
 import com.munch.exchange.model.core.chart.ChartParameter;
 import com.munch.exchange.model.core.chart.ChartSerie;
+import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
 
 @Entity
 @Inheritance
 @DiscriminatorColumn(name="CHART_TYPE")
-public abstract class IbChartIndicator implements Serializable{
+public abstract class IbChartIndicator implements Serializable,Copyable<IbChartIndicator>{
 	
 	/**
 	 * 
@@ -74,6 +75,28 @@ public abstract class IbChartIndicator implements Serializable{
 		
 	}
 	
+	public void copyData(IbChartIndicator in){
+		this.id=in.id;
+		this.name=in.name;
+		this.isActivated=in.isActivated;
+		this.isDirty=in.isDirty;
+		
+		parameters=new LinkedList<IbChartParameter>();
+		
+		for(IbChartParameter param:in.parameters){
+			IbChartParameter c_p=param.copy();
+			c_p.setParent(this);
+			parameters.add(c_p);
+		}
+		
+		series=new LinkedList<IbChartSerie>();
+		for(IbChartSerie serie:in.series){
+			IbChartSerie c_s=serie.copy();
+			c_s.setIndicator(this);
+			series.add(c_s);
+		}
+	}
+	
 	
 	public void resetDefault(){
 		for(IbChartParameter p:parameters){
@@ -114,6 +137,11 @@ public abstract class IbChartIndicator implements Serializable{
 
 	public void setActivated(boolean isActivated) {
 		this.isActivated = isActivated;
+		
+	}
+	
+	public void fireActivationChanged(){
+		this.getGroup().getRoot().fireIndicatorActivationChanged(this);
 	}
 
 
@@ -132,6 +160,10 @@ public abstract class IbChartIndicator implements Serializable{
 
 	public void setParameters(List<IbChartParameter> parameters) {
 		this.parameters = parameters;
+	}
+	
+	public void fireParametersChanged(){
+		this.getGroup().getRoot().fireIndicatorParameterChanged(this);
 	}
 
 
