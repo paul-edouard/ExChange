@@ -1,6 +1,10 @@
 package com.munch.exchange.model.core.ib.chart;
 
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
@@ -8,6 +12,7 @@ import com.munch.exchange.model.core.ib.chart.trend.IbChartUpwardTrendLine;
 
 public class IbChartIndicatorFactory {
 	
+	public static HashMap<IbChartIndicatorGroup, LinkedList<String>> parentChildrenMap=new HashMap<IbChartIndicatorGroup, LinkedList<String>>();
 	
 	public static IbChartIndicatorGroup createRoot(){
 		return new IbChartIndicatorGroup(null, IbChartIndicatorGroup.ROOT);
@@ -16,11 +21,14 @@ public class IbChartIndicatorFactory {
 	public static boolean updateRoot(IbChartIndicatorGroup root, IbBarContainer container){
 		if(!root.getName().equals(IbChartIndicatorGroup.ROOT))return false;
 		
+		parentChildrenMap.clear();
+		
 		//TREND
 		IbChartIndicatorGroup trend=searchOrCreateSubGroup(root,"Trend");
 		
 		IbChartIndicatorGroup movingAverage=searchOrCreateSubGroup(trend,"Moving Average");
 		addChartIndicator(movingAverage, IbChartSimpleMovingAverage.class);
+		
 		//addChartIndicator(movingAverage, new IbChartSimpleMovingAverage());
 		
 		//TREND LINE
@@ -28,10 +36,50 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(trendLine, IbChartDownwardTrendLine.class);
 		addChartIndicator(trendLine, IbChartUpwardTrendLine.class);
 		
+		cleanParents();
+		
 		return true;
 	}
 	
+	private static void addChildToParent(IbChartIndicatorGroup parent,String child){
+		if(!parentChildrenMap.containsKey(parent))
+			parentChildrenMap.put(parent, new LinkedList<String>());
+		parentChildrenMap.get(parent).add(child);
+	}
+	
+	private static void cleanParents(){
+		for(IbChartIndicatorGroup parent:parentChildrenMap.keySet()){
+			
+			//Clean the unused children
+			List<IbChartIndicatorGroup> childrenToDelete=new LinkedList<IbChartIndicatorGroup>();
+			for(IbChartIndicatorGroup child:parent.getChildren()){
+				if(parentChildrenMap.get(parent).contains(child.getName()))
+					continue;
+				childrenToDelete.add(child);
+			}
+			if(childrenToDelete.size()>0){
+				parent.getChildren().removeAll(childrenToDelete);
+				parent.setDirty(true);
+			}
+			
+			
+			//Clean the unused Indicators
+			List<IbChartIndicator> indicatorsToDelete=new LinkedList<IbChartIndicator>();
+			for(IbChartIndicator ind:parent.getIndicators()){
+				if(parentChildrenMap.get(parent).contains(ind.getName()))
+					continue;
+				indicatorsToDelete.add(ind);
+			}
+			if(childrenToDelete.size()>0){
+				parent.getIndicators().removeAll(indicatorsToDelete);
+				parent.setDirty(true);
+			}
+			
+		}
+	}
+	
 	private static IbChartIndicatorGroup searchOrCreateSubGroup(IbChartIndicatorGroup parent,String subGroupName){
+		addChildToParent(parent, subGroupName);
 		for(IbChartIndicatorGroup child:parent.getChildren()){
 			if(child.getName().equals(subGroupName))return child;
 		}
@@ -41,29 +89,21 @@ public class IbChartIndicatorFactory {
 	}
 	
 	private static void addChartIndicator(IbChartIndicatorGroup parent,Class<? extends IbChartIndicator> indClass){
-	//private static void addChartIndicator(IbChartIndicatorGroup parent,IbChartIndicator chartIndicator){
-		
-		/*
-		for(IbChartIndicator c_ind:parent.getIndicators()){
-			if(c_ind.getName().equals(chartIndicator.getName()))return ;
-		}
-		
-		parent.setDirty(true);
-		chartIndicator.setGroup(parent);
-		*/
-			
-		//Class<?> c = Class.forName("mypackage.MyClass");
 		
 		try {
-			//Constructor<?> cons = indClass.getConstructor(IbChartIndicatorGroup.class);
 			IbChartIndicator ind = (IbChartIndicator) indClass.newInstance();
 			
 			for(IbChartIndicator c_ind:parent.getIndicators()){
-				if(c_ind.getName().equals(ind.getName()))return ;
+				if(c_ind.getName().equals(ind.getName())){
+					compareAndCopyParametersAndSeries(c_ind, ind, parent);
+					return ;
+				}
 			}
 			
 			parent.setDirty(true);
 			ind.setGroup(parent);
+			
+			addChildToParent(parent, ind.getName());
 			
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
@@ -80,6 +120,100 @@ public class IbChartIndicatorFactory {
 		} 
 		
 	
+	}
+	
+	private static void compareAndCopyParametersAndSeries(IbChartIndicator old_ind,
+			IbChartIndicator new_ind,IbChartIndicatorGroup parent){
+		
+		//Clean not used parameters
+		LinkedList<IbChartParameter> parametersToDelete=new LinkedList<IbChartParameter>();
+		for(IbChartParameter oldParam:old_ind.parameters){
+			boolean paramFound=false;
+			for(IbChartParameter newParam:new_ind.parameters){
+				
+				//Try to find the corresponding parameter
+				if(newParam.getName().equals(oldParam.getName()) && 
+						newParam.getType()==oldParam.getType()){
+					
+					//Check the Max Value
+					if(newParam.getMaxValue()!=oldParam.getMaxValue()){
+						oldParam.setMaxValue(newParam.getMaxValue());
+						parent.setDirty(true);
+					}
+					
+					//Check the Min Value
+					if(newParam.getMinValue()!=oldParam.getMinValue()){
+						oldParam.setMinValue(newParam.getMinValue());
+						parent.setDirty(true);
+					}
+					
+					//Check the Default Value
+					if(newParam.getDefaultValue()!=oldParam.getDefaultValue()){
+						oldParam.setDefaultValue(newParam.getDefaultValue());
+						parent.setDirty(true);
+					}
+					
+					//Check the Factor
+					if(newParam.getScalarFactor()!=oldParam.getScalarFactor()){
+						oldParam.setScalarFactor(newParam.getScalarFactor());
+						parent.setDirty(true);
+					}
+					
+					//Check the Value
+					if(oldParam.getValue()<newParam.getMinValue() || oldParam.getValue()>newParam.getMaxValue()){
+						oldParam.setValue(newParam.getValue());
+						parent.setDirty(true);
+					}
+					
+					
+					paramFound=true;
+				}
+				
+				if(!paramFound)
+					parametersToDelete.add(oldParam);
+			}
+		}
+		if(parametersToDelete.size()>0){
+			old_ind.parameters.removeAll(parametersToDelete);
+			parent.setDirty(true);
+		}
+		
+		
+		
+		//Clean not used parameters
+		LinkedList<IbChartSerie> seriesToDelete=new LinkedList<IbChartSerie>();
+		for(IbChartSerie oldSerie:old_ind.series){
+			for(IbChartSerie newSerie:new_ind.series){
+				boolean serieFound=false;
+				if(oldSerie.getName().equals(newSerie.getName())){
+					
+					if(oldSerie.getValidAtPosition()!=newSerie.getValidAtPosition()){
+						oldSerie.setValidAtPosition(newSerie.getValidAtPosition());
+						parent.setDirty(true);
+					}
+					
+					if(oldSerie.getRendererType()!=newSerie.getRendererType()){
+						oldSerie.setRendererType(newSerie.getRendererType());
+						parent.setDirty(true);
+					}
+					
+					serieFound=true;
+				}
+				
+				if(!serieFound)
+					seriesToDelete.add(oldSerie);
+				
+			}
+		}
+		
+		if(seriesToDelete.size()>0){
+			old_ind.series.removeAll(seriesToDelete);
+			parent.setDirty(true);
+		}
+		
+		
+		
+		
 	}
 	
 }
