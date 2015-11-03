@@ -86,13 +86,14 @@ public class IBRealTimeBarProvider implements IIBRealTimeBarProvider,
 
 	@Override
 	public void close() {
-		log.info("Close message consumer");
+		log.info("Close Real time bar consumer");
 		consumer.close();
 		jmsContext.close();
 	}
 
 	@Override
 	public void addIbRealTimeBarListener(IIBRealTimeBarListener listener) {
+		if(consumer==null)init();
 		this.listeners.add(listener);
 	}
 

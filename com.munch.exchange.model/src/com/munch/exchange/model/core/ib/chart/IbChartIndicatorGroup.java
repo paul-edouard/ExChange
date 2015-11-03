@@ -16,11 +16,13 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
+import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 
 @Entity
-public class IbChartIndicatorGroup implements Serializable, Copyable<IbChartIndicatorGroup>{
+public class IbChartIndicatorGroup implements Serializable, Copyable<IbChartIndicatorGroup>,
+ComparableAttributes<IbChartIndicatorGroup>{
 
 	/**
 	 * 
@@ -123,6 +125,84 @@ public class IbChartIndicatorGroup implements Serializable, Copyable<IbChartIndi
 		
 	}
 	
+	public IbChartIndicator searchIndicator(String name){
+		for(IbChartIndicator ind:indicators){
+			if(ind.getName().equals(name))return ind;
+		}
+		return null;
+	}
+	
+	public IbChartIndicatorGroup searchChild(String name){
+		for(IbChartIndicatorGroup child:children){
+			if(child.getName().equals(name))return child;
+		}
+		return null;
+	}
+	
+	
+	@Override
+	public boolean identical(IbChartIndicatorGroup other) {
+		if (children == null) {
+			if (other.children != null)
+				return false;
+		}
+		else if (children.size()!=other.children.size())
+			return false;
+		else{
+			for(IbChartIndicatorGroup child:children){
+				IbChartIndicatorGroup c_child=other.searchChild(child.getName());
+				if(c_child==null)return false;
+				if(!child.identical(c_child))return false;
+			}
+		}
+		if (id != other.id)
+			return false;
+		if (indicators == null) {
+			if (other.indicators != null)
+				return false;
+		}
+		else if (indicators.size()!=other.indicators.size())
+			return false;
+		else{
+			for(IbChartIndicator ind:indicators){
+				IbChartIndicator c_ind=other.searchIndicator(ind.getName());
+				if(c_ind==null)return false;
+				if(!ind.identical(c_ind))return false;
+			}
+		}
+		if (isDirty != other.isDirty)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
+	}
+	
+	
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IbChartIndicatorGroup other = (IbChartIndicatorGroup) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
 
 	public int getId() {
 		return id;
@@ -237,6 +317,8 @@ public class IbChartIndicatorGroup implements Serializable, Copyable<IbChartIndi
 			listeners = new LinkedList<IbChartGroupChangeListener>();
 		listeners.clear();
 	}
+
+	
 	
 	
 	

@@ -20,6 +20,7 @@ import javax.persistence.Transient;
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
 import com.munch.exchange.model.core.chart.ChartParameter;
 import com.munch.exchange.model.core.chart.ChartSerie;
+import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
@@ -27,7 +28,7 @@ import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
 @Entity
 @Inheritance
 @DiscriminatorColumn(name="CHART_TYPE")
-public abstract class IbChartIndicator implements Serializable,Copyable<IbChartIndicator>{
+public abstract class IbChartIndicator implements Serializable,Copyable<IbChartIndicator>,ComparableAttributes<IbChartIndicator>{
 	
 	/**
 	 * 
@@ -113,6 +114,73 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	}
 	
 	
+	@Override
+	public boolean identical(IbChartIndicator other) {
+		if (id != other.id)
+			return false;
+		if (isActivated != other.isActivated)
+			return false;
+		if (isDirty != other.isDirty)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		
+		if (parameters == null) {
+			if (other.parameters != null)
+				return false;
+		}
+		else if (parameters.size()!=other.parameters.size())
+			return false;
+		else{
+			for(IbChartParameter param:parameters){
+				IbChartParameter c_param=other.getChartParameter(param.getName());
+				if(c_param==null)return false;
+				if(!param.identical(c_param))return false;
+			}
+		}
+		if (series == null) {
+			if (other.series != null)
+				return false;
+		}
+		else if (series.size()!=other.series.size())
+			return false;
+		else {
+			for(IbChartSerie serie:series){
+				IbChartSerie c_serie=other.getChartSerie(serie.getName());
+				if(c_serie==null)return false;
+				if(!serie.identical(c_serie))return false;
+			}
+		}
+		return true;
+	}
+
+
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IbChartIndicator other = (IbChartIndicator) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
+
 	public int getId() {
 		return id;
 	}

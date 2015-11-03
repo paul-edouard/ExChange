@@ -76,7 +76,7 @@ public class IBTopMktDataProvider implements IIBTopMktDataProvider, MessageListe
 	
 	@Override
 	public void close() {
-		log.info("Close message consumer");
+		log.info("Close Top Mkt Data consumer");
 		consumer.close();
 		jmsContext.close();
 	}
@@ -163,6 +163,7 @@ public class IBTopMktDataProvider implements IIBTopMktDataProvider, MessageListe
 	
 	@Override
 	public void addIbTopMktDataListener(IIBTopMktDataListener listener) {
+		if(consumer==null)init();
 		this.ibTopMktDataListeners.add(listener);
 	}
 

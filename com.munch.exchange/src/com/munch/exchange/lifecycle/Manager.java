@@ -60,20 +60,20 @@ public class Manager {
 	public void postContextCreate(@Preference IEclipsePreferences prefs,
 			IApplicationContext appContext, Display display,
 			IExchangeRateProvider exchangeRateProvider,
-			IWatchlistProvider watchlistProvider,
+			IWatchlistProvider watchlistProvider/*,
 			IIBContractProvider contractProvider,
 			IIBTopMktDataProvider topMktDataProvider,
 			IIBHistoricalDataProvider ibHistoricalDataProvider,
-			IIBRealTimeBarProvider ibRealTimeBarProvider) {
+			IIBRealTimeBarProvider ibRealTimeBarProvider*/) {
 		
 		
 		//BasicConfigurator.configure();
 		//BasicConfigurator.
 		
-		contractProvider.init();
-		topMktDataProvider.init();
-		ibHistoricalDataProvider.init();
-		ibRealTimeBarProvider.init();
+		//contractProvider.init();
+		//topMktDataProvider.init();
+		//ibHistoricalDataProvider.init();
+		//ibRealTimeBarProvider.init();
 		
 		//testIBProviders(contractProvider, topMktDataProvider, ibHistoricalDataProvider);
 		
@@ -142,11 +142,17 @@ public class Manager {
 	
 	
 	@PreSave
-	public void preSave(IIBTopMktDataProvider topMktDataProvider,
-			IIBRealTimeBarProvider realTimeBarPrivider){
+	public void preSave(IIBContractProvider contractProvider,
+			IIBTopMktDataProvider topMktDataProvider,
+			IIBHistoricalDataProvider ibHistoricalDataProvider,
+			IIBRealTimeBarProvider ibRealTimeBarProvider){
 		System.out.println("Application is going to close!");
+		ibHistoricalDataProvider.close();
+		ibRealTimeBarProvider.close();
+		//contractProvider.close();
 		topMktDataProvider.close();
-		realTimeBarPrivider.close();
+		
+		
 	}
 	
 	

@@ -367,7 +367,7 @@ public class ChartTreeEditorPart {
 		 
 		indicatorGroup=selIncGroup;
 	    if(isCompositeAbleToReact()){
-	    	logger.info("Selected  group recieved: "+indicatorGroup.getName());
+	    	//logger.info("Selected  group recieved: "+indicatorGroup.getName());
 	    	update();
 	    }
 	}

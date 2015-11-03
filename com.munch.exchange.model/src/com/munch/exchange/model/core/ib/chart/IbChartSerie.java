@@ -15,12 +15,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
+import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
 
 
 
 @Entity
-public class IbChartSerie implements Serializable,Copyable<IbChartSerie>{
+public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,ComparableAttributes<IbChartSerie>{
 
 	/**
 	 * 
@@ -94,7 +95,54 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>{
 		return c;
 	}
 	
-	
+	@Override
+	public boolean identical(IbChartSerie other) {
+		if (color_B != other.color_B)
+			return false;
+		if (color_G != other.color_G)
+			return false;
+		if (color_R != other.color_R)
+			return false;
+		if (id != other.id)
+			return false;
+		if (isActivated != other.isActivated)
+			return false;
+		if (isMain != other.isMain)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (rendererType != other.rendererType)
+			return false;
+		if (validAtPosition != other.validAtPosition)
+			return false;
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IbChartSerie other = (IbChartSerie) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
+
 	public void setPointValues(long[] times,double[] values){
 		if(values.length!=times.length)return;
 		
@@ -208,6 +256,7 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>{
 		this.getIndicator().getGroup().getRoot().fireSerieColorChanged(this);
 	}
 
+	
 	
 
 }

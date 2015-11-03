@@ -310,7 +310,7 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 	private void setGraphEditorContext(MPart part,IbContract contract){
 		part.setContext(context.createChild());
 		part.getContext().set(IbContract.class, contract);
-		//part.getContext().set(MDirtyable.class, new MyMDirtyable(part));
+		part.getContext().set(MDirtyable.class, new MyMDirtyable(part));
 	}
 	
 	private String getIconURI(IbContract contract){

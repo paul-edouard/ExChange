@@ -21,38 +21,49 @@ public class IBContractProvider implements IIBContractProvider {
 
 	@Override
 	public List<IbContract> getAll() {
+		if(beanRemote==null)init();
 		return beanRemote.getService().getAllContracts();
 	}
 
 	@Override
 	public void init() {
 		beanRemote=new BeanRemote<ContractInfoBeanRemote>("ContractInfoBean",ContractInfoBeanRemote.class);
-		
 	}
 
 	@Override
 	public List<IbContract> searchContracts(String symbol, SecType secType) {
+		if(beanRemote==null)init();
 		return beanRemote.getService().searchContract(symbol, secType);
 	}
 
 	@Override
 	public IbContract create(IbContract contract) {
+		if(beanRemote==null)init();
 		return beanRemote.getService().create(contract);
 	}
 
 	@Override
 	public IbContract update(IbContract contract) {
+		if(beanRemote==null)init();
 		return beanRemote.getService().update(contract);
 	}
 
 	@Override
 	public void remove(int id) {
+		if(beanRemote==null)init();
 		beanRemote.getService().remove(id);
 	}
 
 	@Override
 	public IbContract getContract(int id) {
+		if(beanRemote==null)init();
 		return beanRemote.getService().getContract(id);
+	}
+
+	@Override
+	public void close() {
+		if(beanRemote!=null)
+			beanRemote.CloseContext();
 	}
 
 }

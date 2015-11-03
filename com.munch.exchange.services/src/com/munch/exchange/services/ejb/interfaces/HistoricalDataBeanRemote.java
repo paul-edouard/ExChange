@@ -5,11 +5,9 @@ import java.util.List;
 import javax.ejb.Remote;
 
 import com.ib.controller.Types.BarSize;
-import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
-import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
 
 @Remote
 public interface HistoricalDataBeanRemote {

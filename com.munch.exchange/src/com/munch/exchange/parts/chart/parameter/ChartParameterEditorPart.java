@@ -201,7 +201,7 @@ public class ChartParameterEditorPart {
 	@Inject
 	public void analyseIbSelection( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_SELECTED) IbChartIndicator selIndic){
 		
-		 logger.info("Analyse IB Chart Indiator selection!!");
+		// logger.info("Analyse IB Chart Indiator selection!!");
 		 
 		 if(ibChartIndicator!=null && ibChartIndicator==selIndic)
 			return;

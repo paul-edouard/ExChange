@@ -10,6 +10,9 @@ public interface IIBContractProvider {
 	//Initialization
 	void init();
 	
+	//Close the service
+	void close();
+	
 	//Search
 	List<IbContract> searchContracts(String symbol, SecType secType);
 	

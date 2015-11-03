@@ -14,11 +14,12 @@ import javax.persistence.ManyToOne;
 
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
+import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
 
 
 @Entity
-public class IbChartParameter implements Serializable,Copyable<IbChartParameter>{
+public class IbChartParameter implements Serializable,Copyable<IbChartParameter>,ComparableAttributes<IbChartParameter>{
 	
 	/**
 	 * 
@@ -86,6 +87,59 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 	}
 	
 	
+	@Override
+	public boolean identical(IbChartParameter other) {
+		if (Double.doubleToLongBits(_maxValue) != Double
+				.doubleToLongBits(other._maxValue))
+			return false;
+		if (Double.doubleToLongBits(_minValue) != Double
+				.doubleToLongBits(other._minValue))
+			return false;
+		if (Double.doubleToLongBits(currentValue) != Double
+				.doubleToLongBits(other.currentValue))
+			return false;
+		if (Double.doubleToLongBits(defaultValue) != Double
+				.doubleToLongBits(other.defaultValue))
+			return false;
+		if (id != other.id)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (scalarFactor != other.scalarFactor)
+			return false;
+		if (type != other.type)
+			return false;
+		return true;
+	}
+	
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IbChartParameter other = (IbChartParameter) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
+
+
 	public int getId() {
 		return id;
 	}
@@ -171,6 +225,9 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 	public void setParent(IbChartIndicator parent) {
 		this.parent = parent;
 	}
+
+
+	
 
 
 	

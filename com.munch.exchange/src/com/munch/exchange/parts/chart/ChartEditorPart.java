@@ -24,6 +24,7 @@ import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.e4.ui.model.application.ui.MDirtyable;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
@@ -73,6 +74,7 @@ import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.parts.chart.tree.ChartTreeEditorPart;
+import com.munch.exchange.services.ejb.interfaces.IIBChartIndicatorProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarListener;
 import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarProvider;
@@ -98,6 +100,9 @@ public class ChartEditorPart{
 	@Inject
 	IIBRealTimeBarProvider realTimeBarProvider;
 	
+	@Inject
+	IIBChartIndicatorProvider chartIndicatorProvider;
+	
 	IIBRealTimeBarListener realTimeBarListener;
 	
 	@Inject
@@ -106,6 +111,8 @@ public class ChartEditorPart{
 	@Inject
 	EPartService partService;
 	
+	@Inject
+	MDirtyable dirty;
 	
 	//The renderers
 	private XYLineAndShapeRenderer mainPlotRenderer=new XYLineAndShapeRenderer(true, false);
@@ -831,6 +838,13 @@ public class ChartEditorPart{
   	//##       Event Reaction       ##
   	//################################
 	
+	private boolean isDirty(){
+		boolean equals=selectedGroup.identical(getCurrentContainer().getIndicatorGroup());
+		logger.info("Is Dirty: "+equals);
+		//dirty.setDirty(equals);
+		dirty.setDirty(true);
+		return equals;
+	}
 	private boolean isCompositeAbleToReact(){
 		if (shell.isDisposed())
 			return false;
@@ -848,7 +862,7 @@ public class ChartEditorPart{
 	
 	@Inject
 	public void chartIndicatorActivationChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED) IbChartIndicator indicator){
-		logger.info("chartIndicatorActivationChanged");
+		//logger.info("chartIndicatorActivationChanged");
 		
 		
 	    if(!isCompositeAbleToReact())return;
@@ -865,7 +879,7 @@ public class ChartEditorPart{
 	    	clearAllSeriesOfIndicator(indicator);
 	    }
 	    
-	    
+	    isDirty();
 	    //refreshSeries();
 	    
 	}
@@ -886,6 +900,7 @@ public class ChartEditorPart{
 	    clearAllSeriesOfIndicator(indicator);
 	    addAllSeriesOfIndicatior(indicator);
 	    
+	    isDirty();
 	}
 
 	@Inject
@@ -903,7 +918,7 @@ public class ChartEditorPart{
 	    	this.removeChartSerie(serie);
 	    }
 	    
-	    
+	    isDirty();
 	}
 	
 	@Inject
@@ -915,6 +930,8 @@ public class ChartEditorPart{
 	    if(!selectedGroup.containsSerie(serie))return;
 	    
 	    resetChartSerieColor(serie);
+	    
+	    isDirty();
 	}
 	
     
@@ -932,7 +949,10 @@ public class ChartEditorPart{
 	
 	@Persist
 	public void save() {
-		//TODO Your code here
+		chartIndicatorProvider.update(selectedGroup);
+		getCurrentContainer().setIndicatorGroup(selectedGroup);
+		
+		dirty.setDirty(false);
 	}
 	
 	
@@ -1217,8 +1237,8 @@ public class ChartEditorPart{
 				
 				List<IbBar> bars=hisDataProvider.getBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
 				List<IbBar> newBars=hisDataProvider.downloadLastBars(getBarContainer(),barRecorder.getBarSize());
-				logger.info("Number of bars: "+bars.size());
-				logger.info("Number of new bars: "+newBars.size());
+				//logger.info("Number of bars: "+bars.size());
+				//logger.info("Number of new bars: "+newBars.size());
 					
 				List<IbBar> toAdd=new LinkedList<IbBar>();
 				if(!bars.isEmpty() && !newBars.isEmpty()){
