@@ -8,6 +8,7 @@ import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 
 @Remote
 public interface HistoricalDataBeanRemote {

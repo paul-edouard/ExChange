@@ -10,9 +10,11 @@ public class IBChartIndicatorProvider implements IIBChartIndicatorProvider {
 	BeanRemote<ChartIndicatorBeanRemote> beanRemote;
 
 	@Override
-	public IbChartIndicatorGroup update(IbChartIndicatorGroup group) {
+	public void update(IbChartIndicatorGroup group) {
 		if(beanRemote==null)init();
-		return beanRemote.getService().update(group);
+		
+		//Create a copy of the Indicator Group and send it to the JPA Service
+		beanRemote.getService().update(group.copy());
 	}
 
 	@Override

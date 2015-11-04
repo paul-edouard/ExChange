@@ -120,8 +120,8 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 			return false;
 		if (isActivated != other.isActivated)
 			return false;
-		if (isDirty != other.isDirty)
-			return false;
+		//if (isDirty != other.isDirty)
+		//	return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -137,8 +137,15 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 		else{
 			for(IbChartParameter param:parameters){
 				IbChartParameter c_param=other.getChartParameter(param.getName());
-				if(c_param==null)return false;
-				if(!param.identical(c_param))return false;
+				//System.out.println("Test the parameter: "+param.getName());
+				if(c_param==null){
+					//System.out.println("Parameter no found: "+param.getName());
+					return false;
+				}
+				if(!param.identical(c_param)){
+					//System.out.println("Parameter no equals: "+param.getName());
+					return false;
+				}
 			}
 		}
 		if (series == null) {
@@ -149,9 +156,16 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 			return false;
 		else {
 			for(IbChartSerie serie:series){
+				//System.out.println("Test the parameter: "+serie.getName());
 				IbChartSerie c_serie=other.getChartSerie(serie.getName());
-				if(c_serie==null)return false;
-				if(!serie.identical(c_serie))return false;
+				if(c_serie==null){
+					//System.out.println("Serie no found: "+serie.getName());
+					return false;
+				}
+				if(!serie.identical(c_serie)){
+					//System.out.println("Serie no equals: "+serie.getName());
+					return false;
+				}
 			}
 		}
 		return true;
@@ -208,10 +222,11 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 		
 	}
 	
+	/*
 	public void fireActivationChanged(){
 		this.getGroup().getRoot().fireIndicatorActivationChanged(this);
 	}
-
+	*/
 
 	public boolean isDirty() {
 		return isDirty;
@@ -230,9 +245,11 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 		this.parameters = parameters;
 	}
 	
+	/*
 	public void fireParametersChanged(){
 		this.getGroup().getRoot().fireIndicatorParameterChanged(this);
 	}
+	*/
 
 
 	public List<IbChartSerie> getSeries() {

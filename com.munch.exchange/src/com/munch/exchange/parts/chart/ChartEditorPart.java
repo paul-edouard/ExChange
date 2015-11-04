@@ -257,8 +257,8 @@ public class ChartEditorPart{
 		IbBarContainer container=getCurrentContainer();
 		if(container!=null &&
 				(selectedGroup==null || selectedGroup.getId()!= container.getIndicatorGroup().getId())){
-			if(selectedGroup!=null)
-				selectedGroup.removeAllListeners();
+			//if(selectedGroup!=null)
+			//	selectedGroup.removeAllListeners();
 			selectedGroup=container.getIndicatorGroup().copy();
 			eventBroker.post(IEventConstant.IB_CHART_INDICATOR_GROUP_SELECTED, selectedGroup);
 		}
@@ -839,10 +839,22 @@ public class ChartEditorPart{
   	//################################
 	
 	private boolean isDirty(){
+		
+		/*
+		logger.info("Selected Group: "+selectedGroup);
+		logger.info("Current Group: "+getCurrentContainer().getIndicatorGroup());
+		IbChartIndicatorGroup group=new IbChartIndicatorGroup();
+		group.setId(0);
+		group.setChildren(new LinkedList<IbChartIndicatorGroup>());
+		group.setIndicators(new LinkedList<IbChartIndicator>());
+		logger.info("New Group: "+getCurrentContainer().getIndicatorGroup());
+		*/
+		
 		boolean equals=selectedGroup.identical(getCurrentContainer().getIndicatorGroup());
-		logger.info("Is Dirty: "+equals);
-		//dirty.setDirty(equals);
-		dirty.setDirty(true);
+		//boolean equals=selectedGroup.identical(group);
+		//logger.info("Is equal: "+equals);
+		dirty.setDirty(!equals);
+		//dirty.setDirty(true);
 		return equals;
 	}
 	private boolean isCompositeAbleToReact(){
@@ -871,7 +883,7 @@ public class ChartEditorPart{
 	    //logger.info("Search the indicator");
 	    if(!selectedGroup.containsIndicator(indicator))return;
 	    
-	    logger.info("Test the activation");
+	    //logger.info("Test the activation");
 	    if(indicator.isActivated()){
 	    	addAllSeriesOfIndicatior(indicator);
 	    }
@@ -950,9 +962,11 @@ public class ChartEditorPart{
 	@Persist
 	public void save() {
 		chartIndicatorProvider.update(selectedGroup);
-		getCurrentContainer().setIndicatorGroup(selectedGroup);
-		
+		getCurrentContainer().setIndicatorGroup(selectedGroup.copy());
 		dirty.setDirty(false);
+		
+		logger.info("Data are saved");
+		
 	}
 	
 	

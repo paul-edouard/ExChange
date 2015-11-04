@@ -32,9 +32,10 @@ public class ChartIndicatorBean implements ChartIndicatorBeanRemote{
     }
 
 	@Override
-	public IbChartIndicatorGroup update(IbChartIndicatorGroup group) {
+	public void update(IbChartIndicatorGroup group) {
+		//System.out.println("Group to update:"+group.getId());
 		em.merge(group);
-		return group;
+		
 	}
 
 	@Override
@@ -44,7 +45,8 @@ public class ChartIndicatorBean implements ChartIndicatorBeanRemote{
 
 	@Override
 	public IbChartIndicatorGroup getGroup(int id) {
-		return em.find(IbChartIndicatorGroup.class, id);
+		IbChartIndicatorGroup group=em.find(IbChartIndicatorGroup.class, id);
+		return group;
 	}
 
 }

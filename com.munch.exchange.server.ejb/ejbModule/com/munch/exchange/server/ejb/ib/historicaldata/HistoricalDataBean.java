@@ -345,6 +345,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	}
 
 
+
 	
 	
 

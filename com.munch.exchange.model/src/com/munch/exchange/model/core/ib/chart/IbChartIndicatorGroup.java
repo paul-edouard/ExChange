@@ -30,8 +30,8 @@ ComparableAttributes<IbChartIndicatorGroup>{
 	private static final long serialVersionUID = -6625769451330452530L;
 	public static final String ROOT="ROOT";
 	
-	@Transient
-	protected List<IbChartGroupChangeListener> listeners = new LinkedList<IbChartGroupChangeListener>();
+	//@Transient
+	//protected List<IbChartGroupChangeListener> listeners = new LinkedList<IbChartGroupChangeListener>();
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -166,12 +166,19 @@ ComparableAttributes<IbChartIndicatorGroup>{
 		else{
 			for(IbChartIndicator ind:indicators){
 				IbChartIndicator c_ind=other.searchIndicator(ind.getName());
-				if(c_ind==null)return false;
-				if(!ind.identical(c_ind))return false;
+				//System.out.println("Test the indicator: "+ind.getName());
+				if(c_ind==null){
+					//System.out.println("Indicator no found! "+ind.getName());
+					return false;
+				}
+				if(!ind.identical(c_ind)){
+					//System.out.println("Indicator no equals! "+ind.getName());
+					return false;
+				}
 			}
 		}
-		if (isDirty != other.isDirty)
-			return false;
+		//if (isDirty != other.isDirty)
+		//	return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -276,6 +283,7 @@ ComparableAttributes<IbChartIndicatorGroup>{
 	}
 	
 	//Listener
+	/*
 	public void fireIndicatorActivationChanged(IbChartIndicator indicator){
 		for(IbChartGroupChangeListener l:this.listeners){
 			l.indicatorActivationChanged(indicator);
@@ -317,7 +325,7 @@ ComparableAttributes<IbChartIndicatorGroup>{
 			listeners = new LinkedList<IbChartGroupChangeListener>();
 		listeners.clear();
 	}
-
+*/
 	
 	
 	

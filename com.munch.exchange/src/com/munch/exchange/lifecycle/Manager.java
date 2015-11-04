@@ -147,7 +147,7 @@ public class Manager {
 			IIBHistoricalDataProvider ibHistoricalDataProvider,
 			IIBRealTimeBarProvider ibRealTimeBarProvider){
 		System.out.println("Application is going to close!");
-		ibHistoricalDataProvider.close();
+		//ibHistoricalDataProvider.close();
 		ibRealTimeBarProvider.close();
 		//contractProvider.close();
 		topMktDataProvider.close();

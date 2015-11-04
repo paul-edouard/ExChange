@@ -8,7 +8,7 @@ import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 public interface ChartIndicatorBeanRemote {
 	
 	//Chart Indicator Group
-	public IbChartIndicatorGroup update(IbChartIndicatorGroup group);
+	public void update(IbChartIndicatorGroup group);
 	public void removeGroup(int id);
 	public IbChartIndicatorGroup getGroup(int id);
 	

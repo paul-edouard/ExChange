@@ -92,32 +92,48 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 		c.color_B=this.color_B;
 		c.rendererType=this.rendererType;
 		
+		c.validAtPosition=this.validAtPosition;
+		
 		return c;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.munch.exchange.model.core.ib.ComparableAttributes#identical(java.lang.Object)
+	 */
 	@Override
 	public boolean identical(IbChartSerie other) {
+		//System.out.println("Test the color B");
 		if (color_B != other.color_B)
 			return false;
+		//System.out.println("Test the color G");
 		if (color_G != other.color_G)
 			return false;
+		//System.out.println("Test the color R");
 		if (color_R != other.color_R)
 			return false;
+		//System.out.println("Test the id");
 		if (id != other.id)
 			return false;
+		//System.out.println("Test the activation");
 		if (isActivated != other.isActivated)
 			return false;
+		//System.out.println("Test the main");
 		if (isMain != other.isMain)
 			return false;
+		//System.out.println("Test the name");
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+		//System.out.println("Test the renderer");
 		if (rendererType != other.rendererType)
 			return false;
-		if (validAtPosition != other.validAtPosition)
-			return false;
+		//System.out.println("Test the valid at position");
+		//if (validAtPosition != other.validAtPosition)
+		//	return false;
+		
+		//System.out.println("Test finihed");
 		return true;
 	}
 
@@ -201,9 +217,11 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 		this.isActivated = isActivated;
 	}
 	
+	/*
 	public void fireActivationChanged(){
 		this.getIndicator().getGroup().getRoot().fireSerieActivationChanged(this);
 	}
+	*/
 
 	public RendererType getRendererType() {
 		return rendererType;
@@ -251,11 +269,11 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 		this.color_B = color_B;
 	}
 	
-	
+	/*
 	public void fireColorChanged(){
 		this.getIndicator().getGroup().getRoot().fireSerieColorChanged(this);
 	}
-
+	*/
 	
 	
 

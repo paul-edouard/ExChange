@@ -7,6 +7,7 @@ import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
 import com.munch.exchange.services.ejb.interfaces.HistoricalDataBeanRemote;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
@@ -24,7 +25,9 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 	@Override
 	public List<IbBarContainer> getAllExContractBars(IbContract exContract) {
 		if(beanRemote==null)init();
-		return beanRemote.getService().getAllExContractBars(exContract);
+		List<IbBarContainer> containers=beanRemote.getService().getAllExContractBars(exContract);
+		//close();
+		return containers;
 	}
 
 	@Override
@@ -73,7 +76,9 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 	public List<IbBar> getBarsFromTo(IbBarContainer exContractBars,
 			BarSize size, long from, long to) {
 		if(beanRemote==null)init();
-		return beanRemote.getService().getBarsFromTo(exContractBars,size,from,to);
+		List<IbBar> bars=beanRemote.getService().getBarsFromTo(exContractBars,size,from,to);
+		//close();
+		return bars;
 	}
 
 	@Override

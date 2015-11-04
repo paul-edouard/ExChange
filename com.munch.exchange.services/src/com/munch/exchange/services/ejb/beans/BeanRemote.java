@@ -24,7 +24,7 @@ public class BeanRemote<T> {
 	
 	
 	
-	public  Context context=null;
+	public  static Context context=null;
 	
 	private T instance=null;
 	private String beanName;
@@ -134,7 +134,7 @@ public class BeanRemote<T> {
 	}
 	
 	
-	public Context getJndiContext() throws NamingException {
+	public static Context getJndiContext() throws NamingException {
 
 		if (context == null) {
 
