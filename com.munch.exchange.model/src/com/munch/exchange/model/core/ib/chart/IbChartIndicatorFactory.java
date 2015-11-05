@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartUpwardTrendLine;
@@ -23,18 +24,29 @@ public class IbChartIndicatorFactory {
 		
 		parentChildrenMap.clear();
 		
-		//TREND
+		//================================
+		//==           TREND            ==
+		//================================
 		IbChartIndicatorGroup trend=searchOrCreateSubGroup(root,"Trend");
 		
+		//MOVING AVERAGE
 		IbChartIndicatorGroup movingAverage=searchOrCreateSubGroup(trend,"Moving Average");
 		addChartIndicator(movingAverage, IbChartSimpleMovingAverage.class);
-		
-		//addChartIndicator(movingAverage, new IbChartSimpleMovingAverage());
 		
 		//TREND LINE
 		IbChartIndicatorGroup trendLine=searchOrCreateSubGroup(trend,"Trend Line");
 		addChartIndicator(trendLine, IbChartDownwardTrendLine.class);
 		addChartIndicator(trendLine, IbChartUpwardTrendLine.class);
+		
+		//================================
+		//==         SIGNALS            ==
+		//================================
+		IbChartIndicatorGroup signals=searchOrCreateSubGroup(root,"Signals");
+		
+		//DERIVATE
+		IbChartIndicatorGroup derivate =searchOrCreateSubGroup(signals,"Derivate");
+		addChartIndicator(derivate, IbChartSimpleDerivate.class);
+		
 		
 		cleanParents();
 		
@@ -167,11 +179,13 @@ public class IbChartIndicatorFactory {
 					
 					
 					paramFound=true;
+					break;
 				}
 				
-				if(!paramFound)
-					parametersToDelete.add(oldParam);
+				
 			}
+			if(!paramFound)
+				parametersToDelete.add(oldParam);
 		}
 		if(parametersToDelete.size()>0){
 			old_ind.parameters.removeAll(parametersToDelete);
@@ -183,8 +197,9 @@ public class IbChartIndicatorFactory {
 		//Clean not used parameters
 		LinkedList<IbChartSerie> seriesToDelete=new LinkedList<IbChartSerie>();
 		for(IbChartSerie oldSerie:old_ind.series){
+			boolean serieFound=false;
 			for(IbChartSerie newSerie:new_ind.series){
-				boolean serieFound=false;
+				
 				if(oldSerie.getName().equals(newSerie.getName())){
 					
 					if(oldSerie.getValidAtPosition()!=newSerie.getValidAtPosition()){
@@ -198,12 +213,12 @@ public class IbChartIndicatorFactory {
 					}
 					
 					serieFound=true;
+					break;
 				}
 				
-				if(!serieFound)
-					seriesToDelete.add(oldSerie);
-				
 			}
+			if(!serieFound)
+				seriesToDelete.add(oldSerie);
 		}
 		
 		if(seriesToDelete.size()>0){

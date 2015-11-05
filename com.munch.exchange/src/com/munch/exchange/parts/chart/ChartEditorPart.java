@@ -5,6 +5,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -604,7 +605,7 @@ public class ChartEditorPart{
      */
     private void createCombinedDomainXYPlot(){
     	 combinedPlot = new CombinedDomainXYPlot(dateAxis);
-    	 combinedPlot.add(mainPlot, 5);
+    	 //combinedPlot.add(mainPlot, 5);
 	        //cplot.add(plot2, 2);
     	 combinedPlot.setGap(8.0);
     	 combinedPlot.setDomainGridlinePaint(Color.white);
@@ -612,12 +613,36 @@ public class ChartEditorPart{
     	 combinedPlot.setDomainPannable(true);
     }
     
-    private void addSecondPlot(){
-    	combinedPlot.add(secondPlot, 2);
+    
+    private void refreshPlots(){
+    	
+    	removePlots();
+    	
+    	
+    	int mainNbOfSeries=oHLCSeriesCollection.getSeriesCount();
+    	mainNbOfSeries+=mainCollection.getSeriesCount();
+    	
+    	if(mainNbOfSeries>0)
+    	combinedPlot.add(mainPlot, 5);
+    	
+    	
+    	int totalNbOfSeries=secondCollection.getSeriesCount();
+    	totalNbOfSeries+=percentCollection.getSeriesCount();
+    	//logger.info("totalNbOfSeries "+totalNbOfSeries);
+    	
+    	if(totalNbOfSeries>0)
+    		combinedPlot.add(secondPlot, 2);
+    	
     }
     
-    private void removeSecondPlot(){
-    	combinedPlot.remove(secondPlot);
+    
+    private void removePlots(){
+    	
+    	List<XYPlot> list = new ArrayList<>(combinedPlot.getSubplots());
+    	for (XYPlot plot : list) {
+    		combinedPlot.remove(plot);
+    	}
+
     }
     
 	//################################
@@ -628,6 +653,8 @@ public class ChartEditorPart{
 		clearSeries();
 		
 		createSeries();
+		
+		refreshPlots();
 	}
     
     private void createSeries(){
@@ -682,9 +709,9 @@ public class ChartEditorPart{
 			break;
 		}
 		
-		//xySerie.fireSeriesChanged();
-		//candleStickSeries.fireSeriesChanged();
 	}
+    
+    
     
     private XYSeries  createXYSerie(IbChartSerie serie){
 		XYSeries r_series =new XYSeries(serie.getName());
@@ -894,6 +921,8 @@ public class ChartEditorPart{
 	    isDirty();
 	    //refreshSeries();
 	    
+	    refreshPlots();
+	    
 	}
 	
 	@Inject
@@ -931,6 +960,7 @@ public class ChartEditorPart{
 	    }
 	    
 	    isDirty();
+	    refreshPlots();
 	}
 	
 	@Inject

@@ -82,19 +82,19 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 		this.isActivated=in.isActivated;
 		this.isDirty=in.isDirty;
 		
-		parameters=new LinkedList<IbChartParameter>();
+		this.parameters=new LinkedList<IbChartParameter>();
 		
 		for(IbChartParameter param:in.parameters){
 			IbChartParameter c_p=param.copy();
 			c_p.setParent(this);
-			parameters.add(c_p);
+			this.parameters.add(c_p);
 		}
 		
-		series=new LinkedList<IbChartSerie>();
+		this.series=new LinkedList<IbChartSerie>();
 		for(IbChartSerie serie:in.series){
 			IbChartSerie c_s=serie.copy();
 			c_s.setIndicator(this);
-			series.add(c_s);
+			this.series.add(c_s);
 		}
 	}
 	

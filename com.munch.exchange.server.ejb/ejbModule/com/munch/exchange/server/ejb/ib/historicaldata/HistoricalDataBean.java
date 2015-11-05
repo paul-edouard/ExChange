@@ -70,7 +70,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 				em.persist(rootGroup);
 				rootGroup.setDirty(false);
 				
-				//log.info("3. Group is Dirty: "+rootGroup.isDirty());
+				log.info("3. Group is Dirty: "+rootGroup.isDirty());
 			}
 			
 			loadChildGroup(rootGroup);
