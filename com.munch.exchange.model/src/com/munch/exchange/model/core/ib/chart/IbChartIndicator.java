@@ -306,9 +306,31 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	
 	public abstract void createParameters();
 	
-	public abstract void compute(List<IbBar> bars);
+	public void compute(List<IbBar> bars){
+		
+		
+		
+		if(bars.isEmpty())return;
+		
+		List<IbChartPoint> points=this.getMainChartSerie().getPoints();
+		if(!points.isEmpty() && bars.get(0).getTimeInMs()<points.get(0).getTime()){
+				setDirty(true);
+		}
+		
+		if(points.isEmpty() || isDirty()){
+			computeSeriesPointValues(bars, true);
+			setDirty(false);
+		}
+		else{
+			List<IbBar> lastBars=isolateLastNeededBars(bars);
+			computeSeriesPointValues(lastBars, false);
+			setDirty(false);
+		}
+	}
 	
-	public abstract void computeLast(List<IbBar> bars);
+	protected abstract void computeSeriesPointValues(List<IbBar> bars, boolean reset);
+	
+	//public abstract void computeLast(List<IbBar> bars);
 	
 	protected double[] barsToDoubleArray(List<IbBar> bars,DataType dataType){
 		return barsToDoubleArray(bars, dataType, bars.size());
@@ -338,5 +360,28 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 		return getTimeArray(bars, bars.size());
 	}
 
-	
+	protected List<IbBar> isolateLastNeededBars(List<IbBar> bars){
+		
+		LinkedList<IbBar> neededBars=new LinkedList<IbBar>();
+		List<IbChartPoint> points=this.getMainChartSerie().getPoints();
+		IbChartPoint lastCalculatedPoint=points.get(points.size()-1);
+		int nbOfRequiredValues=this.getMainChartSerie().getValidAtPosition();
+		
+		int currentNbOfReValues=0;
+		for(int i=bars.size()-1;i>=0;i--){
+			IbBar bar=bars.get(i);
+			if(bar.getTimeInMs() > lastCalculatedPoint.getTime()){
+				neededBars.addFirst(bar);
+				continue;
+			}
+			else if(currentNbOfReValues<=nbOfRequiredValues){
+				neededBars.addFirst(bar);
+				currentNbOfReValues++;
+				continue;
+			}
+			break;
+		}
+		
+		return neededBars;
+	}
 }

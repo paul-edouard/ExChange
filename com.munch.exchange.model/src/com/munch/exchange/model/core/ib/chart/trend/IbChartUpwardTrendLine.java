@@ -85,8 +85,22 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 
 	}
 
+	
+	public double[] calculateYValues(long[] times,double[] prices,double[] ab){
+		double[] YValues=new double[times.length];
+		
+		if(prices.length!=times.length)return YValues;
+		
+		for(int i=0;i<times.length;i++){
+			YValues[i]=ab[0]*(times[i]-times[0])+ab[1];
+			//System.out.println("YValue: "+YValues[i]+", x="+times[i]);
+		}
+		
+		return YValues;
+	}
+
 	@Override
-	public void compute(List<IbBar> bars) {
+	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
 		int numberOfValues=period+
 				this.getChartParameter(OFFSET).getIntegerValue();
@@ -121,34 +135,17 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 		System.out.println("Opt values: "+Arrays.toString(ab));
 		double[] YValues=calculateYValues(times, prices, ab);
 		
-		
-		this.getChartSerie(UTL).setPointValues(times,YValues);
-		this.getChartSerie(UTL).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
-		
-		setDirty(false);
-
-	}
-	
-	public double[] calculateYValues(long[] times,double[] prices,double[] ab){
-		double[] YValues=new double[times.length];
-		
-		if(prices.length!=times.length)return YValues;
-		
-		for(int i=0;i<times.length;i++){
-			YValues[i]=ab[0]*(times[i]-times[0])+ab[1];
-			//System.out.println("YValue: "+YValues[i]+", x="+times[i]);
+		if(reset){
+			this.getChartSerie(UTL).setPointValues(times,YValues);
+			this.getChartSerie(UTL).setValidAtPosition(numberOfValues-1);
+		}
+		else{
+			this.getChartSerie(UTL).addNewPointsOnly(times,YValues);
 		}
 		
-		
-		return YValues;
-		
 	}
 
-	@Override
-	public void computeLast(List<IbBar> bars) {
-		// TODO Auto-generated method stub
-
-	}
+	
 
 	
 	

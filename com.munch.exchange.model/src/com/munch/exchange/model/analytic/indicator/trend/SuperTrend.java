@@ -177,6 +177,9 @@ public class SuperTrend {
 		int flagh=0;
 		
 		for(int i=0;i<close.length;i++){
+			TrendUp[i]=Double.NaN;
+			TrendDown[i]=Double.NaN;
+			
 			double medianPrice=(high[i]+low[i])/2;
 			up[i]=medianPrice+multiplier*ATR[i];
 			dn[i]=medianPrice-multiplier*ATR[i];
@@ -191,11 +194,11 @@ public class SuperTrend {
 			//Calculate the Trend
 			if(close[i]>up[i-1]){
 				Trend[i]=1;
-				if(Trend[i+1]==-1)changeOfTrend = 1;
+				if(Trend[i-1]==-1)changeOfTrend = 1;
 			}
 			else if (close[i]<dn[i-1]){
 				Trend[i]=-1;
-				if(Trend[i+1]==1)changeOfTrend = 1;
+				if(Trend[i-1]==1)changeOfTrend = 1;
 			}
 			else if (Trend[i-1]==1){
 				Trend[i]=1;changeOfTrend = 0;
@@ -234,14 +237,14 @@ public class SuperTrend {
 		      if (Trend[i]==1) {
 		         TrendUp[i]=dn[i];
 		         if (changeOfTrend == 1) {
-		            TrendUp[i+1] = TrendDown[i+1];
+		            TrendUp[i-1] = TrendDown[i-1];
 		            changeOfTrend = 0;
 		         }
 		      }
 		      else if (Trend[i]==-1) {
 		         TrendDown[i]=up[i];
 		         if (changeOfTrend == 1) {
-		            TrendDown[i+1] = TrendUp[i+1];
+		            TrendDown[i-1] = TrendUp[i-1];
 		            changeOfTrend = 0;
 		         }
 		      }

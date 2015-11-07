@@ -95,15 +95,21 @@ public class IbBarRecorder {
 			fireBarReplaced(replacedBars);
 		}
 		
+		//System.out.println(" Test localLastReceivedBar==null");
 		if(localLastReceivedBar==null)return;
 		
+		//System.out.println("localLastReceivedBar!=null!");
+		
 		if(lastReceivedBar==null || lastReceivedBar.getTime()==localLastReceivedBar.getTime()){
+			//System.out.println("last");
 			lastReceivedBar=localLastReceivedBar;
 			fireLastBarUpdated(lastReceivedBar);
 		}
 		else if(lastReceivedBar.getTime()<localLastReceivedBar.getTime()){
+			//System.out.println("lastReceivedBar is now old");
 			if(!lastReceivedBar.isCompleted()){
 				lastReceivedBar.setCompleted(true);
+				//System.out.println("fireNewCompletedBar");
 				fireNewCompletedBar(lastReceivedBar);
 			}
 			lastReceivedBar=localLastReceivedBar;
@@ -122,12 +128,24 @@ public class IbBarRecorder {
 		fireAllBarsCleared();
 	}
 	
+	
 	public List<IbBar> getAllBars(){
 		updateBarList();
 		return barList;
 	}
+	
+	
+	public List<IbBar> getAllCompletedBars(){
+		barList.clear();
+		barList.addAll(barMap.values());
+		Collections.sort(barList);
+		if(!barList.getLast().isCompleted()){
+			barList.removeLast();
+		}
+		return barList;
+	}
 
-	public boolean isEmpty(){
+ 	public boolean isEmpty(){
 		return barMap.isEmpty();
 	}
 	

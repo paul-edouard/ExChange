@@ -420,6 +420,7 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 		for(IbBar bar:bars){
 			if(bar.getTime()%targetInterval==0 && converted!=null){
 				converted.integrateData(bar);
+				converted.setCompleted(true);
 				convertedBars.add(converted);
 				converted=null;
 			}
@@ -427,13 +428,16 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 				converted=createNewInstance(targetSize);
 				converted.copyData(bar);
 				converted.setTime(bar.getTime()-startInterval+targetInterval);
+				converted.setCompleted(true);
 			}
 			else if(converted!=null){
 				converted.integrateData(bar);
+				converted.setCompleted(true);
 			}
 			else{
 				converted=createNewInstance(targetSize);
 				converted.copyData(bar);
+				converted.setCompleted(true);
 				if(bar.getTime()%targetInterval>0)
 					converted.setTime(bar.getTime()-bar.getTime()%targetInterval+targetInterval);
 			}

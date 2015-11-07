@@ -51,7 +51,9 @@ import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.ComparableObjectItem;
 import org.jfree.data.time.Second;
+import org.jfree.data.time.ohlc.OHLCItem;
 import org.jfree.data.time.ohlc.OHLCSeries;
 import org.jfree.data.time.ohlc.OHLCSeriesCollection;
 import org.jfree.data.xy.XYSeries;
@@ -148,6 +150,7 @@ public class ChartEditorPart{
 	private Composite compositeChart;
 	private ValueMarker threshold;
 	private OHLCSeries candleStickSeries= new OHLCSeries(CANDLESTICK);
+	
 	
 	private List<IbBarContainer> barContainers;
 	private IbBarRecorder barRecorder=new IbBarRecorder();
@@ -711,13 +714,16 @@ public class ChartEditorPart{
 		
 	}
     
-    
-    
     private XYSeries  createXYSerie(IbChartSerie serie){
 		XYSeries r_series =new XYSeries(serie.getName());
 		for(IbChartPoint point:serie.getPoints()){
 			//logger.info("Point: "+point.getTime()+", "+point.getValue());
-			r_series.add(point.getTime(),point.getValue());
+			if(Double.isNaN(point.getValue())){
+				r_series.add(point.getTime(),null);
+			}
+			else{
+				r_series.add(point.getTime(),point.getValue());
+			}
 		}
 		
 		return 	r_series;
@@ -734,7 +740,7 @@ public class ChartEditorPart{
 		for(IbChartIndicator indicator:group.getIndicators()){
 			if(!indicator.isActivated())continue;
 			//Compute the series
-			indicator.compute(barRecorder.getAllBars());
+			indicator.compute(barRecorder.getAllCompletedBars());
 			
 			for(IbChartSerie serie:indicator.getSeries()){
 				if(serie.isActivated() && serie.getPoints().size()>0){
@@ -852,7 +858,7 @@ public class ChartEditorPart{
 	}
 	
 	private void addAllSeriesOfIndicatior(IbChartIndicator indicator){
-		indicator.compute(barRecorder.getAllBars());
+		indicator.compute(barRecorder.getAllCompletedBars());
 		for(IbChartSerie serie:indicator.getSeries()){
     		if(!serie.isActivated())continue;
     		if(serie.getPoints().size()==0)continue;
@@ -1149,7 +1155,13 @@ public class ChartEditorPart{
 			
 			@Override
 			public void newCompletedBar(IbBar bar) {
-				// TODO Auto-generated method stub
+				Display.getDefault().asyncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						refreshSeries();
+					}
+				});
 			}
 			
 			@Override
@@ -1190,9 +1202,17 @@ public class ChartEditorPart{
 					@Override
 					public void run() {
 						//candleStickSeries.clear();
+						Second LastSec=null;
+						if(candleStickSeries.getItemCount()>0){
+							OHLCItem item=(OHLCItem)candleStickSeries.getDataItem(candleStickSeries.getItemCount()-1);
+							LastSec=new Second(new Date(item.getPeriod().getMiddleMillisecond()));
+						}
+						
 						for(IbBar bar:addedBars){
 							Second sec=new Second(new Date(bar.getTimeInMs() - bar.getIntervallInMs()/2));
+							if(LastSec!=null && LastSec.equals(sec))continue;
 							candleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
+							//candleStickSeries.getDataItem(candleStickSeries.getItemCount()-1)
 						}
 						
 						double diff=barRecorder.getLastReceivedBar().getTimeInMs()-dateAxis.getRange().getUpperBound();
@@ -1205,7 +1225,10 @@ public class ChartEditorPart{
 						candleStickSeries.fireSeriesChanged();
 						threshold.setValue(lastBar.getClose());
 						
-						refreshSeries();
+						//Refresh the series only if the more than one bar were added
+						//Otherwise the refresh will be called from the newCompletedBar function
+						if(addedBars.size()>1)
+							refreshSeries();
 						
 						
 						comboWhatToShow.setEnabled(true);

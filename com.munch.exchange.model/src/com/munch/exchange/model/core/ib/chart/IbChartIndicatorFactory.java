@@ -9,6 +9,7 @@ import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartSuperTrend;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartUpwardTrendLine;
 
 public class IbChartIndicatorFactory {
@@ -37,6 +38,8 @@ public class IbChartIndicatorFactory {
 		IbChartIndicatorGroup trendLine=searchOrCreateSubGroup(trend,"Trend Line");
 		addChartIndicator(trendLine, IbChartDownwardTrendLine.class);
 		addChartIndicator(trendLine, IbChartUpwardTrendLine.class);
+		addChartIndicator(trendLine, IbChartSuperTrend.class);
+		
 		
 		//================================
 		//==         SIGNALS            ==

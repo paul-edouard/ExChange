@@ -174,6 +174,7 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 
 	public void setValue(double value) {
 		this.currentValue = value;
+		parent.setDirty(true);
 	}
 
 	public double getDefaultValue() {

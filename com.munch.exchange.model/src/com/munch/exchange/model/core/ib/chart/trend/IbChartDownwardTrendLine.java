@@ -82,8 +82,24 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 
 	}
 
+	
+	public double[] calculateYValues(long[] times,double[] prices,double[] ab){
+		double[] YValues=new double[times.length];
+		
+		if(prices.length!=times.length)return YValues;
+		
+		for(int i=0;i<times.length;i++){
+			YValues[i]=ab[0]*(times[i]-times[0])+ab[1];
+			//System.out.println("YValue: "+YValues[i]+", x="+times[i]);
+		}
+		
+		
+		return YValues;
+		
+	}
+
 	@Override
-	public void compute(List<IbBar> bars) {
+	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
 		int numberOfValues=period+
 				this.getChartParameter(OFFSET).getIntegerValue();
@@ -114,41 +130,21 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		ab[0]=((RealVariable)result.get(0).getVariable(0)).getValue();
 		ab[1]=((RealVariable)result.get(0).getVariable(1)).getValue();
 		
-		System.out.println("Opt values: "+Arrays.toString(ab));
+		//System.out.println("Opt values: "+Arrays.toString(ab));
 		double[] YValues=calculateYValues(times, prices, ab);
 		
-		this.getChartSerie(DTL).setPointValues(times,YValues);
-		this.getChartSerie(DTL).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
-		
-		setDirty(false);
-		
-	}
-	
-	
-
-	
-	public double[] calculateYValues(long[] times,double[] prices,double[] ab){
-		double[] YValues=new double[times.length];
-		
-		if(prices.length!=times.length)return YValues;
-		
-		for(int i=0;i<times.length;i++){
-			YValues[i]=ab[0]*(times[i]-times[0])+ab[1];
-			//System.out.println("YValue: "+YValues[i]+", x="+times[i]);
+		if(reset){
+			this.getChartSerie(DTL).setPointValues(times,YValues);
+			this.getChartSerie(DTL).setValidAtPosition(numberOfValues-1);
+		}
+		else{
+			this.getChartSerie(DTL).addNewPointsOnly(times,YValues);
 		}
 		
-		
-		return YValues;
-		
 	}
 	
 	
-	@Override
-
-	public void computeLast(List<IbBar> bars) {
-		// TODO Auto-generated method stub
-
-	}
+	
 	
 	
 	

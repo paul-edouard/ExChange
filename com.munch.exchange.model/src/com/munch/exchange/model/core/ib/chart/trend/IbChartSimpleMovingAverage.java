@@ -58,7 +58,7 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 		color[1]=44;
 		color[2]=89;
 		//int[] color={50,44,89};
-		IbChartSerie serie=new IbChartSerie(this,SMA,RendererType.MAIN,true,false,color);
+		IbChartSerie serie=new IbChartSerie(this,SMA,RendererType.MAIN,true,true,color);
 		this.series.add(serie);
 		
 	}
@@ -72,26 +72,22 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 
 
 	@Override
-	public void compute(List<IbBar> bars) {
-		
+	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
 		double[] prices=this.barsToDoubleArray(bars, DataType.CLOSE);
 		long[] times=this.getTimeArray(bars);
 		double[] sma=MovingAverage.SMA(prices,
-				this.getChartParameter(PERIOD).getIntegerValue());
-		
-		this.getChartSerie(SMA).setPointValues(times,sma);
-		this.getChartSerie(SMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
-		
-		setDirty(false);
+			this.getChartParameter(PERIOD).getIntegerValue());
+		if(reset){
+			this.getChartSerie(SMA).setPointValues(times,sma);
+			this.getChartSerie(SMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
+		}
+		else{
+			this.getChartSerie(SMA).addNewPointsOnly(times,sma);
+		}
 		
 	}
 
-
-	@Override
-	public void computeLast(List<IbBar> bars) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 
 }
