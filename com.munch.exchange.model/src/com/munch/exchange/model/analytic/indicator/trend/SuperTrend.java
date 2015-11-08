@@ -159,7 +159,7 @@ int start()
 public class SuperTrend {
 	
 	
-	public static double[][] compute(double[] close, double[] high, double[] low, int Period, double multiplier){
+	public static double[][] compute(double[] close, double[] high, double[] low, int Period, double multiplier, double startTrend){
 		
 		double[][] SuTr=new double[3][close.length];
 		
@@ -186,7 +186,7 @@ public class SuperTrend {
 			if(i==0){
 				TrendUp[i]=dn[i];
 				TrendDown[i]=up[i];
-				Trend[i]=1;
+				Trend[i]=startTrend;
 				continue;
 			}
 			

@@ -1129,7 +1129,10 @@ public class ChartEditorPart{
 					//logger.info("New Bar: "+bar);
 					LinkedList<IbBar> realTimeBars=IbBar.convertIbBars(bars, barRecorder.getBarSize());
 					if(realTimeBars==null ||realTimeBars.isEmpty())return;
-					barRecorder.addBar(realTimeBars.getLast());
+					
+					//Add the Bar to the bar recorder only if some historical data were already loaded
+					if(!barRecorder.isEmpty())
+						barRecorder.addBar(realTimeBars.getLast());
 					//lastBarTime=bar.getTimeInMs();
 					//Display.getDefault().asyncExec(new realTimeBarUpdater(liveBars));
 				}
@@ -1233,11 +1236,11 @@ public class ChartEditorPart{
 						
 						comboWhatToShow.setEnabled(true);
 						comboBarSize.setEnabled(true);
+						
+						
 					}
 				});
 				
-				//barRecorder.getAllBars();
-				//Udate the Series
 			}
 			
 			@Override
@@ -1275,6 +1278,7 @@ public class ChartEditorPart{
 		
 		private long from;
 		private long to;
+		private int numberOfStarts=0;
 		
 		private final static long loadingSize=1000;
 		private boolean loadPastValues=false;
@@ -1294,10 +1298,10 @@ public class ChartEditorPart{
 		
 		@Override
 		public IStatus run(IProgressMonitor monitor) {
-			
+			numberOfStarts++;
 			//selectedGroup.removeAllListeners();
 			
-			if(barRecorder.isEmpty()){
+			if(barRecorder.isEmpty() || numberOfStarts==1){
 				long intervall=IbBar.getIntervallInSec(barRecorder.getBarSize());
 				to=new Date().getTime()/1000;
 				from=to-loadingSize*intervall;
@@ -1323,7 +1327,7 @@ public class ChartEditorPart{
 				long intervall=IbBar.getIntervallInSec(barRecorder.getBarSize());
 				to=barRecorder.getFirstReceivedBar().getTime();
 				from=to-loadingSize*intervall;
-				logger.info("Ask historical data: ");
+				//logger.info("Ask historical data: ");
 				//hisDataProvider.init();
 				List<IbBar> bars=hisDataProvider.getBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
 				

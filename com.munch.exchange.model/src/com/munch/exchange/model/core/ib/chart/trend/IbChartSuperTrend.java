@@ -8,6 +8,7 @@ import com.munch.exchange.model.analytic.indicator.trend.SuperTrend;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter.ParameterType;
@@ -29,6 +30,18 @@ public class IbChartSuperTrend extends IbChartIndicator{
 	public static final String PERIOD="Period";
 	public static final String FACTOR="Factor";
 	
+	
+	
+
+	public IbChartSuperTrend() {
+		super();
+		isolateLastNeededBars=false;
+	}
+
+	public IbChartSuperTrend(IbChartIndicatorGroup group) {
+		super(group);
+		isolateLastNeededBars=false;
+	}
 
 	@Override
 	public IbChartIndicator copy() {
@@ -92,19 +105,30 @@ public class IbChartSuperTrend extends IbChartIndicator{
 		
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
 		double factor=this.getChartParameter(FACTOR).getValue();
+		double startTrend=1.0;
 		
-		double[][] SuTr=SuperTrend.compute(close, high, low, period, factor);
 		
 		if(reset){
+			//Compute all super trend values
+			double[][] SuTr=SuperTrend.compute(close, high, low, period, factor,startTrend);
+			
 			this.getChartSerie(ST_TR).setPointValues(times,SuTr[0]);
 			this.getChartSerie(ST_UP).setPointValues(times,SuTr[1]);
 			this.getChartSerie(ST_DN).setPointValues(times,SuTr[2]);
 			
-			this.getChartSerie(ST_TR).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
-			this.getChartSerie(ST_UP).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
-			this.getChartSerie(ST_DN).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
+			this.getChartSerie(ST_TR).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue());
+			this.getChartSerie(ST_UP).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue());
+			this.getChartSerie(ST_DN).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue());
 		}
 		else{
+			//Compute only last values
+			IbChartSerie trend=this.getChartSerie(ST_TR);
+			if(trend.getPoints().size()>trend.getValidAtPosition()){
+				startTrend=trend.getPoints().get(trend.getPoints().size()-trend.getValidAtPosition()).getValue();
+			}
+			
+			double[][] SuTr=SuperTrend.compute(close, high, low, period, factor,startTrend);
+			
 			this.getChartSerie(ST_TR).addNewPointsOnly(times,SuTr[0]);
 			this.getChartSerie(ST_UP).addNewPointsOnly(times,SuTr[1]);
 			this.getChartSerie(ST_DN).addNewPointsOnly(times,SuTr[2]);

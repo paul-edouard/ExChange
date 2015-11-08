@@ -44,7 +44,9 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	
 	@Transient
 	private boolean isDirty=false;
-	
+
+	@Transient
+	protected boolean isolateLastNeededBars=true;
 	
 	@OneToMany(mappedBy="parent",cascade=CascadeType.ALL)
 	protected List<IbChartParameter> parameters=new LinkedList<IbChartParameter>();
@@ -322,8 +324,13 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 			setDirty(false);
 		}
 		else{
-			List<IbBar> lastBars=isolateLastNeededBars(bars);
-			computeSeriesPointValues(lastBars, false);
+			if(isolateLastNeededBars){
+				List<IbBar> lastBars=isolateLastNeededBars(bars);
+				computeSeriesPointValues(lastBars, false);
+			}
+			else{
+				computeSeriesPointValues(bars, false);
+			}
 			setDirty(false);
 		}
 	}
@@ -374,7 +381,7 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 				neededBars.addFirst(bar);
 				continue;
 			}
-			else if(currentNbOfReValues<=nbOfRequiredValues){
+			else if(currentNbOfReValues<nbOfRequiredValues){
 				neededBars.addFirst(bar);
 				currentNbOfReValues++;
 				continue;

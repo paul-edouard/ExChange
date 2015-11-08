@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.persistence.Entity;
 
+import org.apache.log4j.Logger;
 import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Solution;
@@ -25,6 +26,8 @@ import com.munch.exchange.model.core.moea.InjectedSolutionsAlgorithmFactory;
 
 @Entity
 public class IbChartUpwardTrendLine extends IbChartIndicator {
+	
+	private static Logger logger = Logger.getLogger(IbChartUpwardTrendLine.class);
 
 	/**
 	 * 
@@ -108,6 +111,13 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 		
 		double[] Eprices=this.barsToDoubleArray(bars, DataType.LOW,numberOfValues);
 		long[] Etimes=this.getTimeArray(bars,numberOfValues);
+		
+		if(period>Eprices.length){
+			logger.info("Period is too lang, the max value is: "+Eprices.length);
+			return ;
+		}
+		
+		
 		double[] prices=new double[period];
 		long[] times=new long[period];
 		
