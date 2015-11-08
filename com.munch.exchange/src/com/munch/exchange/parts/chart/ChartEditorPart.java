@@ -52,7 +52,6 @@ import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.ComparableObjectItem;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.ohlc.OHLCItem;
 import org.jfree.data.time.ohlc.OHLCSeries;
@@ -642,7 +641,8 @@ public class ChartEditorPart{
     
     private void removePlots(){
     	
-    	List<XYPlot> list = new ArrayList<>(combinedPlot.getSubplots());
+    	@SuppressWarnings("unchecked")
+		List<XYPlot> list = new ArrayList<>(combinedPlot.getSubplots());
     	for (XYPlot plot : list) {
     		combinedPlot.remove(plot);
     	}
