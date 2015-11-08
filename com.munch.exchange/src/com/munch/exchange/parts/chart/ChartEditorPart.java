@@ -47,6 +47,7 @@ import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.AbstractXYItemRenderer;
 import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
@@ -784,32 +785,68 @@ public class ChartEditorPart{
 		switch (serie.getRendererType()) {
 		case MAIN:
 			pos=mainCollection.indexOf(serie.getName());
-			if(pos>=0)mainCollection.removeSeries(pos);
+			if(pos>=0){
+				updatePlotRendererBeforeSerieDeletion(mainCollection.getSeriesCount(), pos, mainPlotRenderer);
+				mainCollection.removeSeries(pos);
+			}
 			break;
 		case SECOND:
 			pos=secondCollection.indexOf(serie.getName());
-			if(pos>=0)secondCollection.removeSeries(pos);
+			if(pos>=0){
+				updatePlotRendererBeforeSerieDeletion(secondCollection.getSeriesCount(), pos, secondPlotrenderer);
+				secondCollection.removeSeries(pos);
+			}
 			break;
 		case PERCENT:
 			pos=percentCollection.indexOf(serie.getName());
-			if(pos>=0)percentCollection.removeSeries(pos);
+			if(pos>=0){
+				updatePlotRendererBeforeSerieDeletion(percentCollection.getSeriesCount(), pos, percentPlotrenderer);
+				percentCollection.removeSeries(pos);
+			}
 			break;
 		case ERROR:
 			pos=errorCollection.indexOf(serie.getName());
-			if(pos>=0)errorCollection.removeSeries(pos);
+			if(pos>=0){
+				updatePlotRendererBeforeSerieDeletion(errorCollection.getSeriesCount(), pos, errorPlotRenderer);
+				errorCollection.removeSeries(pos);
+			}
 			break;
 		case DEVIATION:
 			pos=deviationCollection.indexOf(serie.getName());
-			if(pos>=0)deviationCollection.removeSeries(pos);
+			if(pos>=0){
+				updatePlotRendererBeforeSerieDeletion(deviationCollection.getSeriesCount(), pos, deviationRenderer);
+				deviationCollection.removeSeries(pos);
+			}
 			break;
 		case DEVIATION_PERCENT:
 			pos=deviationPercentCollection.indexOf(serie.getName());
-			if(pos>=0)deviationPercentCollection.removeSeries(pos);
+			if(pos>=0){
+				updatePlotRendererBeforeSerieDeletion(deviationPercentCollection.getSeriesCount(), pos, deviationPercentPlotRenderer);
+				deviationPercentCollection.removeSeries(pos);
+			}
 			break;
 
 		default:
 			break;
 		}
+	}
+	
+	private void updatePlotRendererBeforeSerieDeletion(int nbOfSeriesBefore, int deletePos,AbstractXYItemRenderer renderer){
+		if(nbOfSeriesBefore==deletePos+1)return;
+		if(nbOfSeriesBefore==1)return;
+		
+		for(int i=deletePos;i<nbOfSeriesBefore-1;i++){
+			renderer.setSeriesPaint(i, renderer.getSeriesPaint(i+1));
+			renderer.setSeriesStroke(i, renderer.getSeriesStroke(i+1));
+			
+			if(renderer instanceof XYLineAndShapeRenderer){
+				XYLineAndShapeRenderer xYLineAndShapeRenderer=(XYLineAndShapeRenderer)renderer;
+				xYLineAndShapeRenderer.setSeriesShapesVisible(i, xYLineAndShapeRenderer.getSeriesShapesVisible(i+1));
+				xYLineAndShapeRenderer.setSeriesLinesVisible(i, xYLineAndShapeRenderer.getSeriesLinesVisible(i+1));
+			}
+			
+		}
+		
 	}
 	
 	private void resetChartSerieColor(IbChartSerie serie){
