@@ -15,6 +15,7 @@ import com.ib.controller.ApiController.IContractDetailsHandler;
 import com.ib.controller.Types.SecType;
 import com.ib.controller.NewContract;
 import com.ib.controller.NewContractDetails;
+import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.server.ejb.ib.topmktdata.TopMktDataMsgSenderCollector;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
@@ -108,7 +109,7 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	*/
 	
 	@Override
-	public List<IbContract> searchContract(String symbol,SecType secType) {
+	public List<IbContract> searchContracts(String symbol,SecType secType) {
 		
 	
 		NewContract m_contract = new NewContract();
@@ -196,6 +197,12 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	@Override
 	public List<IbContract> getAllContracts() {
 		return em.createNamedQuery("IbContract.getAll", IbContract.class).getResultList();
+	}
+
+	@Override
+	public IbCommission getCommission(IbContract contract) {
+		IbContract c=getContract(contract.getId());
+		return c.getCommission();
 	}
 
 	

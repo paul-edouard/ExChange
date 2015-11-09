@@ -31,7 +31,7 @@ public class ContractInfoMB {
 		
 		//List<ExContract> list=contractInfoBeanRemote.searchContract("EUR",SecType.CASH);
 		log.info("Request started!");
-		List<IbContract> list=contractInfoBeanRemote.searchContract("BMW",SecType.STK);
+		List<IbContract> list=contractInfoBeanRemote.searchContracts("BMW",SecType.STK);
 		//List<ExContract> list=contractInfoBeanRemote.searchContractExchange("IBM","SMART");
 		/*
 		for(ExContract contract: list){

@@ -14,6 +14,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 import org.hibernate.validator.constraints.Length;
 
@@ -43,6 +44,8 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	@OneToMany(mappedBy="contract",cascade=CascadeType.ALL)
 	private List<IbBarContainer> bars;
 	
+	@OneToOne(mappedBy="contract",cascade=CascadeType.ALL)
+	private IbCommission commission;
 	
 	private int    conId;
 	private String symbol;
@@ -649,6 +652,19 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 
 	public void setNotes(String notes) {
 		this.notes = notes;
+	}
+	
+	
+	
+	
+	public IbCommission getCommission() {
+		if(commission==null)
+			commission=new IbCommission(this);
+		return commission;
+	}
+
+	public void setCommission(IbCommission commission) {
+		this.commission = commission;
 	}
 
 	@Override

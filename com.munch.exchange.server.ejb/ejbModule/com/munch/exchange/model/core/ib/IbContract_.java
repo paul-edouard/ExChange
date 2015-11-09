@@ -9,7 +9,7 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-09-19T21:24:10.397+0200")
+@Generated(value="Dali", date="2015-11-09T14:52:55.600+0100")
 @StaticMetamodel(IbContract.class)
 public class IbContract_ {
 	public static volatile SingularAttribute<IbContract, Integer> id;
@@ -60,4 +60,5 @@ public class IbContract_ {
 	public static volatile SingularAttribute<IbContract, String> nextOptionType;
 	public static volatile SingularAttribute<IbContract, Boolean> nextOptionPartial;
 	public static volatile SingularAttribute<IbContract, String> notes;
+	public static volatile SingularAttribute<IbContract, IbCommission> commission;
 }

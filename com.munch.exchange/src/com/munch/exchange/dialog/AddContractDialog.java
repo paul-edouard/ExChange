@@ -228,7 +228,7 @@ public class AddContractDialog extends TitleAreaDialog {
 		
 		//Test if the contract was allready added
 		//MessageDialog
-		java.util.List<IbContract> list=contractProvider.getAll();
+		java.util.List<IbContract> list=contractProvider.getAllContracts();
 		for(IbContract testContract:list ){
 			if(testContract.compareWith(contract)){
 				MessageDialog.openWarning(shell, "Contract alleady in the database",

@@ -247,7 +247,7 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 		}
 		
 		void loadAllContracts(){
-			List<IbContract> contracts=contractProvider.getAll();
+			List<IbContract> contracts=contractProvider.getAllContracts();
 			exContractRoot.getChildren().clear();
 			for(IbContract contract:contracts){
 				//System.out.println("Add new contract: "+contract.getId());

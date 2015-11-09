@@ -2,7 +2,7 @@ package com.munch.exchange.model.core.ib.chart;
 
 import java.util.EventListener;
 
-public interface IbChartGroupChangeListener extends EventListener {
+public interface IbChartIndicatorGroupChangeListener extends EventListener {
 	
 	
 	void indicatorActivationChanged(IbChartIndicator indicator);

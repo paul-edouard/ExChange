@@ -30,8 +30,6 @@ public class IbChartSuperTrend extends IbChartIndicator{
 	public static final String PERIOD="Period";
 	public static final String FACTOR="Factor";
 	
-	
-	
 
 	public IbChartSuperTrend() {
 		super();
