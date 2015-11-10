@@ -11,8 +11,11 @@ import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 
+import com.munch.exchange.IEventConstant;
+import com.munch.exchange.dialog.EditCommissionDialog;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.ExContractContainer;
@@ -26,18 +29,30 @@ public class EditContractCommissionHandler {
 	@Inject
 	private IIBContractProvider contractProvider;
 	
-	@Inject
-	private Shell shell;
 	
 	private boolean canExcecute=false;
 	private IbContract selectedContract;
 	
 	
 	@Execute
-	public void execute() {
-		logger.info("Hi, I'm EditContractHandler");
+	public void execute(Shell shell) {
+		
 		IbCommission commission=contractProvider.getCommission(selectedContract);
-		logger.info("Commission found: "+commission.getFixed());
+		if(commission==null){
+			logger.info("Commission of contract "+selectedContract.getLongName()+" no found!");
+		}
+		//logger.info("Incomming commission "+commission);
+		
+		EditCommissionDialog dialog=new EditCommissionDialog(shell, commission.copy());
+		if (dialog.open() == Window.OK) {
+		//	logger.info("Commission dialog pressed ok the commission should be saved!");
+			IbCommission toUpdateCommission=dialog.getCommission();
+		//	logger.info("toUpdateCommission "+toUpdateCommission);
+			contractProvider.update(toUpdateCommission);
+			
+		}
+		
+		
 	}
 	
 	

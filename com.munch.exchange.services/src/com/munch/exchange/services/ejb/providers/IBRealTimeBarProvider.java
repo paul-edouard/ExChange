@@ -87,8 +87,10 @@ public class IBRealTimeBarProvider implements IIBRealTimeBarProvider,
 	@Override
 	public void close() {
 		log.info("Close Real time bar consumer");
-		consumer.close();
-		jmsContext.close();
+		if(consumer!=null)
+			consumer.close();
+		if(jmsContext!=null)
+			jmsContext.close();
 	}
 
 	@Override

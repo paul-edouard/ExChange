@@ -73,4 +73,10 @@ public class IBContractProvider implements IIBContractProvider {
 		return beanRemote.getService().getCommission(contract);
 	}
 
+	@Override
+	public IbCommission update(IbCommission commission) {
+		if(beanRemote==null)init();
+		return beanRemote.getService().update(commission);
+	}
+
 }

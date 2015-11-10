@@ -25,6 +25,7 @@ public interface ContractInfoBeanRemote {
 	public List<IbContract> getAllContracts();
 	
 	public IbCommission getCommission(IbContract contract);
+	public IbCommission update(IbCommission commission);
 	
 
 }

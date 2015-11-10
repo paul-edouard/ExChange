@@ -205,6 +205,12 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 		return c.getCommission();
 	}
 
+	@Override
+	public IbCommission update(IbCommission commission) {
+		em.merge(commission);
+		return commission;
+	}
+
 	
 
 }

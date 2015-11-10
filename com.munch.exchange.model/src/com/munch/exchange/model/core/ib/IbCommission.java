@@ -13,7 +13,7 @@ import javax.persistence.OneToOne;
 
 
 @Entity
-public class IbCommission implements Serializable{
+public class IbCommission implements Serializable, Copyable<IbCommission>{
 	
 	/**
 	 * 
@@ -29,7 +29,7 @@ public class IbCommission implements Serializable{
 	}
 	
 	public static enum Currency {
-		None, USD, EUR, CAD, JPY;
+		None, USD, EUR, CAD, JPY, NOK, SEK;
 	}
 	
 	@Id
@@ -78,6 +78,35 @@ public class IbCommission implements Serializable{
 		super();
 	}
 	
+	@Override
+	public IbCommission copy() {
+		IbCommission c=new IbCommission();
+		
+		c.id=id;
+		
+		c.commissionCategory=commissionCategory;
+		c.commissionType=commissionType;
+		c.currency=currency;
+		
+		c.fixed=fixed;
+		c.fixed_isPercentOfTradeValue=fixed_isPercentOfTradeValue;
+		c.minPerOrder=minPerOrder;
+		c.minPerOrder_isPercentOfTradeValue=minPerOrder_isPercentOfTradeValue;
+		c.maxPerOrder=maxPerOrder;
+		c.maxPerOrder_isPercentOfTradeValue=maxPerOrder_isPercentOfTradeValue;
+		
+		c.monthlyTradeAmount=monthlyTradeAmount;
+		c.commissions=commissions;
+		c.contractVolume=contractVolume;
+		
+		c.contract=contract;
+		
+		return c;
+	}
+	
+	
+	
+	
 	
 	public int getId() {
 		return id;
@@ -119,11 +148,11 @@ public class IbCommission implements Serializable{
 		this.fixed = fixed;
 	}
 
-	public boolean isFixed_isPercentOfTradeValue() {
+	public boolean isFixedPercentOfTradeValue() {
 		return fixed_isPercentOfTradeValue;
 	}
 
-	public void setFixed_isPercentOfTradeValue(boolean fixed_isPercentOfTradeValue) {
+	public void setFixedPercentOfTradeValue(boolean fixed_isPercentOfTradeValue) {
 		this.fixed_isPercentOfTradeValue = fixed_isPercentOfTradeValue;
 	}
 
@@ -135,11 +164,11 @@ public class IbCommission implements Serializable{
 		this.minPerOrder = minPerOrder;
 	}
 
-	public boolean isMinPerOrder_isPercentOfTradeValue() {
+	public boolean isMinPerOrderPercentOfTradeValue() {
 		return minPerOrder_isPercentOfTradeValue;
 	}
 
-	public void setMinPerOrder_isPercentOfTradeValue(
+	public void setMinPerOrderPercentOfTradeValue(
 			boolean minPerOrder_isPercentOfTradeValue) {
 		this.minPerOrder_isPercentOfTradeValue = minPerOrder_isPercentOfTradeValue;
 	}
@@ -152,11 +181,11 @@ public class IbCommission implements Serializable{
 		this.maxPerOrder = maxPerOrder;
 	}
 
-	public boolean isMaxPerOrder_isPercentOfTradeValue() {
+	public boolean isMaxPerOrderPercentOfTradeValue() {
 		return maxPerOrder_isPercentOfTradeValue;
 	}
 
-	public void setMaxPerOrder_isPercentOfTradeValue(
+	public void setMaxPerOrderPercentOfTradeValue(
 			boolean maxPerOrder_isPercentOfTradeValue) {
 		this.maxPerOrder_isPercentOfTradeValue = maxPerOrder_isPercentOfTradeValue;
 	}
@@ -192,6 +221,48 @@ public class IbCommission implements Serializable{
 	public void setContract(IbContract contract) {
 		this.contract = contract;
 	}
+
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IbCommission other = (IbCommission) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
+
+
+	@Override
+	public String toString() {
+		return "IbCommission [id=" + id + ", commissionCategory="
+				+ commissionCategory + ", commissionType=" + commissionType
+				+ ", currency=" + currency + ", fixed=" + fixed
+				+ ", fixed_isPercentOfTradeValue="
+				+ fixed_isPercentOfTradeValue + ", minPerOrder=" + minPerOrder
+				+ ", minPerOrder_isPercentOfTradeValue="
+				+ minPerOrder_isPercentOfTradeValue + ", maxPerOrder="
+				+ maxPerOrder + ", maxPerOrder_isPercentOfTradeValue="
+				+ maxPerOrder_isPercentOfTradeValue + ", monthlyTradeAmount="
+				+ monthlyTradeAmount + ", commissions=" + commissions
+				+ ", contractVolume=" + contractVolume + "]";
+	}
+
+
 	
 	
 	
