@@ -1,22 +1,22 @@
 package com.munch.exchange.dialog;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.wb.swt.ResourceManager;
 
 import com.munch.exchange.model.core.ib.IbCommission;
@@ -24,13 +24,9 @@ import com.munch.exchange.model.core.ib.IbCommission.CommissionCategory;
 import com.munch.exchange.model.core.ib.IbCommission.CommissionType;
 import com.munch.exchange.model.core.ib.IbCommission.Currency;
 
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.ModifyEvent;
-
 public class EditCommissionDialog extends TitleAreaDialog {
 	
 	private IbCommission commission;
-	private Shell shell;
 	
 	private Combo comboCategory;
 	private Combo comboType;
@@ -54,7 +50,6 @@ public class EditCommissionDialog extends TitleAreaDialog {
 		super(parentShell);
 		setHelpAvailable(false);
 		this.commission=commission;
-		this.shell=shell;
 	}
 	
 	public static String[] getNames(Class<? extends Enum<?>> e) {

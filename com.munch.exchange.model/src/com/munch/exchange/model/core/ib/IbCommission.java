@@ -104,8 +104,78 @@ public class IbCommission implements Serializable, Copyable<IbCommission>{
 		return c;
 	}
 	
-	
-	
+	public double calculate(long volume, double price){
+		
+		double commission=0;
+		double tradeValue=volume*price;
+		double f=0;
+		
+		//Calculate the min calue
+		double min=minPerOrder;
+		if(minPerOrder_isPercentOfTradeValue)
+			min=tradeValue*minPerOrder;
+		
+		//Calculate the max value
+		double max=maxPerOrder;
+		if(maxPerOrder_isPercentOfTradeValue)
+			max=tradeValue*maxPerOrder;
+		
+		
+		
+		switch (commissionCategory) {
+		
+		case Bonds:
+			break;
+		case CFDs:
+			break;
+		
+		//FOREX
+		case Forex:
+			f=commissions*0.0001*tradeValue;
+			commission=Math.max(f, min);
+			break;
+		
+		case FuturesAndFOPs:
+			break;
+		
+		case Metals:
+			break;
+		
+		case MutualFunds:
+			break;
+		
+		case Options:
+			break;
+		
+		//STOCKS ETFs Warrants
+		case StocksETFsWarrants:
+			if(commissionType==CommissionType.Fixed){
+				
+				f=volume*fixed;
+				if(fixed_isPercentOfTradeValue)
+					f=tradeValue*fixed;
+				
+				if(max>0)
+					commission=Math.min(max,Math.max(f, min));
+				else
+					commission=Math.max(f, min);
+			}
+			else if(commissionType==CommissionType.Tiered){
+				
+			}
+			
+			break;
+		
+		case US_SSFs_EFPs:
+			break;
+			
+		default:
+			break;
+		}
+		
+		
+		return commission;
+	}
 	
 	
 	public int getId() {
@@ -231,7 +301,6 @@ public class IbCommission implements Serializable, Copyable<IbCommission>{
 		return result;
 	}
 
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -245,7 +314,6 @@ public class IbCommission implements Serializable, Copyable<IbCommission>{
 			return false;
 		return true;
 	}
-
 
 	@Override
 	public String toString() {
