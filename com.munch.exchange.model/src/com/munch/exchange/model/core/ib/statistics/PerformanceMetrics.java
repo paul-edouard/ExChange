@@ -3,11 +3,32 @@ package com.munch.exchange.model.core.ib.statistics;
 import java.io.Serializable;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
+
+/**
+ * 
+ * http://www.fxstreet.com/education/learning-center/unit-3/
+ * 
+ * Chapter 02 Performance Metrics
+ * 
+ * 
+    Trade Statistics
+    Revenue Statistics
+    Time Statistics
+    Stability Statistics
+    Reading a Performance Chart
+
+ * 
+ * @author paul-edouard
+ *
+ */
+
+@Entity
 public class PerformanceMetrics implements Serializable{
 
 	/**
@@ -31,5 +52,49 @@ public class PerformanceMetrics implements Serializable{
 	
 	@OneToOne(mappedBy="performanceMetrics",cascade=CascadeType.ALL)
 	private RevenueStatistics revenueStatistics;
+
+	public PerformanceMetrics() {
+		super();
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public TradeStatistics getTradeStatistics() {
+		return tradeStatistics;
+	}
+
+	public void setTradeStatistics(TradeStatistics tradeStatistics) {
+		this.tradeStatistics = tradeStatistics;
+	}
+
+	public TimeStatistics getTimeStatistics() {
+		return timeStatistics;
+	}
+
+	public void setTimeStatistics(TimeStatistics timeStatistics) {
+		this.timeStatistics = timeStatistics;
+	}
+
+	public StabilityStatistics getStabilityStatistics() {
+		return stabilityStatistics;
+	}
+
+	public void setStabilityStatistics(StabilityStatistics stabilityStatistics) {
+		this.stabilityStatistics = stabilityStatistics;
+	}
+
+	public RevenueStatistics getRevenueStatistics() {
+		return revenueStatistics;
+	}
+
+	public void setRevenueStatistics(RevenueStatistics revenueStatistics) {
+		this.revenueStatistics = revenueStatistics;
+	}
 	
 }

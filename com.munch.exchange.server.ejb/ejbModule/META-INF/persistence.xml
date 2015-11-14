@@ -21,6 +21,11 @@
 	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartSuperTrend</class>
 	<class>com.munch.exchange.model.core.ib.IbCommission</class>
 	<class>com.munch.exchange.model.core.ib.chart.signals.IbChartSignal</class>
+	<class>com.munch.exchange.model.core.ib.statistics.PerformanceMetrics</class>
+	<class>com.munch.exchange.model.core.ib.statistics.TradeStatistics</class>
+	<class>com.munch.exchange.model.core.ib.statistics.RevenueStatistics</class>
+	<class>com.munch.exchange.model.core.ib.statistics.TimeStatistics</class>
+	<class>com.munch.exchange.model.core.ib.statistics.StabilityStatistics</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	
