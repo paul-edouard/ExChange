@@ -1,4 +1,4 @@
-DROP TABLE tradestatistics;
-DROP TABLE revenuestatistics;
-DROP TABLE timestatistics;
-DROP TABLE stabilitystatistics;
+DROP TABLE ibchartserie;
+DROP TABLE ibchartparameter;
+DROP TABLE ibchartindicator;
+DROP TABLE ibchartindicatorgroup;
