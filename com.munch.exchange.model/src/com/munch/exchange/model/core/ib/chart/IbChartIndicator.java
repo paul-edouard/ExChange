@@ -17,9 +17,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
-import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
-import com.munch.exchange.model.core.chart.ChartParameter;
-import com.munch.exchange.model.core.chart.ChartSerie;
 import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.bar.IbBar;
@@ -64,18 +61,16 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 		
 		setGroup(group);
 		initName();
-		createSeries();
 		createParameters();
-		
+		createSeries();
 	}
 	
 	public IbChartIndicator() {
 		super();
 		
 		initName();
-		createSeries();
 		createParameters();
-		
+		createSeries();
 	}
 	
 	public void copyData(IbChartIndicator in){

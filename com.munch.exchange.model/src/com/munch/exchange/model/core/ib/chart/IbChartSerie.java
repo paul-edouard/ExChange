@@ -17,7 +17,6 @@ import javax.persistence.Transient;
 
 import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
-import com.munch.exchange.model.core.ib.bar.IbBar;
 
 
 

@@ -1,13 +1,19 @@
 package com.munch.exchange.model.core.ib.statistics;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.chart.IbChartSerie;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 
 
 /**
@@ -53,10 +59,21 @@ public class PerformanceMetrics implements Serializable{
 	@OneToOne(mappedBy="performanceMetrics",cascade=CascadeType.ALL)
 	private RevenueStatistics revenueStatistics;
 
+	@OneToOne
+	@JoinColumn(name="CHART_SIGNAL_ID")
+	private IbChartSignal chartSignal;
+	
+	
 	public PerformanceMetrics() {
 		super();
 	}
-
+	
+	
+	public void calculateMetricsForSignal(List<IbBar> bars, IbChartSerie signal){
+		//TODO implementation of metrics calculation
+	}
+	
+	
 	public int getId() {
 		return id;
 	}
@@ -96,5 +113,17 @@ public class PerformanceMetrics implements Serializable{
 	public void setRevenueStatistics(RevenueStatistics revenueStatistics) {
 		this.revenueStatistics = revenueStatistics;
 	}
+
+	
+	public IbChartSignal getChartSignal() {
+		return chartSignal;
+	}
+	
+
+	public void setChartSignal(IbChartSignal chartSignal) {
+		this.chartSignal = chartSignal;
+	}
+	
+	
 	
 }
