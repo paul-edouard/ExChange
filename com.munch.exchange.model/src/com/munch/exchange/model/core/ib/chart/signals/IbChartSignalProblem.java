@@ -1,9 +1,11 @@
 package com.munch.exchange.model.core.ib.chart.signals;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.variable.EncodingUtils;
+import org.moeaframework.core.variable.RealVariable;
 import org.moeaframework.problem.AbstractProblem;
 
 import com.munch.exchange.model.core.ib.bar.IbBar;
@@ -65,8 +67,64 @@ public class IbChartSignalProblem extends AbstractProblem{
 
 	@Override
 	public Solution newSolution() {
-		// TODO Auto-generated method stub
-		return null;
+		Solution solution = new Solution(getNumberOfVariables(), 
+				getNumberOfObjectives());
+		
+		int index=0;
+		for(IbChartParameter param:chartSignal.getParameters()){
+			switch (param.getType()) {
+			case DOUBLE:
+				solution.setVariable(index,  EncodingUtils.newReal(param.getMinValue(), param.getMaxValue()));
+				break;
+			case INTEGER:
+				solution.setVariable(index, EncodingUtils.newInt((int)param.getMinValue(), (int)param.getMaxValue()));
+				break;
+
+			default:
+				break;
+			}
+			
+			index++;
+		}
+		
+		
+		return solution;
 	}
+	
+	
+	public List<Solution> createStartSolutions() {
+		Solution solution = new Solution(getNumberOfVariables(), 
+				getNumberOfObjectives());
+		
+		int index=0;
+		for(IbChartParameter param:chartSignal.getParameters()){
+			switch (param.getType()) {
+			case DOUBLE:
+				RealVariable rvar=EncodingUtils.newReal(param.getMinValue(), param.getMaxValue());
+				rvar.setValue(param.getValue());
+				solution.setVariable(index,rvar);
+				break;
+			case INTEGER:
+				RealVariable ivar=EncodingUtils.newInt((int)param.getMinValue(), (int)param.getMaxValue());
+				ivar.setValue(param.getValue());
+				solution.setVariable(index,ivar);
+				break;
+
+			default:
+				break;
+			}
+			
+			index++;
+		}
+		
+		
+		List<Solution> solutions=new LinkedList<Solution>();
+		solutions.add(solution);
+		
+		return solutions;
+		
+	}
+	
+	
 
 }

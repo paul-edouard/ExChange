@@ -1,5 +1,6 @@
 package com.munch.exchange.model.core.ib.chart.signals;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,16 +38,18 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	@OneToOne(mappedBy="chartSignal",cascade=CascadeType.ALL)
 	private PerformanceMetrics performanceMetrics;
 	
-	
+	private long volume;
 	
 	public IbChartSignal() {
 		super();
+		volume=1;
 		initProblem();
 	}
 
 
 	public IbChartSignal(IbChartIndicatorGroup group) {
 		super(group);
+		volume=1;
 		initProblem();
 	}
 
@@ -102,14 +105,14 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		//Split the received bars in blocks
 		if(bars==null || bars.size()==0)return;
 		IbBar lastBar=bars.get(0);
-		long intervall=lastBar.getIntervallInSec();
+		long interval=lastBar.getIntervallInSec();
 		List<IbBar> block=new LinkedList<IbBar>();
 		block.add(lastBar);
 		
 		for(int i=1;i<bars.size();i++){
 			IbBar currentBar=bars.get(i);
 			long timeDiff=currentBar.getTime()-lastBar.getTime();
-			if(timeDiff>intervall && block.size()>=this.getValidAtPosition()){
+			if(timeDiff>interval && block.size()>=this.getValidAtPosition()){
 				computeSignalPointFromBarBlock(bars, reset);
 				block=new LinkedList<IbBar>();
 			}
@@ -121,10 +124,121 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			computeSignalPointFromBarBlock(bars, reset);
 		}
 		
-		//TODO Clean the Signal Series close the empty block with 0
+		//Clean the Signal Series close the empty block with 0
+		cleanSignalSerie(interval);
+		
+		//Create the Signal Map
+		HashMap<Long, IbChartPoint> signalMap=new HashMap<Long, IbChartPoint>();
+		for(IbChartPoint point:this.getSignalSerie().getPoints())
+			signalMap.put(point.getTime(), point);
+		
+		//Create the Bar Map
+		HashMap<Long, IbBar> barMap=new HashMap<Long, IbBar>();
+		for(IbBar bar:bars)
+			barMap.put(bar.getTime(), bar);
+		
+		//Create the Profit Serie
+		createProfitAndRiskSeries(bars, reset, signalMap, this.volume);
+		
+	}
+	
+	private void createProfitAndRiskSeries(List<IbBar> bars, boolean reset, HashMap<Long, IbChartPoint> signalMap, long volume){
+		
+		IbBar previewBar=bars.get(0);
+		double previewSignal=signalMap.get(previewBar.getTime()).getValue();
+		double profit=0.0;
+		double risk=0.0;
+		double maxCapital=0.0;
+		
+		//Add the first chart point
+		long[] times=new long[bars.size()];
+		double[] profits=new double[bars.size()];
+		double[] risks=new double[bars.size()];
+		
+		times[0]=previewBar.getTime();
+		profits[0]=profit;
+		
+		for(int i=1;i<bars.size();i++){
+			IbBar bar=bars.get(i);
+			long time=bar.getTime();
+			if(!signalMap.containsKey(time))continue;
+			
+			double signal=signalMap.get(time).getValue();
+			double previewPrice=previewBar.getClose();
+			double capital=bar.getClose()*volume;
+			
+			if(signal!=previewSignal){
+				//TODO Calculate Commission
+				double commission=0.0;
+				profit-=commission;	
+				previewPrice=bar.getOpen();
+				capital=bar.getOpen()*volume;
+			}
+			
+			if(signal>0){
+				profit+=(bar.getClose()-previewPrice)*volume;
+				if(capital>maxCapital){
+					maxCapital=capital;
+					risk=0.0;
+				}
+				else{
+					risk=capital-maxCapital;
+				}
+			}
+			
+			times[i]=bar.getTime();
+			profits[i]=profit;
+			risks[i]=risk;
+			
+			previewSignal=signal;
+		}
+		
+		
+		if(reset){
+			this.getProfitSerie().setPointValues(times, profits);
+			this.getRiskSerie().setPointValues(times, risks);
+		}
+		else{
+			this.getProfitSerie().addNewPointsOnly(times, profits);
+			this.getRiskSerie().addNewPointsOnly(times, risks);
+		}
 		
 		
 	}
+	
+	
+	
+	/**
+	 * this function clean the interval without values
+	 * 
+	 * @param interval
+	 */
+	private void cleanSignalSerie(long interval){
+		IbChartPoint oldPoint=this.getSignalSerie().getPoints().get(0);
+		List<IbChartPoint> pointsToAdd=new LinkedList<IbChartPoint>();
+		for(int i=1;i<this.getSignalSerie().getPoints().size();i++){
+			IbChartPoint point=this.getSignalSerie().getPoints().get(i);
+			if(point.getValue()!=oldPoint.getValue()){
+				if(point.getTime()>oldPoint.getTime()+interval){
+					IbChartPoint nPoint=null;
+					if(point.getValue()>0){
+						nPoint=new IbChartPoint(point.getTime()-interval, oldPoint.getValue());
+					}
+					else{
+						nPoint=new IbChartPoint(oldPoint.getTime()+interval, point.getValue());
+					}
+					pointsToAdd.add(nPoint);
+				}
+			}
+			
+			oldPoint=point;
+		}
+		
+		this.getSignalSerie().insertPoints(pointsToAdd);
+		
+	}
+	
+	
 	
 	protected abstract int getValidAtPosition();
 

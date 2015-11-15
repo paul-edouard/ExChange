@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib.chart;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -196,6 +197,12 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 	public void addPoint(long time,double value){
 		points.add(new IbChartPoint(time, value));
 	}
+	
+	public void insertPoints(List<IbChartPoint> newPoints){
+		points.addAll(newPoints);
+		Collections.sort(points);
+	}
+	
 	
 	public boolean isEmpty(){
 		return points.isEmpty();
