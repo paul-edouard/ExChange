@@ -9,8 +9,8 @@ import javax.persistence.Entity;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
-import org.moeaframework.problem.AbstractProblem;
-
+import com.munch.exchange.model.core.ib.IbCommission;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
@@ -29,11 +29,16 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	public static final String PROFIT="PROFIT";
 	public static final String RISK="RISK";
-	public static final String BUY_AND_SELL="BUY AND SELL";
+	public static final String BUY_SIGNAL="BUY";
+	public static final String SELL_SIGNAL="SELL";
 	public static final String SIGNAL="SIGNAL";
 	
 	@Transient
 	private IbChartSignalProblem problem;
+	
+	@Transient
+	private IbCommission commission;
+	
 	
 	@OneToOne(mappedBy="chartSignal",cascade=CascadeType.ALL)
 	private PerformanceMetrics performanceMetrics;
@@ -42,14 +47,14 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	public IbChartSignal() {
 		super();
-		volume=1;
+		volume=10;
 		initProblem();
 	}
 
 
 	public IbChartSignal(IbChartIndicatorGroup group) {
 		super(group);
-		volume=1;
+		volume=10;
 		initProblem();
 	}
 
@@ -82,12 +87,19 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		IbChartSerie risk=new IbChartSerie(this,this.getName()+" "+RISK,RendererType.SECOND,false,false,colorR);
 		this.series.add(risk);
 		
-		int[] colorBS=new int[3];
-		color[0]=10;
-		color[1]=250;
-		color[2]=50;
-		IbChartSerie buyAndSell=new IbChartSerie(this,this.getName()+" "+BUY_AND_SELL,RendererType.MAIN,false,true,colorBS);
-		this.series.add(buyAndSell);
+		int[] colorBUY=new int[3];
+		colorBUY[0]=0;
+		colorBUY[1]=250;
+		colorBUY[2]=0;
+		IbChartSerie buy=new IbChartSerie(this,this.getName()+" "+BUY_SIGNAL,RendererType.MAIN,false,true,colorBUY);
+		this.series.add(buy);
+		
+		int[] colorSELL=new int[3];
+		colorSELL[0]=250;
+		colorSELL[1]=0;
+		colorSELL[2]=0;
+		IbChartSerie sell=new IbChartSerie(this,this.getName()+" "+SELL_SIGNAL,RendererType.MAIN,false,true,colorSELL);
+		this.series.add(sell);
 		
 	}
 	
@@ -140,6 +152,8 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		//Create the Profit Serie
 		createProfitAndRiskSeries(bars, reset, signalMap, this.volume);
 		
+		//TODO update the performance metrics
+		
 	}
 	
 	private void createProfitAndRiskSeries(List<IbBar> bars, boolean reset, HashMap<Long, IbChartPoint> signalMap, long volume){
@@ -167,14 +181,24 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			double previewPrice=previewBar.getClose();
 			double capital=bar.getClose()*volume;
 			
+			//Modification of position
 			if(signal!=previewSignal){
-				//TODO Calculate Commission
-				double commission=0.0;
-				profit-=commission;	
+				// Calculate Commission
+				IbCommission com=this.getCommission();
+				if(com!=null){
+					profit-=com.calculate(volume, bar.getOpen());
+				}
 				previewPrice=bar.getOpen();
 				capital=bar.getOpen()*volume;
+				if(signal>0){
+					this.getBuySerie().addPoint(time, bar.getOpen());
+				}
+				else{
+					this.getSellSerie().addPoint(time, bar.getOpen());
+				}
 			}
 			
+			//Signal is long
 			if(signal>0){
 				profit+=(bar.getClose()-previewPrice)*volume;
 				if(capital>maxCapital){
@@ -239,7 +263,6 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	}
 	
 	
-	
 	protected abstract int getValidAtPosition();
 
 
@@ -255,8 +278,12 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		return this.getChartSerie(this.getName()+" "+RISK);
 	}
 	
-	public IbChartSerie getBuyAndSellSerie(){
-		return this.getChartSerie(this.getName()+" "+BUY_AND_SELL);
+	public IbChartSerie getBuySerie(){
+		return this.getChartSerie(this.getName()+" "+BUY_SIGNAL);
+	}
+	
+	public IbChartSerie getSellSerie(){
+		return this.getChartSerie(this.getName()+" "+SELL_SIGNAL);
 	}
 	
 	public PerformanceMetrics getPerformanceMetrics() {
@@ -266,6 +293,40 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	public void setPerformanceMetrics(PerformanceMetrics performanceMetrics) {
 		this.performanceMetrics = performanceMetrics;
 	}
+
+
+	public long getVolume() {
+		return volume;
+	}
+
+
+	public void setVolume(long volume) {
+		if(volume!=this.volume){
+			this.volume = volume;
+			this.setDirty(true);
+		}
+	}
+
+
+	public void setCommission(IbCommission commission) {
+		this.commission = commission;
+	}
+
+
+	private IbCommission getCommission() {
+		//Try to find the commission from the current contract
+		if(commission==null){
+			IbChartIndicatorGroup rootGroup=this.getGroup().getRoot();
+			if(rootGroup!=null && rootGroup.getContainer()!=null){
+				IbContract contract=rootGroup.getContainer().getContract();
+				if(contract!=null && contract.getCommission()!=null){
+					commission=contract.getCommission();
+				}
+			}
+		}
+		return commission;
+	}
+
 
 	
 	

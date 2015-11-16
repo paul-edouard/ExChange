@@ -30,7 +30,7 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 	private static final long serialVersionUID = 2519428267199061398L;
 	
 	public enum RendererType { NONE, MAIN, SECOND, PERCENT, ERROR, DEVIATION, DEVIATION_PERCENT;}
-	
+	public enum ShapeType { NONE, UP_TRIANGLE, DOWN_TRIANGLE}
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -55,13 +55,16 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 	@Enumerated(EnumType.STRING)
 	private RendererType rendererType;
 	
+	@Enumerated(EnumType.STRING)
+	private ShapeType shapeType;
+	
 	
 	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="INDICATOR_ID")
 	private IbChartIndicator indicator;
 	
 	public IbChartSerie(){
-		
+		shapeType=ShapeType.NONE;
 	}
 	
 	public IbChartSerie(IbChartIndicator parent,String name,RendererType type,boolean isMain, boolean isActivated,int[] color ){
@@ -75,8 +78,26 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 		this.rendererType=type;
 		
 		this.indicator=parent;
-	
+		
+		this.shapeType=ShapeType.NONE;
 	}
+	
+	public IbChartSerie(IbChartIndicator parent,String name,RendererType type,boolean isMain, boolean isActivated,int[] color, ShapeType shapeType ){
+		this.name=name;
+		
+		this.isMain=isMain;
+		this.isActivated=isActivated;
+		this.color_R=color[0];
+		this.color_G=color[1];
+		this.color_B=color[2];
+		this.rendererType=type;
+		
+		this.indicator=parent;
+		
+		this.shapeType=shapeType;
+	}
+	
+	
 	
 	
 	@Override
