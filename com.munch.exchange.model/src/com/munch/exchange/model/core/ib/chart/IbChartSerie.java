@@ -201,6 +201,8 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 	
 	private boolean containsPoint(long time){
 		
+		if(points.isEmpty())return false;
+		
 		if(points.size()>0){
 			IbChartPoint point=points.get(points.size()-1);
 			if(time>point.getTime())return false;

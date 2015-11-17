@@ -26,6 +26,7 @@
 	<class>com.munch.exchange.model.core.ib.statistics.RevenueStatistics</class>
 	<class>com.munch.exchange.model.core.ib.statistics.TimeStatistics</class>
 	<class>com.munch.exchange.model.core.ib.statistics.StabilityStatistics</class>
+	<class>com.munch.exchange.model.core.ib.chart.signals.SuperTrendSignal</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

@@ -1,5 +1,6 @@
 package com.munch.exchange.model.core.ib.chart.signals;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,7 +13,13 @@ import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 
-public class IbChartSignalProblem extends AbstractProblem{
+public class IbChartSignalProblem extends AbstractProblem implements Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5571326766704654121L;
+	
 	
 	private IbChartSignal chartSignal;
 	private List<IbBar> bars;

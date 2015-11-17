@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
+import com.munch.exchange.model.core.ib.chart.signals.SuperTrendSignal;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSuperTrend;
@@ -49,6 +50,11 @@ public class IbChartIndicatorFactory {
 		//DERIVATE
 		IbChartIndicatorGroup derivate =searchOrCreateSubGroup(signals,"Derivate");
 		addChartIndicator(derivate, IbChartSimpleDerivate.class);
+		
+		//SUPER TREND SIGNAL
+		IbChartIndicatorGroup trendSignal =searchOrCreateSubGroup(signals,"Trend signal");
+		addChartIndicator(trendSignal, SuperTrendSignal.class);
+		
 		
 		
 		cleanParents();

@@ -48,18 +48,18 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	public IbChartSignal() {
 		super();
 		volume=10;
-		initProblem();
+		//initProblem();
 	}
 
 
 	public IbChartSignal(IbChartIndicatorGroup group) {
 		super(group);
 		volume=10;
-		initProblem();
+		//initProblem();
 	}
 
 
-	private void initProblem(){
+	public void initProblem(){
 		problem=new IbChartSignalProblem(this);
 	}
 	
@@ -136,18 +136,25 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			computeSignalPointFromBarBlock(bars, reset);
 		}
 		
+		
+		if(this.getSignalSerie().getPoints().isEmpty())
+			return;
+		
+		
 		//Clean the Signal Series close the empty block with 0
 		cleanSignalSerie(interval);
 		
 		//Create the Signal Map
 		HashMap<Long, IbChartPoint> signalMap=new HashMap<Long, IbChartPoint>();
-		for(IbChartPoint point:this.getSignalSerie().getPoints())
+		for(IbChartPoint point:this.getSignalSerie().getPoints()){
 			signalMap.put(point.getTime(), point);
+			System.out.println("Point: "+point.getTime());
+		}
 		
 		//Create the Bar Map
-		HashMap<Long, IbBar> barMap=new HashMap<Long, IbBar>();
-		for(IbBar bar:bars)
-			barMap.put(bar.getTime(), bar);
+		//HashMap<Long, IbBar> barMap=new HashMap<Long, IbBar>();
+		//for(IbBar bar:bars)
+		//	barMap.put(bar.getTime(), bar);
 		
 		//Create the Profit Serie
 		createProfitAndRiskSeries(bars, reset, signalMap, this.volume);
@@ -159,7 +166,8 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	private void createProfitAndRiskSeries(List<IbBar> bars, boolean reset, HashMap<Long, IbChartPoint> signalMap, long volume){
 		
 		IbBar previewBar=bars.get(0);
-		double previewSignal=signalMap.get(previewBar.getTime()).getValue();
+		System.out.println("Bar: "+previewBar.getTime());
+		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
 		double profit=0.0;
 		double risk=0.0;
 		double maxCapital=0.0;
@@ -174,7 +182,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 		for(int i=1;i<bars.size();i++){
 			IbBar bar=bars.get(i);
-			long time=bar.getTime();
+			long time=bar.getTimeInMs();
 			if(!signalMap.containsKey(time))continue;
 			
 			double signal=signalMap.get(time).getValue();
@@ -210,7 +218,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 				}
 			}
 			
-			times[i]=bar.getTime();
+			times[i]=bar.getTimeInMs();
 			profits[i]=profit;
 			risks[i]=risk;
 			
@@ -238,6 +246,9 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	 * @param interval
 	 */
 	private void cleanSignalSerie(long interval){
+		if(this.getSignalSerie().getPoints().size()==0)
+			return;
+		
 		IbChartPoint oldPoint=this.getSignalSerie().getPoints().get(0);
 		List<IbChartPoint> pointsToAdd=new LinkedList<IbChartPoint>();
 		for(int i=1;i<this.getSignalSerie().getPoints().size();i++){
