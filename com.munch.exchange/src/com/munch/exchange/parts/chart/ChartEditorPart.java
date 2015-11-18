@@ -359,7 +359,7 @@ public class ChartEditorPart{
 		double upper=dateAxis.getRange().getUpperBound();
 		
 		//if(end>lastBarTime)return;
-		//if(start<firstBarTime)return;
+		if(barRecorder.getLastReceivedBar()==null)return;
 		
 		upper=Math.min(barRecorder.getLastReceivedBar().getTimeInMs()+IbBar.getIntervallInMs(barRecorder.getBarSize())/2,
 						end);

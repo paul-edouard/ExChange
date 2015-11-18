@@ -148,7 +148,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		HashMap<Long, IbChartPoint> signalMap=new HashMap<Long, IbChartPoint>();
 		for(IbChartPoint point:this.getSignalSerie().getPoints()){
 			signalMap.put(point.getTime(), point);
-			System.out.println("Point: "+point.getTime());
+			//System.out.println("Point: "+point.getTime());
 		}
 		
 		//Create the Bar Map
@@ -166,7 +166,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	private void createProfitAndRiskSeries(List<IbBar> bars, boolean reset, HashMap<Long, IbChartPoint> signalMap, long volume){
 		
 		IbBar previewBar=bars.get(0);
-		System.out.println("Bar: "+previewBar.getTime());
+		//System.out.println("Bar: "+previewBar.getTime());
 		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
 		double profit=0.0;
 		double risk=0.0;
@@ -193,9 +193,9 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			if(signal!=previewSignal){
 				// Calculate Commission
 				IbCommission com=this.getCommission();
-				if(com!=null){
-					profit-=com.calculate(volume, bar.getOpen());
-				}
+				//if(com!=null){
+				//	profit-=com.calculate(volume, bar.getOpen());
+				//}
 				previewPrice=bar.getOpen();
 				capital=bar.getOpen()*volume;
 				if(signal>0){
@@ -223,6 +223,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			risks[i]=risk;
 			
 			previewSignal=signal;
+			previewBar=bar;
 		}
 		
 		

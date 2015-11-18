@@ -139,7 +139,7 @@ public class IbBarRecorder {
 		barList.clear();
 		barList.addAll(barMap.values());
 		Collections.sort(barList);
-		if(!barList.getLast().isCompleted()){
+		if(!barList.isEmpty() && !barList.getLast().isCompleted()){
 			barList.removeLast();
 		}
 		return barList;
