@@ -14,6 +14,8 @@ import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.UIEventTopic;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -24,14 +26,17 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartParameter;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.neuralnetwork.NetworkArchitecture;
 import com.munch.exchange.parts.chart.tree.ChartTreeComposite;
 
@@ -51,9 +56,16 @@ public class ChartParameterEditorPart {
 	
 	private ChartIndicator chartIndicator;
 	private IbChartIndicator ibChartIndicator;
+	private IbContract contract;
 	
 	private Composite parent;
 	private Button btnReset;
+	
+	//Volume
+	private Spinner volumeSpinner;
+	private Label lblVolume;
+	private Label dummyLbl;
+	
 	
 	private LinkedList<ChartParameterComposite> parameterComposites=new LinkedList<ChartParameterComposite>();
 	private LinkedList<IbChartParameterComposite> ibParameterComposites=new LinkedList<IbChartParameterComposite>();
@@ -96,6 +108,8 @@ public class ChartParameterEditorPart {
 		if(btnReset!=null && !btnReset.isDisposed())
 			btnReset.dispose();
 		
+		clearIbChartSignalElements();
+		
 		for(ChartParameterComposite p:parameterComposites)
 			p.dispose();
 		parameterComposites.clear();
@@ -103,6 +117,9 @@ public class ChartParameterEditorPart {
 		for(IbChartParameterComposite p:ibParameterComposites)
 			p.dispose();
 		ibParameterComposites.clear();
+		
+		//Clear the IbChart Signal elements
+		
 		
 		
 		parent.update();
@@ -121,6 +138,12 @@ public class ChartParameterEditorPart {
 				ibParameterComposites.add(pc);
 			}
 		}
+		
+		
+		//Create the ib chart signal elements
+		createIbChartSignalElements();
+		
+		
 		
 		btnReset = new Button(parent, SWT.NONE);
 		btnReset.addSelectionListener(new SelectionAdapter() {
@@ -148,6 +171,55 @@ public class ChartParameterEditorPart {
 		parent.layout();
 		
 	}
+	
+	private void clearIbChartSignalElements(){
+		//if(!(ibChartIndicator instanceof IbChartSignal))return;
+		
+		if(volumeSpinner!=null && !volumeSpinner.isDisposed())
+			volumeSpinner.dispose();
+		
+		if(dummyLbl!=null && !dummyLbl.isDisposed())
+			dummyLbl.dispose();
+		
+		if(lblVolume!=null && !lblVolume.isDisposed())
+			lblVolume.dispose();
+		
+	}
+	
+	
+	private void createIbChartSignalElements(){
+		if(!(ibChartIndicator instanceof IbChartSignal))return;
+		
+		//logger.info("Contract: "+contract.getLongName());
+		IbChartSignal chartSignal=(IbChartSignal) ibChartIndicator;
+		
+		lblVolume = new Label(parent, SWT.NONE);
+		lblVolume.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+		lblVolume.setText("Volume"+":");
+		
+		volumeSpinner=new Spinner(parent, SWT.NONE);
+		volumeSpinner.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+		
+		volumeSpinner.setValues((int)chartSignal.getVolume(),
+				1, 100000, 0, 10, 1);
+		
+		volumeSpinner.addModifyListener(new ModifyListener() {
+			
+			@Override
+			public void modifyText(ModifyEvent e) {
+				int vol=volumeSpinner.getSelection();
+				IbChartSignal chartSignal=(IbChartSignal) ibChartIndicator;
+				chartSignal.setVolume(vol);
+				chartSignal.setDirty(true);
+				eventBroker.post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED, ibChartIndicator);
+				
+			}
+		});
+		
+		dummyLbl=new Label(parent, SWT.NONE);
+		
+	}
+	
 	
 	public IEventBroker getEventBroker() {
 		return eventBroker;
@@ -209,9 +281,10 @@ public class ChartParameterEditorPart {
 		 
 		chartIndicator=null;
 		ibChartIndicator=selIndic;
+		
 	    if(isCompositeAbleToReact()){
-	    	//logger.info("Selcted recieved: "+chartIndicator.getName());
-	    		update();
+			contract=ibChartIndicator.getGroup().getRoot().getContainer().getContract();
+	    	update();
 	    }
 	}
 	

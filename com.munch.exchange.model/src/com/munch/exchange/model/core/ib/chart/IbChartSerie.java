@@ -64,7 +64,7 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 	private IbChartIndicator indicator;
 	
 	public IbChartSerie(){
-		shapeType=ShapeType.NONE;
+		//shapeType=ShapeType.NONE;
 	}
 	
 	public IbChartSerie(IbChartIndicator parent,String name,RendererType type,boolean isMain, boolean isActivated,int[] color ){
@@ -113,6 +113,7 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 		c.color_G=this.color_G;
 		c.color_B=this.color_B;
 		c.rendererType=this.rendererType;
+		c.shapeType=this.shapeType;
 		
 		c.validAtPosition=this.validAtPosition;
 		
@@ -150,6 +151,9 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 			return false;
 		//System.out.println("Test the renderer");
 		if (rendererType != other.rendererType)
+			return false;
+		
+		if (shapeType != other.shapeType)
 			return false;
 		//System.out.println("Test the valid at position");
 		//if (validAtPosition != other.validAtPosition)
@@ -326,6 +330,14 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 
 	public void setColor_B(int color_B) {
 		this.color_B = color_B;
+	}
+
+	public ShapeType getShapeType() {
+		return shapeType;
+	}
+
+	public void setShapeType(ShapeType shapeType) {
+		this.shapeType = shapeType;
 	}
 	
 	/*

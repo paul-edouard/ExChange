@@ -3,6 +3,7 @@ package com.munch.exchange.parts.chart;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Shape;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ import org.jfree.data.xy.YIntervalSeriesCollection;
 import org.jfree.ui.LengthAdjustmentType;
 import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.TextAnchor;
+import org.jfree.util.ShapeUtilities;
 
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.WhatToShow;
@@ -669,11 +671,14 @@ public class ChartEditorPart{
     private void addSerie(IbChartSerie serie){
     	//logger.info("Serie Added: "+serie.getName());
     	
-		XYSeries xySerie=createXYSerie(serie);
+		//XYSeries xySerie=createXYSerie(serie);
 		int pos=0;
 		
 		switch (serie.getRendererType()) {
 		case MAIN:
+			addIbChartSerieToXYSeriesCollection(serie, mainPlotRenderer, mainCollection);
+			
+			/*
 			mainCollection.addSeries(xySerie);
 			pos=mainCollection.indexOf(serie.getName());
 			if(pos>=0){
@@ -682,8 +687,11 @@ public class ChartEditorPart{
 				mainPlotRenderer.setSeriesStroke(pos,new BasicStroke(2.0f));
 				mainPlotRenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
 			}
+			*/
 			break;
 		case SECOND:
+			addIbChartSerieToXYSeriesCollection(serie, secondPlotrenderer, secondCollection);
+			/*
 			secondCollection.addSeries(xySerie);
 			pos=secondCollection.indexOf(serie.getName());
 			if(pos>=0){
@@ -691,7 +699,7 @@ public class ChartEditorPart{
 				secondPlotrenderer.setSeriesLinesVisible(pos, true);
 				secondPlotrenderer.setSeriesStroke(pos,new BasicStroke(2.0f));
 				secondPlotrenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
-			}
+			}*/
 			break;
 		case PERCENT:
 			pos=percentCollection.indexOf(serie.getName());
@@ -714,6 +722,58 @@ public class ChartEditorPart{
 		}
 		
 	}
+    
+    private void addIbChartSerieToXYSeriesCollection(IbChartSerie serie, XYLineAndShapeRenderer rend,  XYSeriesCollection col){
+    	XYSeries xySerie=createXYSerie(serie);
+    	Color color=new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B());
+    	
+    	//logger.info("Serie Type: "+serie.getShapeType().toString());
+    	
+    	switch (serie.getShapeType()){
+    		case UP_TRIANGLE:
+    			addSeriesAsShape(rend, col, xySerie, ShapeUtilities.createUpTriangle(5), color);
+    			break;
+    		case DOWN_TRIANGLE:
+    			addSeriesAsShape(rend, col, xySerie, ShapeUtilities.createDownTriangle(5), color);
+    			break;
+    		default:
+    			addSeriesAsLine(rend, col, xySerie, color);
+    			break;
+    			
+    	}
+    	
+    }
+    
+    
+    private void addSeriesAsLine(XYLineAndShapeRenderer rend,  XYSeriesCollection col, XYSeries series,Color color){
+		
+		col.addSeries(series);
+		int pos=col.indexOf(series.getKey());
+		if(pos>=0){
+			rend.setSeriesShapesVisible(pos, false);
+			rend.setSeriesLinesVisible(pos, true);
+			rend.setSeriesStroke(pos,new BasicStroke(2.0f));
+			rend.setSeriesPaint(pos, color);
+		}
+	}
+	
+	private void addSeriesAsShape(XYLineAndShapeRenderer rend,  XYSeriesCollection col, XYSeries series,Shape shape,Color color){
+		
+		col.addSeries(series);
+		int pos=col.indexOf(series.getKey());
+		if(pos>=0){
+			
+			rend.setSeriesShapesVisible(pos, true);
+			rend.setSeriesLinesVisible(pos, false);
+			rend.setSeriesShape(pos,shape);
+			rend.setSeriesShapesFilled(pos, true);
+			rend.setSeriesPaint(pos, color);
+			rend.setSeriesOutlinePaint(pos, Color.BLACK);
+			rend.setSeriesOutlineStroke(pos, new BasicStroke(1.0f));
+			rend.setUseOutlinePaint(true);
+		}
+	}
+    
     
     private XYSeries  createXYSerie(IbChartSerie serie){
 		XYSeries r_series =new XYSeries(serie.getName());

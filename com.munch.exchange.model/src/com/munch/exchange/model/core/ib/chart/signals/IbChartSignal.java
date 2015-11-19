@@ -17,6 +17,7 @@ import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
+import com.munch.exchange.model.core.ib.chart.IbChartSerie.ShapeType;
 import com.munch.exchange.model.core.ib.statistics.PerformanceMetrics;
 
 @Entity
@@ -58,7 +59,29 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		//initProblem();
 	}
 
-
+	@Override
+	public void copyData(IbChartIndicator in) {
+		if(in instanceof IbChartSignal){
+			IbChartSignal in_s=(IbChartSignal)in;
+			this.volume=in_s.volume;
+		}
+		
+		super.copyData(in);
+	}
+	
+	@Override
+	public boolean identical(IbChartIndicator other) {
+		if(other instanceof IbChartSignal){
+			IbChartSignal other_s=(IbChartSignal)other;
+			if (volume != other_s.volume)
+				return false;
+			
+		}
+		return super.identical(other);
+		
+	}
+	
+	
 	public void initProblem(){
 		problem=new IbChartSignalProblem(this);
 	}
@@ -91,14 +114,14 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		colorBUY[0]=0;
 		colorBUY[1]=250;
 		colorBUY[2]=0;
-		IbChartSerie buy=new IbChartSerie(this,this.getName()+" "+BUY_SIGNAL,RendererType.MAIN,false,true,colorBUY);
+		IbChartSerie buy=new IbChartSerie(this,this.getName()+" "+BUY_SIGNAL,RendererType.MAIN,false,true,colorBUY, ShapeType.UP_TRIANGLE);
 		this.series.add(buy);
 		
 		int[] colorSELL=new int[3];
 		colorSELL[0]=250;
 		colorSELL[1]=0;
 		colorSELL[2]=0;
-		IbChartSerie sell=new IbChartSerie(this,this.getName()+" "+SELL_SIGNAL,RendererType.MAIN,false,true,colorSELL);
+		IbChartSerie sell=new IbChartSerie(this,this.getName()+" "+SELL_SIGNAL,RendererType.MAIN,false,true,colorSELL, ShapeType.DOWN_TRIANGLE);
 		this.series.add(sell);
 		
 	}
@@ -193,9 +216,9 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			if(signal!=previewSignal){
 				// Calculate Commission
 				IbCommission com=this.getCommission();
-				//if(com!=null){
-				//	profit-=com.calculate(volume, bar.getOpen());
-				//}
+				if(com!=null){
+					profit-=com.calculate(volume, bar.getOpen());
+				}
 				previewPrice=bar.getOpen();
 				capital=bar.getOpen()*volume;
 				if(signal>0){
