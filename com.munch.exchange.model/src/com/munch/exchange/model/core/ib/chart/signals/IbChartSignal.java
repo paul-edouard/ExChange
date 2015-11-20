@@ -100,14 +100,14 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		color[0]=10;
 		color[1]=250;
 		color[2]=10;
-		IbChartSerie profit=new IbChartSerie(this,this.getName()+" "+PROFIT,RendererType.SECOND,false,true,color);
+		IbChartSerie profit=new IbChartSerie(this,this.getName()+" "+PROFIT,RendererType.PROFIT,false,true,color);
 		this.series.add(profit);
 		
 		int[] colorR=new int[3];
 		color[0]=250;
 		color[1]=10;
 		color[2]=10;
-		IbChartSerie risk=new IbChartSerie(this,this.getName()+" "+RISK,RendererType.SECOND,false,false,colorR);
+		IbChartSerie risk=new IbChartSerie(this,this.getName()+" "+RISK,RendererType.RISK,false,false,colorR);
 		this.series.add(risk);
 		
 		int[] colorBUY=new int[3];
@@ -193,7 +193,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
 		double profit=0.0;
 		double risk=0.0;
-		double maxCapital=0.0;
+		double maxProfit=0.0;
 		
 		//Add the first chart point
 		long[] times=new long[bars.size()];
@@ -202,6 +202,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 		times[0]=previewBar.getTime();
 		profits[0]=profit;
+		risks[0]=risk;
 		
 		for(int i=1;i<bars.size();i++){
 			IbBar bar=bars.get(i);
@@ -210,7 +211,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			
 			double signal=signalMap.get(time).getValue();
 			double previewPrice=previewBar.getClose();
-			double capital=bar.getClose()*volume;
+			//double capital=bar.getClose()*volume;
 			
 			//Modification of position
 			if(signal!=previewSignal){
@@ -220,7 +221,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 					profit-=com.calculate(volume, bar.getOpen());
 				}
 				previewPrice=bar.getOpen();
-				capital=bar.getOpen()*volume;
+				//capital=bar.getOpen()*volume;
 				if(signal>0){
 					this.getBuySerie().addPoint(time, bar.getOpen());
 				}
@@ -232,13 +233,12 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			//Signal is long
 			if(signal>0){
 				profit+=(bar.getClose()-previewPrice)*volume;
-				if(capital>maxCapital){
-					maxCapital=capital;
-					risk=0.0;
+				if(profit>maxProfit){
+					maxProfit=profit;
 				}
-				else{
-					risk=capital-maxCapital;
-				}
+				
+				risk=profit-maxProfit;
+				
 			}
 			
 			times[i]=bar.getTimeInMs();

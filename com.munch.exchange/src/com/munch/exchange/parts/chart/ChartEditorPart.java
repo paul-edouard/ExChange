@@ -3,6 +3,7 @@ package com.munch.exchange.parts.chart;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Shape;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -51,6 +52,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.AbstractXYItemRenderer;
 import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
+import org.jfree.chart.renderer.xy.XYAreaRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Second;
@@ -66,6 +68,7 @@ import org.jfree.ui.TextAnchor;
 import org.jfree.util.ShapeUtilities;
 
 import com.ib.controller.Types.BarSize;
+import com.ib.controller.Types.SecType;
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.ExchangeChartComposite;
 import com.munch.exchange.IEventConstant;
@@ -123,6 +126,8 @@ public class ChartEditorPart{
 	private XYLineAndShapeRenderer mainPlotRenderer=new XYLineAndShapeRenderer(true, false);
 	private XYLineAndShapeRenderer secondPlotrenderer=new XYLineAndShapeRenderer(true, false);
 	private XYLineAndShapeRenderer percentPlotrenderer=new XYLineAndShapeRenderer(true, false);
+	private XYAreaRenderer profitPlotRenderer=new XYAreaRenderer();
+	private XYAreaRenderer riskPlotRenderer=new XYAreaRenderer();
 	private XYErrorRenderer errorPlotRenderer=new XYErrorRenderer();
 	private DeviationRenderer deviationPercentPlotRenderer=new DeviationRenderer();
 	private DeviationRenderer deviationRenderer = new DeviationRenderer(true, false);
@@ -133,6 +138,8 @@ public class ChartEditorPart{
 	private XYSeriesCollection mainCollection=new XYSeriesCollection();
 	private XYSeriesCollection secondCollection=new XYSeriesCollection();
 	private XYSeriesCollection percentCollection=new XYSeriesCollection();
+	private XYSeriesCollection profitCollection=new XYSeriesCollection();
+	private XYSeriesCollection riskCollection=new XYSeriesCollection();
 	private YIntervalSeriesCollection errorCollection=new YIntervalSeriesCollection();
 	private YIntervalSeriesCollection deviationPercentCollection=new YIntervalSeriesCollection();
 	private YIntervalSeriesCollection deviationCollection=new YIntervalSeriesCollection();
@@ -143,9 +150,15 @@ public class ChartEditorPart{
 	CombinedDomainXYPlot combinedPlot=null;
 	XYPlot mainPlot=null;
 	XYPlot secondPlot=null;
+	XYPlot profitPlot=null;
+	XYPlot riskPlot=null;
 	
 	//Axis
 	private DateAxis dateAxis;
+	private NumberAxis mainAxis;
+	private NumberAxis secondAxis;
+	private NumberAxis profitAxis;
+	private NumberAxis riskAxis;
 	
 	
 	private JFreeChart chart;
@@ -329,6 +342,10 @@ public class ChartEditorPart{
 						lower- (double)( fac*posFac));
     	
     	dateAxis.setRange(lower, upper);
+    	mainAxis.configure();
+    	secondAxis.configure();
+    	profitAxis.configure();
+    	riskAxis.configure();
     	
     	dataUpdater.checkSafetyInterval();
     	dataUpdater.schedule();
@@ -369,6 +386,10 @@ public class ChartEditorPart{
 						start);
     	
     	dateAxis.setRange(lower, upper);
+    	mainAxis.configure();
+    	secondAxis.configure();
+    	profitAxis.configure();
+    	riskAxis.configure();
     	
     	dataUpdater.checkSafetyInterval();
     	dataUpdater.schedule();
@@ -395,6 +416,17 @@ public class ChartEditorPart{
 	    //===  Second Plot   ===
 	    //======================
 	    createSecondPlot();
+	    
+	    //======================
+	    //===  Profit Plot   ===
+	    //======================
+	    createProfitPlot();
+	    
+	    //======================
+	    //===  Risk Plot   ===
+	    //======================
+	    createRiskPlot();
+	    
 	    
 	    //====================
 	    //===  Combined Plot   ===
@@ -464,14 +496,20 @@ public class ChartEditorPart{
         mainPlotRenderer.setBaseStroke(new BasicStroke(2.0f));
         
         
-        NumberAxis rangeAxis1 = new NumberAxis("Price");
-        rangeAxis1.setLowerMargin(0.01);  // to leave room for volume bars
+        mainAxis = new NumberAxis("Price ["+this.contract.getCurrency()+"]");
+        mainAxis.setLowerMargin(0.01);  // to leave room for volume bars
         DecimalFormat format = new DecimalFormat("00.00");
-        rangeAxis1.setNumberFormatOverride(format);
-        rangeAxis1.setAutoRangeIncludesZero(false);
+        if(this.contract.getSecType()==SecType.CASH){
+        	format = new DecimalFormat("00.0000");
+        }
+        mainAxis.setNumberFormatOverride(format);
+        mainAxis.setAutoRangeIncludesZero(false);
+        //mainAxis.setLabelFont();
+        //mainAxis.getLabelFont().
+        //Font.
         
         //Plot
-        mainPlot = new XYPlot(mainCollection, dateAxis, rangeAxis1, mainPlotRenderer);
+        mainPlot = new XYPlot(mainCollection, dateAxis, mainAxis, mainPlotRenderer);
         mainPlot.setBackgroundPaint(Color.lightGray);
         //plot1.setBackgroundPaint(Color.BLACK);
         mainPlot.setDomainGridlinePaint(Color.white);
@@ -480,11 +518,11 @@ public class ChartEditorPart{
         
         int i=1;
         //Add the error renderer and collection
-		addErrorGraph(mainPlot, rangeAxis1, i);i++;
+		addErrorGraph(mainPlot, mainAxis, i);i++;
 		//Add the deviation Graph
-		addDevGraph(mainPlot, rangeAxis1, i);i++;
+		addDevGraph(mainPlot, mainAxis, i);i++;
 		//Add the Candle Stick Graph
-		addCandleStickGraph(mainPlot, rangeAxis1, i);i++;
+		addCandleStickGraph(mainPlot, mainAxis, i);i++;
         
 		
 		createPosOHLCSeries();
@@ -552,18 +590,19 @@ public class ChartEditorPart{
         }
         
         //Axis Profit
-        NumberAxis rangeAxis1 = new NumberAxis("Profit");
+        secondAxis = new NumberAxis("Value");
         //rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
         DecimalFormat format = new DecimalFormat("00.00");
-        rangeAxis1.setNumberFormatOverride(format);
-        rangeAxis1.setAutoRangeIncludesZero(false);
+        secondAxis.setNumberFormatOverride(format);
+        secondAxis.setAutoRangeIncludesZero(false);
         
         //Plot Profit
-        secondPlot = new XYPlot(secondCollection, null, rangeAxis1, secondPlotrenderer);
+        secondPlot = new XYPlot(secondCollection, null, secondAxis, secondPlotrenderer);
         secondPlot.setBackgroundPaint(Color.lightGray);
         secondPlot.setDomainGridlinePaint(Color.white);
         secondPlot.setRangeGridlinePaint(Color.white);
         
+        /*
         //Axis Percent
         NumberAxis rangeAxis2 = new NumberAxis("Percent");
         rangeAxis2.setNumberFormatOverride(format);
@@ -576,7 +615,41 @@ public class ChartEditorPart{
         //Add the deviation Graph
         addDeviationPercentGraph(secondPlot, rangeAxis2, i);
 		i++;
+		*/
     }
+    
+    private void createProfitPlot(){
+    	 profitPlotRenderer.setBaseStroke(new BasicStroke(2.0f));
+         
+         profitAxis = new NumberAxis("Profit ["+this.contract.getCurrency()+"]");
+         profitAxis.setLowerMargin(0.01);  // to leave room for volume bars
+         DecimalFormat format = new DecimalFormat("00.00");
+         profitAxis.setNumberFormatOverride(format);
+         profitAxis.setAutoRangeIncludesZero(false);
+         
+         //Plot
+         profitPlot = new XYPlot(profitCollection, dateAxis, profitAxis, profitPlotRenderer);
+         profitPlot.setBackgroundPaint(Color.lightGray);
+         profitPlot.setDomainGridlinePaint(Color.white);
+         profitPlot.setRangeGridlinePaint(Color.white);
+    }
+    
+    private void createRiskPlot(){
+   	 	riskPlotRenderer.setBaseStroke(new BasicStroke(2.0f));
+        
+        riskAxis = new NumberAxis("Risk ["+this.contract.getCurrency()+"]");
+        riskAxis.setLowerMargin(0.01);  // to leave room for volume bars
+        DecimalFormat format = new DecimalFormat("00.00");
+        riskAxis.setNumberFormatOverride(format);
+        riskAxis.setAutoRangeIncludesZero(false);
+        
+        //Plot
+        riskPlot = new XYPlot(riskCollection, dateAxis, riskAxis, riskPlotRenderer);
+        riskPlot.setBackgroundPaint(Color.lightGray);
+        riskPlot.setDomainGridlinePaint(Color.white);
+        riskPlot.setRangeGridlinePaint(Color.white);
+   }
+    
     
     private void addPercentGraph(XYPlot plot, NumberAxis rangeAxis, int i){
     	
@@ -612,7 +685,7 @@ public class ChartEditorPart{
     	 combinedPlot = new CombinedDomainXYPlot(dateAxis);
     	 //combinedPlot.add(mainPlot, 5);
 	        //cplot.add(plot2, 2);
-    	 combinedPlot.setGap(8.0);
+    	 combinedPlot.setGap(4.0);
     	 combinedPlot.setDomainGridlinePaint(Color.white);
     	 combinedPlot.setDomainGridlinesVisible(true);
     	 combinedPlot.setDomainPannable(true);
@@ -624,6 +697,7 @@ public class ChartEditorPart{
     	removePlots();
     	
     	
+    	//Main Plot
     	int mainNbOfSeries=oHLCSeriesCollection.getSeriesCount();
     	mainNbOfSeries+=mainCollection.getSeriesCount();
     	
@@ -631,12 +705,24 @@ public class ChartEditorPart{
     	combinedPlot.add(mainPlot, 5);
     	
     	
+    	//Second Plot
     	int totalNbOfSeries=secondCollection.getSeriesCount();
     	totalNbOfSeries+=percentCollection.getSeriesCount();
     	//logger.info("totalNbOfSeries "+totalNbOfSeries);
     	
     	if(totalNbOfSeries>0)
     		combinedPlot.add(secondPlot, 2);
+    	
+    	//Profit plot
+    	int totalProfitNbOfSeries=profitCollection.getSeriesCount();
+    	if(totalProfitNbOfSeries>0)
+    		combinedPlot.add(profitPlot, 2);
+    	
+    	//Risk plot
+    	int totalRiskNbOfSeries=riskCollection.getSeriesCount();
+    	if(totalRiskNbOfSeries>0)
+    		combinedPlot.add(riskPlot, 2);
+    	
     	
     }
     
@@ -717,11 +803,32 @@ public class ChartEditorPart{
 			pos=deviationPercentCollection.indexOf(serie.getName());
 			if(pos>=0)deviationPercentCollection.removeSeries(pos);
 			break;
+		case PROFIT:
+			addIbChartSerieToAreaCollection(serie, profitPlotRenderer, profitCollection);
+			break;
+		case RISK:
+			addIbChartSerieToAreaCollection(serie, riskPlotRenderer, riskCollection);
+			break;
 		default:
 			break;
 		}
 		
 	}
+    
+    private void addIbChartSerieToAreaCollection(IbChartSerie serie, XYAreaRenderer rend,  XYSeriesCollection col){
+    	XYSeries xySerie=createXYSerie(serie);
+    	Color color=new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B(),100);
+    	
+    	col.addSeries(xySerie);
+		int pos=col.indexOf(xySerie.getKey());
+		if(pos>=0){
+			//rend.setSeriesShapesVisible(pos, false);
+			//rend.setSeriesLinesVisible(pos, true);
+			rend.setSeriesStroke(pos,new BasicStroke(2.0f));
+			rend.setSeriesPaint(pos, color);
+		}
+    	
+    }
     
     private void addIbChartSerieToXYSeriesCollection(IbChartSerie serie, XYLineAndShapeRenderer rend,  XYSeriesCollection col){
     	XYSeries xySerie=createXYSerie(serie);
@@ -883,6 +990,22 @@ public class ChartEditorPart{
 			if(pos>=0){
 				updatePlotRendererBeforeSerieDeletion(deviationPercentCollection.getSeriesCount(), pos, deviationPercentPlotRenderer);
 				deviationPercentCollection.removeSeries(pos);
+			}
+			break;
+			
+		case PROFIT:
+			pos=profitCollection.indexOf(serie.getName());
+			if(pos>=0){
+				updatePlotRendererBeforeSerieDeletion(profitCollection.getSeriesCount(), pos, profitPlotRenderer);
+				profitCollection.removeSeries(pos);
+			}
+			break;
+			
+		case RISK:
+			pos=riskCollection.indexOf(serie.getName());
+			if(pos>=0){
+				updatePlotRendererBeforeSerieDeletion(riskCollection.getSeriesCount(), pos, riskPlotRenderer);
+				riskCollection.removeSeries(pos);
 			}
 			break;
 

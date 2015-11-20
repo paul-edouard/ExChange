@@ -29,7 +29,7 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 	 */
 	private static final long serialVersionUID = 2519428267199061398L;
 	
-	public enum RendererType { NONE, MAIN, SECOND, PERCENT, ERROR, DEVIATION, DEVIATION_PERCENT;}
+	public enum RendererType { NONE, MAIN, SECOND, PERCENT, ERROR, DEVIATION, DEVIATION_PERCENT, PROFIT, RISK;}
 	public enum ShapeType { NONE, UP_TRIANGLE, DOWN_TRIANGLE}
 	
 	@Id

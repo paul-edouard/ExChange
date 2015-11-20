@@ -113,7 +113,7 @@ public class SuperTrendSignal extends IbChartSignal {
 
 	@Override
 	public void initName() {
-		this.name= "Super Trand Signal";
+		this.name= "Super Trend Signal";
 
 	}
 
