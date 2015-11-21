@@ -2,8 +2,10 @@ package com.munch.exchange.model.core.ib.chart;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -40,6 +42,10 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 	
 	@Transient
 	private List<IbChartPoint> points=new LinkedList<IbChartPoint>();
+	
+	@Transient
+	private Set<Long> timeSet=new HashSet<Long>();
+	
 	
 	
 	//private double[] values;
@@ -184,13 +190,22 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 			return false;
 		return true;
 	}
-
+	
+	
+	public void clearPoints(){
+		points.clear();
+		timeSet.clear();
+	}
+	
+	
 	public void setPointValues(long[] times,double[] values){
 		if(values.length!=times.length)return;
 		
 		points.clear();
+		timeSet.clear();
 		for(int i=0;i<values.length;i++){
 			points.add(new IbChartPoint(times[i], values[i]));
+			timeSet.add(times[i]);
 		}
 	}
 	
@@ -200,12 +215,18 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 		for(int i=0;i<values.length;i++){
 			if(containsPoint(times[i]))continue;
 			points.add(new IbChartPoint(times[i], values[i]));
+			timeSet.add(times[i]);
 		}
 	}
+	
 	
 	private boolean containsPoint(long time){
 		
 		if(points.isEmpty())return false;
+		
+		return timeSet.contains(time);
+		
+		/*
 		
 		if(points.size()>0){
 			IbChartPoint point=points.get(points.size()-1);
@@ -219,14 +240,19 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 		}
 		
 		return true;
+		*/
 	}
 	
 	public void addPoint(long time,double value){
 		points.add(new IbChartPoint(time, value));
+		timeSet.add(time);
 	}
 	
 	public void insertPoints(List<IbChartPoint> newPoints){
 		points.addAll(newPoints);
+		for(IbChartPoint point:newPoints){
+			timeSet.add(point.getTime());
+		}
 		Collections.sort(points);
 	}
 	

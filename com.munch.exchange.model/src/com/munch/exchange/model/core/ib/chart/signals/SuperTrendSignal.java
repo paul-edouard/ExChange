@@ -74,32 +74,49 @@ public class SuperTrendSignal extends IbChartSignal {
 	@Override
 	public void computeSignalPointFromBarBlock(List<IbBar> bars, boolean reset) {
 		
+		long[] times=this.getTimeArray(bars);
+		
+		//Set all signal point to -1
+		//System.out.println("Bar Size: "+bars.size()+", Valid at position: "+this.getValidAtPosition());
+		if(bars.size()<this.getValidAtPosition() || bars.size()<=1){
+			for(int i=0;i<times.length;i++){
+				this.getSignalSerie().addPoint(times[i],-1);
+				this.getChartSerie(this.name+" "+ST_UP).addPoint(times[i],Double.NaN);
+				this.getChartSerie(this.name+" "+ST_DN).addPoint(times[i],Double.NaN);
+			}
+			return;
+		}
+		
 		
 		double[] close=this.barsToDoubleArray(bars, DataType.CLOSE);
 		double[] high=this.barsToDoubleArray(bars, DataType.HIGH);
 		double[] low=this.barsToDoubleArray(bars, DataType.LOW);
 		
-		long[] times=this.getTimeArray(bars);
-		
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
 		double factor=this.getChartParameter(FACTOR).getValue();
-		double startTrend=1.0;
+		double startTrend=-1.0;
 		
-		if(reset){
+		if(!reset){
 			//Compute only last values
 			IbChartSerie trend=this.getSignalSerie();
 			if(trend.getPoints().size()>trend.getValidAtPosition()){
 				startTrend=trend.getPoints().get(trend.getPoints().size()-trend.getValidAtPosition()).getValue();
 			}
 			
+		}
+		else{
 			this.getSignalSerie().setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue());
 			this.getChartSerie(this.name+" "+ST_UP).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue());
 			this.getChartSerie(this.name+" "+ST_DN).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue());
+			
 		}
 		
 		//Compute all super trend values
 		double[][] SuTr=SuperTrend.compute(close, high, low, period, factor,startTrend);
-			
+		//System.out.println("Number of points: "+SuTr[0].length);
+		//for(int i=0;i<SuTr[0].length;i++){
+		//	System.out.println("Values: "+SuTr[0][i]);
+		//}
 		this.getSignalSerie().addNewPointsOnly(times,SuTr[0]);
 		this.getChartSerie(this.name+" "+ST_UP).addNewPointsOnly(times,SuTr[1]);
 		this.getChartSerie(this.name+" "+ST_DN).addNewPointsOnly(times,SuTr[2]);

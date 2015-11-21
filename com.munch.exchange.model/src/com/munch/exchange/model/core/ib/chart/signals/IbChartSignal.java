@@ -19,6 +19,7 @@ import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.ShapeType;
 import com.munch.exchange.model.core.ib.statistics.PerformanceMetrics;
+import com.sun.istack.internal.logging.Logger;
 
 @Entity
 public abstract class IbChartSignal extends IbChartIndicator {
@@ -133,7 +134,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		//If reset clear all series
 		if(reset){
 			for(IbChartSerie serie:this.series){
-				serie.getPoints().clear();
+				serie.clearPoints();
 			}
 		}
 		
@@ -141,22 +142,25 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		if(bars==null || bars.size()==0)return;
 		IbBar lastBar=bars.get(0);
 		long interval=lastBar.getIntervallInSec();
+		//System.out.println("Interval: "+interval);
 		List<IbBar> block=new LinkedList<IbBar>();
 		block.add(lastBar);
 		
 		for(int i=1;i<bars.size();i++){
 			IbBar currentBar=bars.get(i);
 			long timeDiff=currentBar.getTime()-lastBar.getTime();
-			if(timeDiff>interval && block.size()>=this.getValidAtPosition()){
-				computeSignalPointFromBarBlock(bars, reset);
+			if(timeDiff > interval ){
+				
+				computeSignalPointFromBarBlock(block, reset);
 				block=new LinkedList<IbBar>();
 			}
 			block.add(currentBar);
 			lastBar=currentBar;
 		}
 		
+		//System.out.println("Diff bigger: "+timeDiff+", Bloch size: "+block.size());
 		if(block.size()>=this.getValidAtPosition()){
-			computeSignalPointFromBarBlock(bars, reset);
+			computeSignalPointFromBarBlock(block, reset);
 		}
 		
 		
@@ -165,7 +169,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 		
 		//Clean the Signal Series close the empty block with 0
-		cleanSignalSerie(interval);
+		//cleanSignalSerie(interval);
 		
 		//Create the Signal Map
 		HashMap<Long, IbChartPoint> signalMap=new HashMap<Long, IbChartPoint>();
@@ -211,34 +215,35 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			
 			double signal=signalMap.get(time).getValue();
 			double previewPrice=previewBar.getClose();
-			//double capital=bar.getClose()*volume;
+			double price=bar.getClose();
 			
 			//Modification of position
 			if(signal!=previewSignal){
 				// Calculate Commission
 				IbCommission com=this.getCommission();
 				if(com!=null){
-					profit-=com.calculate(volume, bar.getOpen());
+					profit-=com.calculate(volume, price);
 				}
-				previewPrice=bar.getOpen();
-				//capital=bar.getOpen()*volume;
+				
+				//Update the Buy and Sell Series
 				if(signal>0){
-					this.getBuySerie().addPoint(time, bar.getOpen());
+					previewPrice=price;
+					this.getBuySerie().addPoint(time, price);
 				}
-				else{
-					this.getSellSerie().addPoint(time, bar.getOpen());
-				}
+				else
+					this.getSellSerie().addPoint(time, price);
 			}
 			
 			//Signal is long
-			if(signal>0){
-				profit+=(bar.getClose()-previewPrice)*volume;
-				if(profit>maxProfit){
+			if(signal>0 || signal!=previewSignal){
+				//update the profit
+				profit+=(price-previewPrice)*volume;
+				
+				//Calculate the risk
+				if(profit>maxProfit)
 					maxProfit=profit;
-				}
 				
 				risk=profit-maxProfit;
-				
 			}
 			
 			times[i]=bar.getTimeInMs();
