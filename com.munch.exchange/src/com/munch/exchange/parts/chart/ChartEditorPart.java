@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -165,6 +166,7 @@ public class ChartEditorPart{
 	private Composite compositeChart;
 	private ValueMarker threshold;
 	private OHLCSeries candleStickSeries= new OHLCSeries(CANDLESTICK);
+	private HashSet<Long> candleStickSecondes=new HashSet<Long>();
 	
 	
 	private List<IbBarContainer> barContainers;
@@ -1065,6 +1067,16 @@ public class ChartEditorPart{
 			if(pos>=0)
 				deviationPercentPlotRenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
 			break;
+		case PROFIT:
+			pos=profitCollection.indexOf(serie.getName());
+			if(pos>=0)
+				profitPlotRenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B(),100));
+			break;
+		case RISK:
+			pos=riskCollection.indexOf(serie.getName());
+			if(pos>=0)
+				riskPlotRenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B(),100));
+			break;
 
 		default:
 			break;
@@ -1405,6 +1417,7 @@ public class ChartEditorPart{
 							if(index>=0){
 								candleStickSeries.remove(index);
 								candleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
+								candleStickSecondes.add(sec.getFirstMillisecond());
 							}
 							
 						}
@@ -1425,16 +1438,20 @@ public class ChartEditorPart{
 					@Override
 					public void run() {
 						//candleStickSeries.clear();
+						/*
 						Second LastSec=null;
 						if(candleStickSeries.getItemCount()>0){
 							OHLCItem item=(OHLCItem)candleStickSeries.getDataItem(candleStickSeries.getItemCount()-1);
 							LastSec=new Second(new Date(item.getPeriod().getMiddleMillisecond()));
 						}
+						*/
 						
 						for(IbBar bar:addedBars){
 							Second sec=new Second(new Date(bar.getTimeInMs() - bar.getIntervallInMs()/2));
-							if(LastSec!=null && LastSec.equals(sec))continue;
+							if(candleStickSecondes.contains(sec.getFirstMillisecond()))continue;
+							//if(LastSec!=null && LastSec.equals(sec))continue;
 							candleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
+							candleStickSecondes.add(sec.getFirstMillisecond());
 							//candleStickSeries.getDataItem(candleStickSeries.getItemCount()-1)
 						}
 						
@@ -1470,6 +1487,7 @@ public class ChartEditorPart{
 					@Override
 					public void run() {
 						candleStickSeries.clear();
+						candleStickSecondes.clear();
 					}
 				});
 				

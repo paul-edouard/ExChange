@@ -113,14 +113,12 @@ public class SuperTrendSignal extends IbChartSignal {
 		
 		//Compute all super trend values
 		double[][] SuTr=SuperTrend.compute(close, high, low, period, factor,startTrend);
-		//System.out.println("Number of points: "+SuTr[0].length);
-		//for(int i=0;i<SuTr[0].length;i++){
-		//	System.out.println("Values: "+SuTr[0][i]);
-		//}
+		
 		this.getSignalSerie().addNewPointsOnly(times,SuTr[0]);
 		this.getChartSerie(this.name+" "+ST_UP).addNewPointsOnly(times,SuTr[1]);
 		this.getChartSerie(this.name+" "+ST_DN).addNewPointsOnly(times,SuTr[2]);
-			
+		
+		
 	}
 
 	@Override

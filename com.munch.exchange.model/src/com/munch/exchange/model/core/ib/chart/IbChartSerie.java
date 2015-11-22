@@ -220,28 +220,13 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 	}
 	
 	
-	private boolean containsPoint(long time){
+	public boolean containsPoint(long time){
 		
 		if(points.isEmpty())return false;
 		
 		return timeSet.contains(time);
-		
-		/*
-		
-		if(points.size()>0){
-			IbChartPoint point=points.get(points.size()-1);
-			if(time>point.getTime())return false;
-		}
-		
-		
-		for(int i=points.size()-1;i>=0;i--){
-			IbChartPoint point=points.get(i);
-			if(time==point.getTime())return true;
-		}
-		
-		return true;
-		*/
 	}
+	
 	
 	public void addPoint(long time,double value){
 		points.add(new IbChartPoint(time, value));
@@ -253,6 +238,10 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 		for(IbChartPoint point:newPoints){
 			timeSet.add(point.getTime());
 		}
+		Collections.sort(points);
+	}
+	
+	public void sortPoints(){
 		Collections.sort(points);
 	}
 	
