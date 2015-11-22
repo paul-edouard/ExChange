@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib.statistics;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -8,6 +9,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+
+import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 
 
 /**
@@ -179,6 +182,10 @@ public class TradeStatistics implements Serializable{
 	
 	
 	
+	public void calculate(List<IbChartPoint> buyPoints, List<IbChartPoint> sellPoints){
+		
+	}
+	
 	
 	
 
@@ -286,6 +293,30 @@ public class TradeStatistics implements Serializable{
 
 	public void setMaximumFavorableExcursion(double maximumFavorableExcursion) {
 		this.maximumFavorableExcursion = maximumFavorableExcursion;
+	}
+	
+	
+
+
+
+
+	@Override
+	public String toString() {
+		return "TradeStatistics [totalTrades=" + totalTrades
+				+ ", winOverLossTrades=" + winOverLossTrades
+				+ ", breakEvenTrades=" + breakEvenTrades
+				+ ", maximumWinOverMaximumLossTrades="
+				+ maximumWinOverMaximumLossTrades
+				+ ", maximumNumberOfConsecutiveLosses="
+				+ maximumNumberOfConsecutiveLosses
+				+ ", maximumNumberOfConsecutiveWins="
+				+ maximumNumberOfConsecutiveWins
+				+ ", totalCommissionsOverSpreads="
+				+ totalCommissionsOverSpreads + ", totalSlippage="
+				+ totalSlippage + ", totalForexCarry=" + totalForexCarry
+				+ ", maximumAdverseExcursion=" + maximumAdverseExcursion
+				+ ", maximumFavorableExcursion=" + maximumFavorableExcursion
+				+ "]";
 	}
 	
 	

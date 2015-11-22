@@ -69,7 +69,8 @@ public class PerformanceMetrics implements Serializable{
 	}
 	
 	
-	public void calculateMetricsForSignal(List<IbBar> bars, IbChartSerie signal){
+	public void calculateMetricsForSignal(List<IbBar> bars, IbChartSerie signal,
+			IbChartSerie buy,IbChartSerie sell,IbChartSerie profit){
 		//TODO implementation of metrics calculation
 	}
 	

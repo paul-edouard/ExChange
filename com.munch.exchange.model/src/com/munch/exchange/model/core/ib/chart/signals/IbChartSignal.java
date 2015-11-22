@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
+import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
@@ -33,8 +34,10 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	public static final String PROFIT="PROFIT";
 	public static final String RISK="RISK";
-	public static final String BUY_SIGNAL="BUY";
-	public static final String SELL_SIGNAL="SELL";
+	public static final String BUY_LONG_SIGNAL="BUY LONG";
+	public static final String SELL_LONG_SIGNAL="SELL LONG";
+	public static final String BUY_SHORT_SIGNAL="BUY SHORT";
+	public static final String SELL_SHORT_SIGNAL="SELL SHORT";
 	public static final String SIGNAL="SIGNAL";
 	
 	@Transient
@@ -42,6 +45,9 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	@Transient
 	private IbCommission commission;
+	
+	@Transient
+	private IbContract contract;
 	
 	
 	@OneToOne(mappedBy="chartSignal",cascade=CascadeType.ALL)
@@ -117,15 +123,19 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		colorBUY[0]=0;
 		colorBUY[1]=250;
 		colorBUY[2]=0;
-		IbChartSerie buy=new IbChartSerie(this,this.getName()+" "+BUY_SIGNAL,RendererType.MAIN,false,true,colorBUY, ShapeType.UP_TRIANGLE);
-		this.series.add(buy);
+		IbChartSerie buyLong=new IbChartSerie(this,this.getName()+" "+BUY_LONG_SIGNAL,RendererType.MAIN,false,true,colorBUY, ShapeType.UP_TRIANGLE);
+		this.series.add(buyLong);
+		IbChartSerie buyShort=new IbChartSerie(this,this.getName()+" "+BUY_SHORT_SIGNAL,RendererType.MAIN,false,true,colorBUY, ShapeType.DOWN_TRIANGLE);
+		this.series.add(buyShort);
 		
 		int[] colorSELL=new int[3];
 		colorSELL[0]=250;
 		colorSELL[1]=0;
 		colorSELL[2]=0;
-		IbChartSerie sell=new IbChartSerie(this,this.getName()+" "+SELL_SIGNAL,RendererType.MAIN,false,true,colorSELL, ShapeType.DOWN_TRIANGLE);
-		this.series.add(sell);
+		IbChartSerie sellLong=new IbChartSerie(this,this.getName()+" "+SELL_LONG_SIGNAL,RendererType.MAIN,false,true,colorSELL, ShapeType.DOWN_TRIANGLE);
+		this.series.add(sellLong);
+		IbChartSerie sellShort=new IbChartSerie(this,this.getName()+" "+SELL_LONG_SIGNAL,RendererType.MAIN,false,true,colorSELL, ShapeType.UP_TRIANGLE);
+		this.series.add(sellShort);
 		
 	}
 	
@@ -171,8 +181,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		}
 		
 		//Return if the list is empty just in case of the problems with empty data
-		if(this.getSignalSerie().getPoints().isEmpty())
-			return;
+		if(this.getSignalSerie().getPoints().isEmpty())return;
 		
 		//Clean the Signal Series close the empty block with 0
 		cleanSignalSerie(interval);
@@ -187,6 +196,9 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		createProfitAndRiskSeries(bars, reset, signalMap, this.volume);
 		
 		//TODO update the performance metrics
+		if(performanceMetrics!=null)
+			performanceMetrics.calculateMetricsForSignal(bars, this.getSignalSerie(),
+					this.getBuyLongSerie(),this.getSellLongSerie(),this.getProfitSerie());
 		
 	}
 	
@@ -217,27 +229,50 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			double previewPrice=previewBar.getClose();
 			double price=bar.getClose();
 			
-			//Modification of position
+			//Modification of the position
 			if(signal!=previewSignal){
+				double diffSignal=signal-previewSignal;
+				double diffAbs=Math.abs(diffSignal);
+				
 				// Calculate Commission
 				IbCommission com=this.getCommission();
 				if(com!=null){
-					profit-=com.calculate(volume, price);
+					profit-=diffAbs*com.calculate(volume, price);
 				}
 				
 				//Update the Buy and Sell Series
 				if(signal>0){
 					previewPrice=price;
-					this.getBuySerie().addPoint(time, price);
+					this.getBuyLongSerie().addPoint(time, price);
 				}
-				else
-					this.getSellSerie().addPoint(time, price);
+				else if(signal<0){
+					previewPrice=price;
+					this.getBuyShortSerie().addPoint(time, price);
+				}
+				else{
+					if(previewPrice>0){
+						this.getSellLongSerie().addPoint(time, price);
+					}
+					else{
+						this.getSellShortSerie().addPoint(time, price);
+					}
+				}
 			}
 			
 			//Signal is long
 			if(signal>0 || signal!=previewSignal){
 				//update the profit
 				profit+=(price-previewPrice)*volume;
+				
+				//Calculate the risk
+				if(profit>maxProfit)
+					maxProfit=profit;
+				
+				risk=profit-maxProfit;
+			}
+			else if(signal<0 || signal!=previewSignal){
+				//update the profit
+				profit-=(price-previewPrice)*volume;
 				
 				//Calculate the risk
 				if(profit>maxProfit)
@@ -294,13 +329,29 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		}
 		this.getSignalSerie().sortPoints();
 		
+		//Clean signal Serie for contract that allow only long position
+		IbContract contract= getContract();
+		if(contract==null)return;
+		
+		if(contract.getSecType()==SecType.STK){
+			//Set negative signal (short) to neutral
+			for(int i=0;i<this.getSignalSerie().getPoints().size();i++){
+				IbChartPoint point=this.getSignalSerie().getPoints().get(i);
+				if(point.getValue()<this.getNeutralSignal())
+					point.setValue(this.getNeutralSignal());
+				
+			}
+		}
+		
+		
+		
 	}
 	
 	
 	protected abstract int getValidAtPosition();
 	
 	protected double getNeutralSignal(){
-		return -1.0;
+		return 0.0;
 	}
 
 	public IbChartSerie getSignalSerie(){
@@ -315,13 +366,22 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		return this.getChartSerie(this.getName()+" "+RISK);
 	}
 	
-	public IbChartSerie getBuySerie(){
-		return this.getChartSerie(this.getName()+" "+BUY_SIGNAL);
+	public IbChartSerie getBuyLongSerie(){
+		return this.getChartSerie(this.getName()+" "+BUY_LONG_SIGNAL);
 	}
 	
-	public IbChartSerie getSellSerie(){
-		return this.getChartSerie(this.getName()+" "+SELL_SIGNAL);
+	public IbChartSerie getSellLongSerie(){
+		return this.getChartSerie(this.getName()+" "+SELL_LONG_SIGNAL);
 	}
+	
+	public IbChartSerie getBuyShortSerie(){
+		return this.getChartSerie(this.getName()+" "+BUY_LONG_SIGNAL);
+	}
+	
+	public IbChartSerie getSellShortSerie(){
+		return this.getChartSerie(this.getName()+" "+SELL_LONG_SIGNAL);
+	}
+	
 	
 	public PerformanceMetrics getPerformanceMetrics() {
 		return performanceMetrics;
@@ -353,15 +413,23 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	private IbCommission getCommission() {
 		//Try to find the commission from the current contract
 		if(commission==null){
-			IbChartIndicatorGroup rootGroup=this.getGroup().getRoot();
-			if(rootGroup!=null && rootGroup.getContainer()!=null){
-				IbContract contract=rootGroup.getContainer().getContract();
+				IbContract contract= getContract();
 				if(contract!=null && contract.getCommission()!=null){
 					commission=contract.getCommission();
 				}
-			}
+			
 		}
 		return commission;
+	}
+	
+	private IbContract getContract(){
+		if(contract==null){
+			IbChartIndicatorGroup rootGroup=this.getGroup().getRoot();
+			if(rootGroup!=null && rootGroup.getContainer()!=null)
+				contract=rootGroup.getContainer().getContract();
+		}
+		
+		return contract;
 	}
 
 

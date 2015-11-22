@@ -6,7 +6,7 @@ import javax.annotation.Generated;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2015-11-17T21:49:18.544+0100")
+@Generated(value="Dali", date="2015-11-22T16:00:52.524+0100")
 @StaticMetamodel(IbChartSignal.class)
 public class IbChartSignal_ extends IbChartIndicator_ {
 	public static volatile SingularAttribute<IbChartSignal, PerformanceMetrics> performanceMetrics;
