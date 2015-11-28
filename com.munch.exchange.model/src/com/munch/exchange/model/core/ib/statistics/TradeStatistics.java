@@ -332,6 +332,19 @@ public class TradeStatistics implements Serializable{
 	}
 	
 	
+	public Object[] getChildren(){
+		
+		Object[] children =new Object[3];
+		
+		children[0]="Total Trades, "+totalTrades;
+		children[1]="win over Loss Trades, "+winOverLossTrades;
+		children[2]="Break Even Trades, "+breakEvenTrades;
+		
+		
+		
+		return children;
+		
+	}
 	
 
 	public int getId() {

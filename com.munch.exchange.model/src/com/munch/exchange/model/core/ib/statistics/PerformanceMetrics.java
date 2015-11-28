@@ -15,7 +15,6 @@ import javax.persistence.OneToOne;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
-import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 
 
@@ -88,6 +87,18 @@ public class PerformanceMetrics implements Serializable{
 		
 		System.out.println(this);
 		
+	}
+	
+	
+	public Object[] getChildren(){
+		Object[] children =new Object[4];
+		
+		children[0]=this.getTradeStatistics();
+		children[1]=this.getTimeStatistics();
+		children[2]=this.getStabilityStatistics();
+		children[3]=this.getRevenueStatistics();
+		
+		return children;
 	}
 	
 	
