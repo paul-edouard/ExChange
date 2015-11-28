@@ -195,10 +195,12 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		//Create the Profit Serie
 		createProfitAndRiskSeries(bars, reset, signalMap, this.volume);
 		
-		//TODO update the performance metrics
-		if(performanceMetrics!=null)
-			performanceMetrics.calculateMetricsForSignal(bars, this.getSignalSerie(),
-					this.getBuyLongSerie(),this.getSellLongSerie(),this.getProfitSerie());
+		//update the performance metrics
+		if(reset){
+			if(performanceMetrics==null)
+				performanceMetrics=new PerformanceMetrics();
+			performanceMetrics.calculateMetricsForSignal(bars, signalMap,this.getCommission(),volume);
+		}
 		
 	}
 	
@@ -242,11 +244,13 @@ public abstract class IbChartSignal extends IbChartIndicator {
 				
 				//Update the Buy and Sell Series
 				if(signal>0){
-					previewPrice=price;
+					if(diffAbs==1)
+						previewPrice=price;
 					this.getBuyLongSerie().addPoint(time, price);
 				}
 				else if(signal<0){
-					previewPrice=price;
+					if(diffAbs==1)
+						previewPrice=price;
 					this.getBuyShortSerie().addPoint(time, price);
 				}
 				else{
@@ -375,11 +379,11 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	}
 	
 	public IbChartSerie getBuyShortSerie(){
-		return this.getChartSerie(this.getName()+" "+BUY_LONG_SIGNAL);
+		return this.getChartSerie(this.getName()+" "+BUY_SHORT_SIGNAL);
 	}
 	
 	public IbChartSerie getSellShortSerie(){
-		return this.getChartSerie(this.getName()+" "+SELL_LONG_SIGNAL);
+		return this.getChartSerie(this.getName()+" "+SELL_SHORT_SIGNAL);
 	}
 	
 	

@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib.statistics;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -10,6 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
+import com.munch.exchange.model.core.ib.IbCommission;
+import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 
 
@@ -105,7 +108,7 @@ public class TradeStatistics implements Serializable{
 	This can be a decisive figure specially if the reported Trade Frequency of a system is high.
 	 * 
 	 */
-	private double totalCommissionsOverSpreads;
+	private double totalCommissionsOrSpreads;
 	
 	
 	/**
@@ -182,7 +185,149 @@ public class TradeStatistics implements Serializable{
 	
 	
 	
-	public void calculate(List<IbChartPoint> buyPoints, List<IbChartPoint> sellPoints){
+	public void calculate(List<IbBar> bars, 
+			HashMap<Long, IbChartPoint> signalMap, 
+			IbCommission commission, long volume){
+		if(bars.isEmpty())return;
+		
+		totalTrades=0;
+		breakEvenTrades=0;
+		maximumNumberOfConsecutiveLosses=0;
+		maximumNumberOfConsecutiveWins=0;
+		totalCommissionsOrSpreads=0;
+		maximumAdverseExcursion=0;
+		maximumFavorableExcursion=0;
+		
+		
+		int winTrades=0;
+		int lossTrades=0;
+		double maxWin=Double.NEGATIVE_INFINITY;
+		double maxLoss=Double.NEGATIVE_INFINITY;
+		
+		int nbOfConsecutiveWins=0;
+		int nbOfConsecutiveLosses=0;
+		
+		double adverseExcursion=0;
+		double favorableExcursion=0;
+		
+		
+		double previewProfit=0;
+		
+		IbBar previewBar=bars.get(0);
+		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
+		
+		int openPosition=0;
+		
+		for(int i=1;i<bars.size();i++){
+			IbBar bar=bars.get(i);
+			double signal=signalMap.get(bar.getTimeInMs()).getValue();
+			double diffSignal=signal-previewSignal;
+			double absDiffSignal=Math.abs(diffSignal);
+			
+			//Position is still open
+			if(openPosition>0){
+				//double startPosPrice=bars.get(openPosition).getClose();
+				double curProfit=(bar.getClose()-bars.get(openPosition).getClose())*previewSignal*volume;
+				if(curProfit>0 && curProfit>favorableExcursion)
+					favorableExcursion=curProfit;
+				else if(curProfit<0 && -curProfit>adverseExcursion)
+					adverseExcursion=-curProfit;
+				
+			}
+			
+			
+			//New Position
+			if(absDiffSignal>0){
+				//System.out.println("Signal: "+signal+", preview signal: "+previewSignal);
+				
+				
+				//Close a position
+				if(signal==0 || absDiffSignal==2){
+					double profit=(bar.getClose()-bars.get(openPosition).getClose())*previewSignal*volume;
+					
+					//Calculate and add the commission
+					if(commission!=null){
+						totalCommissionsOrSpreads+=absDiffSignal*commission.calculate(volume, bar.getClose());
+					}
+					
+					//Win
+					if(profit>0){
+						winTrades++;
+						
+						//Calculate the max Win
+						if(maxWin<profit)maxWin=profit;
+						
+						//Calculate the number of consecutive wins
+						if(previewProfit>0){
+							nbOfConsecutiveWins++;
+							if(nbOfConsecutiveWins>maximumNumberOfConsecutiveWins){
+								maximumNumberOfConsecutiveWins=nbOfConsecutiveWins;
+							}
+						}
+						else{
+							nbOfConsecutiveWins=1;
+						}
+							
+						
+					}
+					
+					//Loss
+					else if(profit<0){
+						lossTrades++;
+						
+						//Calculate the max loss
+						if(maxLoss<-profit)maxLoss=-profit;
+						
+						//Calculate the number of consecutive losses
+						if(previewProfit<0){
+							nbOfConsecutiveLosses++;
+							if(nbOfConsecutiveLosses>maximumNumberOfConsecutiveLosses){
+								maximumNumberOfConsecutiveLosses=nbOfConsecutiveLosses;
+							}
+						}
+						else{
+							nbOfConsecutiveLosses=1;
+						}
+						
+					}
+					else{
+						breakEvenTrades++;
+					}
+					
+					
+					previewProfit=profit;
+					
+					//Calculate the adverse and favorable excursion
+					if(favorableExcursion>maximumFavorableExcursion)
+						maximumFavorableExcursion=favorableExcursion;
+					if(adverseExcursion>maximumAdverseExcursion)
+						maximumAdverseExcursion=adverseExcursion;
+					
+					
+				}
+				
+				//Open a new position
+				if(Math.abs(signal)>0){
+					totalTrades++;
+					openPosition=i;
+					adverseExcursion=0;
+					favorableExcursion=0;
+					
+					//continue;
+				}
+				
+				
+				
+			}
+			
+			previewBar=bar;
+			previewSignal=signal;
+		}
+		
+		
+		winOverLossTrades=((double)winTrades)/((double)lossTrades);
+		maximumWinOverMaximumLossTrades=maxWin/maxLoss;
+		
 		
 	}
 	
@@ -255,12 +400,12 @@ public class TradeStatistics implements Serializable{
 		this.maximumNumberOfConsecutiveWins = maximumNumberOfConsecutiveWins;
 	}
 
-	public double getTotalCommissionsOverSpreads() {
-		return totalCommissionsOverSpreads;
+	public double getTotalCommissionsOrSpreads() {
+		return totalCommissionsOrSpreads;
 	}
 
-	public void setTotalCommissionsOverSpreads(double totalCommissionsOverSpreads) {
-		this.totalCommissionsOverSpreads = totalCommissionsOverSpreads;
+	public void setTotalCommissionsOrSpreads(double totalCommissionsOrSpreads) {
+		this.totalCommissionsOrSpreads = totalCommissionsOrSpreads;
 	}
 
 	public double getTotalSlippage() {
@@ -311,8 +456,8 @@ public class TradeStatistics implements Serializable{
 				+ maximumNumberOfConsecutiveLosses
 				+ ", maximumNumberOfConsecutiveWins="
 				+ maximumNumberOfConsecutiveWins
-				+ ", totalCommissionsOverSpreads="
-				+ totalCommissionsOverSpreads + ", totalSlippage="
+				+ ", totalCommissionsOrSpreads="
+				+ totalCommissionsOrSpreads + ", totalSlippage="
 				+ totalSlippage + ", totalForexCarry=" + totalForexCarry
 				+ ", maximumAdverseExcursion=" + maximumAdverseExcursion
 				+ ", maximumFavorableExcursion=" + maximumFavorableExcursion

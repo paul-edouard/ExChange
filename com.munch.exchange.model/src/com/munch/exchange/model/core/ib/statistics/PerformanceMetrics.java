@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib.statistics;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -11,7 +12,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
+import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 
@@ -69,9 +72,22 @@ public class PerformanceMetrics implements Serializable{
 	}
 	
 	
-	public void calculateMetricsForSignal(List<IbBar> bars, IbChartSerie signal,
-			IbChartSerie buy,IbChartSerie sell,IbChartSerie profit){
-		//TODO implementation of metrics calculation
+	public void calculateMetricsForSignal(List<IbBar> bars,
+				HashMap<Long, IbChartPoint> signalMap, IbCommission commission,
+				long volume){
+		this.getTradeStatistics().calculate(bars, signalMap, commission, volume);
+		this.getTimeStatistics().calculate(bars, signalMap, commission, volume);
+		this.getStabilityStatistics().calculate(bars, signalMap, commission, volume);
+		this.getRevenueStatistics().calculate(bars, signalMap, commission, volume);
+		
+		if(this.getRevenueStatistics().getMaximumDrawdown()>0){
+			this.getStabilityStatistics().setProfitToDrawdownRatio(
+					this.getRevenueStatistics().getNetProfit()/this.getRevenueStatistics().getMaximumDrawdown());
+		}
+		
+		
+		System.out.println(this);
+		
 	}
 	
 	
@@ -84,6 +100,8 @@ public class PerformanceMetrics implements Serializable{
 	}
 
 	public TradeStatistics getTradeStatistics() {
+		if(tradeStatistics==null)
+			tradeStatistics=new TradeStatistics();
 		return tradeStatistics;
 	}
 
@@ -92,6 +110,8 @@ public class PerformanceMetrics implements Serializable{
 	}
 
 	public TimeStatistics getTimeStatistics() {
+		if(timeStatistics==null)
+			timeStatistics=new TimeStatistics();
 		return timeStatistics;
 	}
 
@@ -100,6 +120,8 @@ public class PerformanceMetrics implements Serializable{
 	}
 
 	public StabilityStatistics getStabilityStatistics() {
+		if(stabilityStatistics==null)
+			stabilityStatistics=new StabilityStatistics();
 		return stabilityStatistics;
 	}
 
@@ -108,6 +130,8 @@ public class PerformanceMetrics implements Serializable{
 	}
 
 	public RevenueStatistics getRevenueStatistics() {
+		if(revenueStatistics==null)
+			revenueStatistics=new RevenueStatistics();
 		return revenueStatistics;
 	}
 
@@ -123,6 +147,15 @@ public class PerformanceMetrics implements Serializable{
 
 	public void setChartSignal(IbChartSignal chartSignal) {
 		this.chartSignal = chartSignal;
+	}
+
+
+	@Override
+	public String toString() {
+		return "PerformanceMetrics [\ntradeStatistics:\n" + tradeStatistics
+				+ "\ntimeStatistics:\n" + timeStatistics
+				+ "\nstabilityStatistics:\n" + stabilityStatistics
+				+ "\nrevenueStatistics:\n" + revenueStatistics + "]";
 	}
 	
 	

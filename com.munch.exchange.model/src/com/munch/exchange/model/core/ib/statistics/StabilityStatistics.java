@@ -1,6 +1,9 @@
 package com.munch.exchange.model.core.ib.statistics;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -8,6 +11,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+
+import com.munch.exchange.model.core.ib.IbCommission;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 
 
 /**
@@ -300,7 +307,105 @@ public class StabilityStatistics implements Serializable{
 	public StabilityStatistics() {
 		super();
 	}
-
+	
+	
+	public void calculate(List<IbBar> bars, HashMap<Long, IbChartPoint> signalMap, 
+			IbCommission commission, long volume){
+		
+		
+		int totalTrades=0;
+		int winTrades=0;
+		int lossTrades=0;
+		int breakEvenTrades=0;
+		
+		double meanProfit=0;
+		double meanWins=0;
+		double meanLoses=0;
+		
+		LinkedList<Double> allProfits=new LinkedList<Double>();
+		
+		IbBar previewBar=bars.get(0);
+		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
+		
+		int openPosition=0;
+		
+		for(int i=1;i<bars.size();i++){
+			IbBar bar=bars.get(i);
+			double signal=signalMap.get(bar.getTimeInMs()).getValue();
+			double diffSignal=signal-previewSignal;
+			double absDiffSignal=Math.abs(diffSignal);
+			
+			
+			//New Position
+			if(absDiffSignal>0){
+				
+				//Close a position
+				if(signal==0 || absDiffSignal==2){
+					double profit=(bar.getClose()-bars.get(openPosition).getClose())*previewSignal*volume;
+					
+					meanProfit+=profit;
+					allProfits.add(profit);
+					//Win
+					if(profit>0){
+						winTrades++;
+						meanWins+=profit;
+						
+					}
+					
+					//Loss
+					else if(profit<0){
+						lossTrades++;
+						meanLoses+=profit;
+					}
+					
+					//Break Even
+					else{
+						breakEvenTrades++;
+					}
+					
+					
+				}
+				
+				//Open a new position
+				if(Math.abs(signal)>0){
+					totalTrades++;
+					openPosition=i;
+					
+				}
+				
+				
+				
+			}
+			
+			previewBar=bar;
+			previewSignal=signal;
+		}
+		
+		
+		winRate=100*((double)winTrades)/totalTrades;
+		lossRate=100*((double)lossTrades)/totalTrades;
+		breakEvenRate=100*((double)breakEvenTrades)/totalTrades;
+		WinOverLossRatio=winRate/lossRate;
+		
+		//Calculate the variance
+		meanProfit/=totalTrades;
+		double varianceProfit=0;
+		for(Double p:allProfits){
+			varianceProfit+=Math.pow((p-meanProfit),2);
+		}
+		standardDeviation=Math.sqrt(varianceProfit);
+		
+		//Calculate the Average Profitability Per Trade
+		meanWins/=winTrades;
+		meanLoses/=lossTrades;
+		averageProfitability=(winRate*meanWins)-(lossRate*meanLoses);
+		averageProfitability/=100.0;
+		
+		//Expectancy = (Average Profit X Win Rate) - (Average Loss X Loss Rate)
+		expectancy=averageProfitability;
+		
+	}
+	
 
 	public int getId() {
 		return id;
@@ -450,6 +555,26 @@ public class StabilityStatistics implements Serializable{
 	public void setExpectancy(double expectancy) {
 		this.expectancy = expectancy;
 	}
+
+
+	
+	
+	@Override
+	public String toString() {
+		return "StabilityStatistics [winRate=" + winRate + ", lossRate="
+				+ lossRate + ", breakEvenRate=" + breakEvenRate
+				+ ", riskToRewardRatio=" + riskToRewardRatio
+				+ ", WinOverLossRatio=" + WinOverLossRatio
+				+ ", standardDeviation=" + standardDeviation
+				+ ", averageProfitability=" + averageProfitability
+				+ ", profitToDrawdownRatio=" + profitToDrawdownRatio
+				+ ", sharpeRatio=" + sharpeRatio + ", calmarRatio="
+				+ calmarRatio + ", R_Multiple=" + R_Multiple
+				+ ", averageR_Multiple=" + averageR_Multiple + ", expectancy="
+				+ expectancy + "]";
+	}
+	
+	
 	
 	
 	

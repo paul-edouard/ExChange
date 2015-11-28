@@ -1,6 +1,8 @@
 package com.munch.exchange.model.core.ib.statistics;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -8,6 +10,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+
+import com.munch.exchange.model.core.ib.IbCommission;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 
 
 /**
@@ -65,7 +71,7 @@ public class TimeStatistics implements Serializable{
 	A myriad of other aspects can cause your system to perform better in one side than the other.
 	If you don't track this number, it's much more difficult to detect any irregularity.
 	 */
-	private long averageTimeHoldingWinningTradesVersusLosingTrades;
+	private double averageTimeHoldingWinningTradesVersusLosingTrades;
 	
 	/**
 	 * 
@@ -87,6 +93,99 @@ public class TimeStatistics implements Serializable{
 	 * 
 	 */
 	private long maximumMonthlyTotalEquityDrawndown;
+	
+	
+
+	public TimeStatistics() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+
+
+
+	public void calculate(List<IbBar> bars, HashMap<Long, IbChartPoint> signalMap,
+			IbCommission commission, long volume){
+		
+		averageHoldingTime=0;
+		averageTimeHoldingWinningTradesVersusLosingTrades=0;
+		
+		double averageTimeHoldingWinningTrades=0;
+		double averageTimeHoldingLosingTrades=0;
+		
+		
+		int totalTrades=0;
+		int winTrades=0;
+		int lossTrades=0;
+		
+		//double previewProfit=0;
+		
+		IbBar previewBar=bars.get(0);
+		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
+		
+		int openPosition=0;
+		
+		for(int i=1;i<bars.size();i++){
+			IbBar bar=bars.get(i);
+			double signal=signalMap.get(bar.getTimeInMs()).getValue();
+			double diffSignal=signal-previewSignal;
+			double absDiffSignal=Math.abs(diffSignal);
+			
+			
+			//New Position
+			if(absDiffSignal>0){
+				
+				//Close a position
+				if(signal==0 || absDiffSignal==2){
+					double profit=(bar.getClose()-bars.get(openPosition).getClose())*previewSignal*volume;
+					long holdingTimeInSec=bar.getTime()-bars.get(openPosition).getTime();
+					
+					averageHoldingTime+=holdingTimeInSec;
+					
+					
+					//Win
+					if(profit>0){
+						winTrades++;
+						averageTimeHoldingWinningTrades+=holdingTimeInSec;
+						
+					}
+					
+					//Loss
+					else if(profit<0){
+						lossTrades++;
+						averageTimeHoldingLosingTrades+=holdingTimeInSec;
+					}
+					
+					
+				}
+				
+				//Open a new position
+				if(Math.abs(signal)>0){
+					totalTrades++;
+					openPosition=i;
+					
+				}
+				
+				
+				
+			}
+			
+			previewBar=bar;
+			previewSignal=signal;
+		}
+		
+		
+		averageHoldingTime/=totalTrades;
+		
+		
+		averageTimeHoldingWinningTrades/=winTrades;
+		averageTimeHoldingLosingTrades/=lossTrades;
+		
+		averageTimeHoldingWinningTradesVersusLosingTrades=averageTimeHoldingWinningTrades/averageTimeHoldingLosingTrades;
+		
+	}
+
+
 	
 	
 	/**
@@ -120,6 +219,62 @@ public class TimeStatistics implements Serializable{
 	
 	
 	
+	public long getAverageHoldingTime() {
+		return averageHoldingTime;
+	}
+
+
+	public void setAverageHoldingTime(long averageHoldingTime) {
+		this.averageHoldingTime = averageHoldingTime;
+	}
+
+
+	public double getAverageTimeHoldingWinningTradesVersusLosingTrades() {
+		return averageTimeHoldingWinningTradesVersusLosingTrades;
+	}
+
+
+	public void setAverageTimeHoldingWinningTradesVersusLosingTrades(
+			long averageTimeHoldingWinningTradesVersusLosingTrades) {
+		this.averageTimeHoldingWinningTradesVersusLosingTrades = averageTimeHoldingWinningTradesVersusLosingTrades;
+	}
+
+
+	public long getLongestTotalEquityDrawdown() {
+		return longestTotalEquityDrawdown;
+	}
+
+
+	public void setLongestTotalEquityDrawdown(long longestTotalEquityDrawdown) {
+		this.longestTotalEquityDrawdown = longestTotalEquityDrawdown;
+	}
+
+
+	public long getMaximumMonthlyTotalEquityDrawndown() {
+		return maximumMonthlyTotalEquityDrawndown;
+	}
+
+
+	public void setMaximumMonthlyTotalEquityDrawndown(
+			long maximumMonthlyTotalEquityDrawndown) {
+		this.maximumMonthlyTotalEquityDrawndown = maximumMonthlyTotalEquityDrawndown;
+	}
+
+
+
+
+	
+	
+	
+	@Override
+	public String toString() {
+		return "TimeStatistics [averageHoldingTime=" + averageHoldingTime
+				+ ", averageTimeHoldingWinningTradesVersusLosingTrades="
+				+ averageTimeHoldingWinningTradesVersusLosingTrades
+				+ ", longestTotalEquityDrawdown=" + longestTotalEquityDrawdown
+				+ ", maximumMonthlyTotalEquityDrawndown="
+				+ maximumMonthlyTotalEquityDrawndown + "]";
+	}
 	
 	
 	

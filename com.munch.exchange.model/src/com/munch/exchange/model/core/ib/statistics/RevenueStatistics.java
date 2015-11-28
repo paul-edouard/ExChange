@@ -1,6 +1,9 @@
 package com.munch.exchange.model.core.ib.statistics;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -8,6 +11,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+
+import com.munch.exchange.model.core.ib.IbCommission;
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 
 
 /**
@@ -244,13 +251,133 @@ public class RevenueStatistics implements Serializable{
 
 	
 	
-	
-	
 
 	public RevenueStatistics() {
 		super();
 	}
 
+	
+	public void calculate(List<IbBar> bars, HashMap<Long, IbChartPoint> signalMap,
+			IbCommission commission, long volume){
+		
+		double totalCommissionsOrSpreads=0;
+		double totalProfit=0;
+		
+		int totalTrades=0;
+		int winTrades=0;
+		int lossTrades=0;
+		
+		
+		//double maximumAdverseExcursion=0;
+		maximumDrawdown=0;
+		double drawdown=0;
+		LinkedList<Double> allDrawdowns=new LinkedList<Double>();
+		
+		grossProfit=0;
+		grossLoss=0;
+		
+		//double previewProfit=0;
+		
+		IbBar previewBar=bars.get(0);
+		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
+		
+		int openPosition=0;
+		
+		for(int i=1;i<bars.size();i++){
+			IbBar bar=bars.get(i);
+			double signal=signalMap.get(bar.getTimeInMs()).getValue();
+			double diffSignal=signal-previewSignal;
+			double absDiffSignal=Math.abs(diffSignal);
+			
+			
+			//Position is still open
+			if(openPosition>0){
+				//double startPosPrice=bars.get(openPosition).getClose();
+				double curProfit=(bar.getClose()-bars.get(openPosition).getClose())*previewSignal*volume;
+				if(curProfit<0 && -curProfit>drawdown)
+					drawdown=-curProfit;
+				
+			}
+			
+			
+			
+			//New Position
+			if(absDiffSignal>0){
+				
+				//Close a position
+				if(signal==0 || absDiffSignal==2){
+					double profit=(bar.getClose()-bars.get(openPosition).getClose())*previewSignal*volume;
+					//System.out.println("Profit: "+profit);
+					totalProfit+=profit;
+					
+					//Calculate and add the commission
+					if(commission!=null){
+						totalCommissionsOrSpreads+=absDiffSignal*commission.calculate(volume, bar.getClose());
+					}
+					
+					
+					
+					//Win
+					if(profit>0){
+						winTrades++;
+						grossProfit+=profit;
+					}
+					
+					//Loss
+					else if(profit<0){
+						lossTrades++;
+						grossLoss-=profit;
+					}
+					
+					
+					allDrawdowns.add(drawdown);
+					if(drawdown>maximumDrawdown)
+						maximumDrawdown=drawdown;
+					
+					
+				}
+				
+				//Open a new position
+				if(Math.abs(signal)>0){
+					totalTrades++;
+					openPosition=i;
+					drawdown=0;
+				}
+				
+				
+				
+			}
+			
+			previewBar=bar;
+			previewSignal=signal;
+		}
+		
+		
+		//Calculate the return rate
+		double startInvest=bars.get(0).getClose()*volume;
+		ruturnRate=100*(totalProfit-totalCommissionsOrSpreads)/startInvest;
+		
+		//Calculate averageDrawdown
+		averageDrawdown=0;
+		for(Double ddn:allDrawdowns)
+			averageDrawdown+=ddn;
+		averageDrawdown/=allDrawdowns.size();
+		
+		maximumClosedEquityDrawdown=maximumDrawdown;
+		averageClosedEquityDrawdown=averageDrawdown;
+		
+		netProfit=grossProfit-grossLoss;
+		averageProfit=grossProfit/winTrades;
+		averageLoss=grossLoss/lossTrades;
+		
+		profitFactor=grossProfit/grossLoss;
+		
+		payoffRatio=averageProfit/averageLoss;
+		
+		expectedPayoff=netProfit/totalTrades;
+		
+	}
+	
 
 	public int getId() {
 		return id;
@@ -410,5 +537,27 @@ public class RevenueStatistics implements Serializable{
 	public void setExpectedPayoff(double expectedPayoff) {
 		this.expectedPayoff = expectedPayoff;
 	}
+
+
+	@Override
+	public String toString() {
+		return "RevenueStatistics [ruturnRate=" + ruturnRate + ", drawdown="
+				+ drawdown + ", maximumDrawdown=" + maximumDrawdown
+				+ ", averageDrawdown=" + averageDrawdown
+				+ ", maximumClosedEquityDrawdown="
+				+ maximumClosedEquityDrawdown
+				+ ", averageClosedEquityDrawdown="
+				+ averageClosedEquityDrawdown + ", grossProfit=" + grossProfit
+				+ ", grossLoss=" + grossLoss + ", netProfit=" + netProfit
+				+ ", averageProfit=" + averageProfit + ", averageLoss="
+				+ averageLoss + ", profitFactor=" + profitFactor
+				+ ", payoffRatio=" + payoffRatio + ", expectedPayoff="
+				+ expectedPayoff + "]";
+	}
+	
+	
+	
+	
+	
 	
 }
