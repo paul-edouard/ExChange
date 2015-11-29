@@ -185,7 +185,19 @@ public class TimeStatistics implements Serializable{
 		
 	}
 
-
+	
+	public Object[] getChildren(){
+		
+		Object[] children =new Object[2];
+		
+		children[0]="Average Holding Time, "+averageHoldingTime;
+		children[1]="Average Time Holding Winning Trades Versus Losing Trades, "+String.format("%1$,.2f",averageTimeHoldingWinningTradesVersusLosingTrades);
+		
+		
+		return children;
+		
+	}
+	
 	
 	
 	/**

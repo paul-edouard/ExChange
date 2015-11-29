@@ -406,6 +406,25 @@ public class StabilityStatistics implements Serializable{
 		
 	}
 	
+	
+	public Object[] getChildren(){
+		
+		Object[] children =new Object[9];
+		
+		children[0]="Win Rate, "+String.format("%1$,.2f",winRate)+"%";
+		children[1]="Loss Rate, "+String.format("%1$,.2f",lossRate)+"%";
+		children[2]="Break Even Rate, "+String.format("%1$,.2f",breakEvenRate)+"%";
+		children[3]="Risk to Reward Ratio, "+String.format("%1$,.2f",riskToRewardRatio);
+		children[4]="Win over Loss Ratio, "+String.format("%1$,.2f",WinOverLossRatio);
+		children[5]="Standard Deviation, "+String.format("%1$,.2f",standardDeviation);
+		children[6]="Average Profitability, "+String.format("%1$,.2f",averageProfitability);
+		children[7]="Profit to Drawdown Ratio, "+String.format("%1$,.2f",profitToDrawdownRatio);
+		children[8]="Expectancy, "+String.format("%1$,.2f",expectancy);
+		
+		return children;
+		
+	}
+	
 
 	public int getId() {
 		return id;

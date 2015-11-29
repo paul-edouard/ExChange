@@ -4,11 +4,10 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import com.munch.exchange.model.core.chart.ChartIndicator;
-import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
-import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
-import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.statistics.PerformanceMetrics;
+import com.munch.exchange.model.core.ib.statistics.RevenueStatistics;
+import com.munch.exchange.model.core.ib.statistics.StabilityStatistics;
+import com.munch.exchange.model.core.ib.statistics.TimeStatistics;
 import com.munch.exchange.model.core.ib.statistics.TradeStatistics;
 
 public class SignalPerformanceTreeContentProvider implements IStructuredContentProvider,
@@ -36,6 +35,18 @@ ITreeContentProvider{
 			TradeStatistics p=(TradeStatistics) parentElement;
 			return p.getChildren();
 		}
+		if(parentElement instanceof TimeStatistics){
+			TimeStatistics p=(TimeStatistics) parentElement;
+			return p.getChildren();
+		}
+		if(parentElement instanceof StabilityStatistics){
+			StabilityStatistics p=(StabilityStatistics) parentElement;
+			return p.getChildren();
+		}
+		if(parentElement instanceof RevenueStatistics){
+			RevenueStatistics p=(RevenueStatistics) parentElement;
+			return p.getChildren();
+		}
 		return null;
 	}
 
@@ -56,7 +67,10 @@ ITreeContentProvider{
 	@Override
 	public Object[] getElements(Object inputElement) {
 		if(inputElement instanceof PerformanceMetrics 
-				|| inputElement instanceof TradeStatistics){
+				|| inputElement instanceof TradeStatistics
+				|| inputElement instanceof TimeStatistics
+				|| inputElement instanceof StabilityStatistics
+				|| inputElement instanceof RevenueStatistics){
 			return this.getChildren(inputElement);
 		}
 		return null;

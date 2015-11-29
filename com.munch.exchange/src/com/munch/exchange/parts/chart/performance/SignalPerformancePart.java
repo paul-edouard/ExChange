@@ -25,6 +25,9 @@ import org.eclipse.wb.swt.SWTResourceManager;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
+import com.munch.exchange.model.core.ib.statistics.RevenueStatistics;
+import com.munch.exchange.model.core.ib.statistics.StabilityStatistics;
+import com.munch.exchange.model.core.ib.statistics.TimeStatistics;
 import com.munch.exchange.model.core.ib.statistics.TradeStatistics;
 
 public class SignalPerformancePart {
@@ -85,7 +88,7 @@ public class SignalPerformancePart {
 				| SWT.V_SCROLL | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new SignalPerformanceTreeContentProvider());
 		treeViewer.setInput(chartSignal.getPerformanceMetrics());
-		treeViewer.setAutoExpandLevel(2);
+		treeViewer.setAutoExpandLevel(1);
 		
 		tree = treeViewer.getTree();
 		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -96,7 +99,7 @@ public class SignalPerformancePart {
 		
 		
 		treeViewer.refresh();
-		
+		treeViewer.expandAll();
 		
 		
 		parent.layout();
@@ -136,7 +139,17 @@ public class SignalPerformancePart {
 
 				if (element instanceof TradeStatistics) {
 					return "Trade Statistics:";
-				} else if (element instanceof String) {
+				}
+				if (element instanceof TimeStatistics) {
+					return "Time Statistics:";
+				}
+				if (element instanceof StabilityStatistics) {
+					return "Stability Statistics:";
+				}
+				if (element instanceof RevenueStatistics) {
+					return "Revenue Statistics:";
+				}
+				if (element instanceof String) {
 					String el = (String) element;
 					return el.split(", ")[0];
 				}

@@ -2,6 +2,7 @@ package com.munch.exchange.model.core.ib.statistics;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -175,14 +176,9 @@ public class TradeStatistics implements Serializable{
 	private double maximumFavorableExcursion;
 	
 	
-	
-	
-	
 	public TradeStatistics() {
 		super();
 	}
-	
-	
 	
 	
 	public void calculate(List<IbBar> bars, 
@@ -204,8 +200,8 @@ public class TradeStatistics implements Serializable{
 		double maxWin=Double.NEGATIVE_INFINITY;
 		double maxLoss=Double.NEGATIVE_INFINITY;
 		
-		int nbOfConsecutiveWins=0;
-		int nbOfConsecutiveLosses=0;
+		int nbOfConsecutiveWins=1;
+		int nbOfConsecutiveLosses=1;
 		
 		double adverseExcursion=0;
 		double favorableExcursion=0;
@@ -245,6 +241,7 @@ public class TradeStatistics implements Serializable{
 				if(signal==0 || absDiffSignal==2){
 					double profit=(bar.getClose()-bars.get(openPosition).getClose())*previewSignal*volume;
 					
+					
 					//Calculate and add the commission
 					if(commission!=null){
 						totalCommissionsOrSpreads+=absDiffSignal*commission.calculate(volume, bar.getClose());
@@ -266,6 +263,8 @@ public class TradeStatistics implements Serializable{
 						}
 						else{
 							nbOfConsecutiveWins=1;
+							if(maximumNumberOfConsecutiveWins==0)
+								maximumNumberOfConsecutiveWins=1;
 						}
 							
 						
@@ -287,6 +286,8 @@ public class TradeStatistics implements Serializable{
 						}
 						else{
 							nbOfConsecutiveLosses=1;
+							if(maximumNumberOfConsecutiveLosses==0)
+								maximumNumberOfConsecutiveLosses=1;
 						}
 						
 					}
@@ -334,15 +335,23 @@ public class TradeStatistics implements Serializable{
 	
 	public Object[] getChildren(){
 		
-		Object[] children =new Object[3];
-		
-		children[0]="Total Trades, "+totalTrades;
-		children[1]="win over Loss Trades, "+winOverLossTrades;
-		children[2]="Break Even Trades, "+breakEvenTrades;
+		LinkedList<Object> children=new LinkedList<Object>();
 		
 		
+		children.add("Total Trades, "+totalTrades);
 		
-		return children;
+		children.add("win over Loss Trades, "+String.format("%1$,.2f", winOverLossTrades));
+		children.add("Break Even Trades, "+String.format("%1$,.2f",breakEvenTrades));
+		children.add("Maximum Win Over Maximum Loss Trades, "+String.format("%1$,.2f",maximumWinOverMaximumLossTrades));
+		children.add("Maximum Number Of Consecutive Losses, "+maximumNumberOfConsecutiveLosses);
+		children.add("Maximum Number Of Consecutive Wins, "+maximumNumberOfConsecutiveWins);
+		children.add("Total Commissions Or Spreads, "+String.format("%1$,.2f",totalCommissionsOrSpreads));
+		//children.add("Total Slippage, "+totalSlippage);
+		//children[8]="Total Forex Carry, "+totalForexCarry);
+		children.add("Maximum Adverse Excursion, "+String.format("%1$,.2f",maximumAdverseExcursion));
+		children.add("Maximum Favorable Excursion, "+String.format("%1$,.2f",maximumFavorableExcursion));
+		
+		return children.toArray();
 		
 	}
 	

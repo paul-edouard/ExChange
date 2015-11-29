@@ -378,6 +378,30 @@ public class RevenueStatistics implements Serializable{
 		
 	}
 	
+	
+	public Object[] getChildren(){
+		
+		Object[] children =new Object[13];
+		
+		children[0]="Ruturn Rate, "+String.format("%1$,.2f",ruturnRate);
+		children[1]="Maximum Drawdown, "+String.format("%1$,.2f",maximumDrawdown);
+		children[2]="Average Drawdown, "+String.format("%1$,.2f",averageDrawdown);
+		children[3]="Maximum Closed Equity Drawdown, "+String.format("%1$,.2f",maximumClosedEquityDrawdown);
+		children[4]="Average Closed Equity Drawdown, "+String.format("%1$,.2f",averageClosedEquityDrawdown);
+		children[5]="Gross Profit, "+String.format("%1$,.2f",grossProfit);
+		children[6]="Gross Loss, "+String.format("%1$,.2f",grossLoss);
+		children[7]="Net Profit, "+String.format("%1$,.2f",netProfit);
+		children[8]="Average Profit, "+String.format("%1$,.2f",averageProfit);
+		children[9]="Average Loss, "+String.format("%1$,.2f",averageLoss);
+		children[10]="Profit Factor, "+String.format("%1$,.2f",profitFactor);
+		children[11]="Payoff Ratio, "+String.format("%1$,.2f",payoffRatio);
+		children[12]="Expected Payoff, "+String.format("%1$,.2f",expectedPayoff);
+		
+		
+		return children;
+		
+	}
+	
 
 	public int getId() {
 		return id;
