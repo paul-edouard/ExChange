@@ -25,14 +25,17 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 	private List<IbBar> bars;
 	
 
-	public IbChartSignalProblem(IbChartSignal chartSignal) {
+	public IbChartSignalProblem(IbChartSignal chartSignal,List<IbBar> bars) {
 		super(chartSignal.getParameters().size(), 2);
 		this.chartSignal=chartSignal;
+		this.bars=bars;
 	}
 
 	@Override
 	public void evaluate(Solution solution) {
 		IbChartSignal signal=(IbChartSignal) this.chartSignal.copy();
+		
+		System.out.println("Nb of bars: "+bars.size());
 		
 		// Set the Chart Signal parameters
 		int index=0;
@@ -40,9 +43,11 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 			switch (param.getType()) {
 			case DOUBLE:
 				param.setValue(EncodingUtils.getReal(solution.getVariable(index)));
+				System.out.println("Double: "+param.getValue());
 				break;
 			case INTEGER:
 				param.setValue(EncodingUtils.getInt(solution.getVariable(index)));
+				System.out.println("Integer: "+param.getValue());
 				break;
 
 			default:
@@ -52,6 +57,8 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 			index++;
 		}
 		signal.setDirty(true);
+		
+		//TODO Create a batch modus to speed up the computation
 		
 		//Calculate the Signal
 		signal.compute(bars);
@@ -66,6 +73,8 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 			if(maxRisk<(-point.getValue()))
 				maxRisk=-point.getValue();
 		}
+		
+		System.out.println("Profit: "+endProfit+", risk: "+maxRisk);
 		
 		solution.setObjective(0, -endProfit);
 		solution.setObjective(1, maxRisk);
@@ -130,6 +139,12 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 		
 		return solutions;
 		
+	}
+	
+	
+
+	public void setBars(List<IbBar> bars) {
+		this.bars = bars;
 	}
 	
 	

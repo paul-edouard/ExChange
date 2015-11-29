@@ -79,7 +79,7 @@
               </children>
               <children xsi:type="basic:Part" xmi:id="_rGWQEI6mEeSBTbBmTuUumA" elementId="com.munch.exchange.part.resultschart" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsChartPart" label="Results Chart" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png"/>
               <children xsi:type="basic:Part" xmi:id="_4m99QLpoEeS1apWxmHY8yw" elementId="com.munch.exchange.part.chart.parameter.editor" accessibilityPhrase="Edit the paramters of the selected chart indicator" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.chart.parameter.ChartParameterEditorPart" label="Chart Parameters" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/configs.gif"/>
-              <children xsi:type="basic:Part" xmi:id="_zRAVQJYOEeW1QJwgfRc0Gw" elementId="com.munch.exchange.part.chart.signal.performance" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.chart.performance.SignalPerformancePart" label="Signal Performance" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/history_list.gif" tooltip="Signal Performance"/>
+              <children xsi:type="basic:Part" xmi:id="_zRAVQJYOEeW1QJwgfRc0Gw" elementId="com.munch.exchange.part.chart.signal.performance" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.chart.signal.SignalPerformancePart" label="Signal Performance" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/history_list.gif" tooltip="Signal Performance"/>
             </children>
           </children>
         </children>
@@ -136,6 +136,7 @@
   </descriptors>
   <descriptors xmi:id="_MinrgOBJEeSlDfuPT9K5MQ" elementId="com.munch.exchange.partdescriptor.neuralnetwork.regularizarion.error.editor" label="Regularization Error Editor" iconURI="platform:/plugin/com.munch.exchange/icons/24/network.png" tooltip="Regularization Error Editor" allowMultiple="true" closeable="true" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.error.NeuralNetworkRegularizationErrorPart"/>
   <descriptors xmi:id="_XYfVkEQlEeWQt7su7sg-Iw" elementId="com.munch.exchange.partdescriptor.charteditor" label="Chart Editor Part" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png" tooltip="Chart Editor Part" allowMultiple="true" closeable="true" dirtyable="true" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.chart.ChartEditorPart"/>
+  <descriptors xmi:id="_RawxIJaeEeWvGbSy1bT1sg" elementId="com.munch.exchange.partdescriptor.chart.signal.optimization.editor" label="Signal Optimization Editor" tooltip="Optimize a signal" allowMultiple="true" closeable="true" dirtyable="true" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.chart.signal.SignalOptimizationEditorPart"/>
   <commands xmi:id="_hCNcM2TNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.file.exit" commandName="quitCommand"/>
   <commands xmi:id="_hCNcN2TNEeOTfZ5LPzv9Rg" elementId="com.munch.exchange.open" commandName="openCommand"/>
   <commands xmi:id="_hCNcOmTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.ui.file.save" commandName="saveCommand"/>

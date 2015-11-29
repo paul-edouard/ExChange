@@ -1,4 +1,4 @@
-package com.munch.exchange.parts.chart.performance;
+package com.munch.exchange.parts.chart.signal;
 
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;

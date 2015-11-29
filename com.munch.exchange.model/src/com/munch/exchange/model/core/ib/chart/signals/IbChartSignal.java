@@ -11,6 +11,11 @@ import javax.persistence.Entity;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
+import org.moeaframework.Executor;
+import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.Solution;
+import org.moeaframework.util.Vector;
+
 import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
@@ -21,6 +26,7 @@ import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.ShapeType;
+import com.munch.exchange.model.core.ib.chart.trend.TrendLineProblem;
 import com.munch.exchange.model.core.ib.statistics.PerformanceMetrics;
 import com.sun.istack.internal.logging.Logger;
 
@@ -41,7 +47,9 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	public static final String SIGNAL="SIGNAL";
 	
 	@Transient
-	private IbChartSignalProblem problem;
+	//private IbChartSignalProblem problem;
+	private Executor optExecutor;
+	
 	
 	@Transient
 	private IbCommission commission;
@@ -73,6 +81,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		if(in instanceof IbChartSignal){
 			IbChartSignal in_s=(IbChartSignal)in;
 			this.volume=in_s.volume;
+			this.contract=in_s.getContract();
 		}
 		
 		super.copyData(in);
@@ -91,9 +100,37 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	}
 	
 	
-	public void initProblem(){
-		problem=new IbChartSignalProblem(this);
+	public void initProblem(List<IbBar> bars){
+		
+		optExecutor = new Executor()
+		.withProblemClass(IbChartSignalProblem.class, this,bars)
+		.withAlgorithm("NSGAII")
+		//.usingAlgorithmFactory(factory)
+		.withMaxEvaluations(1000)
+		.distributeOnAllCores();
+		
 	}
+	
+	public void optimize(){
+		NondominatedPopulation result =optExecutor.run();
+		
+		// print the results
+		for (int i = 0; i < result.size(); i++) {
+					Solution solution = result.get(i);
+					double[] objectives = solution.getObjectives();
+							
+					// negate objectives to return them to their maximized form
+					objectives = Vector.negate(objectives);
+							
+					System.out.println("Solution " + (i+1) + ":");
+					System.out.println("    Profit: " + objectives[0]);
+					System.out.println("    Risk:   " + objectives[1]);
+					
+		}
+		
+		
+	}
+	
 	
 
 	@Override

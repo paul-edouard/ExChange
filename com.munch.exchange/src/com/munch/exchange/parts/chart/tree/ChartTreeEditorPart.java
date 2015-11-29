@@ -1,6 +1,9 @@
  
 package com.munch.exchange.parts.chart.tree;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.annotation.PostConstruct;
 
@@ -22,19 +25,25 @@ import org.eclipse.wb.swt.SWTResourceManager;
 
 import javax.annotation.PreDestroy;
 
+import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.MDirtyable;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -45,13 +54,25 @@ import org.eclipse.jface.window.ToolTip;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.IImageKeys;
+import com.munch.exchange.model.core.Commodity;
+import com.munch.exchange.model.core.Currency;
+import com.munch.exchange.model.core.ExchangeRate;
+import com.munch.exchange.model.core.Fund;
+import com.munch.exchange.model.core.Indice;
+import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartIndicatorGroup;
 import com.munch.exchange.model.core.chart.ChartSerie;
+import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
+import com.munch.exchange.parts.MyMDirtyable;
+import com.munch.exchange.parts.RateEditorPart;
 import com.munch.exchange.parts.chart.parameter.ChartParameterEditorPart;
+import com.munch.exchange.parts.chart.signal.SignalOptimizationEditorPart;
+import com.munch.exchange.parts.chart.signal.SignalPerformancePart;
 import com.munch.exchange.parts.chart.tree.ChartTreeComposite.ActivatedLabelProvider;
 import com.munch.exchange.parts.chart.tree.ChartTreeComposite.ColorLabelProvider;
 import com.munch.exchange.parts.chart.tree.ChartTreeComposite.NameLabelProvider;
@@ -85,6 +106,18 @@ public class ChartTreeEditorPart {
 	
 	@Inject
 	EPartService partService;
+	
+	@Inject
+	private EModelService modelService;
+	
+	@Inject
+	private MApplication application;
+	
+	@Inject
+	IEclipseContext context;
+	
+	@Inject
+	IBundleResourceLoader bundleResourceLoader;
 	
 	
 	@Inject
@@ -141,6 +174,24 @@ public class ChartTreeEditorPart {
 				
 			}
 		});
+		//Double Click listener
+		treeViewer.addDoubleClickListener(new IDoubleClickListener() {
+			public void doubleClick(DoubleClickEvent event) {
+						
+				ISelection selection =treeViewer.getSelection();
+				if (selection != null & selection instanceof IStructuredSelection) {
+					IStructuredSelection strucSelection = (IStructuredSelection) selection;
+					Object item =strucSelection.getFirstElement();
+					if(item instanceof IbChartSignal){
+						IbChartSignal signal=(IbChartSignal) item;
+						//logger.info("Double Click on signal:"+signal.getName());
+						openSignalOptimizationEditor(signal);
+					}
+								
+				}			
+			}
+		});
+		
 		treeViewer.setContentProvider(new ChartTreeContentProvider());
 		treeViewer.setInput(indicatorGroup);
 		treeViewer.setAutoExpandLevel(2);
@@ -163,7 +214,14 @@ public class ChartTreeEditorPart {
 		
 		treeViewer.refresh();
 		
-		MPart part=partService.findPart(ChartParameterEditorPart.CHART_PARAMETER_EDITOR_ID);
+		//Create the performance part
+		MPart part=partService.findPart(SignalPerformancePart.SIGNAL_PERFORMANCE_ID);
+		if(part!=null){
+			partService.showPart(part, PartState.CREATE);
+		}
+		
+		//Create and show the parameter part
+		part=partService.findPart(ChartParameterEditorPart.CHART_PARAMETER_EDITOR_ID);
 		if(part!=null){
 			partService.showPart(part, PartState.CREATE);
 			partService.bringToTop(part);
@@ -228,6 +286,81 @@ public class ChartTreeEditorPart {
 		dirty.setDirty(true);
 	}
 	
+	
+	/**
+	 * Open a new Rate Editor,
+	 * If the Editor already exist it will be bring to the top
+	 * @param rate
+	 */
+	private void openSignalOptimizationEditor(IbChartSignal signal){
+		
+		MPart part=searchPart(SignalOptimizationEditorPart.SIGNAL_OPTIMIZATION_EDITOR_ID,String.valueOf(signal.getId()));
+		if(part!=null &&  part.getContributionURI()!=null){
+			if(part.getContext()==null){
+				setSignalOptimizationEditorPartContext(part,signal);
+			}
+			
+				partService.bringToTop(part);
+				return;
+		}
+		
+		//Create the part
+		part=createSignalOptimizationEditorPart(signal);
+		
+		//add the part to the corresponding Stack
+		MPartStack myStack=(MPartStack)modelService.find("com.munch.exchange.partstack.rightup", application);
+		myStack.getChildren().add(part);
+		//Open the part
+		partService.showPart(part, PartState.ACTIVATE);
+	
+		
+	}
+	
+	private MPart createSignalOptimizationEditorPart(IbChartSignal signal){
+		MPart part = partService.createPart(SignalOptimizationEditorPart.SIGNAL_OPTIMIZATION_EDITOR_ID);
+		
+		//MPart part =MBasicFactory.INSTANCE.createPartDescrip;
+		String contractName=indicatorGroup.getRoot().getContainer().getContract().getLongName();
+		
+		part.setLabel(signal.getName()+"("+contractName+")");
+		part.setIconURI(getIconURI(signal));
+		part.setVisible(true);
+		part.setDirty(false);
+		part.getTags().add(String.valueOf(signal.getId()));
+		part.getTags().add(EPartService.REMOVE_ON_HIDE_TAG);
+		
+		setSignalOptimizationEditorPartContext(part,signal);
+		
+		return part;
+	}
+	
+	
+	private String getIconURI(IbChartSignal signal){
+		
+		return bundleResourceLoader.getImageURI(getClass(),IImageKeys.QUOTE_UP).toString();
+	}
+	
+	private void setSignalOptimizationEditorPartContext(MPart part,IbChartSignal signal){
+		part.setContext(context.createChild());
+		part.getContext().set(IbChartSignal.class, signal);
+		part.getContext().set(MDirtyable.class, new MyMDirtyable(part));
+	}
+	
+	private MPart searchPart(String partId,String tag){
+		
+		List<MPart> parts=getPartList(partId, tag);
+		if(parts.isEmpty())return null;
+		return parts.get(0);
+	}
+	
+	private List<MPart> getPartList(String partId,String tag){
+		List<String> tags=new LinkedList<String>();
+		tags.add(tag);
+			
+		List<MPart> parts=modelService.findElements(application,
+				partId, MPart.class,tags );
+		return parts;
+	}
 	
 	
 	// ################################

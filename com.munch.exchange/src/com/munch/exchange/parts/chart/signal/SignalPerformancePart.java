@@ -1,4 +1,4 @@
-package com.munch.exchange.parts.chart.performance;
+package com.munch.exchange.parts.chart.signal;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -32,6 +32,7 @@ import com.munch.exchange.model.core.ib.statistics.TradeStatistics;
 
 public class SignalPerformancePart {
 	
+	public static final String SIGNAL_PERFORMANCE_ID="com.munch.exchange.part.chart.signal.performance";
 	
 	private static Logger logger = Logger.getLogger(SignalPerformancePart.class);
 	

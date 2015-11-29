@@ -85,7 +85,7 @@ public class PerformanceMetrics implements Serializable{
 		}
 		
 		
-		System.out.println(this);
+		//System.out.println(this);
 		
 	}
 	
