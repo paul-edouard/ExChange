@@ -25,10 +25,10 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 	private List<IbBar> bars;
 	
 
-	public IbChartSignalProblem(IbChartSignal chartSignal,List<IbBar> bars) {
+	public IbChartSignalProblem(IbChartSignal chartSignal) {
 		super(chartSignal.getParameters().size(), 2);
 		this.chartSignal=chartSignal;
-		this.bars=bars;
+		this.bars=chartSignal.getOptimizationBars();
 	}
 
 	@Override

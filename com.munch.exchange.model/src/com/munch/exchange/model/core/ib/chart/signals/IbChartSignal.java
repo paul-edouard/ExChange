@@ -46,9 +46,15 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	public static final String SELL_SHORT_SIGNAL="SELL SHORT";
 	public static final String SIGNAL="SIGNAL";
 	
+	
 	@Transient
-	//private IbChartSignalProblem problem;
-	private Executor optExecutor;
+	private List<IbBar> optimizationBars;
+	
+	
+	private String algorithmName;
+	
+	private int numberOfEvaluations;
+	
 	
 	
 	@Transient
@@ -100,7 +106,20 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	}
 	
 	
+	
+	
+	public List<IbBar> getOptimizationBars() {
+		return optimizationBars;
+	}
+
+
+	public void setOptimizationBars(List<IbBar> optimizationBars) {
+		this.optimizationBars = optimizationBars;
+	}
+
+	/*
 	public void initProblem(List<IbBar> bars){
+		
 		
 		optExecutor = new Executor()
 		.withProblemClass(IbChartSignalProblem.class, this,bars)
@@ -109,8 +128,11 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		.withMaxEvaluations(1000)
 		.distributeOnAllCores();
 		
+		
 	}
+	*/
 	
+	/*
 	public void optimize(){
 		NondominatedPopulation result =optExecutor.run();
 		
@@ -130,6 +152,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 		
 	}
+	*/
 	
 	
 
@@ -471,6 +494,28 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		}
 		
 		return contract;
+	}
+	
+	
+
+
+	public String getAlgorithmName() {
+		return algorithmName;
+	}
+
+
+	public void setAlgorithmName(String algorithmName) {
+		this.algorithmName = algorithmName;
+	}
+
+
+	public int getNumberOfEvaluations() {
+		return numberOfEvaluations;
+	}
+
+
+	public void setNumberOfEvaluations(int numberOfEvaluations) {
+		this.numberOfEvaluations = numberOfEvaluations;
 	}
 
 
