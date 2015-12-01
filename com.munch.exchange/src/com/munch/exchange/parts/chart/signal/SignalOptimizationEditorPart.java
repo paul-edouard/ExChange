@@ -10,27 +10,28 @@ import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
 import org.eclipse.e4.ui.di.Focus;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Text;
 
-import com.ib.controller.Types.BarSize;
-import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
-import com.munch.exchange.parts.chart.ChartEditorPart;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
-
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.ProgressBar;
 
 public class SignalOptimizationEditorPart {
 	
@@ -38,7 +39,6 @@ public class SignalOptimizationEditorPart {
 	
 	
 	public static final String SIGNAL_OPTIMIZATION_EDITOR_ID="com.munch.exchange.partdescriptor.chart.signal.optimization.editor";
-	private Text text;
 	
 	
 	@Inject
@@ -53,12 +53,34 @@ public class SignalOptimizationEditorPart {
 	LinkedList<LinkedList<IbBar>> optimizationBlocks;
 	
 	private Combo comboBarSize;
-	private Text textContainerName;
-	private Composite composite;
-	private Text text_1;
 	private Spinner spinnerPercentOfData;
 	private Label lblPercentOfData;
-	private Button btnStartOptimization;
+	private Composite compositeCommand;
+	private Composite compositeChart;
+	private Group groupControls;
+	private Label lblBarSize;
+	private Composite compositeMain;
+	private Group grpDisplayedResults;
+	private Table tableResults;
+	private TableViewer tableViewerResults;
+	private Composite composite;
+	private Button btnSelectAll;
+	private Button btnShowStatistic;
+	private Group grpDisplayedMetrics;
+	private org.eclipse.swt.widgets.List listMetrics;
+	private ListViewer listViewerMetrics;
+	private Label lblAlgorithm;
+	private Combo comboAlgorithm;
+	private Label lblSeeds;
+	private Spinner spinnerSeeds;
+	private Label lblMaxNfe;
+	private Spinner spinnerMaxNFE;
+	private Composite compositeCommandBtns;
+	private Button btnRun;
+	private Button btnCancel;
+	private Button btnClear;
+	private ProgressBar progressBarRun;
+	private Label lblMemory;
 	
 	public SignalOptimizationEditorPart() {
 	}
@@ -70,83 +92,124 @@ public class SignalOptimizationEditorPart {
 	public void createControls(Composite parent) {
 		parent.setLayout(new GridLayout(1, false));
 		
-		Composite compositeDataParameters = new Composite(parent, SWT.NONE);
-		compositeDataParameters.setLayout(new GridLayout(2, false));
-		compositeDataParameters.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		compositeMain = new Composite(parent, SWT.NONE);
+		compositeMain.setLayout(new GridLayout(2, false));
+		compositeMain.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
 		
-		textContainerName = new Text(compositeDataParameters, SWT.BORDER);
-		textContainerName.setEditable(false);
-		textContainerName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		textContainerName.setText(getBarContainer().getType().toString());
+		compositeCommand = new Composite(compositeMain, SWT.NONE);
+		compositeCommand.setLayout(new GridLayout(1, false));
+		compositeCommand.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true, 1, 1));
 		
-		comboBarSize = new Combo(compositeDataParameters, SWT.NONE);
+		groupControls = new Group(compositeCommand, SWT.NONE);
+		groupControls.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		groupControls.setLayout(new GridLayout(2, false));
+		groupControls.setText("Controls");
+		
+		lblBarSize = new Label(groupControls, SWT.NONE);
+		lblBarSize.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblBarSize.setText("Bar size:");
+		
+		comboBarSize = new Combo(groupControls, SWT.NONE);
 		comboBarSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		for(String bSize:IbBar.getAllBarSizesAsString())
-			comboBarSize.add(bSize);
-		comboBarSize.setText(comboBarSize.getItem(0));
+		//comboBarSize.setText(comboBarSize.getItem(0));
 		
-		composite = new Composite(parent, SWT.NONE);
-		composite.setLayout(new GridLayout(2, false));
-		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		lblPercentOfData = new Label(groupControls, SWT.NONE);
+		lblPercentOfData.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblPercentOfData.setText("Percent of Data:");
 		
-		Button btnAskData = new Button(composite, SWT.NONE);
-		btnAskData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		btnAskData.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				BarSize barSize=IbBar.getBarSizeFromString(comboBarSize.getText());
-				
-				allCollectedBars=hisDataProvider.getAllBars(getBarContainer(), barSize);
-				text.setText("Number of bar: "+allCollectedBars.size());
-				
-				//Start the splitting in Blocks
-				//LinkedList<LinkedList<IbBar>> blocks = splitCollectedBarsInBlocks();
-				
-				//text_1.setText("Number of blocks: "+blocks.size());
-				btnStartOptimization.setEnabled(true);
-				
-			}
-		});
-		btnAskData.setText("Ask Data");
-		
-		text = new Text(composite, SWT.BORDER);
-		text.setEditable(false);
-		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
-		lblPercentOfData = new Label(composite, SWT.NONE);
-		lblPercentOfData.setText("Percent of Data");
-		
-		spinnerPercentOfData = new Spinner(composite, SWT.BORDER);
+		spinnerPercentOfData = new Spinner(groupControls, SWT.BORDER);
+		spinnerPercentOfData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		spinnerPercentOfData.setPageIncrement(1);
 		spinnerPercentOfData.setIncrement(5);
 		spinnerPercentOfData.setMinimum(10);
 		spinnerPercentOfData.setSelection(70);
-		spinnerPercentOfData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		
-		text_1 = new Text(parent, SWT.BORDER);
-		text_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		lblAlgorithm = new Label(groupControls, SWT.NONE);
+		lblAlgorithm.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblAlgorithm.setText("Algorithm:");
 		
-		btnStartOptimization = new Button(parent, SWT.NONE);
-		btnStartOptimization.setEnabled(false);
-		btnStartOptimization.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				
-				logger.info("Start Optimization!");
-				backTestingBlocks=splitCollectedBarsInBlocks();
-				optimizationBlocks=collectOptimizationBlocks(backTestingBlocks);
-				
-				LinkedList<IbBar> optimizationBars=new LinkedList<>();
-				for(LinkedList<IbBar> block:optimizationBlocks)
-					optimizationBars.addAll(block);
-				
-				signal.initProblem(optimizationBars);
-				signal.optimize();
-				
-			}
-		});
-		btnStartOptimization.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		btnStartOptimization.setText("Start Optimization");
+		comboAlgorithm = new Combo(groupControls, SWT.NONE);
+		comboAlgorithm.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		lblSeeds = new Label(groupControls, SWT.NONE);
+		lblSeeds.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblSeeds.setText("Seeds:");
+		
+		spinnerSeeds = new Spinner(groupControls, SWT.BORDER);
+		spinnerSeeds.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		
+		lblMaxNfe = new Label(groupControls, SWT.NONE);
+		lblMaxNfe.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblMaxNfe.setText("Max NFE:");
+		
+		spinnerMaxNFE = new Spinner(groupControls, SWT.BORDER);
+		spinnerMaxNFE.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		
+		compositeCommandBtns = new Composite(compositeCommand, SWT.NONE);
+		compositeCommandBtns.setLayout(new FillLayout(SWT.HORIZONTAL));
+		compositeCommandBtns.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		
+		btnRun = new Button(compositeCommandBtns, SWT.NONE);
+		btnRun.setText("Run");
+		
+		btnCancel = new Button(compositeCommandBtns, SWT.NONE);
+		btnCancel.setText("Cancel");
+		
+		btnClear = new Button(compositeCommandBtns, SWT.NONE);
+		btnClear.setText("Clear");
+		
+		grpDisplayedResults = new Group(compositeCommand, SWT.NONE);
+		grpDisplayedResults.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		grpDisplayedResults.setLayout(new GridLayout(1, false));
+		grpDisplayedResults.setText("Displayed Results");
+		
+		tableViewerResults = new TableViewer(grpDisplayedResults, SWT.BORDER | SWT.FULL_SELECTION);
+		tableResults = tableViewerResults.getTable();
+		tableResults.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		composite = new Composite(grpDisplayedResults, SWT.NONE);
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		composite.setLayout(new FillLayout(SWT.HORIZONTAL));
+		
+		btnSelectAll = new Button(composite, SWT.NONE);
+		btnSelectAll.setText("Select All");
+		
+		btnShowStatistic = new Button(composite, SWT.NONE);
+		btnShowStatistic.setText("Show Statistic");
+		
+		grpDisplayedMetrics = new Group(compositeCommand, SWT.NONE);
+		grpDisplayedMetrics.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		grpDisplayedMetrics.setText("Displayed Metrics");
+		grpDisplayedMetrics.setLayout(new GridLayout(1, false));
+		
+		listViewerMetrics = new ListViewer(grpDisplayedMetrics, SWT.BORDER | SWT.V_SCROLL);
+		listMetrics = listViewerMetrics.getList();
+		listMetrics.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		compositeChart = new Composite(compositeMain, SWT.NONE);
+		compositeChart.setLayout(new GridLayout(1, false));
+		compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		compositeChart.setSize(288, 107);
+		
+		TabFolder tabFolder = new TabFolder(compositeChart, SWT.BOTTOM);
+		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		TabItem tbtmMetrics = new TabItem(tabFolder, SWT.NONE);
+		tbtmMetrics.setText("Metrics");
+		
+		Composite compositeBottom = new Composite(parent, SWT.BORDER);
+		compositeBottom.setLayout(new FillLayout(SWT.HORIZONTAL));
+		compositeBottom.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false, 1, 1));
+		
+		progressBarRun = new ProgressBar(compositeBottom, SWT.NONE);
+		
+		Label lblSeedsNb = new Label(compositeBottom, SWT.NONE);
+		lblSeedsNb.setText("Seed");
+		
+		lblMemory = new Label(compositeBottom, SWT.NONE);
+		lblMemory.setText("Memory");
+		for(String bSize:IbBar.getAllBarSizesAsString())
+			comboBarSize.add(bSize);
 		
 		
 	}
