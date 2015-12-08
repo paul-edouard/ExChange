@@ -42,9 +42,14 @@ import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.ProgressBar;
+import org.moeaframework.analysis.collector.Accumulator;
+import org.moeaframework.analysis.diagnostics.ApproximationSetPlot;
 import org.moeaframework.analysis.diagnostics.ControllerEvent;
 import org.moeaframework.analysis.diagnostics.ControllerListener;
+import org.moeaframework.analysis.diagnostics.EmptyPlot;
+import org.moeaframework.analysis.diagnostics.LinePlot;
 import org.moeaframework.analysis.diagnostics.ResultKey;
+import org.moeaframework.analysis.diagnostics.ResultPlot;
 import org.moeaframework.analysis.diagnostics.SortedListModel;
 import org.moeaframework.core.Settings;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -141,6 +146,12 @@ IbChartSignalOptimizationControllerListener{
 	 */
 	private LinkedList<String> metricListModel;
 	
+	/**
+	 * The underlying data model storing the different result type
+	 */
+	private LinkedList<String> resultTypeListModel;
+	
+	
 	
 	/**
 	 * The controller which stores the underlying data model and notifies this
@@ -184,6 +195,9 @@ IbChartSignalOptimizationControllerListener{
 	private TabItem tbtmApproximationSet;
 	private TableColumn tblclmnAlgorithm;
 	private TableColumn tblclmnNbOfSeeds;
+	private Composite chartContainer;
+	private TabItem tbtmMetrics;
+	private TabFolder tabFolder;
 	
 	public SignalOptimizationEditorPart() {
 	}
@@ -247,6 +261,9 @@ IbChartSignalOptimizationControllerListener{
 		lblSeeds.setText("Seeds:");
 		
 		spinnerSeeds = new Spinner(groupControls, SWT.BORDER);
+		spinnerSeeds.setMaximum(10);
+		spinnerSeeds.setMinimum(1);
+		spinnerSeeds.setSelection(1);
 		spinnerSeeds.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		
 		lblMaxNfe = new Label(groupControls, SWT.NONE);
@@ -254,6 +271,10 @@ IbChartSignalOptimizationControllerListener{
 		lblMaxNfe.setText("Max NFE:");
 		
 		spinnerMaxNFE = new Spinner(groupControls, SWT.BORDER);
+		spinnerMaxNFE.setIncrement(100);
+		spinnerMaxNFE.setMaximum(100000);
+		spinnerMaxNFE.setMinimum(10);
+		spinnerMaxNFE.setSelection(1000);
 		spinnerMaxNFE.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		
 		lblReport = new Label(groupControls, SWT.NONE);
@@ -262,6 +283,8 @@ IbChartSignalOptimizationControllerListener{
 		
 		comboReportType = new Combo(groupControls, SWT.NONE);
 		comboReportType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboReportType.setItems(resultTypeListModel.toArray(new String[0]));
+		comboReportType.select(0);
 		
 		compositeCommandBtns = new Composite(compositeCommand, SWT.NONE);
 		compositeCommandBtns.setLayout(new FillLayout(SWT.HORIZONTAL));
@@ -325,7 +348,7 @@ IbChartSignalOptimizationControllerListener{
 		tblclmnAlgorithm.setText("Algorithm");
 		
 		tblclmnNbOfSeeds = new TableColumn(tableResults, SWT.LEFT);
-		tblclmnNbOfSeeds.setWidth(100);
+		tblclmnNbOfSeeds.setWidth(131);
 		tblclmnNbOfSeeds.setText("Nb of Seeds");
 		
 		
@@ -366,11 +389,15 @@ IbChartSignalOptimizationControllerListener{
 		compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		compositeChart.setSize(288, 107);
 		
-		TabFolder tabFolder = new TabFolder(compositeChart, SWT.BOTTOM);
+		tabFolder = new TabFolder(compositeChart, SWT.BOTTOM);
 		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
-		TabItem tbtmMetrics = new TabItem(tabFolder, SWT.NONE);
+		tbtmMetrics = new TabItem(tabFolder, SWT.NONE);
 		tbtmMetrics.setText("Metrics");
+		
+		chartContainer = new Composite(tabFolder, SWT.NONE);
+		tbtmMetrics.setControl(chartContainer);
+		chartContainer.setLayout(new GridLayout(1, false));
 		
 		tbtmApproximationSet = new TabItem(tabFolder, SWT.NONE);
 		tbtmApproximationSet.setText("Approximation Set");
@@ -417,12 +444,208 @@ IbChartSignalOptimizationControllerListener{
 		sortedAlgorithmNames = new LinkedList<String>(algorithmNames);
 		Collections.sort(sortedAlgorithmNames);
 		
+		resultTypeListModel=new LinkedList<String>();
+		resultTypeListModel.add("Full");
+		resultTypeListModel.add("Middle");
+		resultTypeListModel.add("None");
+		
 	}
 	
 	
 	private void postGuiInitialization(){
 		
 	}
+	
+	
+	private void updateModel() {
+		//determine selection mode
+		List<String> selectedResults = getSelectedResults();
+		List<String> selectedMetrics = getSelectedMetrics();
+		boolean selectAllResults = false;
+		boolean selectFirstMetric = false;
+		
+		if (selectedResults.size() == resultListModel.size()) {
+			selectAllResults = true;
+		}
+		
+		if ((selectedMetrics.size() == 0) && (metricListModel.size() == 0)) {
+			selectFirstMetric = true;
+		}
+		
+		//update metric list and result table contents
+		resultListModel.addAll(controller.getKeys());
+		
+		for (String key : controller.getKeys()) {
+			for (Accumulator accumulator : controller.get(key)) {
+				metricListModel.addAll(accumulator.keySet());
+			}
+		}
+		
+		//update metric list selection
+		listMetrics.removeSelectionListener(this);
+		listMetrics.deselectAll();
+		
+		if (selectFirstMetric) {
+			listMetrics.setSelection(0);
+		} else {
+			for (String metric : selectedMetrics) {
+				int index = metricListModel.indexOf(metric);
+				listMetrics.select(index);
+			}
+		}
+		listMetrics.addSelectionListener(this);
+		
+		
+		//update result table selection
+		tableResults.removeSelectionListener(this);
+		//resultTableModel.fireTableDataChanged();
+		
+		if (selectAllResults && (selectedResults.size() < 
+				resultListModel.size())) {
+			tableResults.setSelection(0, 
+					resultListModel.size()-1);
+			
+		} else {
+			for (String key : selectedResults) {
+				int index = resultListModel.indexOf(key);
+				tableResults.setSelection(index, 
+						index);
+			}
+		}
+
+		tableResults.addSelectionListener(this);
+	}
+	
+	
+	
+	/**
+	 * Returns a list of the selected metrics.
+	 * 
+	 * @return a list of the selected metrics
+	 */
+	protected List<String> getSelectedMetrics() {
+		List<String> selectedMetrics = new ArrayList<String>();
+		
+		int[] selectedIndices=this.listViewerMetrics.getList().getSelectionIndices();
+		
+		for (int i=0;i<selectedIndices.length;i++) {
+			int index=selectedIndices[i];
+			selectedMetrics.add(metricListModel.get(index));
+		}
+		
+		return selectedMetrics;
+	}
+	
+	
+	/**
+	 * Returns a list of the selected results.
+	 * 
+	 * @return a list of the selected results
+	 */
+	protected List<String> getSelectedResults() {
+		List<String> selectedResults = new ArrayList<String>();
+		
+		int[] selectedIndices=this.tableResults.getSelectionIndices();
+		
+		for (int i=0;i<selectedIndices.length;i++) {
+			int index=selectedIndices[i];
+			selectedResults.add(resultListModel.get(index));
+		}
+		
+		return selectedResults;
+	}
+	
+	
+	/**
+	 * Invoked when the underlying data model is cleared, resulting in the GUI
+	 * removing and resetting all components.  This method must only be invoked
+	 * on the event dispatch thread.
+	 */
+	protected void clear() {
+		resultListModel.clear();
+		tableResults.deselectAll();
+		//resultTableModel.fireTableDataChanged();
+		metricListModel.clear();
+		listMetrics.deselectAll();
+		//paintHelper.clear();
+		
+		
+		chartContainer.dispose();
+		
+		/*
+		chartContainer.removeAll();
+		chartContainer.revalidate();
+		chartContainer.repaint();
+		*/
+	}
+	
+	
+	/**
+	 * Updates the chart layout when the user changes which metrics to plot.
+	 * This method must only be invoked on the event dispatch thread.
+	 */
+	protected void updateChartLayout() {
+		chartContainer.dispose();
+		
+		chartContainer = new Composite(tabFolder, SWT.NONE);
+		tbtmMetrics.setControl(chartContainer);
+		chartContainer.setLayout(new GridLayout(1, false));
+		
+		List<String> selectedMetrics = getSelectedMetrics();
+		
+		int nbOfRow=0;
+		
+		if (selectedMetrics.size() > 0) {
+			if (selectedMetrics.size() <= 1) {
+				chartContainer.setLayout(new GridLayout(1, false));
+				nbOfRow=1;
+			} else if (selectedMetrics.size() <= 2) {
+				chartContainer.setLayout(new GridLayout(1, false));
+				nbOfRow=2;
+			} else if (selectedMetrics.size() <= 4) {
+				chartContainer.setLayout(new GridLayout(2, false));
+				nbOfRow=2;
+			} else if (selectedMetrics.size() <= 6) {
+				chartContainer.setLayout(new GridLayout(2, false));
+				nbOfRow=3;
+			} else {
+				chartContainer.setLayout(new GridLayout(
+						3, false));
+				nbOfRow=(int)Math.ceil(selectedMetrics.size()/3.0);
+			}
+			
+			GridLayout layout = (GridLayout)chartContainer.getLayout();
+			int spaces = nbOfRow*layout.numColumns;
+			
+			for (int i=0; i<Math.max(spaces, selectedMetrics.size()); i++) {
+				if (i < selectedMetrics.size()) {
+					createChart(selectedMetrics.get(i),chartContainer);
+				} else {
+					//chartContainer.add(new EmptyPlot(this));
+				}
+			}
+		}
+		
+		chartContainer.update();
+	}
+	
+	
+	
+	/**
+	 * Creates and returns the GUI component for plotting the specified metric.
+	 * 
+	 * @param metric the metric to plot
+	 * @return the GUI component for plotting the specified metric
+	 */
+	protected void createChart(String metric, Composite parent) {
+		if (metric.equals("Approximation Set")) {
+			//parent.add
+			//return new ApproximationSetPlot(this, metric);
+		} else {
+			//return new LinePlot(this, metric);
+		}
+	}
+	
 	
 	
 	private LinkedList<LinkedList<IbBar>> collectOptimizationBlocks(LinkedList<LinkedList<IbBar>> allBlocks){
@@ -484,6 +707,7 @@ IbChartSignalOptimizationControllerListener{
 	
 	@PreDestroy
 	public void dispose() {
+		controller.cancel();
 	}
 
 	@Focus
@@ -496,14 +720,27 @@ IbChartSignalOptimizationControllerListener{
 	@Override
 	public void controllerStateChanged(
 			IbChartSignalOptimizationControllerEvent event) {
-		// TODO Auto-generated method stub
+		if (event.getType().equals(IbChartSignalOptimizationControllerEvent.Type.MODEL_CHANGED)) {
+			if (controller.getKeys().isEmpty()) {
+				clear();
+			} else {
+				updateModel();
+			}
+		} else if (event.getType().equals(
+				IbChartSignalOptimizationControllerEvent.Type.PROGRESS_CHANGED)) {
+			progressBarRun.setSelection(controller.getRunProgress());
+			//runProgress.setValue(controller.getRunProgress());
+			//overallProgress.setValue(controller.getOverallProgress());
+		} else if (event.getType().equals(ControllerEvent.Type.VIEW_CHANGED)) {
+			updateChartLayout();
+		}
 		
 	}
 
 	@Override
 	public void widgetSelected(SelectionEvent e) {
-		// TODO Auto-generated method stub
 		
+		controller.fireViewChangedEvent();
 	}
 
 	@Override
@@ -511,4 +748,12 @@ IbChartSignalOptimizationControllerListener{
 		// TODO Auto-generated method stub
 		
 	}
+
+	public IbChartSignalOptimizationController getController() {
+		return controller;
+	}
+	
+	
+	
+	
 }

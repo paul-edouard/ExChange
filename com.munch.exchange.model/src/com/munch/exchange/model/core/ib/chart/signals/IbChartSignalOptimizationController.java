@@ -224,7 +224,7 @@ public class IbChartSignalOptimizationController {
 	/**
 	 * Fires a {@code VIEW_CHANGED} controller event.
 	 */
-	protected void fireViewChangedEvent() {
+	public void fireViewChangedEvent() {
 		fireEvent(new IbChartSignalOptimizationControllerEvent(this,
 				IbChartSignalOptimizationControllerEvent.Type.VIEW_CHANGED));
 	}

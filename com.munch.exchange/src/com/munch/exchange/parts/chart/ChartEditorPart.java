@@ -1500,7 +1500,9 @@ public class ChartEditorPart{
 					
 					@Override
 					public void run() {
-						threshold.setValue(lastBar.getClose());
+						if(!shell.isDisposed()){
+							threshold.setValue(lastBar.getClose());
+						}
 					}
 				});
 			}
