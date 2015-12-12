@@ -1,5 +1,8 @@
 package com.munch.exchange.parts.chart.signal;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationController;
@@ -34,6 +37,16 @@ public abstract class SignalOptimizationResultPlot extends Composite implements 
 		this.signalOptimizationEditorPart=signalOptimizationEditorPart;
 		this.controller=signalOptimizationEditorPart.getController();
 		this.metric=metric;
+		
+		
+		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		GridLayout gl_parent = new GridLayout(1, false);
+		gl_parent.horizontalSpacing = 0;
+		gl_parent.verticalSpacing = 0;
+		gl_parent.marginWidth = 0;
+		gl_parent.marginHeight = 0;
+		this.setLayout(gl_parent);
 		
 		controller.addControllerListener(this);
 		

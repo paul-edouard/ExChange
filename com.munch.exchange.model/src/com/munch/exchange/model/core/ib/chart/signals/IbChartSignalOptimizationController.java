@@ -156,6 +156,12 @@ public class IbChartSignalOptimizationController {
 	private volatile Thread thread;
 	
 	/**
+	 * Toggles between showing individual trace lines when {@code true} and
+	 * quantiles when {@code false}.
+	 */
+	private boolean showIndividualTraces;
+	
+	/**
 	 * The executor for the current run.
 	 */
 	private Executor executor;
@@ -236,17 +242,20 @@ public class IbChartSignalOptimizationController {
 	 * @param event the controller event to fire
 	 */
 	protected synchronized void fireEvent(final IbChartSignalOptimizationControllerEvent event) {
-		SwingUtilities.invokeLater(new Runnable() {
+		/*
+		Display.getDefault().asyncExec(new Runnable() {
 
 			@Override
 			public void run() {
+			*/
 				for(IbChartSignalOptimizationControllerListener listener:listeners ){
 					listener.controllerStateChanged(event);
 				}
-				
+				/*
 			}
 				
 		});
+		*/
 	}
 	
 	
@@ -973,7 +982,33 @@ public class IbChartSignalOptimizationController {
 	public int getRunProgress() {
 		return runProgress;
 	}
+	
+	
+	/**
+	 * Returns {@code true} if individual traces are shown; {@code false} if
+	 * quantiles are shown.
+	 * 
+	 * @return {@code true} if individual traces are shown; {@code false} if
+	 *         quantiles are shown
+	 */
+	public boolean getShowIndividualTraces() {
+		return showIndividualTraces;
+	}
 
+	/**
+	 * Set to {@code true} to show individual traces; {@code false} to show
+	 * quantiles.
+	 * 
+	 * @param showIndividualTraces {@code true} to show individual traces;
+	 *        {@code false} to show quantiles
+	 */
+	public void setShowIndividualTraces(boolean showIndividualTraces) {
+		if (this.showIndividualTraces != showIndividualTraces) {
+			this.showIndividualTraces = showIndividualTraces;
+			
+			fireViewChangedEvent();
+		}
+	}
 	
 
 	/**

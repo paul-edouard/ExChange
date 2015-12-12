@@ -1402,6 +1402,7 @@ public class ChartEditorPart{
 			@Override
 			public void barReplaced(List<IbBar> bars) {
 				
+				
 				//logger.info("Bar Replaced!");
 				
 				replacedBars=bars;

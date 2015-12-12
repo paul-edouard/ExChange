@@ -11,20 +11,41 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import org.apache.log4j.Logger;
 import org.eclipse.e4.ui.di.Focus;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Spinner;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.moeaframework.analysis.collector.Accumulator;
+import org.moeaframework.analysis.diagnostics.ControllerEvent;
+import org.moeaframework.analysis.diagnostics.PaintHelper;
+import org.moeaframework.core.Settings;
 
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
@@ -32,37 +53,8 @@ import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationController;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationControllerEvent;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationControllerListener;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationControllerRunnable;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
-
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.ListViewer;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.swt.widgets.ProgressBar;
-import org.moeaframework.analysis.collector.Accumulator;
-import org.moeaframework.analysis.diagnostics.ApproximationSetPlot;
-import org.moeaframework.analysis.diagnostics.ControllerEvent;
-import org.moeaframework.analysis.diagnostics.ControllerListener;
-import org.moeaframework.analysis.diagnostics.EmptyPlot;
-import org.moeaframework.analysis.diagnostics.LinePlot;
-import org.moeaframework.analysis.diagnostics.ResultKey;
-import org.moeaframework.analysis.diagnostics.ResultPlot;
-import org.moeaframework.analysis.diagnostics.SortedListModel;
-import org.moeaframework.core.Settings;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 
 
 public class SignalOptimizationEditorPart implements SelectionListener, 
@@ -73,6 +65,9 @@ IbChartSignalOptimizationControllerListener{
 	
 	
 	private static Logger logger = Logger.getLogger(SignalOptimizationEditorPart.class);
+	
+	
+	
 	
 	
 	private static class ContentProvider implements IStructuredContentProvider {
@@ -151,6 +146,10 @@ IbChartSignalOptimizationControllerListener{
 	 */
 	private LinkedList<String> resultTypeListModel;
 	
+	/**
+	 * Maintains a mapping from series key to paints displayed in the plot.
+	 */
+	private PaintHelper paintHelper;
 	
 	
 	/**
@@ -251,9 +250,17 @@ IbChartSignalOptimizationControllerListener{
 		lblAlgorithm.setText("Algorithm:");
 		
 		comboAlgorithm = new Combo(groupControls, SWT.NONE);
+		
 		comboAlgorithm.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		comboAlgorithm.setItems(sortedAlgorithmNames.toArray(new String[0]));
+		comboAlgorithm.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				signal.setAlgorithmName(comboAlgorithm.getText());
+			}
+		});
 		comboAlgorithm.select(0);
+		signal.setAlgorithmName(comboAlgorithm.getText());
 		
 		
 		lblSeeds = new Label(groupControls, SWT.NONE);
@@ -295,6 +302,7 @@ IbChartSignalOptimizationControllerListener{
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				logger.info("Click on btnRun");
+				controller.run();
 			}
 		});
 		btnRun.setText("Run");
@@ -567,7 +575,7 @@ IbChartSignalOptimizationControllerListener{
 		//resultTableModel.fireTableDataChanged();
 		metricListModel.clear();
 		listMetrics.deselectAll();
-		//paintHelper.clear();
+		paintHelper.clear();
 		
 		
 		chartContainer.dispose();
@@ -639,10 +647,11 @@ IbChartSignalOptimizationControllerListener{
 	 */
 	protected void createChart(String metric, Composite parent) {
 		if (metric.equals("Approximation Set")) {
-			//parent.add
-			//return new ApproximationSetPlot(this, metric);
+			new SignalOptimizationApproximationSetPlot(metric, this, parent, SWT.NONE);
+			
 		} else {
-			//return new LinePlot(this, metric);
+			new SignalOptimizationLinePlot(metric, this, parent, SWT.NONE);
+			
 		}
 	}
 	
@@ -720,6 +729,12 @@ IbChartSignalOptimizationControllerListener{
 	@Override
 	public void controllerStateChanged(
 			IbChartSignalOptimizationControllerEvent event) {
+		
+		Display.getDefault().asyncExec(new IbChartSignalOptimizationControllerRunnable(event) {
+			
+			@Override
+			public void run() {
+		
 		if (event.getType().equals(IbChartSignalOptimizationControllerEvent.Type.MODEL_CHANGED)) {
 			if (controller.getKeys().isEmpty()) {
 				clear();
@@ -734,7 +749,11 @@ IbChartSignalOptimizationControllerListener{
 		} else if (event.getType().equals(ControllerEvent.Type.VIEW_CHANGED)) {
 			updateChartLayout();
 		}
+			}
+		});
 		
+		
+
 	}
 
 	@Override
@@ -747,12 +766,23 @@ IbChartSignalOptimizationControllerListener{
 	public void widgetDefaultSelected(SelectionEvent e) {
 		// TODO Auto-generated method stub
 		
+		
 	}
 
 	public IbChartSignalOptimizationController getController() {
 		return controller;
 	}
 	
+	/**
+	 * Returns the paint helper used by this diagnostic tool instance.  This
+	 * paint helper contains the mapping from series to paints displayed in this
+	 * window.
+	 * 
+	 * @return the paint helper used by this diagnostic tool instance
+	 */
+	public PaintHelper getPaintHelper() {
+		return paintHelper;
+	}
 	
 	
 	
