@@ -40,6 +40,7 @@ import org.moeaframework.analysis.collector.PopulationSizeCollector;
 import org.moeaframework.core.Algorithm;
 import org.moeaframework.core.EpsilonBoxDominanceArchive;
 import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.Population;
 import org.moeaframework.core.Problem;
 import org.moeaframework.core.indicator.AdditiveEpsilonIndicator;
 import org.moeaframework.core.indicator.Contribution;
@@ -516,6 +517,11 @@ public class Instrumenter extends ProblemBuilder {
 	@Override
 	public Instrumenter withReferenceSet(File referenceSetFile) {
 		return (Instrumenter)super.withReferenceSet(referenceSetFile);
+	}
+	
+	@Override
+	public Instrumenter withReferenceSet(Population referenceSetPopulation) {
+		return (Instrumenter)super.withReferenceSet(referenceSetPopulation);
 	}
 	
 	@Override

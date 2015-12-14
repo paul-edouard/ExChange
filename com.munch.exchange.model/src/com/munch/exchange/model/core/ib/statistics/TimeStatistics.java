@@ -174,14 +174,15 @@ public class TimeStatistics implements Serializable{
 			previewSignal=signal;
 		}
 		
+		if(totalTrades!=0)
+			averageHoldingTime/=totalTrades;
 		
-		averageHoldingTime/=totalTrades;
-		
-		
-		averageTimeHoldingWinningTrades/=winTrades;
-		averageTimeHoldingLosingTrades/=lossTrades;
-		
-		averageTimeHoldingWinningTradesVersusLosingTrades=averageTimeHoldingWinningTrades/averageTimeHoldingLosingTrades;
+		if(winTrades!=0)
+			averageTimeHoldingWinningTrades/=winTrades;
+		if(lossTrades!=0)
+			averageTimeHoldingLosingTrades/=lossTrades;
+		if(averageTimeHoldingLosingTrades!=0)
+			averageTimeHoldingWinningTradesVersusLosingTrades=averageTimeHoldingWinningTrades/averageTimeHoldingLosingTrades;
 		
 	}
 

@@ -25,6 +25,7 @@ import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.moeaframework.core.EpsilonBoxDominanceArchive;
 import org.moeaframework.core.FrameworkException;
 import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.Population;
 import org.moeaframework.core.PopulationIO;
 import org.moeaframework.core.Problem;
 import org.moeaframework.core.comparator.ParetoDominanceComparator;
@@ -74,6 +75,14 @@ class ProblemBuilder {
 	File referenceSetFile;
 	
 	/**
+	 * The file containing the reference set to be used by this builder; or
+	 * {@code null} if the reference set should be aggregated from all
+	 * individual approximation sets.
+	 */
+	Population referenceSetPopulation;
+	
+	
+	/**
 	 * Constructs a new problem builder.
 	 */
 	ProblemBuilder() {
@@ -95,6 +104,7 @@ class ProblemBuilder {
 		this.problemFactory = builder.problemFactory;
 		this.epsilon = builder.epsilon;
 		this.referenceSetFile = builder.referenceSetFile;
+		this.referenceSetPopulation = builder.referenceSetPopulation;
 		
 		return this;
 	}
@@ -197,6 +207,20 @@ class ProblemBuilder {
 	}
 	
 	/**
+	 * Sets the file containing the reference set to be used by this builder.
+	 * If not specified, the reference set should be aggregated from all
+	 * individual approximation sets.
+	 * 
+	 * @param referenceSetFile the reference set file
+	 * @return a reference to this builder
+	 */
+	ProblemBuilder withReferenceSet(Population referenceSetPopulation) {
+		this.referenceSetPopulation = referenceSetPopulation;
+		
+		return this;
+	}
+	
+	/**
 	 * Returns an empty non-dominated population or &epsilon;-box dominance
 	 * archive, depending on whether the {@code epsilon} field is set.  This is
 	 * the archive used to store the reference set.
@@ -231,33 +255,39 @@ class ProblemBuilder {
 	NondominatedPopulation getReferenceSet() {
 		NondominatedPopulation referenceSet = newArchive();
 		
-		if (referenceSetFile == null) {
-			//determine if the problem factory provides a reference set
-			NondominatedPopulation factorySet = null;
-			
-			if (problemName != null) {
-				if (problemFactory == null) {
-					factorySet = ProblemFactory.getInstance()
-							.getReferenceSet(problemName);
+		if (referenceSetPopulation == null) {
+
+			if (referenceSetFile == null) {
+				// determine if the problem factory provides a reference set
+				NondominatedPopulation factorySet = null;
+
+				if (problemName != null) {
+					if (problemFactory == null) {
+						factorySet = ProblemFactory.getInstance()
+								.getReferenceSet(problemName);
+					} else {
+						factorySet = problemFactory
+								.getReferenceSet(problemName);
+					}
+				}
+
+				if (factorySet == null) {
+					throw new IllegalArgumentException(
+							"no reference set available");
 				} else {
-					factorySet = problemFactory.getReferenceSet(problemName);
+					referenceSet.addAll(factorySet);
+				}
+			} else {
+				try {
+					referenceSet.addAll(PopulationIO
+							.readObjectives(referenceSetFile));
+				} catch (IOException e) {
+					throw new IllegalArgumentException(
+							"unable to load reference set", e);
 				}
 			}
-			
-			if (factorySet == null) {
-				throw new IllegalArgumentException(
-						"no reference set available");
-			} else {
-				referenceSet.addAll(factorySet);
-			}
 		} else {
-			try {
-				referenceSet.addAll(PopulationIO.readObjectives(
-						referenceSetFile));
-			} catch (IOException e) {
-				throw new IllegalArgumentException(
-						"unable to load reference set", e);
-			}
+			referenceSet.addAll(referenceSetPopulation);
 		}
 		
 		return referenceSet;

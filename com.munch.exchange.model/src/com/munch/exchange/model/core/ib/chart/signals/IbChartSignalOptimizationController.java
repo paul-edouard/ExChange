@@ -57,7 +57,7 @@ public class IbChartSignalOptimizationController {
 	 * {@code true} if the hypervolume indicator collector is included; 
 	 * {@code false} otherwise.
 	 */
-	private boolean includeHypervolume = true;
+	private boolean includeHypervolume = false;
 	
 	/**
 	 * {@code true} if the generational distance indicator collector is
@@ -360,7 +360,9 @@ public class IbChartSignalOptimizationController {
 	 */
 	protected void updateProgress(int currentEvaluation, 
 			int totalEvaluations) {
-		runProgress = (int)(100*currentEvaluation/(double)totalEvaluations);
+		//runProgress = (int)(100*currentEvaluation/(double)totalEvaluations);
+		runProgress=currentEvaluation;
+		
 		
 		fireProgressChangedEvent();
 	}
@@ -478,8 +480,9 @@ public class IbChartSignalOptimizationController {
 
 					// setup the instrumenter to collect the necessary info
 					Instrumenter instrumenter = new Instrumenter()
-							.withFrequency(100)
+							.withFrequency(50)
 							.withProblemClass(IbChartSignalProblem.class, signal);
+							
 							//.withProblem(problemName);
 					
 					if (getIncludeHypervolume()) {
@@ -548,8 +551,13 @@ public class IbChartSignalOptimizationController {
 					try {
 						problem = new IbChartSignalProblem(signal);
 						
+						double epsilon=EpsilonHelper.getEpsilon(
+								problem);
+						
 						instrumenter.withEpsilon(EpsilonHelper.getEpsilon(
 								problem));
+						instrumenter.withReferenceSet(
+								((IbChartSignalProblem)problem).createStartPopulation(2,epsilon));
 					} finally {
 						if (problem != null) {
 							problem.close();
@@ -561,6 +569,12 @@ public class IbChartSignalOptimizationController {
 						
 						@Override
 						public void progressUpdate(ProgressEvent event) {
+							
+							System.out.println("event.getCurrentNFE: "+event.getCurrentNFE());
+							System.out.println("event.getMaxNFE(): "+event.getMaxNFE());
+							System.out.println("Is Seed finied: "+event.isSeedFinished());
+							
+							
 							updateProgress(
 									event.getCurrentNFE(),
 									//event.getCurrentSeed(),
@@ -580,17 +594,24 @@ public class IbChartSignalOptimizationController {
 						
 					};
 					
+					
+					instrumenter.withFrequency(50);
+					
 					// setup the executor to run for the desired time
 					executor = new Executor()
 							.withSameProblemAs(instrumenter)
 							.withInstrumenter(instrumenter)
 							.withAlgorithm(algorithmName)
 							.withMaxEvaluations(numberOfEvaluations)
+							.distributeOnAllCores()
 							.withProgressListener(listener);
 					
+					
+					
 					// run the executor using the listener to collect results
+					executor.runSeeds(1);
 					//executor.runSeeds(numberOfSeeds);
-					executor.run();
+					//executor.run();
 				} catch (Exception e) {
 					handleException(e);
 				} finally {

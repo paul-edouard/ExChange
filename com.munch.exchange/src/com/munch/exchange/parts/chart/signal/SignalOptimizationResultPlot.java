@@ -50,6 +50,8 @@ public abstract class SignalOptimizationResultPlot extends Composite implements 
 		
 		controller.addControllerListener(this);
 		
+		this.refresh();
+		
 	}
 	
 	

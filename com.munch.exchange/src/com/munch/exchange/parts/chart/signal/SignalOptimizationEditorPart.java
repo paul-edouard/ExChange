@@ -13,6 +13,10 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -60,13 +64,8 @@ import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 public class SignalOptimizationEditorPart implements SelectionListener, 
 IbChartSignalOptimizationControllerListener{
 	
-	
-	
-	
-	
+
 	private static Logger logger = Logger.getLogger(SignalOptimizationEditorPart.class);
-	
-	
 	
 	
 	
@@ -253,14 +252,15 @@ IbChartSignalOptimizationControllerListener{
 		
 		comboAlgorithm.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		comboAlgorithm.setItems(sortedAlgorithmNames.toArray(new String[0]));
+		/*
 		comboAlgorithm.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				signal.setAlgorithmName(comboAlgorithm.getText());
 			}
 		});
+		*/
 		comboAlgorithm.select(0);
-		signal.setAlgorithmName(comboAlgorithm.getText());
 		
 		
 		lblSeeds = new Label(groupControls, SWT.NONE);
@@ -302,7 +302,13 @@ IbChartSignalOptimizationControllerListener{
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				logger.info("Click on btnRun");
-				controller.run();
+				
+				OptJobStater stater=new OptJobStater(comboBarSize.getText(),
+						comboAlgorithm.getText(),spinnerMaxNFE.getSelection(),
+						spinnerPercentOfData.getSelection());
+				stater.schedule();
+				
+				//controller.run();
 			}
 		});
 		btnRun.setText("Run");
@@ -387,7 +393,7 @@ IbChartSignalOptimizationControllerListener{
 		grpDisplayedMetrics.setText("Displayed Metrics");
 		grpDisplayedMetrics.setLayout(new GridLayout(1, false));
 		
-		listViewerMetrics = new ListViewer(grpDisplayedMetrics, SWT.BORDER | SWT.V_SCROLL);
+		listViewerMetrics = new ListViewer(grpDisplayedMetrics, SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
 		listMetrics = listViewerMetrics.getList();
 		listMetrics.addSelectionListener(this);
 		listMetrics.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -457,6 +463,8 @@ IbChartSignalOptimizationControllerListener{
 		resultTypeListModel.add("Middle");
 		resultTypeListModel.add("None");
 		
+		paintHelper = new PaintHelper();
+		
 	}
 	
 	
@@ -482,6 +490,7 @@ IbChartSignalOptimizationControllerListener{
 		
 		//update metric list and result table contents
 		resultListModel.addAll(controller.getKeys());
+		tableViewerResults.refresh();
 		
 		for (String key : controller.getKeys()) {
 			for (Accumulator accumulator : controller.get(key)) {
@@ -491,7 +500,10 @@ IbChartSignalOptimizationControllerListener{
 		
 		//update metric list selection
 		listMetrics.removeSelectionListener(this);
-		listMetrics.deselectAll();
+		listMetrics.removeAll();
+		for(String key:metricListModel){
+			listMetrics.add(key);
+		}
 		
 		if (selectFirstMetric) {
 			listMetrics.setSelection(0);
@@ -502,6 +514,7 @@ IbChartSignalOptimizationControllerListener{
 			}
 		}
 		listMetrics.addSelectionListener(this);
+		
 		
 		
 		//update result table selection
@@ -627,14 +640,26 @@ IbChartSignalOptimizationControllerListener{
 			
 			for (int i=0; i<Math.max(spaces, selectedMetrics.size()); i++) {
 				if (i < selectedMetrics.size()) {
+					logger.info("Selected Metric: "+selectedMetrics.get(i));
+					/*
+					Label lbl = new Label(chartContainer, SWT.NONE);
+					lbl.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+					lbl.setText("Test1");
+					*/
+					
 					createChart(selectedMetrics.get(i),chartContainer);
 				} else {
+					Label lbl = new Label(chartContainer, SWT.NONE);
+					lbl.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+					lbl.setText("Test2");
 					//chartContainer.add(new EmptyPlot(this));
 				}
 			}
 		}
 		
-		chartContainer.update();
+		
+		chartContainer.layout();
+		
 	}
 	
 	
@@ -650,63 +675,13 @@ IbChartSignalOptimizationControllerListener{
 			new SignalOptimizationApproximationSetPlot(metric, this, parent, SWT.NONE);
 			
 		} else {
+			logger.info("SignalOptimizationLinePlot!");
 			new SignalOptimizationLinePlot(metric, this, parent, SWT.NONE);
 			
 		}
 	}
 	
 	
-	
-	private LinkedList<LinkedList<IbBar>> collectOptimizationBlocks(LinkedList<LinkedList<IbBar>> allBlocks){
-		LinkedList<LinkedList<IbBar>> optBlocks=new LinkedList<>();
-		int numberOfBars=0;
-		int percentRequired=spinnerPercentOfData.getSelection();
-		int numberOfRequired=allCollectedBars.size()*percentRequired/100;
-		
-		while(numberOfBars<numberOfRequired){
-			Random rand = new Random();
-			int index=rand.nextInt(allBlocks.size());
-			LinkedList<IbBar> removedBlock=allBlocks.remove(index);
-			optBlocks.add(removedBlock);
-			
-			numberOfBars+=removedBlock.size();
-		}
-		logger.info("Number of blocks: "+optBlocks.size());
-		logger.info("Number of bars: "+numberOfBars);
-		
-		return optBlocks;
-	}
-	
-	
-	private LinkedList<LinkedList<IbBar>> splitCollectedBarsInBlocks(){
-		LinkedList<LinkedList<IbBar>> blocks=new LinkedList<>();
-		
-		IbBar lastBar=allCollectedBars.get(0);
-		long interval=lastBar.getIntervallInSec();
-		LinkedList<IbBar> block=new LinkedList<IbBar>();
-		block.add(lastBar);
-		
-		for(int i=1;i<allCollectedBars.size();i++){
-			IbBar currentBar=allCollectedBars.get(i);
-			long timeDiff=currentBar.getTime()-lastBar.getTime();
-			if(timeDiff > interval ){
-				//Add the block to the list
-				blocks.add(block);
-			
-				//Reset the block
-				block=new LinkedList<IbBar>();
-			}
-			block.add(currentBar);
-			lastBar=currentBar;
-		}
-		if(block.size()>0){
-			blocks.add(block);
-		}
-	
-		
-		
-		return blocks;
-	}
 	
 	
 	private IbBarContainer getBarContainer(){
@@ -729,43 +704,62 @@ IbChartSignalOptimizationControllerListener{
 	@Override
 	public void controllerStateChanged(
 			IbChartSignalOptimizationControllerEvent event) {
-		
-		Display.getDefault().asyncExec(new IbChartSignalOptimizationControllerRunnable(event) {
-			
-			@Override
-			public void run() {
-		
-		if (event.getType().equals(IbChartSignalOptimizationControllerEvent.Type.MODEL_CHANGED)) {
-			if (controller.getKeys().isEmpty()) {
-				clear();
-			} else {
-				updateModel();
-			}
-		} else if (event.getType().equals(
-				IbChartSignalOptimizationControllerEvent.Type.PROGRESS_CHANGED)) {
-			progressBarRun.setSelection(controller.getRunProgress());
-			//runProgress.setValue(controller.getRunProgress());
-			//overallProgress.setValue(controller.getOverallProgress());
-		} else if (event.getType().equals(ControllerEvent.Type.VIEW_CHANGED)) {
-			updateChartLayout();
-		}
-			}
-		});
-		
-		
+
+		Display.getDefault().asyncExec(
+				new IbChartSignalOptimizationControllerRunnable(event) {
+
+					@Override
+					public void run() {
+
+						if (event
+								.getType()
+								.equals(IbChartSignalOptimizationControllerEvent.Type.MODEL_CHANGED)) {
+							
+							logger.info("MODEL_CHANGED: "
+									+ controller.getKeys().size());
+							
+							if (controller.getKeys().isEmpty()) {
+								clear();
+							} else {
+								updateModel();
+							}
+						} else if (event
+								.getType()
+								.equals(IbChartSignalOptimizationControllerEvent.Type.PROGRESS_CHANGED)) {
+
+							logger.info("PROGRESS_CHANGED: "
+									+ controller.getRunProgress());
+							
+							progressBarRun.setSelection(controller
+									.getRunProgress());
+							progressBarRun.setMaximum(signal.getNumberOfEvaluations());
+							
+							// runProgress.setValue(controller.getRunProgress());
+							// overallProgress.setValue(controller.getOverallProgress());
+						} else if (event.getType().equals(
+								IbChartSignalOptimizationControllerEvent.Type.VIEW_CHANGED)) {
+							
+							logger.info("VIEW_CHANGED!");
+							
+							updateChartLayout();
+						}
+					}
+				});
 
 	}
 
 	@Override
 	public void widgetSelected(SelectionEvent e) {
 		
+		//logger.info("widgetSelected");
+		
 		controller.fireViewChangedEvent();
 	}
 
 	@Override
 	public void widgetDefaultSelected(SelectionEvent e) {
-		// TODO Auto-generated method stub
 		
+		controller.fireViewChangedEvent();
 		
 	}
 
@@ -784,6 +778,130 @@ IbChartSignalOptimizationControllerListener{
 		return paintHelper;
 	}
 	
+	//######################################
+  	//##           Data Collector         ##
+  	//######################################
+	private class OptJobStater extends Job{
+		
+		private String bazSize;
+		private String algorithmName;
+		private int numberOfEvaluations;
+		private int percentOfDataRequired;
+		
+		
+		public OptJobStater(String bazSize, String algorithmName,
+				int numberOfEvaluations, int percentOfDataRequired) {
+			super("Signal Optimization job Starter: "+signal.getName());
+			
+			this.bazSize=bazSize;
+			this.algorithmName=algorithmName;
+			this.numberOfEvaluations=numberOfEvaluations;
+			this.percentOfDataRequired=percentOfDataRequired;
+			
+		}
+		
+
+		private LinkedList<LinkedList<IbBar>> collectOptimizationBlocks(LinkedList<LinkedList<IbBar>> allBlocks, int percentRequired){
+			LinkedList<LinkedList<IbBar>> optBlocks=new LinkedList<>();
+			int numberOfBars=0;
+			//int percentRequired=spinnerPercentOfData.getSelection();
+			int numberOfRequired=allCollectedBars.size()*percentRequired/100;
+			logger.info("Percent of bars required: "+percentRequired);
+			logger.info("Number of required bars: "+numberOfRequired);
+			
+			while(numberOfBars<numberOfRequired ){
+				
+				if(allBlocks.isEmpty())break;
+				
+				Random rand = new Random();
+				int index=rand.nextInt(allBlocks.size());
+				LinkedList<IbBar> removedBlock=allBlocks.remove(index);
+				optBlocks.add(removedBlock);
+				
+				numberOfBars+=removedBlock.size();
+			}
+			logger.info("Number of blocks: "+optBlocks.size());
+			logger.info("Number of bars: "+numberOfBars);
+			
+			return optBlocks;
+		}
+		
+		
+		private LinkedList<LinkedList<IbBar>> splitCollectedBarsInBlocks(){
+			LinkedList<LinkedList<IbBar>> blocks=new LinkedList<>();
+			
+			IbBar lastBar=allCollectedBars.get(0);
+			long interval=lastBar.getIntervallInSec();
+			LinkedList<IbBar> block=new LinkedList<IbBar>();
+			block.add(lastBar);
+			
+			for(int i=1;i<allCollectedBars.size();i++){
+				IbBar currentBar=allCollectedBars.get(i);
+				long timeDiff=currentBar.getTime()-lastBar.getTime();
+				if(timeDiff > interval ){
+					//Add the block to the list
+					blocks.add(block);
+				
+					//Reset the block
+					block=new LinkedList<IbBar>();
+				}
+				block.add(currentBar);
+				lastBar=currentBar;
+			}
+			if(block.size()>0){
+				blocks.add(block);
+			}
+		
+			
+			
+			return blocks;
+		}
+		
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			//Collect the Data
+			logger.info("Collect the data");
+			if(allCollectedBars==null || allCollectedBars.isEmpty()){
+				allCollectedBars=hisDataProvider.getAllBars(getBarContainer(),
+						IbBar.getBarSizeFromString(bazSize));
+				
+				//TODO Remove this!
+				/*
+				while (allCollectedBars.size()>1000) {
+					allCollectedBars.remove(0);
+					
+				}
+				*/
+			}
+			
+			//Create the Data Set
+			
+			logger.info("Create the Data Set");
+			LinkedList<LinkedList<IbBar>> allBlocks=splitCollectedBarsInBlocks();
+			LinkedList<LinkedList<IbBar>> optBlocks=collectOptimizationBlocks(allBlocks,percentOfDataRequired);
+			
+			List<IbBar> optimizationBars=new LinkedList<IbBar>();
+			for(LinkedList<IbBar> bars:optBlocks){
+				optimizationBars.addAll(bars);
+			}
+			signal.setOptimizationBars(optimizationBars);
+			 
+			//signal.setOptimizationBars(allCollectedBars);
+			
+			
+			//Set the parameters
+			signal.setAlgorithmName(algorithmName);
+			signal.setNumberOfEvaluations(numberOfEvaluations);
+			
+			//Start the optimization
+			logger.info("Start the optimization");
+			controller.run();
+			
+			return Status.OK_STATUS;
+		}
+		
+	}
 	
 	
 }

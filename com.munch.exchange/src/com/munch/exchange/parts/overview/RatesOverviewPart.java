@@ -162,7 +162,7 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 		menuService.registerContextMenu(treeViewer.getTree(), "com.munch.exchange.popupmenu.rates_overview");
 		
 		//Create and start the quote loader
-		quoteLoader=ContextInjectionFactory.make( QuoteLoader.class,context);
+		//quoteLoader=ContextInjectionFactory.make( QuoteLoader.class,context);
 		
 		
 		//Add a listener
@@ -425,7 +425,7 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 	
 	@PreDestroy
 	public void preDestroy() {
-		
+		/*
 		//Stop the quote loader
 		try {
 			quoteLoader.cancel();
@@ -433,6 +433,7 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		*/
 		
 		//remove a listener
 		ibTopMktDataProvider.removeIbTopMktDataListener(this);

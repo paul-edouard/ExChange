@@ -264,7 +264,7 @@ public class SignalOptimizationLinePlot extends SignalOptimizationResultPlot {
 		//create the legend
 		final LegendItemCollection items = plot.getLegendItems();
 		Iterator<?> iterator = items.iterator();
-		Set<ResultKey> uniqueKeys = new HashSet<ResultKey>();
+		Set<String> uniqueKeys = new HashSet<String>();
 		
 		while (iterator.hasNext()) {
 			LegendItem item = (LegendItem)iterator.next();
@@ -272,7 +272,7 @@ public class SignalOptimizationLinePlot extends SignalOptimizationResultPlot {
 			if (uniqueKeys.contains(item.getSeriesKey())) {
 				iterator.remove();
 			} else {
-				uniqueKeys.add((ResultKey)item.getSeriesKey());
+				uniqueKeys.add((String)item.getSeriesKey());
 			}
 		}
 		
