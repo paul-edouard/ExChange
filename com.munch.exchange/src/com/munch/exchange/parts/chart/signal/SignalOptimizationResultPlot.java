@@ -4,6 +4,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationController;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationControllerEvent;
@@ -75,7 +76,22 @@ public abstract class SignalOptimizationResultPlot extends Composite implements 
 	public void controllerStateChanged(
 			IbChartSignalOptimizationControllerEvent event) {
 		if (event.getType().equals(IbChartSignalOptimizationControllerEvent.Type.MODEL_CHANGED)) {
-			refresh();
+			
+			if(this.isDisposed())return;
+			
+			
+			Display.getDefault().asyncExec(new Runnable() {
+				
+				@Override
+				public void run() {
+					
+					refresh();
+					
+				}
+			}
+			);
+			
+			
 		}
 		
 	}

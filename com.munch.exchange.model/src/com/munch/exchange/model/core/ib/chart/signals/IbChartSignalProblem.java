@@ -94,6 +94,7 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 		//TODO Create a batch modus to speed up the computation
 		
 		//Calculate the Signal
+		signal.setBatch(true);
 		signal.compute(bars);
 		
 		//Evaluate Profit and Risk

@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.swing.SwingUtilities;
-
 import org.moeaframework.Analyzer;
 import org.moeaframework.Executor;
 import org.moeaframework.Instrumenter;
@@ -148,6 +146,10 @@ public class IbChartSignalOptimizationController {
 	 */
 	private volatile int runProgress;
 	
+	/**
+	 * The overall progress of the current job being evaluated.
+	 */
+	private volatile int overallProgress;
 	
 	/**
 	 * The thread running the current job; or {@code null} if no job is
@@ -358,11 +360,11 @@ public class IbChartSignalOptimizationController {
 	 * @param totalEvaluations the total number of evaluations
 	 * @param totalSeeds the total number of seeds
 	 */
-	protected void updateProgress(int currentEvaluation, 
-			int totalEvaluations) {
-		//runProgress = (int)(100*currentEvaluation/(double)totalEvaluations);
-		runProgress=currentEvaluation;
+	protected void updateProgress(int currentEvaluation, int currentSeed,
+			int totalEvaluations, int totalSeeds) {
 		
+		runProgress = currentEvaluation;
+		overallProgress = currentSeed;
 		
 		fireProgressChangedEvent();
 	}
@@ -470,13 +472,13 @@ public class IbChartSignalOptimizationController {
 		//final String problemName = frame.getProblem();
 		final String algorithmName = signal.getAlgorithmName();
 		final int numberOfEvaluations = signal.getNumberOfEvaluations();
-		//final int numberOfSeeds = frame.getNumberOfSeeds();
+		final int numberOfSeeds = signal.getNumberOfSeeds();
 		
 		thread = new Thread() {
 			
 			public void run() {
 				try {
-					updateProgress(0, numberOfEvaluations);
+					updateProgress(0,0, numberOfEvaluations,numberOfSeeds);
 
 					// setup the instrumenter to collect the necessary info
 					Instrumenter instrumenter = new Instrumenter()
@@ -570,16 +572,16 @@ public class IbChartSignalOptimizationController {
 						@Override
 						public void progressUpdate(ProgressEvent event) {
 							
-							System.out.println("event.getCurrentNFE: "+event.getCurrentNFE());
-							System.out.println("event.getMaxNFE(): "+event.getMaxNFE());
-							System.out.println("Is Seed finied: "+event.isSeedFinished());
+							//System.out.println("event.getCurrentNFE: "+event.getCurrentNFE());
+							//System.out.println("event.getMaxNFE(): "+event.getMaxNFE());
+							//System.out.println("Is Seed finied: "+event.isSeedFinished());
 							
 							
 							updateProgress(
 									event.getCurrentNFE(),
-									//event.getCurrentSeed(),
+									event.getCurrentSeed(),
 									event.getMaxNFE()
-									//,event.getTotalSeeds()
+									,event.getTotalSeeds()
 									);
 							
 							if (event.isSeedFinished()) {
@@ -609,9 +611,8 @@ public class IbChartSignalOptimizationController {
 					
 					
 					// run the executor using the listener to collect results
-					executor.runSeeds(1);
-					//executor.runSeeds(numberOfSeeds);
-					//executor.run();
+					executor.runSeeds(numberOfSeeds);
+					
 				} catch (Exception e) {
 					handleException(e);
 				} finally {
@@ -1002,6 +1003,16 @@ public class IbChartSignalOptimizationController {
 	 */
 	public int getRunProgress() {
 		return runProgress;
+	}
+	
+	/**
+	 * Returns the overall progress of the current job being evaluated.  The
+	 * overall progress measures the number of seeds completed thus far.
+	 * 
+	 * @return the overall progress of the current job being evaluated
+	 */
+	public int getOverallProgress() {
+		return overallProgress;
 	}
 	
 	

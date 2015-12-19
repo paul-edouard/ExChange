@@ -326,6 +326,8 @@ public class SignalOptimizationLinePlot extends SignalOptimizationResultPlot {
 			plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
 		}
 		
+		if(this.isDisposed())return;
+		
 		Control[] children = this.getChildren();
 		for(int i=0;i<children.length;i++)
 			children[i].dispose();

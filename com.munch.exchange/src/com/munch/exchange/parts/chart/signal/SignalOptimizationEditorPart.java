@@ -37,6 +37,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -46,9 +47,11 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.hibernate.validator.internal.xml.GetterType;
 import org.moeaframework.analysis.collector.Accumulator;
 import org.moeaframework.analysis.diagnostics.ControllerEvent;
 import org.moeaframework.analysis.diagnostics.PaintHelper;
+import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Settings;
 
 import com.munch.exchange.model.core.ib.bar.IbBar;
@@ -170,9 +173,6 @@ IbChartSignalOptimizationControllerListener{
 	private Group grpDisplayedResults;
 	private Table tableResults;
 	private TableViewer tableViewerResults;
-	private Composite composite;
-	private Button btnSelectAll;
-	private Button btnShowStatistic;
 	private Group grpDisplayedMetrics;
 	private org.eclipse.swt.widgets.List listMetrics;
 	private ListViewer listViewerMetrics;
@@ -196,6 +196,10 @@ IbChartSignalOptimizationControllerListener{
 	private Composite chartContainer;
 	private TabItem tbtmMetrics;
 	private TabFolder tabFolder;
+	private Label lblPogress;
+	private ProgressBar progressBarSeed;
+	private ProgressBar progressBarMemory;
+	private Composite approximationSetContainer;
 	
 	public SignalOptimizationEditorPart() {
 	}
@@ -240,8 +244,7 @@ IbChartSignalOptimizationControllerListener{
 		spinnerPercentOfData = new Spinner(groupControls, SWT.BORDER);
 		spinnerPercentOfData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		spinnerPercentOfData.setPageIncrement(1);
-		spinnerPercentOfData.setIncrement(5);
-		spinnerPercentOfData.setMinimum(10);
+		spinnerPercentOfData.setMinimum(1);
 		spinnerPercentOfData.setSelection(70);
 		
 		lblAlgorithm = new Label(groupControls, SWT.NONE);
@@ -304,11 +307,15 @@ IbChartSignalOptimizationControllerListener{
 				logger.info("Click on btnRun");
 				
 				OptJobStater stater=new OptJobStater(comboBarSize.getText(),
-						comboAlgorithm.getText(),spinnerMaxNFE.getSelection(),
-						spinnerPercentOfData.getSelection());
+													comboAlgorithm.getText(),
+													comboReportType.getText(),
+													spinnerMaxNFE.getSelection(),
+													spinnerSeeds.getSelection(),
+													spinnerPercentOfData.getSelection());
 				stater.schedule();
+				btnRun.setEnabled(false);
+				btnClear.setEnabled(false);
 				
-				//controller.run();
 			}
 		});
 		btnRun.setText("Run");
@@ -317,7 +324,9 @@ IbChartSignalOptimizationControllerListener{
 		btnCancel.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				logger.info("Click on btnCancel");
+				//logger.info("Click on btnCancel");
+				controller.cancel();
+				resetRunCancelEnable();
 			}
 		});
 		btnCancel.setText("Cancel");
@@ -327,6 +336,7 @@ IbChartSignalOptimizationControllerListener{
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				logger.info("Click on btnClear");
+				controller.clear();
 			}
 		});
 		btnClear.setText("Clear");
@@ -336,21 +346,39 @@ IbChartSignalOptimizationControllerListener{
 		grpDisplayedResults.setLayout(new GridLayout(1, false));
 		grpDisplayedResults.setText("Displayed Results");
 		
-		tableViewerResults = new TableViewer(grpDisplayedResults, SWT.BORDER | SWT.FULL_SELECTION);
+		tableViewerResults = new TableViewer(grpDisplayedResults, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.MULTI);
 		tableViewerResults.setLabelProvider(new TableLabelProvider());
 		tableViewerResults.setContentProvider(new ContentProvider());
 		tableViewerResults.setInput(resultListModel);
 		tableResults = tableViewerResults.getTable();
-		tableResults.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				
-			}
-		});
 		tableResults.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDoubleClick(MouseEvent e) {
-				logger.info("Double click on Table");
+				//logger.info("Double click on Table");
+				NondominatedPopulation referenceSet = null;
+				//TODO Set the reference set
+				
+				int selectedIndex=tableResults.getSelectionIndex();
+				String key=resultListModel.get(selectedIndex);
+				
+				Control[] children = approximationSetContainer.getChildren();
+				for(int i=0;i<children.length;i++)
+					children[i].dispose();
+				
+				SignalOptimizationApproximationSetViewer viewer=
+						new SignalOptimizationApproximationSetViewer(signal.getName()+":"+key,
+								controller.get(key),
+								referenceSet,
+								approximationSetContainer, SWT.NONE);
+				
+				viewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+				
+				approximationSetContainer.layout();
+				approximationSetContainer.update();
+				
+				
+				tabFolder.setSelection(1);
+				
 			}
 		});
 		tableResults.setHeaderVisible(true);
@@ -364,29 +392,6 @@ IbChartSignalOptimizationControllerListener{
 		tblclmnNbOfSeeds = new TableColumn(tableResults, SWT.LEFT);
 		tblclmnNbOfSeeds.setWidth(131);
 		tblclmnNbOfSeeds.setText("Nb of Seeds");
-		
-		
-		composite = new Composite(grpDisplayedResults, SWT.NONE);
-		composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		composite.setLayout(new FillLayout(SWT.HORIZONTAL));
-		
-		btnSelectAll = new Button(composite, SWT.NONE);
-		btnSelectAll.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				logger.info("Click on btnSelectAll");
-			}
-		});
-		btnSelectAll.setText("Select All");
-		
-		btnShowStatistic = new Button(composite, SWT.NONE);
-		btnShowStatistic.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				logger.info("Click on btnShowStatistic");
-			}
-		});
-		btnShowStatistic.setText("Show Statistic");
 		
 		grpDisplayedMetrics = new Group(compositeCommand, SWT.NONE);
 		grpDisplayedMetrics.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
@@ -416,23 +421,36 @@ IbChartSignalOptimizationControllerListener{
 		tbtmApproximationSet = new TabItem(tabFolder, SWT.NONE);
 		tbtmApproximationSet.setText("Approximation Set");
 		
+		approximationSetContainer = new Composite(tabFolder, SWT.NONE);
+		tbtmApproximationSet.setControl(approximationSetContainer);
+		approximationSetContainer.setLayout(new GridLayout(1, false));
+		
 		Composite compositeBottom = new Composite(parent, SWT.BORDER);
-		compositeBottom.setLayout(new FillLayout(SWT.HORIZONTAL));
+		compositeBottom.setLayout(new GridLayout(6, false));
 		compositeBottom.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false, 1, 1));
+		
+		lblPogress = new Label(compositeBottom, SWT.NONE);
+		lblPogress.setText("Pogress:");
 		
 		progressBarRun = new ProgressBar(compositeBottom, SWT.NONE);
 		
 		Label lblSeedsNb = new Label(compositeBottom, SWT.NONE);
 		lblSeedsNb.setText("Seed");
 		
+		progressBarSeed = new ProgressBar(compositeBottom, SWT.NONE);
+		
 		lblMemory = new Label(compositeBottom, SWT.NONE);
 		lblMemory.setText("Memory");
+		
+		progressBarMemory = new ProgressBar(compositeBottom, SWT.NONE);
 		
 		
 		
 		postGuiInitialization();
 		
 	}
+	
+	
 	
 	
 	private void preGuiInitialization(){
@@ -469,8 +487,16 @@ IbChartSignalOptimizationControllerListener{
 	
 	
 	private void postGuiInitialization(){
-		
+		resetRunCancelEnable();
 	}
+	
+	
+	private void resetRunCancelEnable(){
+		btnRun.setEnabled(!controller.isRunning());
+		btnCancel.setEnabled(controller.isRunning());
+		btnClear.setEnabled(!controller.isRunning());
+	}
+	
 	
 	
 	private void updateModel() {
@@ -479,6 +505,7 @@ IbChartSignalOptimizationControllerListener{
 		List<String> selectedMetrics = getSelectedMetrics();
 		boolean selectAllResults = false;
 		boolean selectFirstMetric = false;
+		
 		
 		if (selectedResults.size() == resultListModel.size()) {
 			selectAllResults = true;
@@ -489,12 +516,17 @@ IbChartSignalOptimizationControllerListener{
 		}
 		
 		//update metric list and result table contents
+		resultListModel.clear();
 		resultListModel.addAll(controller.getKeys());
 		tableViewerResults.refresh();
 		
+		metricListModel.clear();
 		for (String key : controller.getKeys()) {
 			for (Accumulator accumulator : controller.get(key)) {
-				metricListModel.addAll(accumulator.keySet());
+				for(String metricKey:accumulator.keySet()){
+					if(!metricListModel.contains(metricKey))
+						metricListModel.add(metricKey);
+				}
 			}
 		}
 		
@@ -519,7 +551,6 @@ IbChartSignalOptimizationControllerListener{
 		
 		//update result table selection
 		tableResults.removeSelectionListener(this);
-		//resultTableModel.fireTableDataChanged();
 		
 		if (selectAllResults && (selectedResults.size() < 
 				resultListModel.size())) {
@@ -593,11 +624,6 @@ IbChartSignalOptimizationControllerListener{
 		
 		chartContainer.dispose();
 		
-		/*
-		chartContainer.removeAll();
-		chartContainer.revalidate();
-		chartContainer.repaint();
-		*/
 	}
 	
 	
@@ -710,6 +736,8 @@ IbChartSignalOptimizationControllerListener{
 
 					@Override
 					public void run() {
+						
+						resetRunCancelEnable();
 
 						if (event
 								.getType()
@@ -730,12 +758,34 @@ IbChartSignalOptimizationControllerListener{
 							logger.info("PROGRESS_CHANGED: "
 									+ controller.getRunProgress());
 							
-							progressBarRun.setSelection(controller
-									.getRunProgress());
+							progressBarRun.setSelection(controller.getRunProgress());
 							progressBarRun.setMaximum(signal.getNumberOfEvaluations());
 							
-							// runProgress.setValue(controller.getRunProgress());
-							// overallProgress.setValue(controller.getOverallProgress());
+							progressBarSeed.setSelection(controller.getOverallProgress());
+							progressBarSeed.setMaximum(signal.getNumberOfSeeds());
+							
+							
+							int mb = 1024*1024;
+					         
+					        //Getting the runtime reference from system
+					        Runtime runtime = Runtime.getRuntime();
+					         
+					   
+					        //Print used memory
+					        logger.info("Used Memory:"
+					            + (runtime.totalMemory() - runtime.freeMemory()) / mb);
+					 
+					        progressBarMemory.setSelection((int)(runtime.totalMemory() - runtime.freeMemory()) / mb);
+					        progressBarMemory.setMaximum((int)runtime.totalMemory()/mb );
+							
+							
+							if (controller.getRunProgress()==0 && controller.getKeys().isEmpty()) {
+								clear();
+							} else {
+								updateModel();
+							}
+							
+							
 						} else if (event.getType().equals(
 								IbChartSignalOptimizationControllerEvent.Type.VIEW_CHANGED)) {
 							
@@ -754,6 +804,10 @@ IbChartSignalOptimizationControllerListener{
 		//logger.info("widgetSelected");
 		
 		controller.fireViewChangedEvent();
+		
+		if(e.getSource()!=tableResults)
+			tabFolder.setSelection(0);
+		
 	}
 
 	@Override
@@ -785,18 +839,74 @@ IbChartSignalOptimizationControllerListener{
 		
 		private String bazSize;
 		private String algorithmName;
+		private String reportType;
 		private int numberOfEvaluations;
+		private int numberOfSeeds;
 		private int percentOfDataRequired;
 		
 		
-		public OptJobStater(String bazSize, String algorithmName,
-				int numberOfEvaluations, int percentOfDataRequired) {
+		public OptJobStater(String bazSize, String algorithmName, String reportType,
+				int numberOfEvaluations, int numberOfSeeds, int percentOfDataRequired) {
 			super("Signal Optimization job Starter: "+signal.getName());
 			
 			this.bazSize=bazSize;
 			this.algorithmName=algorithmName;
+			this.reportType=reportType;
 			this.numberOfEvaluations=numberOfEvaluations;
+			this.numberOfSeeds=numberOfSeeds;
 			this.percentOfDataRequired=percentOfDataRequired;
+			
+			if(this.reportType.equals("Full")){
+				controller.setIncludeHypervolume(true);
+				controller.setIncludeGenerationalDistance(true);
+				controller.setIncludeInvertedGenerationalDistance(true);
+				controller.setIncludeSpacing(true);
+				controller.setIncludeAdditiveEpsilonIndicator(true);
+				controller.setIncludeContribution(true);
+				controller.setIncludeR1(true);
+				controller.setIncludeR2(true);
+				controller.setIncludeR3(true);
+				controller.setIncludeEpsilonProgress(true);
+				controller.setIncludeAdaptiveMultimethodVariation(true);
+				controller.setIncludeAdaptiveTimeContinuation(true);
+				controller.setIncludeElapsedTime(true);
+				controller.setIncludeApproximationSet(true);
+				controller.setIncludePopulationSize(true);
+			}
+			else if(this.reportType.equals("Middle")){
+				controller.setIncludeHypervolume(true);
+				controller.setIncludeGenerationalDistance(true);
+				controller.setIncludeInvertedGenerationalDistance(false);
+				controller.setIncludeSpacing(false);
+				controller.setIncludeAdditiveEpsilonIndicator(false);
+				controller.setIncludeContribution(true);
+				controller.setIncludeR1(false);
+				controller.setIncludeR2(false);
+				controller.setIncludeR3(false);
+				controller.setIncludeEpsilonProgress(false);
+				controller.setIncludeAdaptiveMultimethodVariation(false);
+				controller.setIncludeAdaptiveTimeContinuation(false);
+				controller.setIncludeElapsedTime(true);
+				controller.setIncludeApproximationSet(true);
+				controller.setIncludePopulationSize(true);
+			}
+			else{
+				controller.setIncludeHypervolume(false);
+				controller.setIncludeGenerationalDistance(false);
+				controller.setIncludeInvertedGenerationalDistance(false);
+				controller.setIncludeSpacing(false);
+				controller.setIncludeAdditiveEpsilonIndicator(false);
+				controller.setIncludeContribution(false);
+				controller.setIncludeR1(false);
+				controller.setIncludeR2(false);
+				controller.setIncludeR3(false);
+				controller.setIncludeEpsilonProgress(false);
+				controller.setIncludeAdaptiveMultimethodVariation(false);
+				controller.setIncludeAdaptiveTimeContinuation(false);
+				controller.setIncludeElapsedTime(false);
+				controller.setIncludeApproximationSet(false);
+				controller.setIncludePopulationSize(false);
+			}
 			
 		}
 		
@@ -867,12 +977,12 @@ IbChartSignalOptimizationControllerListener{
 						IbBar.getBarSizeFromString(bazSize));
 				
 				//TODO Remove this!
-				/*
 				while (allCollectedBars.size()>1000) {
 					allCollectedBars.remove(0);
 					
 				}
-				*/
+				
+				
 			}
 			
 			//Create the Data Set
@@ -887,12 +997,12 @@ IbChartSignalOptimizationControllerListener{
 			}
 			signal.setOptimizationBars(optimizationBars);
 			 
-			//signal.setOptimizationBars(allCollectedBars);
 			
 			
 			//Set the parameters
 			signal.setAlgorithmName(algorithmName);
 			signal.setNumberOfEvaluations(numberOfEvaluations);
+			signal.setNumberOfSeeds(numberOfSeeds);
 			
 			//Start the optimization
 			logger.info("Start the optimization");

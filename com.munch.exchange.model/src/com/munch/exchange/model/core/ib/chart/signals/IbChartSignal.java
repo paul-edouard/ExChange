@@ -50,10 +50,15 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	@Transient
 	private List<IbBar> optimizationBars;
 	
+	@Transient
+	private boolean batch=false;
+	
 	
 	private String algorithmName;
 	
-	private int numberOfEvaluations;
+	private int numberOfEvaluations=0;
+	
+	private int numberOfSeeds=0;
 	
 	
 	
@@ -256,7 +261,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		createProfitAndRiskSeries(bars, reset, signalMap, this.volume);
 		
 		//update the performance metrics
-		if(reset){
+		if(reset && !batch){
 			if(performanceMetrics==null)
 				performanceMetrics=new PerformanceMetrics();
 			performanceMetrics.calculateMetricsForSignal(bars, signalMap,this.getCommission(),volume);
@@ -516,6 +521,24 @@ public abstract class IbChartSignal extends IbChartIndicator {
 
 	public void setNumberOfEvaluations(int numberOfEvaluations) {
 		this.numberOfEvaluations = numberOfEvaluations;
+	}
+	
+
+
+	public void setBatch(boolean batch) {
+		this.batch = batch;
+	}
+
+
+	
+	
+	public int getNumberOfSeeds() {
+		return numberOfSeeds;
+	}
+
+
+	public void setNumberOfSeeds(int numberOfSeeds) {
+		this.numberOfSeeds = numberOfSeeds;
 	}
 
 
