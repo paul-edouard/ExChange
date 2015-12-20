@@ -16,6 +16,7 @@ import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.chart.ChartParameter.ParameterType;
 import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 
 
 @Entity
@@ -47,6 +48,10 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="INDICATOR_ID")
 	private IbChartIndicator parent;
+	
+	@ManyToOne(fetch=FetchType.EAGER)
+	@JoinColumn(name="OPTIMIZED_PARAM_ID")
+	private IbChartSignalOptimizedParameters optimizedParameters;
 	
 	public IbChartParameter(){
 		
@@ -225,6 +230,19 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 
 	public void setParent(IbChartIndicator parent) {
 		this.parent = parent;
+	}
+	
+	
+
+
+	public IbChartSignalOptimizedParameters getOptimizedParameters() {
+		return optimizedParameters;
+	}
+
+
+	public void setOptimizedParameters(
+			IbChartSignalOptimizedParameters optimizedParameters) {
+		this.optimizedParameters = optimizedParameters;
 	}
 
 

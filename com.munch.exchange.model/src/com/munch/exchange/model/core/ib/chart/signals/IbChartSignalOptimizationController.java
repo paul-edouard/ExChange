@@ -471,6 +471,7 @@ public class IbChartSignalOptimizationController {
 		
 		//final String problemName = frame.getProblem();
 		final String algorithmName = signal.getAlgorithmName();
+		final String barSize=signal.getBarSize();
 		final int numberOfEvaluations = signal.getNumberOfEvaluations();
 		final int numberOfSeeds = signal.getNumberOfSeeds();
 		
@@ -589,7 +590,7 @@ public class IbChartSignalOptimizationController {
 								Instrumenter instrumenter =
 										executor.getInstrumenter();
 								
-								add(algorithmName,
+								add(barSize+"#"+algorithmName,
 										instrumenter.getLastAccumulator());
 							}
 						}

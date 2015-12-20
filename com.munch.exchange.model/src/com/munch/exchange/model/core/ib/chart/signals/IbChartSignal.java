@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
@@ -22,6 +23,7 @@ import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
@@ -47,18 +49,32 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	public static final String SIGNAL="SIGNAL";
 	
 	
+	//Optimization variables
+	
 	@Transient
 	private List<IbBar> optimizationBars;
 	
 	@Transient
+	private LinkedList<List<IbBar>> optimizationBlocks;
+	
+	@Transient
 	private boolean batch=false;
 	
-	
+	@Transient
 	private String algorithmName;
 	
+	@Transient
 	private int numberOfEvaluations=0;
 	
+	@Transient
 	private int numberOfSeeds=0;
+	
+	@Transient
+	private String barSize;
+	
+	
+	@OneToMany(mappedBy="parent",cascade=CascadeType.ALL)
+	protected List<IbChartSignalOptimizedParameters> optimizedSet=new LinkedList<IbChartSignalOptimizedParameters>();
 	
 	
 	
@@ -93,6 +109,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			IbChartSignal in_s=(IbChartSignal)in;
 			this.volume=in_s.volume;
 			this.contract=in_s.getContract();
+			this.optimizationBlocks=in_s.optimizationBlocks;
 		}
 		
 		super.copyData(in);
@@ -122,42 +139,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		this.optimizationBars = optimizationBars;
 	}
 
-	/*
-	public void initProblem(List<IbBar> bars){
-		
-		
-		optExecutor = new Executor()
-		.withProblemClass(IbChartSignalProblem.class, this,bars)
-		.withAlgorithm("NSGAII")
-		//.usingAlgorithmFactory(factory)
-		.withMaxEvaluations(1000)
-		.distributeOnAllCores();
-		
-		
-	}
-	*/
 	
-	/*
-	public void optimize(){
-		NondominatedPopulation result =optExecutor.run();
-		
-		// print the results
-		for (int i = 0; i < result.size(); i++) {
-					Solution solution = result.get(i);
-					double[] objectives = solution.getObjectives();
-							
-					// negate objectives to return them to their maximized form
-					objectives = Vector.negate(objectives);
-							
-					System.out.println("Solution " + (i+1) + ":");
-					System.out.println("    Profit: " + objectives[0]);
-					System.out.println("    Risk:   " + objectives[1]);
-					
-		}
-		
-		
-	}
-	*/
 	
 	
 
@@ -206,17 +188,13 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	public abstract void computeSignalPointFromBarBlock(List<IbBar> bars, boolean reset);
 	
-	@Override
-	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
-		//If reset clear all series
-		if(reset){
-			for(IbChartSerie serie:this.series){
-				serie.clearPoints();
-			}
-		}
+	
+	protected  LinkedList<List<IbBar>> createBlocks(List<IbBar> bars){
+		if(optimizationBlocks!=null)
+			return optimizationBlocks;
 		
-		//Split the received bars in blocks
-		if(bars==null || bars.size()==0)return;
+		LinkedList<List<IbBar>> blocks=new LinkedList<List<IbBar>>();
+		
 		IbBar lastBar=bars.get(0);
 		long interval=lastBar.getIntervallInSec();
 		List<IbBar> block=new LinkedList<IbBar>();
@@ -227,11 +205,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			long timeDiff=currentBar.getTime()-lastBar.getTime();
 			if(timeDiff > interval ){
 				//Calculate the signal of the isolated block
-				computeSignalPointFromBarBlock(block, reset);
-				
-				//Set the last signal to neutral in order to avoid wrong long position
-				if(this.getSignalSerie().getPoints().size()>0)
-					this.getSignalSerie().getPoints().get(this.getSignalSerie().getPoints().size()-1).setValue(this.getNeutralSignal());
+				blocks.add(block);
 				
 				//Reset the block
 				block=new LinkedList<IbBar>();
@@ -242,13 +216,46 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 		//Calculate the last block
 		if(block.size()>=this.getValidAtPosition()){
-			computeSignalPointFromBarBlock(block, reset);
+			blocks.add(block);
 		}
+		
+		if(batch)
+			setOptimizationBlocks(blocks);
+		
+		return blocks;
+	}
+	
+	@Override
+	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
+		//If reset clear all series
+		if(reset){
+			for(IbChartSerie serie:this.series){
+				serie.clearPoints();
+			}
+		}
+		
+		if(bars==null || bars.size()==0)return;
+		
+		
+		//Split the received bars in blocks
+		LinkedList<List<IbBar>> blocks=createBlocks(bars);
+		for(List<IbBar> block:blocks){
+			//Calculate the signal of the isolated block
+			computeSignalPointFromBarBlock(block, reset);
+			
+			if(block==blocks.getLast())break;
+			
+			//Set the last signal to neutral in order to avoid wrong long position
+			if(this.getSignalSerie().getPoints().size()>0)
+				this.getSignalSerie().getPoints().get(this.getSignalSerie().getPoints().size()-1).setValue(this.getNeutralSignal());
+		}
+		
 		
 		//Return if the list is empty just in case of the problems with empty data
 		if(this.getSignalSerie().getPoints().isEmpty())return;
 		
 		//Clean the Signal Series close the empty block with 0
+		long interval=bars.get(0).getIntervallInSec();
 		cleanSignalSerie(interval);
 		
 		//Create the Signal Map
@@ -308,24 +315,30 @@ public abstract class IbChartSignal extends IbChartIndicator {
 				}
 				
 				//Update the Buy and Sell Series
+				
 				if(signal>0){
 					if(diffAbs==1)
 						previewPrice=price;
+					if(!batch)
 					this.getBuyLongSerie().addPoint(time, price);
 				}
 				else if(signal<0){
 					if(diffAbs==1)
 						previewPrice=price;
+					if(!batch)
 					this.getBuyShortSerie().addPoint(time, price);
 				}
 				else{
 					if(previewPrice>0){
+						if(!batch)
 						this.getSellLongSerie().addPoint(time, price);
 					}
 					else{
+						if(!batch)
 						this.getSellShortSerie().addPoint(time, price);
 					}
 				}
+				
 			}
 			
 			//Signal is long
@@ -359,7 +372,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		}
 		
 		
-		if(reset){
+		if(reset || batch){
 			this.getProfitSerie().setPointValues(times, profits);
 			this.getRiskSerie().setPointValues(times, risks);
 		}
@@ -367,7 +380,6 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			this.getProfitSerie().addNewPointsOnly(times, profits);
 			this.getRiskSerie().addNewPointsOnly(times, risks);
 		}
-		
 		
 	}
 	
@@ -539,6 +551,34 @@ public abstract class IbChartSignal extends IbChartIndicator {
 
 	public void setNumberOfSeeds(int numberOfSeeds) {
 		this.numberOfSeeds = numberOfSeeds;
+	}
+
+
+	
+	
+	private synchronized void setOptimizationBlocks(
+			LinkedList<List<IbBar>> optimizationBlocks) {
+		this.optimizationBlocks = optimizationBlocks;
+	}
+
+
+	public String getBarSize() {
+		return barSize;
+	}
+
+
+	public void setBarSize(String barSize) {
+		this.barSize = barSize;
+	}
+
+
+	public List<IbChartSignalOptimizedParameters> getOptimizedSet() {
+		return optimizedSet;
+	}
+
+
+	public void setOptimizedSet(List<IbChartSignalOptimizedParameters> optimizedSet) {
+		this.optimizedSet = optimizedSet;
 	}
 
 

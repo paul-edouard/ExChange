@@ -241,7 +241,6 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 	}
 	
 	
-	
 
  	public void setBars(List<IbBar> bars) {
 		this.bars = bars;

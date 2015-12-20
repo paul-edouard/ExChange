@@ -2,6 +2,7 @@ package com.munch.exchange.parts.chart.signal;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -96,11 +97,15 @@ IbChartSignalOptimizationControllerListener{
 		public String getColumnText(Object element, int columnIndex) {
 			
 			if(element instanceof String){
-			
+			String key=(String) element;
+				
+				
 			switch (columnIndex) {
 			case 0: 
-				return (String) element;
+				return key.split("#")[1];
 			case 1: 
+				return key.split("#")[0];
+			case 2: 
 				return String.valueOf(controller.get((String) element).size());
 			
 			default: 
@@ -127,8 +132,9 @@ IbChartSignalOptimizationControllerListener{
 	
 	private List<IbBar> allCollectedBars;
 	
-	LinkedList<LinkedList<IbBar>> backTestingBlocks;
-	LinkedList<LinkedList<IbBar>> optimizationBlocks;
+	
+	private HashMap<String,List<IbBar>> backTestingBarsMap=new HashMap<>();
+	private HashMap<String,List<IbBar>> optimizationBarsMap=new HashMap<>();
 	
 	LinkedList<String> sortedAlgorithmNames;
 	
@@ -200,6 +206,7 @@ IbChartSignalOptimizationControllerListener{
 	private ProgressBar progressBarSeed;
 	private ProgressBar progressBarMemory;
 	private Composite approximationSetContainer;
+	private TableColumn tblclmnBarSize;
 	
 	public SignalOptimizationEditorPart() {
 	}
@@ -388,6 +395,10 @@ IbChartSignalOptimizationControllerListener{
 		tblclmnAlgorithm = new TableColumn(tableResults, SWT.NONE);
 		tblclmnAlgorithm.setWidth(150);
 		tblclmnAlgorithm.setText("Algorithm");
+		
+		tblclmnBarSize = new TableColumn(tableResults, SWT.NONE);
+		tblclmnBarSize.setWidth(100);
+		tblclmnBarSize.setText("Bar size");
 		
 		tblclmnNbOfSeeds = new TableColumn(tableResults, SWT.LEFT);
 		tblclmnNbOfSeeds.setWidth(131);
@@ -760,6 +771,8 @@ IbChartSignalOptimizationControllerListener{
 							
 							progressBarRun.setSelection(controller.getRunProgress());
 							progressBarRun.setMaximum(signal.getNumberOfEvaluations());
+							progressBarRun.setToolTipText(
+									controller.getRunProgress()*100/signal.getNumberOfEvaluations()+"%");
 							
 							progressBarSeed.setSelection(controller.getOverallProgress());
 							progressBarSeed.setMaximum(signal.getNumberOfSeeds());
@@ -772,8 +785,8 @@ IbChartSignalOptimizationControllerListener{
 					         
 					   
 					        //Print used memory
-					        logger.info("Used Memory:"
-					            + (runtime.totalMemory() - runtime.freeMemory()) / mb);
+					        //logger.info("Used Memory:"
+					        //    + (runtime.totalMemory() - runtime.freeMemory()) / mb);
 					 
 					        progressBarMemory.setSelection((int)(runtime.totalMemory() - runtime.freeMemory()) / mb);
 					        progressBarMemory.setMaximum((int)runtime.totalMemory()/mb );
@@ -916,8 +929,8 @@ IbChartSignalOptimizationControllerListener{
 			int numberOfBars=0;
 			//int percentRequired=spinnerPercentOfData.getSelection();
 			int numberOfRequired=allCollectedBars.size()*percentRequired/100;
-			logger.info("Percent of bars required: "+percentRequired);
-			logger.info("Number of required bars: "+numberOfRequired);
+			//logger.info("Percent of bars required: "+percentRequired);
+			//logger.info("Number of required bars: "+numberOfRequired);
 			
 			while(numberOfBars<numberOfRequired ){
 				
@@ -930,8 +943,8 @@ IbChartSignalOptimizationControllerListener{
 				
 				numberOfBars+=removedBlock.size();
 			}
-			logger.info("Number of blocks: "+optBlocks.size());
-			logger.info("Number of bars: "+numberOfBars);
+			//logger.info("Number of blocks: "+optBlocks.size());
+			//logger.info("Number of bars: "+numberOfBars);
 			
 			return optBlocks;
 		}
@@ -977,25 +990,43 @@ IbChartSignalOptimizationControllerListener{
 						IbBar.getBarSizeFromString(bazSize));
 				
 				//TODO Remove this!
+				/*
 				while (allCollectedBars.size()>1000) {
 					allCollectedBars.remove(0);
 					
 				}
-				
-				
+				*/
 			}
 			
 			//Create the Data Set
-			
 			logger.info("Create the Data Set");
-			LinkedList<LinkedList<IbBar>> allBlocks=splitCollectedBarsInBlocks();
-			LinkedList<LinkedList<IbBar>> optBlocks=collectOptimizationBlocks(allBlocks,percentOfDataRequired);
+			if(!optimizationBarsMap.containsKey(bazSize+percentOfDataRequired)){
 			
-			List<IbBar> optimizationBars=new LinkedList<IbBar>();
-			for(LinkedList<IbBar> bars:optBlocks){
-				optimizationBars.addAll(bars);
+				LinkedList<LinkedList<IbBar>> allBlocks=splitCollectedBarsInBlocks();
+				LinkedList<LinkedList<IbBar>> optBlocks=collectOptimizationBlocks(allBlocks,percentOfDataRequired);
+			
+				List<IbBar> optimizationBars=new LinkedList<IbBar>();
+				HashSet<Long> timeSet=new HashSet<>();
+				for(LinkedList<IbBar> bars:optBlocks){
+					optimizationBars.addAll(bars);
+					for(IbBar bar:bars)
+						timeSet.add(bar.getTime());
+				}
+				optimizationBarsMap.put(bazSize+percentOfDataRequired, optimizationBars);
+				
+				
+				List<IbBar> backTestingBars=new LinkedList<IbBar>();
+				for(IbBar bar:allCollectedBars){
+					if(timeSet.contains(bar.getTime()))continue;
+					backTestingBars.add(bar);
+				}
+				
+				backTestingBarsMap.put(bazSize+percentOfDataRequired, backTestingBars);
+				
 			}
-			signal.setOptimizationBars(optimizationBars);
+			
+			
+			signal.setOptimizationBars(optimizationBarsMap.get(bazSize+percentOfDataRequired));
 			 
 			
 			
@@ -1003,6 +1034,7 @@ IbChartSignalOptimizationControllerListener{
 			signal.setAlgorithmName(algorithmName);
 			signal.setNumberOfEvaluations(numberOfEvaluations);
 			signal.setNumberOfSeeds(numberOfSeeds);
+			signal.setBarSize(bazSize);
 			
 			//Start the optimization
 			logger.info("Start the optimization");
