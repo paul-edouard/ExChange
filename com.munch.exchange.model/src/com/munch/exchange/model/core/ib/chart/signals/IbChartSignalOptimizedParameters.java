@@ -17,10 +17,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import com.ib.controller.Types.BarSize;
+import com.munch.exchange.model.core.ib.Copyable;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 
 @Entity
-public class IbChartSignalOptimizedParameters implements Serializable{
+public class IbChartSignalOptimizedParameters implements Serializable,Copyable<IbChartSignalOptimizedParameters>{
 
 	/**
 	 * 
@@ -43,8 +45,26 @@ public class IbChartSignalOptimizedParameters implements Serializable{
 
 	public IbChartSignalOptimizedParameters() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
+	
+	
+	@Override
+	public IbChartSignalOptimizedParameters copy() {
+		
+		IbChartSignalOptimizedParameters cp=new IbChartSignalOptimizedParameters();
+		cp.id=this.id;
+		cp.size=this.size;
+		cp.parameters=new LinkedList<IbChartParameter>();
+		
+		for(IbChartParameter param:this.parameters){
+			IbChartParameter c_p=param.copy();
+			c_p.setOptimizedParameters(cp);
+			cp.parameters.add(c_p);
+		}
+		
+		return cp;
+	}
+	
 
 	public int getId() {
 		return id;
@@ -77,6 +97,8 @@ public class IbChartSignalOptimizedParameters implements Serializable{
 	public void setParent(IbChartSignal parent) {
 		this.parent = parent;
 	}
+
+	
 	
 	
 	

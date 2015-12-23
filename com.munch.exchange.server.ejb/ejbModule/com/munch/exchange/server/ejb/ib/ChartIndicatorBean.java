@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.services.ejb.interfaces.ChartIndicatorBeanRemote;
 
 /**
@@ -47,6 +48,18 @@ public class ChartIndicatorBean implements ChartIndicatorBeanRemote{
 	public IbChartIndicatorGroup getGroup(int id) {
 		IbChartIndicatorGroup group=em.find(IbChartIndicatorGroup.class, id);
 		return group;
+	}
+
+	@Override
+	public void update(IbChartSignal signal) {
+		em.merge(signal);
+		
+	}
+
+	@Override
+	public IbChartSignal getSignal(int id) {
+		IbChartSignal signal = em.find(IbChartSignal.class, id);
+		return signal;
 	}
 
 }

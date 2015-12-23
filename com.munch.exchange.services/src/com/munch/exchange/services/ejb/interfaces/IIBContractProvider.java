@@ -1,8 +1,5 @@
 package com.munch.exchange.services.ejb.interfaces;
 
-import java.util.List;
-
-import com.munch.exchange.model.core.ib.IbContract;
 
 public interface IIBContractProvider extends ContractInfoBeanRemote{
 	

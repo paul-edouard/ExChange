@@ -25,6 +25,8 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 	 */
 	private static final long serialVersionUID = 5571326766704654121L;
 	
+	private static final int NB_OF_OBJECTIVES=2;
+	
 	
 	public static int numberOfEval=0;
 	
@@ -33,12 +35,11 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 	
 
 	public IbChartSignalProblem(IbChartSignal chartSignal) {
-		super(chartSignal.getParameters().size(), 2);
+		super(chartSignal.getParameters().size(), NB_OF_OBJECTIVES);
 		this.chartSignal=chartSignal;
 		this.bars=chartSignal.getOptimizationBars();
 	}
 
-	
 	private void setChartSignalParameters(IbChartSignal signal,
 			Solution solution) {
 		// Set the Chart Signal parameters
@@ -133,31 +134,7 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 	}
 	
 	private Solution createStartSolution(){
-		Solution solution = new Solution(getNumberOfVariables(), 
-				getNumberOfObjectives());
-		
-		int index=0;
-		for(IbChartParameter param:chartSignal.getParameters()){
-			switch (param.getType()) {
-			case DOUBLE:
-				RealVariable rvar=EncodingUtils.newReal(param.getMinValue(), param.getMaxValue());
-				rvar.setValue(param.getValue());
-				solution.setVariable(index,rvar);
-				break;
-			case INTEGER:
-				RealVariable ivar=EncodingUtils.newInt((int)param.getMinValue(), (int)param.getMaxValue());
-				ivar.setValue(param.getValue());
-				solution.setVariable(index,ivar);
-				break;
-
-			default:
-				break;
-			}
-			
-			index++;
-		}
-		
-		return solution;
+		return createSolutionFromIbChartParameter(chartSignal.getParameters());
 	}
 	
 	private Solution createRandomSolution() {
@@ -192,16 +169,22 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 		return solution;
 	}
 	
-	
 	public List<Solution> createStartSolutions() {
-		Solution solution =createStartSolution();
-		
 		
 		List<Solution> solutions=new LinkedList<Solution>();
-		solutions.add(solution);
+		
+		
+		Solution startSolution =createStartSolution();
+		solutions.add(startSolution);
+		
+		//Add the Save optimized solution
+		for(IbChartSignalOptimizedParameters optimizedParameters:this.chartSignal.getOptimizedSet()){
+			Solution solution=createSolutionFromIbChartParameter(optimizedParameters.getParameters());
+			this.evaluate(solution);
+			solutions.add(solution);
+		}
 		
 		return solutions;
-		
 	}
 	
 	private NondominatedPopulation newArchive(double epsilon) {
@@ -213,7 +196,7 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 		}
 	}
 	
-	public Population  createStartPopulation(int nbOfSolution,double epsilon){
+	public Population  createStartPopulation(double epsilon){
 		Population population = newArchive(epsilon);
 		
 		//Add the start solutions
@@ -221,6 +204,14 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 		this.evaluate(startSol);
 		population.add(startSol);
 		
+		//Add the Save optimized solution
+		for(IbChartSignalOptimizedParameters optimizedParameters:this.chartSignal.getOptimizedSet()){
+			Solution solution=createSolutionFromIbChartParameter(optimizedParameters.getParameters());
+			this.evaluate(solution);
+			population.add(solution);
+		}
+		
+		/*
 		int i=0;
 		while(population.size()<nbOfSolution && i<100){
 			Solution ranDomSol=createRandomSolution();
@@ -228,7 +219,9 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 			population.add(ranDomSol);
 			i++;
 		}
+		*/
 		
+		//In order to run the population size have to be a least bigger than 1
 		if(population.size()<2){
 			Solution ranDomSol=createRandomSolution();
 			ranDomSol.setObjective(0, startSol.getObjective(0)+1000);
@@ -240,12 +233,86 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 		
 	}
 	
-	
-
  	public void setBars(List<IbBar> bars) {
 		this.bars = bars;
 	}
 	
 	
+ 	/**
+ 	 * transform a list of ib chart parameters into a mea framework solution
+ 	 * 
+ 	 * @param parameters
+ 	 * @return
+ 	 */
+ 	public static Solution createSolutionFromIbChartParameter( List<IbChartParameter> parameters){
+ 		Solution solution = new Solution(parameters.size(), NB_OF_OBJECTIVES);
+ 		
+ 		int index=0;
+		for(IbChartParameter param:parameters){
+			switch (param.getType()) {
+			case DOUBLE:
+				RealVariable rvar=EncodingUtils.newReal(param.getMinValue(), param.getMaxValue());
+				rvar.setValue(param.getValue());
+				solution.setVariable(index,rvar);
+				break;
+			case INTEGER:
+				RealVariable ivar=EncodingUtils.newInt((int)param.getMinValue(), (int)param.getMaxValue());
+				ivar.setValue(param.getValue());
+				solution.setVariable(index,ivar);
+				break;
+			//TODO create the String case
 
+			default:
+				break;
+			}
+			
+			index++;
+		}
+ 		
+ 		return solution;
+ 	}
+ 	
+ 	
+ 	/**
+ 	 * transform a mea solution into a list of ibChart parameters
+ 	 * 
+ 	 * @param solution
+ 	 * @param parametersTemplate
+ 	 * @return
+ 	 */
+ 	public static List<IbChartParameter> createIbChartParametersFromSolution(Solution solution, List<IbChartParameter> parametersTemplate){
+ 		List<IbChartParameter> parameters=new LinkedList<IbChartParameter>();
+ 		
+ 		
+ 		int index=0;
+		for(IbChartParameter param:parametersTemplate){
+			switch (param.getType()) {
+			case DOUBLE:
+				RealVariable r_v=(RealVariable)solution.getVariable(index);
+				IbChartParameter c_d_p=param.copy();
+				c_d_p.setValue(r_v.getValue());
+				parameters.add(c_d_p);
+				break;
+			case INTEGER:
+				RealVariable i_v=(RealVariable)solution.getVariable(index);
+				IbChartParameter c_i_p=param.copy();
+				c_i_p.setValue(i_v.getValue());
+				parameters.add(c_i_p);
+				break;
+			//TODO create the String case
+
+			default:
+				break;
+			}
+			
+			index++;
+		}
+ 		
+ 		
+ 		return parameters;
+ 	}
+ 	
+ 	
+
+ 	
 }

@@ -1,6 +1,7 @@
 package com.munch.exchange.services.ejb.providers;
 
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
 import com.munch.exchange.services.ejb.interfaces.ChartIndicatorBeanRemote;
 import com.munch.exchange.services.ejb.interfaces.IIBChartIndicatorProvider;
@@ -38,6 +39,20 @@ public class IBChartIndicatorProvider implements IIBChartIndicatorProvider {
 	public void close() {
 		if(beanRemote!=null)
 			beanRemote.CloseContext();
+	}
+
+	@Override
+	public void update(IbChartSignal signal) {
+		if(beanRemote==null)init();
+		//Create a copy of the Indicator Signal and send it to the JPA Service
+		beanRemote.getService().update((IbChartSignal)signal.copy());
+		
+	}
+
+	@Override
+	public IbChartSignal getSignal(int id) {
+		if(beanRemote==null)init();
+		return beanRemote.getService().getSignal(id);
 	}
 
 }

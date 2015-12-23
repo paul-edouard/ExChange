@@ -57,12 +57,15 @@ import org.moeaframework.core.Settings;
 
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationController;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationControllerEvent;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationControllerListener;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationControllerRunnable;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
+
+import org.eclipse.jface.viewers.TableViewerColumn;
 
 
 public class SignalOptimizationEditorPart implements SelectionListener, 
@@ -73,7 +76,7 @@ IbChartSignalOptimizationControllerListener{
 	
 	
 	
-	private static class ContentProvider implements IStructuredContentProvider {
+	private  class ContentProvider implements IStructuredContentProvider {
 		public Object[] getElements(Object inputElement) {
 			if(inputElement instanceof LinkedList){
 				@SuppressWarnings({  "unchecked" })
@@ -117,6 +120,26 @@ IbChartSignalOptimizationControllerListener{
 			}
 			
 		}
+	}
+	
+	private class BestResultContentProvider implements IStructuredContentProvider{
+
+		@Override
+		public void dispose() {}
+
+		@Override
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
+
+		@Override
+		public Object[] getElements(Object inputElement) {
+			if(!(inputElement instanceof SignalOptimizationEditorPart))return null;
+			
+			
+			
+			return null;
+			
+		}
+		
 	}
 	
 	
@@ -207,6 +230,21 @@ IbChartSignalOptimizationControllerListener{
 	private ProgressBar progressBarMemory;
 	private Composite approximationSetContainer;
 	private TableColumn tblclmnBarSize;
+	private TabItem tbtmBestResults;
+	private Composite bestResultContainer;
+	private Table tableBestResults;
+	private Button btnRemove;
+	private Button btnSave;
+	private Button btnActivate;
+	private TableViewer tableViewerBestResults;
+	private TableColumn tblclmnOptRisk;
+	private TableColumn tblclmnOptBenefit;
+	private TableColumn tblclmnBackTRisk;
+	private TableColumn tblclmnBackTBenefit;
+	private TableColumn tblclmnTotalRisk;
+	private TableColumn tblclmnTotalBenefit;
+	private TableColumn tblclmnStatus;
+	private TableColumn tblclmnId;
 	
 	public SignalOptimizationEditorPart() {
 	}
@@ -223,7 +261,9 @@ IbChartSignalOptimizationControllerListener{
 		
 		compositeMain = new Composite(parent, SWT.NONE);
 		compositeMain.setLayout(new GridLayout(2, false));
-		compositeMain.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		GridData gd_compositeMain = new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1);
+		gd_compositeMain.widthHint = 788;
+		compositeMain.setLayoutData(gd_compositeMain);
 		
 		compositeCommand = new Composite(compositeMain, SWT.NONE);
 		compositeCommand.setLayout(new GridLayout(1, false));
@@ -252,7 +292,7 @@ IbChartSignalOptimizationControllerListener{
 		spinnerPercentOfData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		spinnerPercentOfData.setPageIncrement(1);
 		spinnerPercentOfData.setMinimum(1);
-		spinnerPercentOfData.setSelection(70);
+		spinnerPercentOfData.setSelection(20);
 		
 		lblAlgorithm = new Label(groupControls, SWT.NONE);
 		lblAlgorithm.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -420,7 +460,88 @@ IbChartSignalOptimizationControllerListener{
 		compositeChart.setSize(288, 107);
 		
 		tabFolder = new TabFolder(compositeChart, SWT.BOTTOM);
-		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tabFolder.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, true, 1, 1));
+		
+		tbtmBestResults = new TabItem(tabFolder, SWT.NONE);
+		tbtmBestResults.setText("Best Results");
+		
+		bestResultContainer = new Composite(tabFolder, SWT.NONE);
+		tbtmBestResults.setControl(bestResultContainer);
+		bestResultContainer.setLayout(new GridLayout(1, false));
+		
+		tableViewerBestResults = new TableViewer(bestResultContainer, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL);
+		tableBestResults = tableViewerBestResults.getTable();
+		tableBestResults.setHeaderVisible(true);
+		tableBestResults.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		tblclmnId = new TableColumn(tableBestResults, SWT.NONE);
+		tblclmnId.setWidth(50);
+		tblclmnId.setText("Id");
+		
+		addBestResultParameterColumns();
+		
+		tblclmnOptRisk = new TableColumn(tableBestResults, SWT.NONE);
+		tblclmnOptRisk.setWidth(100);
+		tblclmnOptRisk.setText("Opt. Risk");
+		
+		tblclmnOptBenefit = new TableColumn(tableBestResults, SWT.NONE);
+		tblclmnOptBenefit.setWidth(100);
+		tblclmnOptBenefit.setText("Opt. Benefit");
+		
+		tblclmnBackTRisk = new TableColumn(tableBestResults, SWT.NONE);
+		tblclmnBackTRisk.setWidth(100);
+		tblclmnBackTRisk.setText("Back T. Risk");
+		
+		tblclmnBackTBenefit = new TableColumn(tableBestResults, SWT.NONE);
+		tblclmnBackTBenefit.setWidth(100);
+		tblclmnBackTBenefit.setText("Back T. Benefit");
+		
+		tblclmnTotalRisk = new TableColumn(tableBestResults, SWT.NONE);
+		tblclmnTotalRisk.setWidth(100);
+		tblclmnTotalRisk.setText("Total Risk");
+		
+		tblclmnTotalBenefit = new TableColumn(tableBestResults, SWT.NONE);
+		tblclmnTotalBenefit.setWidth(100);
+		tblclmnTotalBenefit.setText("Total Benefit");
+		
+		tblclmnStatus = new TableColumn(tableBestResults, SWT.NONE);
+		tblclmnStatus.setWidth(100);
+		tblclmnStatus.setText("Status");
+		
+		Composite compositeBestResultButton = new Composite(bestResultContainer, SWT.NONE);
+		compositeBestResultButton.setLayout(new GridLayout(3, false));
+		compositeBestResultButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		btnActivate = new Button(compositeBestResultButton, SWT.NONE);
+		btnActivate.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO Press Button Activate
+				logger.info("Press Button Activate");
+			}
+		});
+		btnActivate.setText("Activate");
+		
+		btnSave = new Button(compositeBestResultButton, SWT.NONE);
+		btnSave.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO Press Button Save
+				logger.info("Press Button Save");
+			}
+		});
+		btnSave.setBounds(0, 0, 105, 35);
+		btnSave.setText("Save");
+		
+		btnRemove = new Button(compositeBestResultButton, SWT.NONE);
+		btnRemove.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO Press Button Remove
+				logger.info("Press Button Remove");
+			}
+		});
+		btnRemove.setText("Remove");
 		
 		tbtmMetrics = new TabItem(tabFolder, SWT.NONE);
 		tbtmMetrics.setText("Metrics");
@@ -444,16 +565,19 @@ IbChartSignalOptimizationControllerListener{
 		lblPogress.setText("Pogress:");
 		
 		progressBarRun = new ProgressBar(compositeBottom, SWT.NONE);
+		progressBarRun.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Label lblSeedsNb = new Label(compositeBottom, SWT.NONE);
 		lblSeedsNb.setText("Seed");
 		
 		progressBarSeed = new ProgressBar(compositeBottom, SWT.NONE);
+		progressBarSeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		lblMemory = new Label(compositeBottom, SWT.NONE);
 		lblMemory.setText("Memory");
 		
 		progressBarMemory = new ProgressBar(compositeBottom, SWT.NONE);
+		progressBarMemory.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		
 		
@@ -461,7 +585,16 @@ IbChartSignalOptimizationControllerListener{
 		
 	}
 	
-	
+	private void addBestResultParameterColumns(){
+		for(IbChartParameter param:this.signal.getParameters()){
+			String parameName=param.getName();
+			TableColumn paramColumn = new TableColumn(tableBestResults, SWT.NONE);
+			paramColumn.setWidth(100);
+			paramColumn.setText(parameName);
+		}
+		
+		
+	}
 	
 	
 	private void preGuiInitialization(){
@@ -1044,6 +1177,4 @@ IbChartSignalOptimizationControllerListener{
 		}
 		
 	}
-	
-	
 }

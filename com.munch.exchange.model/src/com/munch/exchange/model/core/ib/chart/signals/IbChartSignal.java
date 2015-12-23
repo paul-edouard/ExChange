@@ -1,10 +1,8 @@
 package com.munch.exchange.model.core.ib.chart.signals;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -12,25 +10,18 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
-import org.moeaframework.Executor;
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.Solution;
-import org.moeaframework.util.Vector;
-
+import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
-import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.ShapeType;
-import com.munch.exchange.model.core.ib.chart.trend.TrendLineProblem;
 import com.munch.exchange.model.core.ib.statistics.PerformanceMetrics;
-import com.sun.istack.internal.logging.Logger;
 
 @Entity
 public abstract class IbChartSignal extends IbChartIndicator {
@@ -93,7 +84,6 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	public IbChartSignal() {
 		super();
 		volume=10;
-		//initProblem();
 	}
 
 
@@ -110,6 +100,14 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			this.volume=in_s.volume;
 			this.contract=in_s.getContract();
 			this.optimizationBlocks=in_s.optimizationBlocks;
+			
+			this.optimizedSet=new LinkedList<IbChartSignalOptimizedParameters>();
+			for(IbChartSignalOptimizedParameters parameters:in_s.optimizedSet){
+				IbChartSignalOptimizedParameters copyParameters=parameters.copy();
+				copyParameters.setParent(this);
+				this.optimizedSet.add(copyParameters);
+			}
+			
 		}
 		
 		super.copyData(in);
@@ -573,15 +571,32 @@ public abstract class IbChartSignal extends IbChartIndicator {
 
 
 	public List<IbChartSignalOptimizedParameters> getOptimizedSet() {
+		if(this.barSize!=null && !this.barSize.isEmpty())
+			return getOptimizedSet(this.barSize);
 		return optimizedSet;
 	}
-
-
-	public void setOptimizedSet(List<IbChartSignalOptimizedParameters> optimizedSet) {
+	
+	public List<IbChartSignalOptimizedParameters> getOptimizedSet(String barSize){
+		return getOptimizedSet(IbBar.getBarSizeFromString(barSize));
+		
+	}
+	
+	public List<IbChartSignalOptimizedParameters> getOptimizedSet(BarSize size){
+		List<IbChartSignalOptimizedParameters> parametersSet=new LinkedList<IbChartSignalOptimizedParameters>();
+		for(IbChartSignalOptimizedParameters parameters:optimizedSet){
+			if(parameters.getSize()==size)
+				parametersSet.add(parameters);
+		}
+		return parametersSet;
+	}
+	
+	protected void setOptimizedSet(List<IbChartSignalOptimizedParameters> optimizedSet) {
 		this.optimizedSet = optimizedSet;
+	}
+	
+	public void addOptimizedParameters(IbChartSignalOptimizedParameters optimizedParameters){
+		this.optimizedSet.add(optimizedParameters);
 	}
 
 
-	
-	
 }

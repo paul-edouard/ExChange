@@ -560,7 +560,7 @@ public class IbChartSignalOptimizationController {
 						instrumenter.withEpsilon(EpsilonHelper.getEpsilon(
 								problem));
 						instrumenter.withReferenceSet(
-								((IbChartSignalProblem)problem).createStartPopulation(2,epsilon));
+								((IbChartSignalProblem)problem).createStartPopulation(epsilon));
 					} finally {
 						if (problem != null) {
 							problem.close();

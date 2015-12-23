@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
 import com.munch.exchange.model.core.ib.chart.signals.SuperTrendSignal;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
@@ -117,6 +118,14 @@ public class IbChartIndicatorFactory {
 			for(IbChartIndicator c_ind:parent.getIndicators()){
 				if(c_ind.getName().equals(ind.getName())){
 					compareAndCopyParametersAndSeries(c_ind, ind, parent);
+					
+					//Load the optimization set
+					if(c_ind instanceof IbChartSignal){
+						IbChartSignal signal=(IbChartSignal) c_ind;
+						signal.getOptimizedSet().size();
+						
+					}
+					
 					return ;
 				}
 			}
