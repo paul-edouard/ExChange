@@ -52,8 +52,10 @@ import org.hibernate.validator.internal.xml.GetterType;
 import org.moeaframework.analysis.collector.Accumulator;
 import org.moeaframework.analysis.diagnostics.ControllerEvent;
 import org.moeaframework.analysis.diagnostics.PaintHelper;
+import org.moeaframework.core.EpsilonBoxDominanceArchive;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Settings;
+import org.moeaframework.core.Solution;
 
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
@@ -63,6 +65,8 @@ import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationC
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationControllerEvent;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationControllerListener;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationControllerRunnable;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalProblem;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -74,7 +78,10 @@ IbChartSignalOptimizationControllerListener{
 
 	private static Logger logger = Logger.getLogger(SignalOptimizationEditorPart.class);
 	
-	
+	/**
+	 * The &epsilon; value used when displaying the approximation set.
+	 */
+	private static final double EPSILON = 0.01;	
 	
 	private  class ContentProvider implements IStructuredContentProvider {
 		public Object[] getElements(Object inputElement) {
@@ -123,6 +130,93 @@ IbChartSignalOptimizationControllerListener{
 	}
 	
 	private class BestResultContentProvider implements IStructuredContentProvider{
+		
+		private LinkedList<IbChartSignalOptimizedParameters> optParametersSet=new LinkedList<>();
+		
+		public void refreshOptSet(){
+			optParametersSet.clear();
+			
+			//Add the already saved optimized set into the list
+			optParametersSet.addAll(signal.getOptimizedSet());
+			
+			//Try to find the current parameter into the saved list
+			boolean currentFound=false;
+			for(IbChartSignalOptimizedParameters optParameters:optParametersSet){
+				
+				boolean allValuesEquals=true;
+				for(int i=0;i<optParameters.getParameters().size();i++){
+					IbChartParameter param1=optParameters.getParameters().get(i);
+					IbChartParameter param2=signal.getParameters().get(i);
+					if(!param1.hasSameValueAs(param2)){
+						allValuesEquals=false;
+						break;
+					}
+				}
+				
+				//the current parameter was found in list
+				if(allValuesEquals){
+					optParameters.setSatus(com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.CURRENT);
+					currentFound=true;
+					break;
+				}
+				
+			}
+			
+			//the current parmeter was not found
+			if(!currentFound){
+				IbChartSignalOptimizedParameters currentParameters=new IbChartSignalOptimizedParameters();
+				currentParameters.setSatus(com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.CURRENT);
+				currentParameters.setParameters(signal.getParameters());
+				optParametersSet.add(currentParameters);
+			}
+			
+			
+			//Add the new parameters from the fresh optimizations
+			String metric="Approximation Set";
+			
+			
+			
+			for(String key : controller.getKeys()){
+				if(!key.contains(signal.getBarSize()))continue;
+				
+				NondominatedPopulation population = new EpsilonBoxDominanceArchive(
+						EPSILON);
+				
+				for(Accumulator accumulator :  controller.get(key)){
+					if (!accumulator.keySet().contains(metric)) {
+						continue;
+					}
+					
+					List<?> list = (List<?>)accumulator.get(metric, 
+							accumulator.size(metric)-1);
+					
+					for (Object object : list) {
+						population.add((Solution)object);
+					}
+					
+				}
+				
+				//Transform the population into optimized parameters
+				for(Solution solution:population){
+					List<IbChartParameter> parameters=IbChartSignalProblem.createIbChartParametersFromSolution(solution, signal.getParameters());
+					IbChartSignalOptimizedParameters newParameters=new IbChartSignalOptimizedParameters();
+					newParameters.setSatus(com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.NEW);
+					newParameters.setParameters(parameters);
+					newParameters.setAlgorithm(key.split("#")[1]);
+					
+					optParametersSet.add(newParameters);
+				}
+	
+			}
+			
+			
+			
+			
+		}
+		
+		public LinkedList<IbChartSignalOptimizedParameters> getOptParametersSet() {
+			return optParametersSet;
+		}
 
 		@Override
 		public void dispose() {}
@@ -132,16 +226,65 @@ IbChartSignalOptimizationControllerListener{
 
 		@Override
 		public Object[] getElements(Object inputElement) {
-			if(!(inputElement instanceof SignalOptimizationEditorPart))return null;
-			
-			
-			
-			return null;
-			
+			return optParametersSet.toArray();
 		}
 		
 	}
 	
+	private class BestResultLabelProvider  extends LabelProvider implements ITableLabelProvider{
+
+		@Override
+		public Image getColumnImage(Object element, int columnIndex) {
+			return null;
+		}
+
+		@Override
+		public String getColumnText(Object element, int columnIndex) {
+			if(!(element instanceof IbChartSignalOptimizedParameters))
+				element.toString();
+			
+			IbChartSignalOptimizedParameters optParam=(IbChartSignalOptimizedParameters) element;
+			
+			if(columnIndex==0){
+				return String.valueOf(optParam.getId());
+			}
+			else if(columnIndex<=signal.getParameters().size()){
+				return String.valueOf(optParam.getParameters().get(columnIndex-1).getValue());
+			}
+			
+			
+			else if(columnIndex==signal.getParameters().size()+1){
+				return String.valueOf(optParam.getOptRisk());
+			}
+			else if(columnIndex==signal.getParameters().size()+2){
+				return String.valueOf(optParam.getOptBenefit());
+			}
+			
+			
+			else if(columnIndex==signal.getParameters().size()+3){
+				return String.valueOf(optParam.getBackTestRisk());
+			}
+			else if(columnIndex==signal.getParameters().size()+4){
+				return String.valueOf(optParam.getBackTestBenefit());
+			}
+			
+			
+			else if(columnIndex==signal.getParameters().size()+5){
+				return String.valueOf(Math.max(optParam.getOptRisk(),optParam.getBackTestRisk()));
+			}
+			else if(columnIndex==signal.getParameters().size()+6){
+				return String.valueOf(optParam.getOptBenefit() + optParam.getBackTestBenefit());
+			}
+			
+			
+			else if(columnIndex==signal.getParameters().size()+7){
+				return optParam.getSatus().toString();
+			}
+			
+			return element.toString();
+		}
+		
+	}
 	
 	
 	public static final String SIGNAL_OPTIMIZATION_EDITOR_ID="com.munch.exchange.partdescriptor.chart.signal.optimization.editor";
@@ -160,6 +303,8 @@ IbChartSignalOptimizationControllerListener{
 	private HashMap<String,List<IbBar>> optimizationBarsMap=new HashMap<>();
 	
 	LinkedList<String> sortedAlgorithmNames;
+	
+	BestResultContentProvider bestResultContentProvider=new BestResultContentProvider();
 	
 	
 	/**
@@ -245,6 +390,7 @@ IbChartSignalOptimizationControllerListener{
 	private TableColumn tblclmnTotalBenefit;
 	private TableColumn tblclmnStatus;
 	private TableColumn tblclmnId;
+	private Button btnCalculateStatistics;
 	
 	public SignalOptimizationEditorPart() {
 	}
@@ -261,7 +407,7 @@ IbChartSignalOptimizationControllerListener{
 		
 		compositeMain = new Composite(parent, SWT.NONE);
 		compositeMain.setLayout(new GridLayout(2, false));
-		GridData gd_compositeMain = new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1);
+		GridData gd_compositeMain = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_compositeMain.widthHint = 788;
 		compositeMain.setLayoutData(gd_compositeMain);
 		
@@ -456,11 +602,11 @@ IbChartSignalOptimizationControllerListener{
 		
 		compositeChart = new Composite(compositeMain, SWT.NONE);
 		compositeChart.setLayout(new GridLayout(1, false));
-		compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		compositeChart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		compositeChart.setSize(288, 107);
 		
 		tabFolder = new TabFolder(compositeChart, SWT.BOTTOM);
-		tabFolder.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, true, 1, 1));
+		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 		tbtmBestResults = new TabItem(tabFolder, SWT.NONE);
 		tbtmBestResults.setText("Best Results");
@@ -470,9 +616,13 @@ IbChartSignalOptimizationControllerListener{
 		bestResultContainer.setLayout(new GridLayout(1, false));
 		
 		tableViewerBestResults = new TableViewer(bestResultContainer, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL);
+		tableViewerBestResults.setLabelProvider(new BestResultLabelProvider());
+		tableViewerBestResults.setContentProvider(bestResultContentProvider);
+		tableViewerBestResults.setInput(this);
 		tableBestResults = tableViewerBestResults.getTable();
 		tableBestResults.setHeaderVisible(true);
 		tableBestResults.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
 		
 		tblclmnId = new TableColumn(tableBestResults, SWT.NONE);
 		tblclmnId.setWidth(50);
@@ -509,7 +659,7 @@ IbChartSignalOptimizationControllerListener{
 		tblclmnStatus.setText("Status");
 		
 		Composite compositeBestResultButton = new Composite(bestResultContainer, SWT.NONE);
-		compositeBestResultButton.setLayout(new GridLayout(3, false));
+		compositeBestResultButton.setLayout(new GridLayout(4, false));
 		compositeBestResultButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		btnActivate = new Button(compositeBestResultButton, SWT.NONE);
@@ -542,6 +692,23 @@ IbChartSignalOptimizationControllerListener{
 			}
 		});
 		btnRemove.setText("Remove");
+		
+		btnCalculateStatistics = new Button(compositeBestResultButton, SWT.NONE);
+		btnCalculateStatistics.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO
+				logger.info("btnCalculateStatistics click!");
+				
+				bestResultContentProvider.refreshOptSet();
+				
+				StatisticCalculator statisticCalculator=new StatisticCalculator(signal, comboBarSize.getText(),spinnerPercentOfData.getSelection());
+				statisticCalculator.schedule();
+				
+				
+			}
+		});
+		btnCalculateStatistics.setText("Calculate Statistics");
 		
 		tbtmMetrics = new TabItem(tabFolder, SWT.NONE);
 		tbtmMetrics.setText("Metrics");
@@ -632,6 +799,10 @@ IbChartSignalOptimizationControllerListener{
 	
 	private void postGuiInitialization(){
 		resetRunCancelEnable();
+		
+		bestResultContentProvider.refreshOptSet();
+		tableViewerBestResults.refresh();
+		
 	}
 	
 	
@@ -925,11 +1096,14 @@ IbChartSignalOptimizationControllerListener{
 					        progressBarMemory.setMaximum((int)runtime.totalMemory()/mb );
 							
 							
-							if (controller.getRunProgress()==0 && controller.getKeys().isEmpty()) {
+							if (controller.getKeys().isEmpty()) {
 								clear();
 							} else {
 								updateModel();
 							}
+							
+							bestResultContentProvider.refreshOptSet();
+							tableViewerBestResults.refresh();
 							
 							
 						} else if (event.getType().equals(
@@ -1175,6 +1349,88 @@ IbChartSignalOptimizationControllerListener{
 			
 			return Status.OK_STATUS;
 		}
+
 		
 	}
+	
+	//#######################################################
+  	//##         Best Result statistic calculator          ##
+  	//#######################################################
+	private class StatisticCalculator extends Job{
+		
+		
+		private IbChartSignal chartSignal;
+		
+		private String bazSize;
+		private int percentOfDataRequired;
+		
+		
+		public StatisticCalculator(IbChartSignal chartSignal,String bazSize, int percentOfDataRequired) {
+			super("Statistic Calculator");
+			this.chartSignal=chartSignal;
+			this.bazSize=bazSize;
+			this.percentOfDataRequired=percentOfDataRequired;
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			
+			for(IbChartSignalOptimizedParameters optParam:bestResultContentProvider.getOptParametersSet()){
+				IbChartSignal signal=(IbChartSignal) chartSignal.copy();
+				
+				//Set the parameters
+				signal.setParameters(optParam.getParameters());
+				
+				//Opt. Bars
+				//private HashMap<String,List<IbBar>> backTestingBarsMap=new HashMap<>();
+				//private HashMap<String,List<IbBar>> optimizationBarsMap=new HashMap<>();
+				logger.info("Calculate Statistics Opt. Bars!");
+				signal.setBatch(true);
+				signal.compute(optimizationBarsMap.get(bazSize+percentOfDataRequired));
+				double[] profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
+				optParam.setOptBenefit(profitAndRisk[0]);
+				optParam.setOptRisk(profitAndRisk[1]);
+				
+				refreshTable();
+				
+				logger.info("Calculate Statistics Back Testing. Bars!");
+				signal.setBatch(true);
+				signal.compute(backTestingBarsMap.get(bazSize+percentOfDataRequired));
+				profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
+				optParam.setBackTestBenefit(profitAndRisk[0]);
+				optParam.setBackTestRisk(profitAndRisk[1]);
+				
+				refreshTable();
+				
+				logger.info("Calculate Statistics All Bars!");
+				signal.setBatch(false);
+				signal.compute(allCollectedBars);
+				optParam.setPerformanceMetrics(signal.getPerformanceMetrics());
+				
+				refreshTable();
+			}
+			
+			return Status.OK_STATUS;
+		}
+		
+		
+		private void refreshTable(){
+			Display.getDefault().asyncExec(new Runnable() {
+				
+				@Override
+				public void run() {
+					tableViewerBestResults.refresh();
+				}
+			});
+			
+		}
+		
+		
+		
+		
+		
+		
+	}
+	
+	
 }

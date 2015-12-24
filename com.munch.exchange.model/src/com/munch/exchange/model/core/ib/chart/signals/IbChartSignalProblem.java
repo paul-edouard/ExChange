@@ -67,6 +67,14 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 	
 	private void setObjectives(IbChartSignal signal,
 			Solution solution){
+		
+		double[] profitAndRisk=extractProfitAndRiskFromChartSignal(signal);
+		
+		solution.setObjective(0, -profitAndRisk[0]);
+		solution.setObjective(1, profitAndRisk[1]);
+	}
+	
+	public static double[] extractProfitAndRiskFromChartSignal(IbChartSignal signal){
 		List<IbChartPoint> profitPoints=signal.getProfitSerie().getPoints();
 		List<IbChartPoint> riskPoints=signal.getRiskSerie().getPoints();
 		
@@ -77,11 +85,13 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 				maxRisk=-point.getValue();
 		}
 		
-		//System.out.println("Profit: "+endProfit+", risk: "+maxRisk);
+		double[] profitAndRisk=new double[2];
+		profitAndRisk[0]=endProfit;
+		profitAndRisk[1]=maxRisk;
 		
-		solution.setObjective(0, -endProfit);
-		solution.setObjective(1, maxRisk);
+		return profitAndRisk;
 	}
+	
 
 	@Override
 	public void evaluate(Solution solution) {
@@ -290,13 +300,17 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 			case DOUBLE:
 				RealVariable r_v=(RealVariable)solution.getVariable(index);
 				IbChartParameter c_d_p=param.copy();
+				c_d_p.setId(0);
 				c_d_p.setValue(r_v.getValue());
+				//System.out.println("Double value: "+r_v.getValue());
 				parameters.add(c_d_p);
 				break;
 			case INTEGER:
 				RealVariable i_v=(RealVariable)solution.getVariable(index);
 				IbChartParameter c_i_p=param.copy();
+				c_i_p.setId(0);
 				c_i_p.setValue(i_v.getValue());
+				//System.out.println("Integer value: "+i_v.getValue());
 				parameters.add(c_i_p);
 				break;
 			//TODO create the String case

@@ -128,7 +128,25 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 		result = prime * result + id;
 		return result;
 	}
-
+	
+	
+	public boolean hasSameValueAs(IbChartParameter other){
+		if(other==null)return false;
+		if(this.type!=other.type)return false;
+		
+		switch (type) {
+		case DOUBLE:
+			return this.currentValue==other.currentValue;
+		case INTEGER:
+			return this.currentValue==other.currentValue;
+		case STRING:
+			//TODO at the moment no supported
+			return false;
+		default:
+			return false;
+		}
+		
+	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -179,7 +197,8 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 
 	public void setValue(double value) {
 		this.currentValue = value;
-		parent.setDirty(true);
+		if(parent!=null)
+			parent.setDirty(true);
 	}
 
 	public double getDefaultValue() {
