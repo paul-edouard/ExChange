@@ -810,6 +810,10 @@ IbChartSignalOptimizationControllerListener{
 		btnRun.setEnabled(!controller.isRunning());
 		btnCancel.setEnabled(controller.isRunning());
 		btnClear.setEnabled(!controller.isRunning());
+		btnActivate.setEnabled(!controller.isRunning());
+		btnRemove.setEnabled(!controller.isRunning());
+		btnSave.setEnabled(!controller.isRunning());
+		btnCalculateStatistics.setEnabled(!controller.isRunning());
 	}
 	
 	
@@ -1323,10 +1327,14 @@ IbChartSignalOptimizationControllerListener{
 				
 				
 				List<IbBar> backTestingBars=new LinkedList<IbBar>();
+				logger.info("Total Nb. of  data: "+allCollectedBars.size());
 				for(IbBar bar:allCollectedBars){
 					if(timeSet.contains(bar.getTime()))continue;
 					backTestingBars.add(bar);
 				}
+				
+				logger.info("Nb. of back testing data: "+backTestingBars.size());
+				
 				
 				backTestingBarsMap.put(bazSize+percentOfDataRequired, backTestingBars);
 				
@@ -1375,6 +1383,8 @@ IbChartSignalOptimizationControllerListener{
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			
+			disableBtns();
+			
 			for(IbChartSignalOptimizedParameters optParam:bestResultContentProvider.getOptParametersSet()){
 				IbChartSignal signal=(IbChartSignal) chartSignal.copy();
 				
@@ -1382,10 +1392,9 @@ IbChartSignalOptimizationControllerListener{
 				signal.setParameters(optParam.getParameters());
 				
 				//Opt. Bars
-				//private HashMap<String,List<IbBar>> backTestingBarsMap=new HashMap<>();
-				//private HashMap<String,List<IbBar>> optimizationBarsMap=new HashMap<>();
 				logger.info("Calculate Statistics Opt. Bars!");
 				signal.setBatch(true);
+				signal.setOptimizationBlocks(null);
 				signal.compute(optimizationBarsMap.get(bazSize+percentOfDataRequired));
 				double[] profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
 				optParam.setOptBenefit(profitAndRisk[0]);
@@ -1395,6 +1404,7 @@ IbChartSignalOptimizationControllerListener{
 				
 				logger.info("Calculate Statistics Back Testing. Bars!");
 				signal.setBatch(true);
+				signal.setOptimizationBlocks(null);
 				signal.compute(backTestingBarsMap.get(bazSize+percentOfDataRequired));
 				profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
 				optParam.setBackTestBenefit(profitAndRisk[0]);
@@ -1404,11 +1414,14 @@ IbChartSignalOptimizationControllerListener{
 				
 				logger.info("Calculate Statistics All Bars!");
 				signal.setBatch(false);
+				signal.setOptimizationBlocks(null);
 				signal.compute(allCollectedBars);
 				optParam.setPerformanceMetrics(signal.getPerformanceMetrics());
 				
 				refreshTable();
 			}
+			
+			enableBtns();
 			
 			return Status.OK_STATUS;
 		}
@@ -1423,6 +1436,38 @@ IbChartSignalOptimizationControllerListener{
 				}
 			});
 			
+		}
+		
+		private void enableBtns(){
+			Display.getDefault().asyncExec(new Runnable() {
+				
+				@Override
+				public void run() {
+					btnActivate.setEnabled(true);
+					btnCalculateStatistics.setEnabled(true);
+					btnCancel.setEnabled(true);
+					btnClear.setEnabled(true);
+					btnRemove.setEnabled(true);
+					btnRun.setEnabled(true);
+					btnSave.setEnabled(true);
+				}
+			});
+		}
+		
+		private void disableBtns(){
+			Display.getDefault().asyncExec(new Runnable() {
+				
+				@Override
+				public void run() {
+					btnActivate.setEnabled(false);
+					btnCalculateStatistics.setEnabled(false);
+					btnCancel.setEnabled(false);
+					btnClear.setEnabled(false);
+					btnRemove.setEnabled(false);
+					btnRun.setEnabled(false);
+					btnSave.setEnabled(false);
+				}
+			});
 		}
 		
 		

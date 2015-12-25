@@ -554,7 +554,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 
 	
 	
-	private synchronized void setOptimizationBlocks(
+	public synchronized void setOptimizationBlocks(
 			LinkedList<List<IbBar>> optimizationBlocks) {
 		this.optimizationBlocks = optimizationBlocks;
 	}
