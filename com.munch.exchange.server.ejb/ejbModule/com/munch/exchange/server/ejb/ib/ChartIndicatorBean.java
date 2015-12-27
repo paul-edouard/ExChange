@@ -11,6 +11,7 @@ import javax.persistence.PersistenceContext;
 
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.services.ejb.interfaces.ChartIndicatorBeanRemote;
@@ -56,17 +57,24 @@ public class ChartIndicatorBean implements ChartIndicatorBeanRemote{
 	@Override
 	public List<IbChartSignalOptimizedParameters> updateOptimizedParameters(IbChartSignal signal) {
 		
-		//Remove all parameters
-		for(IbChartSignalOptimizedParameters params:signal.getAllOptimizedSet()){
-			if(params.getId()>0){
-				IbChartSignalOptimizedParameters toRemove=em.find(IbChartSignalOptimizedParameters.class, params.getId());
-				em.remove(toRemove);
+		IbChartSignal savedSignal = em.find(IbChartSignal.class, signal.getId());
+		for(IbChartSignalOptimizedParameters savedParams:savedSignal.getAllOptimizedSet()){
+			//Try to find the saved parameters to remove
+			boolean paramFound=false;
+			for(IbChartSignalOptimizedParameters params:signal.getAllOptimizedSet()){
+				if(IbChartParameter.areAllValuesEqual(savedParams.getParameters(),params.getParameters() )){
+					paramFound=true;break;
+				}
 			}
-				
+			
+			if(!paramFound){
+				em.remove(savedParams);
+			}
+			
 		}
 		
 		//Save the chart signal
-		IbChartSignal savedSignal = em.merge(signal);
+		savedSignal = em.merge(signal);
 		
 		//Make a copy of all parameters
 		List<IbChartSignalOptimizedParameters> listCopy=new LinkedList<IbChartSignalOptimizedParameters>();

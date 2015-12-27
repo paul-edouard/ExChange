@@ -80,8 +80,10 @@ import com.munch.exchange.model.core.ib.bar.IbBarRecorder;
 import com.munch.exchange.model.core.ib.bar.IbBarRecorderListener;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.parts.chart.tree.ChartTreeEditorPart;
 import com.munch.exchange.services.ejb.interfaces.IIBChartIndicatorProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
@@ -955,6 +957,7 @@ public class ChartEditorPart{
 		case MAIN:
 			pos=mainCollection.indexOf(serie.getName());
 			if(pos>=0){
+				
 				updatePlotRendererBeforeSerieDeletion(mainCollection.getSeriesCount(), pos, mainPlotRenderer);
 				mainCollection.removeSeries(pos);
 			}
@@ -1168,19 +1171,58 @@ public class ChartEditorPart{
 		
 		if(!isCompositeAbleToReact())return;
 	    
-	   // IbChartIndicatorGroup indGroup=this.getCurrentIndicatorGroup();
+//		logger.info("Message recieved!");
+		
 	    if(!selectedGroup.containsIndicator(indicator))return;
+	    
+//	    logger.info("selectedGroup contains indicator!");
 	    
 	    if(!indicator.isActivated())return;
 	    
-	    //for(IbChartParameter param:indicator.getParameters())
-	    //	logger.info("Param: "+param.getValue());
+	    if(indicator instanceof IbChartSignal){
+	    	IbChartSignal signal=(IbChartSignal) indicator;
+	    	signal.setBatch(false);
+	    }
+	    
+//	    logger.info("indicator is activated!");
 	    
 	    clearAllSeriesOfIndicator(indicator);
 	    addAllSeriesOfIndicatior(indicator);
 	    
+	    
 	    isDirty();
 	}
+	
+	@Inject
+	public void chartIndicatorNewCurrentParameters( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_NEW_CURRENT_PARAMETER) IbChartIndicator indicator){
+		
+		if(!isCompositeAbleToReact())return;
+	    
+//		logger.info("Message recieved!");
+		
+	    if(!selectedGroup.containsIndicator(indicator))return;
+	    
+//	    logger.info("selectedGroup contains indicator!");
+	    
+	    if(!indicator.isActivated())return;
+	    
+//	    logger.info("indicator is activated!");
+	    
+	    indicator.getMainChartSerie().clearPoints();
+	    
+	    clearAllSeriesOfIndicator(indicator);
+	    addAllSeriesOfIndicatior(indicator);
+	    
+//	    for(IbChartParameter param:indicator.getParameters()){
+//	    	logger.info("Param value: "+param.getValue());
+//	    }
+	    
+	    isDirty();
+	    
+	    refreshPlots();
+	}
+	
+	
 
 	@Inject
 	public void chartSerieActivationChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_SERIE_ACTIVATION_CHANGED) IbChartSerie serie){

@@ -145,6 +145,10 @@ IbChartSignalOptimizationControllerListener{
 			
 			//Add the already saved optimized set into the list
 			optParametersSet.addAll(signal.getOptimizedSet());
+			for(IbChartSignalOptimizedParameters optParameters:signal.getOptimizedSet()){
+				optParameters.setSatus(com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.SAVED);
+			}
+			
 			
 			logger.info("Number of saved: "+optParametersSet.size());
 			
@@ -152,7 +156,7 @@ IbChartSignalOptimizationControllerListener{
 			boolean currentFound=false;
 			for(IbChartSignalOptimizedParameters optParameters:optParametersSet){
 				
-				optParameters.setSatus(com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.SAVED);
+				//optParameters.setSatus(com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.SAVED);
 				
 				boolean allValuesEquals=true;
 				for(int i=0;i<optParameters.getParameters().size();i++){
@@ -577,6 +581,13 @@ IbChartSignalOptimizationControllerListener{
 			public void mouseDoubleClick(MouseEvent e) {
 				//logger.info("Double click on Table");
 				NondominatedPopulation referenceSet = null;
+				/*
+				NondominatedPopulation referenceSet = new NondominatedPopulation();
+				for(IbChartSignalOptimizedParameters optParameters:signal.getOptimizedSet()){
+					Solution IbChartSignalProblem.createSolutionFromIbChartParameter(parameters)
+				}
+				*/
+				
 				//TODO Set the reference set
 				
 				int selectedIndex=tableResults.getSelectionIndex();
@@ -750,8 +761,8 @@ IbChartSignalOptimizationControllerListener{
 				tableViewerBestResults.refresh();
 				
 				
-				eventBroker.post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED, signal);
-//				eventBroker.post(IEventConstant.IB_CHART_INDICATOR_NEW_CURRENT_PARAMETER, signal);
+//				eventBroker.post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED, signal);
+				eventBroker.post(IEventConstant.IB_CHART_INDICATOR_NEW_CURRENT_PARAMETER, signal);
 			}
 		});
 		btnActivate.setText("Activate");
@@ -1409,10 +1420,10 @@ IbChartSignalOptimizationControllerListener{
 						IbBar.getBarSizeFromString(bazSize));
 				
 				//TODO Remove this!
-				while (allCollectedBars.size()>1000) {
-					allCollectedBars.remove(0);
-					
-				}
+//				while (allCollectedBars.size()>1000) {
+//					allCollectedBars.remove(0);
+//					
+//				}
 				
 			}
 			

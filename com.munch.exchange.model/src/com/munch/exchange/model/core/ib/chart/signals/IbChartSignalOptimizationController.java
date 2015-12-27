@@ -17,10 +17,14 @@ import org.moeaframework.analysis.collector.Accumulator;
 import org.moeaframework.analysis.sensitivity.EpsilonHelper;
 import org.moeaframework.core.EpsilonBoxDominanceArchive;
 import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.Population;
 import org.moeaframework.core.Problem;
 import org.moeaframework.core.Solution;
+import org.moeaframework.core.spi.AlgorithmFactory;
 import org.moeaframework.util.progress.ProgressEvent;
 import org.moeaframework.util.progress.ProgressListener;
+
+import com.munch.exchange.model.core.moea.InjectedSolutionsAlgorithmFactory;
 
 
 public class IbChartSignalOptimizationController {
@@ -550,6 +554,7 @@ public class IbChartSignalOptimizationController {
 					
 					// lookup predefined epsilons for this problem
 					Problem problem = null;
+					Population startPopulation=null;
 					
 					try {
 						problem = new IbChartSignalProblem(signal);
@@ -559,8 +564,10 @@ public class IbChartSignalOptimizationController {
 						
 						instrumenter.withEpsilon(EpsilonHelper.getEpsilon(
 								problem));
-						instrumenter.withReferenceSet(
-								((IbChartSignalProblem)problem).createStartPopulation(epsilon));
+						
+						startPopulation=((IbChartSignalProblem)problem).createStartPopulation(epsilon);
+						
+						instrumenter.withReferenceSet(startPopulation);
 					} finally {
 						if (problem != null) {
 							problem.close();
@@ -609,6 +616,12 @@ public class IbChartSignalOptimizationController {
 							.distributeOnAllCores()
 							.withProgressListener(listener);
 					
+					//Add the already save parameters in the start population
+					if(startPopulation!=null && !startPopulation.isEmpty()){
+						System.out.println("Add the saved results");
+						AlgorithmFactory factory=new InjectedSolutionsAlgorithmFactory(startPopulation);
+						executor.usingAlgorithmFactory(factory);
+					}
 					
 					
 					// run the executor using the listener to collect results

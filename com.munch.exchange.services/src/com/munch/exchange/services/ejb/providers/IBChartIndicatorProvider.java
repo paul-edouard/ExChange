@@ -3,6 +3,7 @@ package com.munch.exchange.services.ejb.providers;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
@@ -53,9 +54,14 @@ public class IBChartIndicatorProvider implements IIBChartIndicatorProvider {
 		
 		//Update the parameters of the signal
 		List<IbChartSignalOptimizedParameters> list=beanRemote.getService().updateOptimizedParameters(cp);
-		signal.removeAllOptimizedParameters();
-		for(IbChartSignalOptimizedParameters optimizedParameters:list){
-			signal.addOptimizedParameters(optimizedParameters);
+		//signal.removeAllOptimizedParameters();
+		for(IbChartSignalOptimizedParameters savedParams:list){
+			for(IbChartSignalOptimizedParameters params:signal.getAllOptimizedSet()){
+				if(IbChartParameter.areAllValuesEqual(savedParams.getParameters(),params.getParameters() )){
+					params.setId(savedParams.getId());
+				}
+				
+			}
 		}
 		
 		return list;
