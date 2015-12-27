@@ -302,6 +302,7 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 				IbChartParameter c_d_p=param.copy();
 				c_d_p.setId(0);
 				c_d_p.setValue(r_v.getValue());
+				c_d_p.setIndicator(null);
 				//System.out.println("Double value: "+r_v.getValue());
 				parameters.add(c_d_p);
 				break;
@@ -310,6 +311,7 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 				IbChartParameter c_i_p=param.copy();
 				c_i_p.setId(0);
 				c_i_p.setValue(i_v.getValue());
+				c_i_p.setIndicator(null);
 				//System.out.println("Integer value: "+i_v.getValue());
 				parameters.add(c_i_p);
 				break;

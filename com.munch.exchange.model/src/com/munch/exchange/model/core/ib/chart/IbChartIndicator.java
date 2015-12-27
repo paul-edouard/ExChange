@@ -239,6 +239,7 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	}
 
 	public void setParameters(List<IbChartParameter> parameters) {
+		System.out.println("---> WARNING PARAMETERS ARE SET!");
 		this.parameters = parameters;
 	}
 	

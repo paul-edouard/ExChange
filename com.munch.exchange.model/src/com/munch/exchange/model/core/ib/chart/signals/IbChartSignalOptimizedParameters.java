@@ -115,6 +115,11 @@ public class IbChartSignalOptimizedParameters implements Serializable,Copyable<I
 
 	public void setParameters(List<IbChartParameter> parameters) {
 		this.parameters = parameters;
+		for(IbChartParameter param:parameters){
+			param.setIndicator(null);
+			param.setOptimizedParameters(this);
+		}
+		
 	}
 
 	public IbChartSignal getParent() {

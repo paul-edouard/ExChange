@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
 import com.munch.exchange.model.core.ib.chart.signals.SuperTrendSignal;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
@@ -117,12 +118,19 @@ public class IbChartIndicatorFactory {
 			
 			for(IbChartIndicator c_ind:parent.getIndicators()){
 				if(c_ind.getName().equals(ind.getName())){
+//					System.out.println("compareAndCopyParametersAndSeries: "+ind.getName());
+					
 					compareAndCopyParametersAndSeries(c_ind, ind, parent);
 					
 					//Load the optimization set
 					if(c_ind instanceof IbChartSignal){
 						IbChartSignal signal=(IbChartSignal) c_ind;
-						signal.getOptimizedSet().size();
+						for(IbChartSignalOptimizedParameters optParameters:signal.getOptimizedSet())
+							optParameters.getParameters().size();
+						
+//						System.out.println("Size of Optimized set: "+signal.getOptimizedSet().size());
+						
+						//signal.getOptimizedSet().size();
 						
 					}
 					
@@ -154,6 +162,8 @@ public class IbChartIndicatorFactory {
 	
 	private static void compareAndCopyParametersAndSeries(IbChartIndicator old_ind,
 			IbChartIndicator new_ind,IbChartIndicatorGroup parent){
+		
+//		System.out.println("1. Parent dirty: "+parent.isDirty());
 		
 		//Clean not used parameters
 		LinkedList<IbChartParameter> parametersToDelete=new LinkedList<IbChartParameter>();
@@ -206,11 +216,12 @@ public class IbChartIndicatorFactory {
 				parametersToDelete.add(oldParam);
 		}
 		if(parametersToDelete.size()>0){
+			System.out.println("Parameters will be deleted!");
 			old_ind.parameters.removeAll(parametersToDelete);
 			parent.setDirty(true);
 		}
 		
-		
+//		System.out.println("2. Parent dirty: "+parent.isDirty());
 		
 		//Clean not used parameters
 		LinkedList<IbChartSerie> seriesToDelete=new LinkedList<IbChartSerie>();
@@ -239,12 +250,14 @@ public class IbChartIndicatorFactory {
 				seriesToDelete.add(oldSerie);
 		}
 		
+//		System.out.println("3. Parent dirty: "+parent.isDirty());
+		
 		if(seriesToDelete.size()>0){
 			old_ind.series.removeAll(seriesToDelete);
 			parent.setDirty(true);
 		}
 		
-		
+//		System.out.println("4. Parent dirty: "+parent.isDirty());
 		
 		
 	}

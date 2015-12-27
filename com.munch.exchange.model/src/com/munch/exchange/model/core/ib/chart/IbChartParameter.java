@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib.chart;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -147,9 +148,29 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 		}
 		
 	}
+	
+	
+	public void copyValue(IbChartParameter other){
+		if(other==null)return ;
+		if(this.type!=other.type)return ;
+		
+		switch (type) {
+		case DOUBLE:
+			this.currentValue=other.currentValue;
+			break;
+		case INTEGER:
+			this.currentValue=other.currentValue;
+			break;
+		case STRING:
+			//TODO at the moment no supported
+			break;
+		default:
+			break;
+		}
+	}
 
 	@Override
-	public boolean equals(Object obj) {
+ 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
@@ -265,7 +286,31 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 	}
 
 
+	public static boolean areAllValuesEqual(List<IbChartParameter> list1, List<IbChartParameter> list2){
+		if(list1.size()!=list2.size())return false;
+		
+		for(int i=0;i<list1.size();i++){
+			if(!list1.get(i).hasSameValueAs(list2.get(i)))
+				return false;
+		}
+		
+		
+		return true;
+	}
 	
+	public static void copyValuesOnly(List<IbChartParameter> input, List<IbChartParameter> target){
+		if(input.size()!=target.size())return ;
+		
+		for(int i=0;i<input.size();i++){
+			if(target.get(i).getType()!=input.get(i).getType())return;
+		}
+		
+		for(int i=0;i<input.size();i++){
+			target.get(i).copyValue(input.get(i));
+		}
+		
+		
+	}
 
 
 	

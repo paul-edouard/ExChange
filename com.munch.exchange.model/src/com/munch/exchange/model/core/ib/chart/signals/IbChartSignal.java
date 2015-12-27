@@ -188,8 +188,15 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	
 	protected  LinkedList<List<IbBar>> createBlocks(List<IbBar> bars){
-		if(optimizationBlocks!=null)
-			return optimizationBlocks;
+		if(!batch){
+			if(optimizationBlocks!=null)
+				optimizationBlocks.clear();
+			optimizationBlocks=null;
+		}
+		else{
+			if(optimizationBlocks!=null)
+				return optimizationBlocks;
+		}
 		
 		LinkedList<List<IbBar>> blocks=new LinkedList<List<IbBar>>();
 		
@@ -576,6 +583,10 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		return optimizedSet;
 	}
 	
+	public List<IbChartSignalOptimizedParameters> getAllOptimizedSet(){
+		return optimizedSet;
+	}
+	
 	public List<IbChartSignalOptimizedParameters> getOptimizedSet(String barSize){
 		return getOptimizedSet(IbBar.getBarSizeFromString(barSize));
 		
@@ -596,7 +607,17 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	public void addOptimizedParameters(IbChartSignalOptimizedParameters optimizedParameters){
 		this.optimizedSet.add(optimizedParameters);
+		optimizedParameters.setParent(this);
 	}
+	
+	public void removeOptimizedParameters(IbChartSignalOptimizedParameters optimizedParameters){
+		this.optimizedSet.remove(optimizedParameters);
+	}
+	
+	public void removeAllOptimizedParameters(){
+		this.optimizedSet.clear();
+	}
+	
 
 
 }

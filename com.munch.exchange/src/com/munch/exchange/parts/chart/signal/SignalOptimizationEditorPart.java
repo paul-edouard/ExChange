@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -18,8 +19,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
@@ -57,6 +60,7 @@ import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Settings;
 import org.moeaframework.core.Solution;
 
+import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
@@ -67,9 +71,12 @@ import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationC
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationControllerRunnable;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalProblem;
+import com.munch.exchange.services.ejb.interfaces.IIBChartIndicatorProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 
 
 public class SignalOptimizationEditorPart implements SelectionListener, 
@@ -139,9 +146,13 @@ IbChartSignalOptimizationControllerListener{
 			//Add the already saved optimized set into the list
 			optParametersSet.addAll(signal.getOptimizedSet());
 			
+			logger.info("Number of saved: "+optParametersSet.size());
+			
 			//Try to find the current parameter into the saved list
 			boolean currentFound=false;
 			for(IbChartSignalOptimizedParameters optParameters:optParametersSet){
+				
+				optParameters.setSatus(com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.SAVED);
 				
 				boolean allValuesEquals=true;
 				for(int i=0;i<optParameters.getParameters().size();i++){
@@ -174,8 +185,6 @@ IbChartSignalOptimizationControllerListener{
 			//Add the new parameters from the fresh optimizations
 			String metric="Approximation Set";
 			
-			
-			
 			for(String key : controller.getKeys()){
 				if(!key.contains(signal.getBarSize()))continue;
 				
@@ -203,8 +212,18 @@ IbChartSignalOptimizationControllerListener{
 					newParameters.setSatus(com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.NEW);
 					newParameters.setParameters(parameters);
 					newParameters.setAlgorithm(key.split("#")[1]);
+					newParameters.setSize(IbBar.getBarSizeFromString(signal.getBarSize()));
 					
-					optParametersSet.add(newParameters);
+					//IbChartParameter.areAllValuesEqual(list1, list2)
+					boolean newInList=true;
+					for(IbChartSignalOptimizedParameters optParameters:optParametersSet){
+						if(IbChartParameter.areAllValuesEqual(optParameters.getParameters(), newParameters.getParameters())){
+							newInList=false;break;
+						}
+					}
+					
+					if(newInList)
+						optParametersSet.add(newParameters);
 				}
 	
 			}
@@ -291,10 +310,17 @@ IbChartSignalOptimizationControllerListener{
 	
 	
 	@Inject
+	private IEventBroker eventBroker;
+	
+	@Inject
 	IbChartSignal signal;
 	
 	@Inject
 	IIBHistoricalDataProvider hisDataProvider;
+	
+	@Inject
+	IIBChartIndicatorProvider chartIndicatorProvider;
+	
 	
 	private List<IbBar> allCollectedBars;
 	
@@ -303,6 +329,8 @@ IbChartSignalOptimizationControllerListener{
 	private HashMap<String,List<IbBar>> optimizationBarsMap=new HashMap<>();
 	
 	LinkedList<String> sortedAlgorithmNames;
+	
+	LinkedList<IbChartSignalOptimizedParameters> selectedParameters=new LinkedList<>();
 	
 	BestResultContentProvider bestResultContentProvider=new BestResultContentProvider();
 	
@@ -570,7 +598,7 @@ IbChartSignalOptimizationControllerListener{
 				approximationSetContainer.update();
 				
 				
-				tabFolder.setSelection(1);
+				tabFolder.setSelection(2);
 				
 			}
 		});
@@ -616,6 +644,50 @@ IbChartSignalOptimizationControllerListener{
 		bestResultContainer.setLayout(new GridLayout(1, false));
 		
 		tableViewerBestResults = new TableViewer(bestResultContainer, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.MULTI | SWT.H_SCROLL);
+		tableViewerBestResults.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
+				
+				IStructuredSelection structuredSelection =(IStructuredSelection) event.getSelection();
+				Iterator<?> iter = structuredSelection.iterator();
+			    int nbOfSelection=0;
+			    int nbOfNew=0;
+			    int nbOfSaved=0;
+			    int nbOfCurrent=0;
+			    
+			    selectedParameters.clear();
+			    
+			    
+				while ( iter.hasNext() ) {
+			        Object next = iter.next();
+			        
+			        if(!(next instanceof IbChartSignalOptimizedParameters))
+			        	continue;
+			        
+			        IbChartSignalOptimizedParameters optParameters=(IbChartSignalOptimizedParameters) next;
+			        nbOfSelection++;
+			        
+			        if(optParameters.getSatus()==com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.NEW){
+			        	nbOfNew++;
+			        }
+			        else if(optParameters.getSatus()==com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.SAVED){
+			        	nbOfSaved++;
+			        }
+			        else if(optParameters.getSatus()==com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.CURRENT){
+			        	nbOfCurrent++;
+			        }
+			        
+			        selectedParameters.add(optParameters);
+			        
+			    }
+				
+				
+				btnSave.setEnabled(nbOfNew>0);
+				btnRemove.setEnabled(nbOfSaved>0);
+				btnActivate.setEnabled(nbOfSaved>0 && nbOfSelection==1);
+				
+				
+			}
+		});
 		tableViewerBestResults.setLabelProvider(new BestResultLabelProvider());
 		tableViewerBestResults.setContentProvider(bestResultContentProvider);
 		tableViewerBestResults.setInput(this);
@@ -666,8 +738,20 @@ IbChartSignalOptimizationControllerListener{
 		btnActivate.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO Press Button Activate
 				logger.info("Press Button Activate");
+				
+				IbChartSignalOptimizedParameters optParameters=selectedParameters.get(0);
+				
+				IbChartParameter.copyValuesOnly(optParameters.getParameters(), signal.getParameters());
+				
+				//chartIndicatorProvider.update(signal);
+				
+				bestResultContentProvider.refreshOptSet();
+				tableViewerBestResults.refresh();
+				
+				
+				eventBroker.post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED, signal);
+//				eventBroker.post(IEventConstant.IB_CHART_INDICATOR_NEW_CURRENT_PARAMETER, signal);
 			}
 		});
 		btnActivate.setText("Activate");
@@ -676,8 +760,21 @@ IbChartSignalOptimizationControllerListener{
 		btnSave.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO Press Button Save
+				
 				logger.info("Press Button Save");
+//				logger.info("Nb of parameters: "+signal.getParameters().size());
+				
+				for(IbChartSignalOptimizedParameters optParameters:selectedParameters){
+					if(optParameters.getSatus()==com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.NEW){
+						signal.addOptimizedParameters(optParameters);
+					}
+				}
+				
+				chartIndicatorProvider.updateOptimizedParameters(signal);
+				
+				bestResultContentProvider.refreshOptSet();
+				tableViewerBestResults.refresh();
+				
 			}
 		});
 		btnSave.setBounds(0, 0, 105, 35);
@@ -687,8 +784,19 @@ IbChartSignalOptimizationControllerListener{
 		btnRemove.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO Press Button Remove
 				logger.info("Press Button Remove");
+				
+				for(IbChartSignalOptimizedParameters optParameters:selectedParameters){
+					if(optParameters.getSatus()==com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.SAVED){
+						signal.removeOptimizedParameters(optParameters);
+					}
+				}
+				
+				chartIndicatorProvider.updateOptimizedParameters(signal);
+				
+				bestResultContentProvider.refreshOptSet();
+				tableViewerBestResults.refresh();
+				
 			}
 		});
 		btnRemove.setText("Remove");
@@ -814,6 +922,7 @@ IbChartSignalOptimizationControllerListener{
 		btnRemove.setEnabled(!controller.isRunning());
 		btnSave.setEnabled(!controller.isRunning());
 		btnCalculateStatistics.setEnabled(!controller.isRunning());
+		tableBestResults.setEnabled(!controller.isRunning());
 	}
 	
 	
@@ -1044,7 +1153,6 @@ IbChartSignalOptimizationControllerListener{
 		// TODO	Set the focus to control
 	}
 
-	
 
 	@Override
 	public void controllerStateChanged(
@@ -1130,7 +1238,7 @@ IbChartSignalOptimizationControllerListener{
 		controller.fireViewChangedEvent();
 		
 		if(e.getSource()!=tableResults)
-			tabFolder.setSelection(0);
+			tabFolder.setSelection(1);
 		
 	}
 
@@ -1301,12 +1409,11 @@ IbChartSignalOptimizationControllerListener{
 						IbBar.getBarSizeFromString(bazSize));
 				
 				//TODO Remove this!
-				/*
 				while (allCollectedBars.size()>1000) {
 					allCollectedBars.remove(0);
 					
 				}
-				*/
+				
 			}
 			
 			//Create the Data Set
@@ -1450,6 +1557,7 @@ IbChartSignalOptimizationControllerListener{
 					btnRemove.setEnabled(true);
 					btnRun.setEnabled(true);
 					btnSave.setEnabled(true);
+					tableBestResults.setEnabled(true);
 				}
 			});
 		}
@@ -1466,6 +1574,7 @@ IbChartSignalOptimizationControllerListener{
 					btnRemove.setEnabled(false);
 					btnRun.setEnabled(false);
 					btnSave.setEnabled(false);
+					tableBestResults.setEnabled(false);
 				}
 			});
 		}

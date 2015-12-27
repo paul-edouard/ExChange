@@ -1,7 +1,10 @@
 package com.munch.exchange.services.ejb.providers;
 
+import java.util.List;
+
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
 import com.munch.exchange.services.ejb.interfaces.ChartIndicatorBeanRemote;
 import com.munch.exchange.services.ejb.interfaces.IIBChartIndicatorProvider;
@@ -42,10 +45,21 @@ public class IBChartIndicatorProvider implements IIBChartIndicatorProvider {
 	}
 
 	@Override
-	public void update(IbChartSignal signal) {
+	public List<IbChartSignalOptimizedParameters> updateOptimizedParameters(IbChartSignal signal) {
 		if(beanRemote==null)init();
 		//Create a copy of the Indicator Signal and send it to the JPA Service
-		beanRemote.getService().update((IbChartSignal)signal.copy());
+		IbChartSignal cp=(IbChartSignal)signal.copy();
+		cp.setGroup(signal.getGroup().copy());
+		
+		//Update the parameters of the signal
+		List<IbChartSignalOptimizedParameters> list=beanRemote.getService().updateOptimizedParameters(cp);
+		signal.removeAllOptimizedParameters();
+		for(IbChartSignalOptimizedParameters optimizedParameters:list){
+			signal.addOptimizedParameters(optimizedParameters);
+		}
+		
+		return list;
+		//return beanRemote.getService().updateOptimizedParameters(signal);
 		
 	}
 
@@ -55,4 +69,5 @@ public class IBChartIndicatorProvider implements IIBChartIndicatorProvider {
 		return beanRemote.getService().getSignal(id);
 	}
 
+	
 }

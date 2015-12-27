@@ -288,6 +288,23 @@ public class ChartParameterEditorPart {
 	    }
 	}
 	
+	
+	@Inject
+	public void newCurrentParameters( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_NEW_CURRENT_PARAMETER) IbChartIndicator selIndic){
+		
+		// logger.info("Analyse IB Chart Indiator selection!!");
+		 
+		 if(ibChartIndicator!=null && ibChartIndicator!=selIndic)
+			return;
+		 
+	    if(isCompositeAbleToReact()){
+		//	contract=ibChartIndicator.getGroup().getRoot().getContainer().getContract();
+	    	update();
+	    }
+	}
+	
+	
+	
 	 @Inject
 	public void activationIbChanged(@Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_ACTIVATION_CHANGED) IbChartIndicator selIndic){
 		 if(ibChartIndicator!=selIndic)return;
