@@ -159,7 +159,7 @@ IbChartSignalOptimizationControllerListener{
 				//optParameters.setSatus(com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.SAVED);
 				
 				boolean allValuesEquals=true;
-				for(int i=0;i<optParameters.getParameters().size();i++){
+				for(int i=0;i<signal.getParameters().size();i++){
 					IbChartParameter param1=optParameters.getParameters().get(i);
 					IbChartParameter param2=signal.getParameters().get(i);
 					if(!param1.hasSameValueAs(param2)){
@@ -1459,15 +1459,18 @@ IbChartSignalOptimizationControllerListener{
 			}
 			
 			
-			signal.setOptimizationBars(optimizationBarsMap.get(bazSize+percentOfDataRequired));
-			 
-			
-			
 			//Set the parameters
+			signal.setOptimizationBars(optimizationBarsMap.get(bazSize+percentOfDataRequired));
+			
 			signal.setAlgorithmName(algorithmName);
 			signal.setNumberOfEvaluations(numberOfEvaluations);
 			signal.setNumberOfSeeds(numberOfSeeds);
 			signal.setBarSize(bazSize);
+			
+			//Prepare the blocks
+			signal.setBatch(true);
+			signal.createBlocks(signal.getOptimizationBars());
+			
 			
 			//Start the optimization
 			logger.info("Start the optimization");

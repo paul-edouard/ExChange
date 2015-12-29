@@ -12,6 +12,7 @@ import javax.persistence.Transient;
 
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.SecType;
+import com.ibm.icu.util.Calendar;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
@@ -62,6 +63,19 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	@Transient
 	private String barSize;
+	
+	@Transient
+	private long timeCounter;
+	
+	@Transient
+	private double totalProfit;
+	
+	@Transient
+	private double maxRisk;
+	
+	
+	
+	
 	
 	
 	@OneToMany(mappedBy="parent",cascade=CascadeType.ALL)
@@ -137,9 +151,6 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		this.optimizationBars = optimizationBars;
 	}
 
-	
-	
-	
 
 	@Override
 	public void createSeries() {
@@ -187,16 +198,30 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	public abstract void computeSignalPointFromBarBlock(List<IbBar> bars, boolean reset);
 	
 	
-	protected  LinkedList<List<IbBar>> createBlocks(List<IbBar> bars){
+	public  LinkedList<List<IbBar>> createBlocks(List<IbBar> bars){
 		if(!batch){
+//			System.out.println("createBlocks: no batch");
+			
+			
 			if(optimizationBlocks!=null)
 				optimizationBlocks.clear();
 			optimizationBlocks=null;
 		}
 		else{
-			if(optimizationBlocks!=null)
+//			System.out.println("createBlocks: batch");
+			
+			if(optimizationBlocks!=null){
+//				System.out.println("createBlocks: optimizationBlocks is not null");
 				return optimizationBlocks;
+			}
+			else{
+//				System.out.println("createBlocks: optimizationBlocks is null");
+			}
 		}
+		
+//		System.out.println("createBlocks: is batch "+batch);
+//		System.out.println("createBlocks: optimizationBlocks is null "+optimizationBlocks==null);
+		
 		
 		LinkedList<List<IbBar>> blocks=new LinkedList<List<IbBar>>();
 		
@@ -242,8 +267,12 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		if(bars==null || bars.size()==0)return;
 		
 		
-		//Split the received bars in blocks
+//		Split the received bars in blocks
+//		startTimeCounter();
 		LinkedList<List<IbBar>> blocks=createBlocks(bars);
+//		stopTimeCounter("Split the received bars in blocks");
+		
+//		startTimeCounter();
 		for(List<IbBar> block:blocks){
 			//Calculate the signal of the isolated block
 			computeSignalPointFromBarBlock(block, reset);
@@ -254,35 +283,44 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			if(this.getSignalSerie().getPoints().size()>0)
 				this.getSignalSerie().getPoints().get(this.getSignalSerie().getPoints().size()-1).setValue(this.getNeutralSignal());
 		}
-		
+//		stopTimeCounter("Calculate the signal of the isolated blocks");
 		
 		//Return if the list is empty just in case of the problems with empty data
 		if(this.getSignalSerie().getPoints().isEmpty())return;
 		
 		//Clean the Signal Series close the empty block with 0
+//		startTimeCounter();
 		long interval=bars.get(0).getIntervallInSec();
 		cleanSignalSerie(interval);
+//		stopTimeCounter("Clean the Signal Series close the empty block with 0");
 		
 		//Create the Signal Map
+//		startTimeCounter();
 		HashMap<Long, IbChartPoint> signalMap=new HashMap<Long, IbChartPoint>();
 		for(IbChartPoint point:this.getSignalSerie().getPoints()){
 			signalMap.put(point.getTime(), point);
 		}
+//		stopTimeCounter("Create the Signal Map");
 		
 		//Create the Profit Serie
+//		startTimeCounter();
 		createProfitAndRiskSeries(bars, reset, signalMap, this.volume);
+//		stopTimeCounter("Create the Profit Serie");
 		
 		//update the performance metrics
+//		startTimeCounter();
 		if(reset && !batch){
 			if(performanceMetrics==null)
 				performanceMetrics=new PerformanceMetrics();
 			performanceMetrics.calculateMetricsForSignal(bars, signalMap,this.getCommission(),volume);
 		}
+//		stopTimeCounter("update the performance metrics");
 		
 	}
 	
 	private void createProfitAndRiskSeries(List<IbBar> bars, boolean reset, HashMap<Long, IbChartPoint> signalMap, long volume){
 		
+		//Creation & Initialization of the variables
 		IbBar previewBar=bars.get(0);
 		//System.out.println("Bar: "+previewBar.getTime());
 		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
@@ -290,23 +328,41 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		double risk=0.0;
 		double maxProfit=0.0;
 		
-		//Add the first chart point
-		long[] times=new long[bars.size()];
-		double[] profits=new double[bars.size()];
-		double[] risks=new double[bars.size()];
+		//The list for the no batch modus
+		long[] times=new long[0];
+		double[] profits=new double[0];
+		double[] risks=new double[0];
 		
-		times[0]=previewBar.getTime();
-		profits[0]=profit;
-		risks[0]=risk;
+		if(!batch){
 		
-		for(int i=1;i<bars.size();i++){
-			IbBar bar=bars.get(i);
+			times=new long[bars.size()];
+			profits=new double[bars.size()];
+			risks=new double[bars.size()];
+			
+			//Add the first chart point
+			times[0]=previewBar.getTime();
+			profits[0]=profit;
+			risks[0]=risk;
+		}
+		else{
+			maxRisk=0;
+			totalProfit=0;
+		}
+		
+		int i=0;
+		for(IbBar bar:bars){
+			if(i==0){
+				i++;continue;
+			}
+			
 			long time=bar.getTimeInMs();
 			if(!signalMap.containsKey(time))continue;
 			
 			double signal=signalMap.get(time).getValue();
 			double previewPrice=previewBar.getClose();
 			double price=bar.getClose();
+			boolean addProfit=true;
+			double addProfitSign=signal;
 			
 			//Modification of the position
 			if(signal!=previewSignal){
@@ -319,33 +375,45 @@ public abstract class IbChartSignal extends IbChartIndicator {
 					profit-=diffAbs*com.calculate(volume, price);
 				}
 				
-				//Update the Buy and Sell Series
+				//if the signal was zero and now is set to 1 or -1 then no profit should be added
+				if(diffAbs==1 && signal!=0)
+					addProfit=false;
+				//Reset the signal to the old one if the old position was still open
+				else if(signal==0 || diffAbs==2){
+					addProfitSign=previewSignal;
+				}
 				
-				if(signal>0){
-					if(diffAbs==1)
-						previewPrice=price;
-					if(!batch)
-					this.getBuyLongSerie().addPoint(time, price);
-				}
-				else if(signal<0){
-					if(diffAbs==1)
-						previewPrice=price;
-					if(!batch)
-					this.getBuyShortSerie().addPoint(time, price);
-				}
-				else{
-					if(previewPrice>0){
-						if(!batch)
-						this.getSellLongSerie().addPoint(time, price);
-					}
-					else{
-						if(!batch)
-						this.getSellShortSerie().addPoint(time, price);
+				// Update the Buy and Sell Series
+				if (!batch) {
+					if (signal > 0) {
+						this.getBuyLongSerie().addPoint(time, price);
+					} else if (signal < 0) {
+						this.getBuyShortSerie().addPoint(time, price);
+					} else {
+						if (previewPrice > 0) {
+							this.getSellLongSerie().addPoint(time, price);
+						} else {
+							this.getSellShortSerie().addPoint(time, price);
+						}
 					}
 				}
 				
 			}
 			
+			
+			//Add the profit
+			if(addProfit && addProfitSign!=0 ){
+				//update the profit
+				profit+=addProfitSign*(price-previewPrice)*volume;
+				
+				//Calculate the risk
+				if(profit>maxProfit)
+					maxProfit=profit;
+				
+				risk=profit-maxProfit;
+			}
+			
+			/*
 			//Signal is long
 			if(signal>0 || signal!=previewSignal){
 				//update the profit
@@ -367,27 +435,50 @@ public abstract class IbChartSignal extends IbChartIndicator {
 				
 				risk=profit-maxProfit;
 			}
+			*/
 			
-			times[i]=bar.getTimeInMs();
-			profits[i]=profit;
-			risks[i]=risk;
+			//Save the current state in the list in order to create the Series later on
+			if(!batch){
+				times[i]=bar.getTimeInMs();
+				profits[i]=profit;
+				risks[i]=risk;
+				i++;
+			}
+			else if(maxRisk<-risk){
+					maxRisk=-risk;
+			}
 			
 			previewSignal=signal;
 			previewBar=bar;
 		}
 		
-		
-		if(reset || batch){
-			this.getProfitSerie().setPointValues(times, profits);
-			this.getRiskSerie().setPointValues(times, risks);
-		}
-		else{
-			this.getProfitSerie().addNewPointsOnly(times, profits);
-			this.getRiskSerie().addNewPointsOnly(times, risks);
+		if(!batch){
+			if(reset ){
+				this.getProfitSerie().setPointValues(times, profits);
+				this.getRiskSerie().setPointValues(times, risks);
+			}
+			else{
+				this.getProfitSerie().addNewPointsOnly(times, profits);
+				this.getRiskSerie().addNewPointsOnly(times, risks);
+			}
+		}else{
+			totalProfit=profit;
 		}
 		
 	}
 	
+	
+	private void startTimeCounter(){
+		timeCounter=Calendar.getInstance().getTimeInMillis();
+	}
+	
+	private void stopTimeCounter(String message){
+		long stopTime=Calendar.getInstance().getTimeInMillis();
+		long timeDiff=stopTime-timeCounter;
+		
+		System.out.println("Stop time counter: "+message+", "+timeDiff + "ms");
+		
+	}
 	
 	
 	/**
@@ -549,6 +640,21 @@ public abstract class IbChartSignal extends IbChartIndicator {
 
 	
 	
+	public boolean isBatch() {
+		return batch;
+	}
+
+
+	public double getTotalProfit() {
+		return totalProfit;
+	}
+
+
+	public double getMaxRisk() {
+		return maxRisk;
+	}
+
+
 	public int getNumberOfSeeds() {
 		return numberOfSeeds;
 	}

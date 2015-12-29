@@ -75,6 +75,11 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 	}
 	
 	public static double[] extractProfitAndRiskFromChartSignal(IbChartSignal signal){
+		
+		double[] profitAndRisk=new double[2];
+		
+		if(!signal.isBatch()){
+		
 		List<IbChartPoint> profitPoints=signal.getProfitSerie().getPoints();
 		List<IbChartPoint> riskPoints=signal.getRiskSerie().getPoints();
 		
@@ -85,9 +90,17 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 				maxRisk=-point.getValue();
 		}
 		
-		double[] profitAndRisk=new double[2];
+//		double[] profitAndRisk=new double[2];
 		profitAndRisk[0]=endProfit;
 		profitAndRisk[1]=maxRisk;
+		
+		}
+		else{
+//		double[] profitAndRisk=new double[2];
+		profitAndRisk[0]=signal.getTotalProfit();
+		profitAndRisk[1]=signal.getMaxRisk();
+		}
+		
 		
 		return profitAndRisk;
 	}
@@ -97,12 +110,8 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 	public void evaluate(Solution solution) {
 		IbChartSignal signal=(IbChartSignal) this.chartSignal.copy();
 		
-		
-		
 		// Set the Chart Signal parameters
 		setChartSignalParameters(signal, solution);
-		
-		//TODO Create a batch modus to speed up the computation
 		
 		//Calculate the Signal
 		signal.setBatch(true);
@@ -111,10 +120,7 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 		//Evaluate Profit and Risk
 		setObjectives(signal, solution);
 		
-		numberOfEval++;
-		
-		//System.out.println("Nb of eval: "+numberOfEval);
-		
+//		numberOfEval++;
 	}
 
 	@Override

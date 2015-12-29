@@ -59,6 +59,9 @@ public class IBChartIndicatorProvider implements IIBChartIndicatorProvider {
 			for(IbChartSignalOptimizedParameters params:signal.getAllOptimizedSet()){
 				if(IbChartParameter.areAllValuesEqual(savedParams.getParameters(),params.getParameters() )){
 					params.setId(savedParams.getId());
+					for(int i=0;i<params.getParameters().size();i++){
+						params.getParameters().get(i).setId(savedParams.getParameters().get(i).getId());
+					}
 				}
 				
 			}
