@@ -1,5 +1,6 @@
 package com.munch.exchange.parts.chart.signal;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -150,7 +151,7 @@ IbChartSignalOptimizationControllerListener{
 			}
 			
 			
-			logger.info("Number of saved: "+optParametersSet.size());
+//			logger.info("Number of saved: "+optParametersSet.size());
 			
 			//Try to find the current parameter into the saved list
 			boolean currentFound=false;
@@ -267,36 +268,37 @@ IbChartSignalOptimizationControllerListener{
 				element.toString();
 			
 			IbChartSignalOptimizedParameters optParam=(IbChartSignalOptimizedParameters) element;
+			DecimalFormat df = new DecimalFormat("#.00"); 
 			
 			if(columnIndex==0){
 				return String.valueOf(optParam.getId());
 			}
 			else if(columnIndex<=signal.getParameters().size()){
-				return String.valueOf(optParam.getParameters().get(columnIndex-1).getValue());
+				return df.format(optParam.getParameters().get(columnIndex-1).getValue());
 			}
 			
 			
 			else if(columnIndex==signal.getParameters().size()+1){
-				return String.valueOf(optParam.getOptRisk());
+				return df.format(optParam.getOptRisk());
 			}
 			else if(columnIndex==signal.getParameters().size()+2){
-				return String.valueOf(optParam.getOptBenefit());
+				return df.format(optParam.getOptBenefit());
 			}
 			
 			
 			else if(columnIndex==signal.getParameters().size()+3){
-				return String.valueOf(optParam.getBackTestRisk());
+				return df.format(optParam.getBackTestRisk());
 			}
 			else if(columnIndex==signal.getParameters().size()+4){
-				return String.valueOf(optParam.getBackTestBenefit());
+				return df.format(optParam.getBackTestBenefit());
 			}
 			
 			
 			else if(columnIndex==signal.getParameters().size()+5){
-				return String.valueOf(Math.max(optParam.getOptRisk(),optParam.getBackTestRisk()));
+				return df.format(Math.max(optParam.getOptRisk(),optParam.getBackTestRisk()));
 			}
 			else if(columnIndex==signal.getParameters().size()+6){
-				return String.valueOf(optParam.getOptBenefit() + optParam.getBackTestBenefit());
+				return df.format(optParam.getOptBenefit() + optParam.getBackTestBenefit());
 			}
 			
 			
@@ -329,8 +331,8 @@ IbChartSignalOptimizationControllerListener{
 	private List<IbBar> allCollectedBars;
 	
 	
-	private HashMap<String,List<IbBar>> backTestingBarsMap=new HashMap<>();
-	private HashMap<String,List<IbBar>> optimizationBarsMap=new HashMap<>();
+	private HashMap<String,LinkedList<IbBar>> backTestingBarsMap=new HashMap<>();
+	private HashMap<String,LinkedList<IbBar>> optimizationBarsMap=new HashMap<>();
 	
 	LinkedList<String> sortedAlgorithmNames;
 	
@@ -519,7 +521,7 @@ IbChartSignalOptimizationControllerListener{
 		comboReportType = new Combo(groupControls, SWT.NONE);
 		comboReportType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		comboReportType.setItems(resultTypeListModel.toArray(new String[0]));
-		comboReportType.select(0);
+		comboReportType.select(resultTypeListModel.size()-1);
 		
 		compositeCommandBtns = new Composite(compositeCommand, SWT.NONE);
 		compositeCommandBtns.setLayout(new FillLayout(SWT.HORIZONTAL));
@@ -691,6 +693,10 @@ IbChartSignalOptimizationControllerListener{
 			        
 			    }
 				
+				if(!selectedParameters.isEmpty()){
+					logger.info("Performance metric: "+selectedParameters.getFirst().getPerformanceMetrics()!=null);
+					eventBroker.post(IEventConstant.IB_CHART_INDICATOR_OPTIMIZED_PARAMETERS_SELECTED, selectedParameters.getFirst());
+				}
 				
 				btnSave.setEnabled(nbOfNew>0);
 				btnRemove.setEnabled(nbOfSaved>0);
@@ -886,7 +892,7 @@ IbChartSignalOptimizationControllerListener{
 	private void preGuiInitialization(){
 		
 		
-		controller=new IbChartSignalOptimizationController(signal);
+		controller=new IbChartSignalOptimizationController();
 		controller.addControllerListener(this);
 		
 		resultListModel = new LinkedList<String>();
@@ -1286,6 +1292,7 @@ IbChartSignalOptimizationControllerListener{
 		private int numberOfEvaluations;
 		private int numberOfSeeds;
 		private int percentOfDataRequired;
+		private IbChartSignal jobSignal;
 		
 		
 		public OptJobStater(String bazSize, String algorithmName, String reportType,
@@ -1298,6 +1305,9 @@ IbChartSignalOptimizationControllerListener{
 			this.numberOfEvaluations=numberOfEvaluations;
 			this.numberOfSeeds=numberOfSeeds;
 			this.percentOfDataRequired=percentOfDataRequired;
+			this.jobSignal=(IbChartSignal)signal.copy();
+			this.jobSignal.setIsolateLastNeededBars(false);
+			
 			
 			if(this.reportType.equals("Full")){
 				controller.setIncludeHypervolume(true);
@@ -1346,8 +1356,8 @@ IbChartSignalOptimizationControllerListener{
 				controller.setIncludeEpsilonProgress(false);
 				controller.setIncludeAdaptiveMultimethodVariation(false);
 				controller.setIncludeAdaptiveTimeContinuation(false);
-				controller.setIncludeElapsedTime(false);
-				controller.setIncludeApproximationSet(false);
+				controller.setIncludeElapsedTime(true);
+				controller.setIncludeApproximationSet(true);
 				controller.setIncludePopulationSize(false);
 			}
 			
@@ -1379,7 +1389,7 @@ IbChartSignalOptimizationControllerListener{
 			return optBlocks;
 		}
 		
-		
+		/*
 		private LinkedList<LinkedList<IbBar>> splitCollectedBarsInBlocks(){
 			LinkedList<LinkedList<IbBar>> blocks=new LinkedList<>();
 			
@@ -1409,7 +1419,7 @@ IbChartSignalOptimizationControllerListener{
 			
 			return blocks;
 		}
-		
+		*/
 
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
@@ -1431,10 +1441,10 @@ IbChartSignalOptimizationControllerListener{
 			logger.info("Create the Data Set");
 			if(!optimizationBarsMap.containsKey(bazSize+percentOfDataRequired)){
 			
-				LinkedList<LinkedList<IbBar>> allBlocks=splitCollectedBarsInBlocks();
+				LinkedList<LinkedList<IbBar>> allBlocks=IbBar.splitBarListInWeekBlocks(allCollectedBars);
 				LinkedList<LinkedList<IbBar>> optBlocks=collectOptimizationBlocks(allBlocks,percentOfDataRequired);
 			
-				List<IbBar> optimizationBars=new LinkedList<IbBar>();
+				LinkedList<IbBar> optimizationBars=new LinkedList<IbBar>();
 				HashSet<Long> timeSet=new HashSet<>();
 				for(LinkedList<IbBar> bars:optBlocks){
 					optimizationBars.addAll(bars);
@@ -1444,7 +1454,7 @@ IbChartSignalOptimizationControllerListener{
 				optimizationBarsMap.put(bazSize+percentOfDataRequired, optimizationBars);
 				
 				
-				List<IbBar> backTestingBars=new LinkedList<IbBar>();
+				LinkedList<IbBar> backTestingBars=new LinkedList<IbBar>();
 				logger.info("Total Nb. of  data: "+allCollectedBars.size());
 				for(IbBar bar:allCollectedBars){
 					if(timeSet.contains(bar.getTime()))continue;
@@ -1460,7 +1470,12 @@ IbChartSignalOptimizationControllerListener{
 			
 			
 			//Set the parameters
-			signal.setOptimizationBars(optimizationBarsMap.get(bazSize+percentOfDataRequired));
+			jobSignal.setOptimizationBars(optimizationBarsMap.get(bazSize+percentOfDataRequired));
+			
+			jobSignal.setAlgorithmName(algorithmName);
+			jobSignal.setNumberOfEvaluations(numberOfEvaluations);
+			jobSignal.setNumberOfSeeds(numberOfSeeds);
+			jobSignal.setBarSize(bazSize);
 			
 			signal.setAlgorithmName(algorithmName);
 			signal.setNumberOfEvaluations(numberOfEvaluations);
@@ -1468,12 +1483,13 @@ IbChartSignalOptimizationControllerListener{
 			signal.setBarSize(bazSize);
 			
 			//Prepare the blocks
-			signal.setBatch(true);
-			signal.createBlocks(signal.getOptimizationBars());
+			jobSignal.setBatch(true);
+			jobSignal.createBlocks(jobSignal.getOptimizationBars());
 			
 			
 			//Start the optimization
 			logger.info("Start the optimization");
+			controller.setSignal(jobSignal);
 			controller.run();
 			
 			return Status.OK_STATUS;
@@ -1508,12 +1524,13 @@ IbChartSignalOptimizationControllerListener{
 			
 			for(IbChartSignalOptimizedParameters optParam:bestResultContentProvider.getOptParametersSet()){
 				IbChartSignal signal=(IbChartSignal) chartSignal.copy();
+				signal.setIsolateLastNeededBars(false);
 				
 				//Set the parameters
 				signal.setParameters(optParam.getParameters());
 				
 				//Opt. Bars
-				logger.info("Calculate Statistics Opt. Bars!");
+//				logger.info("Calculate Statistics Opt. Bars!");
 				signal.setBatch(true);
 				signal.setOptimizationBlocks(null);
 				signal.compute(optimizationBarsMap.get(bazSize+percentOfDataRequired));
@@ -1523,7 +1540,7 @@ IbChartSignalOptimizationControllerListener{
 				
 				refreshTable();
 				
-				logger.info("Calculate Statistics Back Testing. Bars!");
+//				logger.info("Calculate Statistics Back Testing. Bars!");
 				signal.setBatch(true);
 				signal.setOptimizationBlocks(null);
 				signal.compute(backTestingBarsMap.get(bazSize+percentOfDataRequired));
@@ -1533,11 +1550,13 @@ IbChartSignalOptimizationControllerListener{
 				
 				refreshTable();
 				
-				logger.info("Calculate Statistics All Bars!");
+//				logger.info("Calculate Statistics All Bars!");
 				signal.setBatch(false);
 				signal.setOptimizationBlocks(null);
 				signal.compute(allCollectedBars);
+//				logger.info("Performance metric: "+(signal.getPerformanceMetrics()!=null));
 				optParam.setPerformanceMetrics(signal.getPerformanceMetrics());
+//				logger.info("Performance metric: "+(optParam.getPerformanceMetrics()!=null));
 				
 				refreshTable();
 			}

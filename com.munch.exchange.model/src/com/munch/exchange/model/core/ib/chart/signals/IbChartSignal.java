@@ -44,10 +44,10 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	//Optimization variables
 	
 	@Transient
-	private List<IbBar> optimizationBars;
+	private LinkedList<IbBar> optimizationBars;
 	
 	@Transient
-	private LinkedList<List<IbBar>> optimizationBlocks;
+	private LinkedList<LinkedList<IbBar>> optimizationBlocks;
 	
 	@Transient
 	private boolean batch=false;
@@ -147,7 +147,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	}
 
 
-	public void setOptimizationBars(List<IbBar> optimizationBars) {
+	public void setOptimizationBars(LinkedList<IbBar> optimizationBars) {
 		this.optimizationBars = optimizationBars;
 	}
 
@@ -198,7 +198,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	public abstract void computeSignalPointFromBarBlock(List<IbBar> bars, boolean reset);
 	
 	
-	public  LinkedList<List<IbBar>> createBlocks(List<IbBar> bars){
+	public  LinkedList<LinkedList<IbBar>> createBlocks(List<IbBar> bars){
 		if(!batch){
 //			System.out.println("createBlocks: no batch");
 			
@@ -222,7 +222,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 //		System.out.println("createBlocks: is batch "+batch);
 //		System.out.println("createBlocks: optimizationBlocks is null "+optimizationBlocks==null);
 		
-		
+		/*
 		LinkedList<List<IbBar>> blocks=new LinkedList<List<IbBar>>();
 		
 		IbBar lastBar=bars.get(0);
@@ -248,6 +248,11 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		if(block.size()>=this.getValidAtPosition()){
 			blocks.add(block);
 		}
+		*/
+		
+		
+		LinkedList<LinkedList<IbBar>> blocks=IbBar.splitBarListInWeekBlocks(bars);
+		
 		
 		if(batch)
 			setOptimizationBlocks(blocks);
@@ -269,7 +274,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 //		Split the received bars in blocks
 //		startTimeCounter();
-		LinkedList<List<IbBar>> blocks=createBlocks(bars);
+		LinkedList<LinkedList<IbBar>> blocks=createBlocks(bars);
 //		stopTimeCounter("Split the received bars in blocks");
 		
 //		startTimeCounter();
@@ -290,8 +295,8 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 		//Clean the Signal Series close the empty block with 0
 //		startTimeCounter();
-		long interval=bars.get(0).getIntervallInSec();
-		cleanSignalSerie(interval);
+//		long interval=bars.get(0).getIntervallInSec();
+//		cleanSignalSerie(interval);
 //		stopTimeCounter("Clean the Signal Series close the empty block with 0");
 		
 		//Create the Signal Map
@@ -668,8 +673,9 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	
 	public synchronized void setOptimizationBlocks(
-			LinkedList<List<IbBar>> optimizationBlocks) {
+			LinkedList<LinkedList<IbBar>> optimizationBlocks) {
 		this.optimizationBlocks = optimizationBlocks;
+		setDirty(true);
 	}
 
 

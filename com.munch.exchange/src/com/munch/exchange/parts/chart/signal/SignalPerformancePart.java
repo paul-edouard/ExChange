@@ -25,6 +25,8 @@ import org.eclipse.wb.swt.SWTResourceManager;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
+import com.munch.exchange.model.core.ib.statistics.PerformanceMetrics;
 import com.munch.exchange.model.core.ib.statistics.RevenueStatistics;
 import com.munch.exchange.model.core.ib.statistics.StabilityStatistics;
 import com.munch.exchange.model.core.ib.statistics.TimeStatistics;
@@ -47,6 +49,9 @@ public class SignalPerformancePart {
 	
 	
 	private IbChartSignal chartSignal;
+	private IbChartSignalOptimizedParameters optParameters;
+	private PerformanceMetrics performanceMetrics;
+	
 	
 
 	public SignalPerformancePart() {
@@ -88,7 +93,7 @@ public class SignalPerformancePart {
 		treeViewer = new TreeViewer(parent,  SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new SignalPerformanceTreeContentProvider());
-		treeViewer.setInput(chartSignal.getPerformanceMetrics());
+		treeViewer.setInput(performanceMetrics);
 		treeViewer.setAutoExpandLevel(1);
 		
 		tree = treeViewer.getTree();
@@ -180,7 +185,7 @@ public class SignalPerformancePart {
 		if (shell.isDisposed())
 			return false;
 		
-		if(chartSignal==null)return false;
+		if(chartSignal==null && optParameters==null)return false;
 		
 		return true;
 	}
@@ -200,9 +205,44 @@ public class SignalPerformancePart {
 		chartSignal=selSignal;
 		
 	    if(isCompositeAbleToReact()){
+	    	performanceMetrics=chartSignal.getPerformanceMetrics();
 	    	update();
 	    }
 	}
+	
+	//IB_CHART_INDICATOR_OPTIMIZED_PARAMETERS_SELECTED
+	
+	@Inject
+	public void analyseSelection( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_OPTIMIZED_PARAMETERS_SELECTED) IbChartSignalOptimizedParameters optimizedParameters){
+		
+		logger.info("Analyse IB Optimized Parameters selection!!");
+		 
+		if(optParameters!=null && optParameters==optimizedParameters)
+			return;
+		
+		if(optimizedParameters==null)
+			return;
+		
+		logger.info("Test if the Performance metrics are over there!");
+		logger.info("Performance metric: "+optimizedParameters.getPerformanceMetrics()!=null);
+		
+		/*
+		if(optimizedParameters==null || optimizedParameters.getPerformanceMetrics()==null)
+			return;
+		*/
+		logger.info("Set the Performance metrics!");
+		
+		optParameters=optimizedParameters;
+		
+	    if(isCompositeAbleToReact()){
+	    	
+	    	logger.info("Update the Performance metrics!");
+	    	performanceMetrics=optParameters.getPerformanceMetrics();
+	    	update();
+	    }
+	}
+	
+	
 	
 	@Inject
 	public void analyseParameterChanged( @Optional  @UIEventTopic(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED) IbChartIndicator selIndic){
@@ -215,6 +255,7 @@ public class SignalPerformancePart {
 		 if(chartSignal!=selSignal)return;
 		 
 		 if(isCompositeAbleToReact()){
+			performanceMetrics=chartSignal.getPerformanceMetrics();
 	    	update();
 		 }
 	}

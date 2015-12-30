@@ -2,6 +2,7 @@ package com.munch.exchange.model.core.ib.bar;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -344,8 +345,6 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 				+ ", volume=" + volume + ", count=" + count + ", real time=" + isRealTime + "]";
 	}
 	
-	
-
 	@Override
 	public int compareTo(IbBar o) {
 		long diff=this.time-o.time;
@@ -353,6 +352,11 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 		else if(diff==0)return 0;
 		return -1;
 	}
+	
+//	+++++++++++++++++++++++++++++++++
+//	++       STATIC FUNCTIONS      ++
+//	+++++++++++++++++++++++++++++++++
+	
 
 	public static long getIntervallInSec(BarSize size){
 		switch (size) {
@@ -549,7 +553,73 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 		return null;
 	}
 	
+	public static LinkedList<LinkedList<IbBar>> splitBarListInWeekBlocks(List<IbBar> bars){
+		LinkedList<LinkedList<IbBar>> blocks=new LinkedList<LinkedList<IbBar>>();
+		if(bars.size()==0)return blocks;
+		
+		IbBar firstBar=bars.get(0);
+		Calendar lastSunday=getLastSundayOfDate(firstBar.getTimeInMs());
+		Calendar nextSunday=addOneWeekTo(lastSunday);
+		
+		LinkedList<IbBar> weekBlock=new LinkedList<IbBar>();
+		
+		for(IbBar bar:bars){
+			if(!(bar.getTimeInMs() >= lastSunday.getTimeInMillis() 
+					&& bar.getTimeInMs() < nextSunday.getTimeInMillis())){
+				blocks.add(weekBlock);
+				weekBlock=new LinkedList<IbBar>();
+				weekBlock.add(bar);
+				
+				lastSunday=nextSunday;
+				nextSunday=addOneWeekTo(lastSunday);
+			}
+			
+			weekBlock.add(bar);
+		}
+		
+		if(!weekBlock.isEmpty()){
+			blocks.add(weekBlock);
+		}
+		
+		return blocks;
+	}
 	
+	public static Calendar getLastSundayOfDate(long dateInMs){
+		Calendar date=Calendar.getInstance();
+		date.setTimeInMillis(dateInMs);
+		
+		date.set(Calendar.MILLISECOND, 0);
+		date.set(Calendar.SECOND, 0);
+		date.set(Calendar.MINUTE, 0);
+		date.set(Calendar.HOUR_OF_DAY, 6);
+		
+		
+		while(date.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY){
+			date.add(Calendar.DAY_OF_WEEK, -1);
+		}
+		
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+//		System.out.println(sdf.format(date.getTime()));
+	
+		return date;
+		
+	}
+	
+	public static Calendar addOneWeekTo(Calendar date){
+		
+		Calendar nextSunday=Calendar.getInstance();
+		nextSunday.setTimeInMillis(date.getTimeInMillis());
+		nextSunday.add(Calendar.WEEK_OF_YEAR, 1);
+		
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+//		System.out.println(sdf.format(nextSunday.getTime()));
+
+		
+		return nextSunday;
+	}
+	
+ 	
+ 	
 	public static void main(String[] args){
 		int a=13;
 		int b=10;
@@ -558,6 +628,10 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 		
 		System.out.println(c);
 		
+		
+		Calendar date=Calendar.getInstance();
+		Calendar lastSunday=IbBar.getLastSundayOfDate(date.getTimeInMillis());
+		addOneWeekTo(lastSunday);
 		
 	}
 	

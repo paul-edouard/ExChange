@@ -125,8 +125,11 @@ public class TimeStatistics implements Serializable{
 		
 		int openPosition=0;
 		
-		for(int i=1;i<bars.size();i++){
-			IbBar bar=bars.get(i);
+		int i=0;
+		for(IbBar bar:bars){
+			if(i==0){
+				i++;continue;
+			}
 			double signal=signalMap.get(bar.getTimeInMs()).getValue();
 			double diffSignal=signal-previewSignal;
 			double absDiffSignal=Math.abs(diffSignal);

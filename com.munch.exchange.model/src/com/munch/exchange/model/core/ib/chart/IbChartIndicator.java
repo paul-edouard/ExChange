@@ -239,7 +239,7 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	}
 
 	public void setParameters(List<IbChartParameter> parameters) {
-		System.out.println("---> WARNING PARAMETERS ARE SET!");
+//		System.out.println("---> WARNING PARAMETERS ARE SET!");
 		this.parameters = parameters;
 	}
 	
@@ -387,4 +387,12 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 		
 		return neededBars;
 	}
+
+	public void setIsolateLastNeededBars(boolean isolateLastNeededBars) {
+		this.isolateLastNeededBars = isolateLastNeededBars;
+	}
+	
+	
+	
+	
 }

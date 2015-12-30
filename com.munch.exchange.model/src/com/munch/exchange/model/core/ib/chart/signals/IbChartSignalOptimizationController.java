@@ -179,9 +179,9 @@ public class IbChartSignalOptimizationController {
 	private IbChartSignal signal;
 
 
-	public IbChartSignalOptimizationController(IbChartSignal signal) {
+	public IbChartSignalOptimizationController() {
 		super();
-		this.signal = signal;
+		//this.signal = signal;
 		
 		listeners=new LinkedList<IbChartSignalOptimizationControllerListener>();
 		accumulators = new HashMap<String, List<Accumulator>>();
@@ -492,7 +492,35 @@ public class IbChartSignalOptimizationController {
 							
 							//.withProblem(problemName);
 					
-					if (getIncludeHypervolume()) {
+					// lookup predefined epsilons for this problem
+					Problem problem = null;
+					Population startPopulation=null;
+					int startPopSize=0;
+					try {
+						problem = new IbChartSignalProblem(signal);
+						
+						double epsilon=EpsilonHelper.getEpsilon(
+								problem);
+						
+						instrumenter.withEpsilon(EpsilonHelper.getEpsilon(
+								problem));
+						
+						startPopulation=((IbChartSignalProblem)problem).createStartPopulation(epsilon);
+						startPopSize=startPopulation.size();
+						
+						instrumenter.withReferenceSet(startPopulation);
+						
+						
+						
+					} finally {
+						if (problem != null) {
+							problem.close();
+						}
+					}
+					
+					
+					
+					if (getIncludeHypervolume() && startPopSize>=2) {
 						instrumenter.attachHypervolumeCollector();
 					}
 					
@@ -552,27 +580,7 @@ public class IbChartSignalOptimizationController {
 						instrumenter.attachPopulationSizeCollector();
 					}
 					
-					// lookup predefined epsilons for this problem
-					Problem problem = null;
-					Population startPopulation=null;
 					
-					try {
-						problem = new IbChartSignalProblem(signal);
-						
-						double epsilon=EpsilonHelper.getEpsilon(
-								problem);
-						
-						instrumenter.withEpsilon(EpsilonHelper.getEpsilon(
-								problem));
-						
-						startPopulation=((IbChartSignalProblem)problem).createStartPopulation(epsilon);
-						
-						instrumenter.withReferenceSet(startPopulation);
-					} finally {
-						if (problem != null) {
-							problem.close();
-						}
-					}
 					
 					// setup the progress listener to receive updates
 					ProgressListener listener = new ProgressListener() {
@@ -1029,7 +1037,11 @@ public class IbChartSignalOptimizationController {
 		return overallProgress;
 	}
 	
-	
+	public void setSignal(IbChartSignal signal) {
+		this.signal = signal;
+	}
+
+
 	/**
 	 * Returns {@code true} if individual traces are shown; {@code false} if
 	 * quantiles are shown.
