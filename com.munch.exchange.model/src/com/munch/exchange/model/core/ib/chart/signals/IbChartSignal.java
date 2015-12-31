@@ -200,60 +200,20 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	public  LinkedList<LinkedList<IbBar>> createBlocks(List<IbBar> bars){
 		if(!batch){
-//			System.out.println("createBlocks: no batch");
-			
-			
 			if(optimizationBlocks!=null)
 				optimizationBlocks.clear();
 			optimizationBlocks=null;
 		}
 		else{
-//			System.out.println("createBlocks: batch");
-			
 			if(optimizationBlocks!=null){
-//				System.out.println("createBlocks: optimizationBlocks is not null");
 				return optimizationBlocks;
 			}
-			else{
-//				System.out.println("createBlocks: optimizationBlocks is null");
-			}
 		}
-		
-//		System.out.println("createBlocks: is batch "+batch);
-//		System.out.println("createBlocks: optimizationBlocks is null "+optimizationBlocks==null);
-		
-		/*
-		LinkedList<List<IbBar>> blocks=new LinkedList<List<IbBar>>();
-		
-		IbBar lastBar=bars.get(0);
-		long interval=lastBar.getIntervallInSec();
-		List<IbBar> block=new LinkedList<IbBar>();
-		block.add(lastBar);
-		
-		for(int i=1;i<bars.size();i++){
-			IbBar currentBar=bars.get(i);
-			long timeDiff=currentBar.getTime()-lastBar.getTime();
-			if(timeDiff > interval ){
-				//Calculate the signal of the isolated block
-				blocks.add(block);
-				
-				//Reset the block
-				block=new LinkedList<IbBar>();
-			}
-			block.add(currentBar);
-			lastBar=currentBar;
-		}
-		
-		//Calculate the last block
-		if(block.size()>=this.getValidAtPosition()){
-			blocks.add(block);
-		}
-		*/
 		
 		
 		LinkedList<LinkedList<IbBar>> blocks=IbBar.splitBarListInWeekBlocks(bars);
 		
-		
+		//Save the blocks in the batch modus only
 		if(batch)
 			setOptimizationBlocks(blocks);
 		
@@ -278,11 +238,15 @@ public abstract class IbChartSignal extends IbChartIndicator {
 //		stopTimeCounter("Split the received bars in blocks");
 		
 //		startTimeCounter();
+		int i=0;
 		for(List<IbBar> block:blocks){
+//			System.out.println("Compute Block: "+(i++)+", Size: "+block.size());
+			
 			//Calculate the signal of the isolated block
 			computeSignalPointFromBarBlock(block, reset);
 			
-			if(block==blocks.getLast())break;
+			if(!batch && block==blocks.getLast())
+				break;
 			
 			//Set the last signal to neutral in order to avoid wrong long position
 			if(this.getSignalSerie().getPoints().size()>0)
@@ -325,6 +289,8 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	private void createProfitAndRiskSeries(List<IbBar> bars, boolean reset, HashMap<Long, IbChartPoint> signalMap, long volume){
 		
+//		System.out.println("Nb. Of bars: "+bars.size());
+		
 		//Creation & Initialization of the variables
 		IbBar previewBar=bars.get(0);
 		//System.out.println("Bar: "+previewBar.getTime());
@@ -339,7 +305,6 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		double[] risks=new double[0];
 		
 		if(!batch){
-		
 			times=new long[bars.size()];
 			profits=new double[bars.size()];
 			risks=new double[bars.size()];
@@ -356,37 +321,39 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 		int i=0;
 		for(IbBar bar:bars){
-			if(i==0){
-				i++;continue;
-			}
+			if(i==0){i++;continue;}
 			
 			long time=bar.getTimeInMs();
-			if(!signalMap.containsKey(time))continue;
 			
 			double signal=signalMap.get(time).getValue();
+			double diffSignal=signal-previewSignal;
+			double absDiffSignal=Math.abs(diffSignal);
+			
 			double previewPrice=previewBar.getClose();
 			double price=bar.getClose();
-			boolean addProfit=true;
-			double addProfitSign=signal;
+			
+			//Add the profit
+			if(Math.abs(previewSignal)>0){
+				//update the profit
+				profit+=previewSignal*(price-previewPrice)*volume;
+				
+				//Calculate the risk
+				if(profit>maxProfit)
+					maxProfit=profit;
+				
+				risk=profit-maxProfit;
+			}
+			
 			
 			//Modification of the position
 			if(signal!=previewSignal){
-				double diffSignal=signal-previewSignal;
-				double diffAbs=Math.abs(diffSignal);
 				
 				// Calculate Commission
 				IbCommission com=this.getCommission();
 				if(com!=null){
-					profit-=diffAbs*com.calculate(volume, price);
+					profit-=absDiffSignal*com.calculate(volume, price);
 				}
 				
-				//if the signal was zero and now is set to 1 or -1 then no profit should be added
-				if(diffAbs==1 && signal!=0)
-					addProfit=false;
-				//Reset the signal to the old one if the old position was still open
-				else if(signal==0 || diffAbs==2){
-					addProfitSign=previewSignal;
-				}
 				
 				// Update the Buy and Sell Series
 				if (!batch) {
@@ -405,42 +372,6 @@ public abstract class IbChartSignal extends IbChartIndicator {
 				
 			}
 			
-			
-			//Add the profit
-			if(addProfit && addProfitSign!=0 ){
-				//update the profit
-				profit+=addProfitSign*(price-previewPrice)*volume;
-				
-				//Calculate the risk
-				if(profit>maxProfit)
-					maxProfit=profit;
-				
-				risk=profit-maxProfit;
-			}
-			
-			/*
-			//Signal is long
-			if(signal>0 || signal!=previewSignal){
-				//update the profit
-				profit+=(price-previewPrice)*volume;
-				
-				//Calculate the risk
-				if(profit>maxProfit)
-					maxProfit=profit;
-				
-				risk=profit-maxProfit;
-			}
-			else if(signal<0 || signal!=previewSignal){
-				//update the profit
-				profit-=(price-previewPrice)*volume;
-				
-				//Calculate the risk
-				if(profit>maxProfit)
-					maxProfit=profit;
-				
-				risk=profit-maxProfit;
-			}
-			*/
 			
 			//Save the current state in the list in order to create the Series later on
 			if(!batch){

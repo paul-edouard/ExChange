@@ -1428,7 +1428,7 @@ IbChartSignalOptimizationControllerListener{
 			if(allCollectedBars==null || allCollectedBars.isEmpty()){
 				allCollectedBars=hisDataProvider.getAllBars(getBarContainer(),
 						IbBar.getBarSizeFromString(bazSize));
-				
+				Collections.sort(allCollectedBars);
 				//TODO Remove this!
 //				while (allCollectedBars.size()>1000) {
 //					allCollectedBars.remove(0);
@@ -1439,35 +1439,7 @@ IbChartSignalOptimizationControllerListener{
 			
 			//Create the Data Set
 			logger.info("Create the Data Set");
-			if(!optimizationBarsMap.containsKey(bazSize+percentOfDataRequired)){
-			
-				LinkedList<LinkedList<IbBar>> allBlocks=IbBar.splitBarListInWeekBlocks(allCollectedBars);
-				LinkedList<LinkedList<IbBar>> optBlocks=collectOptimizationBlocks(allBlocks,percentOfDataRequired);
-			
-				LinkedList<IbBar> optimizationBars=new LinkedList<IbBar>();
-				HashSet<Long> timeSet=new HashSet<>();
-				for(LinkedList<IbBar> bars:optBlocks){
-					optimizationBars.addAll(bars);
-					for(IbBar bar:bars)
-						timeSet.add(bar.getTime());
-				}
-				optimizationBarsMap.put(bazSize+percentOfDataRequired, optimizationBars);
-				
-				
-				LinkedList<IbBar> backTestingBars=new LinkedList<IbBar>();
-				logger.info("Total Nb. of  data: "+allCollectedBars.size());
-				for(IbBar bar:allCollectedBars){
-					if(timeSet.contains(bar.getTime()))continue;
-					backTestingBars.add(bar);
-				}
-				
-				logger.info("Nb. of back testing data: "+backTestingBars.size());
-				
-				
-				backTestingBarsMap.put(bazSize+percentOfDataRequired, backTestingBars);
-				
-			}
-			
+			createTheDataSet(bazSize, percentOfDataRequired);
 			
 			//Set the parameters
 			jobSignal.setOptimizationBars(optimizationBarsMap.get(bazSize+percentOfDataRequired));
@@ -1498,6 +1470,65 @@ IbChartSignalOptimizationControllerListener{
 		
 	}
 	
+	private void createTheDataSet(String bazSize, int percentOfDataRequired){
+		if(!optimizationBarsMap.containsKey(bazSize+percentOfDataRequired)){
+			
+			LinkedList<LinkedList<IbBar>> allBlocks=IbBar.splitBarListInWeekBlocks(allCollectedBars);
+			LinkedList<LinkedList<IbBar>> optBlocks=collectOptimizationBlocks(allBlocks,percentOfDataRequired);
+		
+			LinkedList<IbBar> optimizationBars=new LinkedList<IbBar>();
+			HashSet<Long> timeSet=new HashSet<>();
+			for(LinkedList<IbBar> bars:optBlocks){
+				optimizationBars.addAll(bars);
+				for(IbBar bar:bars)
+					timeSet.add(bar.getTime());
+			}
+			Collections.sort(optimizationBars);
+			optimizationBarsMap.put(bazSize+percentOfDataRequired, optimizationBars);
+			
+			
+			LinkedList<IbBar> backTestingBars=new LinkedList<IbBar>();
+			logger.info("Total Nb. of  data: "+allCollectedBars.size());
+			for(IbBar bar:allCollectedBars){
+				if(timeSet.contains(bar.getTime()))continue;
+				backTestingBars.add(bar);
+			}
+			Collections.sort(backTestingBars);
+			logger.info("Nb. of back testing data: "+backTestingBars.size());
+			
+			
+			backTestingBarsMap.put(bazSize+percentOfDataRequired, backTestingBars);
+			
+		}
+	}
+	
+	private LinkedList<LinkedList<IbBar>> collectOptimizationBlocks(LinkedList<LinkedList<IbBar>> allBlocks, int percentRequired){
+		LinkedList<LinkedList<IbBar>> optBlocks=new LinkedList<>();
+		int numberOfBars=0;
+		//int percentRequired=spinnerPercentOfData.getSelection();
+		int numberOfRequired=allCollectedBars.size()*percentRequired/100;
+		//logger.info("Percent of bars required: "+percentRequired);
+		//logger.info("Number of required bars: "+numberOfRequired);
+		
+		while(numberOfBars<numberOfRequired ){
+			
+			if(allBlocks.isEmpty())break;
+			
+			Random rand = new Random();
+			int index=rand.nextInt(allBlocks.size());
+			LinkedList<IbBar> removedBlock=allBlocks.remove(index);
+			optBlocks.add(removedBlock);
+			
+			numberOfBars+=removedBlock.size();
+		}
+		//logger.info("Number of blocks: "+optBlocks.size());
+		//logger.info("Number of bars: "+numberOfBars);
+		
+		return optBlocks;
+	}
+	
+	
+	
 	//#######################################################
   	//##         Best Result statistic calculator          ##
   	//#######################################################
@@ -1521,6 +1552,17 @@ IbChartSignalOptimizationControllerListener{
 		protected IStatus run(IProgressMonitor monitor) {
 			
 			disableBtns();
+			
+			logger.info("Collect the data");
+			if(allCollectedBars==null || allCollectedBars.isEmpty()){
+				allCollectedBars=hisDataProvider.getAllBars(getBarContainer(),
+						IbBar.getBarSizeFromString(bazSize));
+				Collections.sort(allCollectedBars);
+			}
+			
+			//Create the Data Set
+			logger.info("Create the Data Set");
+			createTheDataSet(bazSize, percentOfDataRequired);
 			
 			for(IbChartSignalOptimizedParameters optParam:bestResultContentProvider.getOptParametersSet()){
 				IbChartSignal signal=(IbChartSignal) chartSignal.copy();
@@ -1549,6 +1591,18 @@ IbChartSignalOptimizationControllerListener{
 				optParam.setBackTestRisk(profitAndRisk[1]);
 				
 				refreshTable();
+				
+				//Calculate all completed bars only for comparision
+//				signal.setBatch(true);
+//				signal.setOptimizationBlocks(null);
+//				signal.compute(allCollectedBars);
+//				profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
+//				logger.info("Benefit Sum:"+(optParam.getOptBenefit()+optParam.getBackTestBenefit()));
+//				logger.info("Risk Sum:"+(Math.max(optParam.getOptRisk(),optParam.getBackTestRisk())));
+//				
+//				logger.info("Benefit Total:"+profitAndRisk[0]);
+//				logger.info("Risk Total:"+profitAndRisk[1]);
+				
 				
 //				logger.info("Calculate Statistics All Bars!");
 				signal.setBatch(false);

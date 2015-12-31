@@ -3,6 +3,8 @@ package com.munch.exchange.model.core.ib.bar;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -554,6 +556,7 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 	}
 	
 	public static LinkedList<LinkedList<IbBar>> splitBarListInWeekBlocks(List<IbBar> bars){
+		
 		LinkedList<LinkedList<IbBar>> blocks=new LinkedList<LinkedList<IbBar>>();
 		if(bars.size()==0)return blocks;
 		
@@ -561,17 +564,18 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 		Calendar lastSunday=getLastSundayOfDate(firstBar.getTimeInMs());
 		Calendar nextSunday=addOneWeekTo(lastSunday);
 		
+		
 		LinkedList<IbBar> weekBlock=new LinkedList<IbBar>();
 		
 		for(IbBar bar:bars){
-			if(!(bar.getTimeInMs() >= lastSunday.getTimeInMillis() 
-					&& bar.getTimeInMs() < nextSunday.getTimeInMillis())){
+			if(bar.getTimeInMs() >= nextSunday.getTimeInMillis()){
 				blocks.add(weekBlock);
 				weekBlock=new LinkedList<IbBar>();
 				weekBlock.add(bar);
 				
-				lastSunday=nextSunday;
-				nextSunday=addOneWeekTo(lastSunday);
+				while(bar.getTimeInMs() >= nextSunday.getTimeInMillis())
+					nextSunday=addOneWeekTo(nextSunday);
+				continue;
 			}
 			
 			weekBlock.add(bar);
@@ -580,6 +584,8 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 		if(!weekBlock.isEmpty()){
 			blocks.add(weekBlock);
 		}
+		
+		
 		
 		return blocks;
 	}

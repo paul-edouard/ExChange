@@ -260,6 +260,8 @@ public class RevenueStatistics implements Serializable{
 	public void calculate(List<IbBar> bars, HashMap<Long, IbChartPoint> signalMap,
 			IbCommission commission, long volume){
 		
+		double positionProfit=0;
+		
 		double totalCommissionsOrSpreads=0;
 		double totalProfit=0;
 		
@@ -267,8 +269,7 @@ public class RevenueStatistics implements Serializable{
 		int winTrades=0;
 		int lossTrades=0;
 		
-		
-		//double maximumAdverseExcursion=0;
+	
 		maximumDrawdown=0;
 		double drawdown=0;
 		LinkedList<Double> allDrawdowns=new LinkedList<Double>();
@@ -276,80 +277,70 @@ public class RevenueStatistics implements Serializable{
 		grossProfit=0;
 		grossLoss=0;
 		
-		//double previewProfit=0;
 		
 		IbBar previewBar=bars.get(0);
 		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
-		
-		int openPosition=0;
+			
 		
 		int i=0;
 		for(IbBar bar:bars){
-			if(i==0){
-				i++;continue;
-			}
+			if(i==0){i++;continue;}
+			
 			double signal=signalMap.get(bar.getTimeInMs()).getValue();
 			double diffSignal=signal-previewSignal;
 			double absDiffSignal=Math.abs(diffSignal);
 			
+			double previewPrice=previewBar.getClose();
+			double price=bar.getClose();
 			
-			//Position is still open
-			if(openPosition>0){
-				//double startPosPrice=bars.get(openPosition).getClose();
-				double curProfit=(bar.getClose()-bars.get(openPosition).getClose())*previewSignal*volume;
-				if(curProfit<0 && -curProfit>drawdown)
-					drawdown=-curProfit;
-				
+			
+			
+			//Update the profit
+			if(Math.abs(previewSignal)>0){
+				//update the profit of the current position
+				positionProfit+=previewSignal*(price-previewPrice)*volume;
+				if(positionProfit<0 && -positionProfit>drawdown)
+					drawdown=-positionProfit;
 			}
 			
 			
-			
-			//New Position
-			if(absDiffSignal>0){
-				
-				//Close a position
-				if(signal==0 || absDiffSignal==2){
-					double profit=(bar.getClose()-bars.get(openPosition).getClose())*previewSignal*volume;
-					//System.out.println("Profit: "+profit);
-					totalProfit+=profit;
-					
-					//Calculate and add the commission
-					if(commission!=null){
-						totalCommissionsOrSpreads+=absDiffSignal*commission.calculate(volume, bar.getClose());
-					}
-					
-					
-					
-					//Win
-					if(profit>0){
-						winTrades++;
-						grossProfit+=profit;
-					}
-					
-					//Loss
-					else if(profit<0){
-						lossTrades++;
-						grossLoss-=profit;
-					}
-					
-					
-					allDrawdowns.add(drawdown);
-					if(drawdown>maximumDrawdown)
-						maximumDrawdown=drawdown;
-					
-					
+			// New Position
+			if (signal != previewSignal) {
+
+				// Calculate and add the commission
+				if (commission != null) {
+					totalCommissionsOrSpreads += absDiffSignal
+							* commission.calculate(volume, bar.getClose());
 				}
-				
-				//Open a new position
-				if(Math.abs(signal)>0){
+				totalProfit += positionProfit;
+
+				// Win
+				if (positionProfit > 0) {
+					winTrades++;
+					grossProfit += positionProfit;
+				}
+
+				// Loss
+				else if (positionProfit < 0) {
+					lossTrades++;
+					grossLoss -= positionProfit;
+				}
+
+				allDrawdowns.add(drawdown);
+				if (drawdown > maximumDrawdown)
+					maximumDrawdown = drawdown;
+
+				positionProfit = 0;
+
+				// Open a new position
+				if (Math.abs(signal) > 0) {
 					totalTrades++;
-					openPosition=i;
-					drawdown=0;
+					drawdown = 0;
 				}
-				
-				
-				
+
 			}
+			
+			
 			
 			previewBar=bar;
 			previewSignal=signal;
@@ -369,7 +360,8 @@ public class RevenueStatistics implements Serializable{
 		maximumClosedEquityDrawdown=maximumDrawdown;
 		averageClosedEquityDrawdown=averageDrawdown;
 		
-		netProfit=grossProfit-grossLoss;
+//		netProfit=grossProfit-grossLoss;
+		netProfit=totalProfit-totalCommissionsOrSpreads;
 		averageProfit=grossProfit/winTrades;
 		averageLoss=grossLoss/lossTrades;
 		
