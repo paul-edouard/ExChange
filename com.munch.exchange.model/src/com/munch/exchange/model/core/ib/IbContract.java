@@ -26,6 +26,7 @@ import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 
 
 @Entity
@@ -46,6 +47,11 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	
 	@OneToOne(mappedBy="contract",cascade=CascadeType.ALL)
 	private IbCommission commission;
+	
+	@OneToMany(mappedBy="contract",cascade=CascadeType.ALL)
+	private List<NeuralConfiguration> neuralConfigurations;
+	
+	
 	
 	private int    conId;
 	private String symbol;

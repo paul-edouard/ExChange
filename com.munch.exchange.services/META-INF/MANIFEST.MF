@@ -27,7 +27,8 @@ Service-Component: Component/ExchangeRateProvider.xml,
  Component/IBTopMktDataProvider.xml,
  Component/IBHistoricalDataProvider.xml,
  Component/IBRealTimeBarProvider.xml,
- Component/IBChartIndicatorProvider.xml
+ Component/IBChartIndicatorProvider.xml,
+ Component/IBNeuralProvider.xml
 Export-Package: com.munch.exchange.services;uses:="org.eclipse.jface.resource,org.eclipse.swt.graphics,com.munch.exchange.model.core",
  com.munch.exchange.services.ejb.beans,
  com.munch.exchange.services.ejb.interfaces,

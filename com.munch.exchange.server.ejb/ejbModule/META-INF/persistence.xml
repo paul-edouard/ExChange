@@ -28,6 +28,12 @@
 	<class>com.munch.exchange.model.core.ib.statistics.StabilityStatistics</class>
 	<class>com.munch.exchange.model.core.ib.chart.signals.SuperTrendSignal</class>
 	<class>com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters</class>
+	<class>com.munch.exchange.model.core.ib.neural.NeuralConfiguration</class>
+	<class>com.munch.exchange.model.core.ib.neural.NeuralInput</class>
+	<class>com.munch.exchange.model.core.ib.neural.NeuralInputComponent</class>
+	<class>com.munch.exchange.model.core.ib.neural.NeuralArchitecture</class>
+	<class>com.munch.exchange.model.core.ib.neural.NeuralNetwork</class>
+	<class>com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

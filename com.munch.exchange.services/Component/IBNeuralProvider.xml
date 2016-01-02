@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="com.munch.exchange.services">
+   <implementation class="com.munch.exchange.services.ejb.providers.IBNeuralProvider"/>
+   <service>
+      <provide interface="com.munch.exchange.services.ejb.interfaces.IIBNeuralProvider"/>
+   </service>
+</scr:component>
