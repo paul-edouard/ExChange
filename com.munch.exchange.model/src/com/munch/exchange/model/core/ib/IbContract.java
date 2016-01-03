@@ -49,7 +49,7 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	private IbCommission commission;
 	
 	@OneToMany(mappedBy="contract",cascade=CascadeType.ALL)
-	private List<NeuralConfiguration> neuralConfigurations;
+	private List<NeuralConfiguration> neuralConfigurations=new LinkedList<NeuralConfiguration>();
 	
 	
 	
@@ -660,9 +660,17 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 		this.notes = notes;
 	}
 	
+	public List<NeuralConfiguration> getNeuralConfigurations() {
+		return neuralConfigurations;
+	}
 	
 	
-	
+
+	public void setNeuralConfigurations(
+			List<NeuralConfiguration> neuralConfigurations) {
+		this.neuralConfigurations = neuralConfigurations;
+	}
+
 	public IbCommission getCommission() {
 		if(commission==null)
 			commission=new IbCommission(this);

@@ -15,6 +15,7 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.IbTopMktData;
+import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.ExContractContainer;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IBundleResourceLoader;
@@ -52,7 +53,24 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 	public HashMap<Integer, IbTopMktData> getTopMktDataMap() {
 		return topMktDataMap;
 	}
-
+	
+	
+	private Image getContractImage() {
+		if(rateContainerImage==null){
+			rateContainerImage=loader.loadImage(getClass(),IImageKeys.RATE_COMMON );
+		}
+		return rateContainerImage;
+	}
+	
+	
+	private Image getNeuralConfigurationImage() {
+		if(rateContainerImage==null){
+			rateContainerImage=loader.loadImage(getClass(),IImageKeys.RATE_INDICE );
+		}
+		return rateContainerImage;
+	}
+	
+	
 	private Image getRateContainerImage() {
 		if(rateContainerImage==null){
 			rateContainerImage=loader.loadImage(getClass(),IImageKeys.RATE_CONTAINER );
@@ -224,6 +242,10 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 			
 			cell.setText(txt);
 		}
+		else if(element instanceof NeuralConfiguration){
+			NeuralConfiguration config=(NeuralConfiguration) element;
+			cell.setText(config.getName());
+		}
 		
 	}
 	
@@ -245,6 +267,9 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 			else{
 				cell.setImage(getRateStocksImage());
 			}
+		}
+		else if(element instanceof NeuralConfiguration){
+			cell.setImage(getNeuralConfigurationImage());
 		}
 	}
 }

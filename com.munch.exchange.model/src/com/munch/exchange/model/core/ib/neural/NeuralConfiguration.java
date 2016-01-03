@@ -15,11 +15,12 @@ import javax.persistence.OneToMany;
 
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.IbBar;
 
 
 
 @Entity
-public class NeuralConfiguration implements Serializable, Copyable<NeuralConfiguration>{
+public class NeuralConfiguration implements Serializable, Copyable<NeuralConfiguration>,Comparable<NeuralConfiguration>{
 
 	/**
 	 * 
@@ -122,6 +123,16 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 
 	public void setCreationDate(long creationDate) {
 		this.creationDate = creationDate;
+	}
+
+
+
+	@Override
+	public int compareTo(NeuralConfiguration o) {
+		long diff=this.creationDate-o.creationDate;
+		if(diff>0)return 1;
+		else if(diff==0)return 0;
+		return -1;
 	}
 	
 	

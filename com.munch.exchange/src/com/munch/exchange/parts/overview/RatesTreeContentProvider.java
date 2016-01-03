@@ -28,6 +28,7 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
+import com.munch.exchange.services.ejb.interfaces.IIBNeuralProvider;
 
 public class RatesTreeContentProvider implements IStructuredContentProvider,
 		ITreeContentProvider {
@@ -50,6 +51,10 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 	
 	@Inject
 	private IIBContractProvider contractProvider;
+	
+	@Inject
+	private IIBNeuralProvider neuralProvider;
+	
 	
 	RootContainer rootContainer;
 	
@@ -86,6 +91,10 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			ExContractContainer root=(ExContractContainer) parentElement;
 			return root.getChildren().toArray();
 		}
+		else if(parentElement instanceof IbContract){
+			IbContract contract=(IbContract) parentElement;
+			return contract.getNeuralConfigurations().toArray();
+		}
 		
 		return null;
 	}
@@ -109,6 +118,10 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			ExContractContainer cont=(ExContractContainer) element;
 			return !cont.getChildren().isEmpty();
 		}
+		else if(element instanceof IbContract){
+			IbContract contract=(IbContract) element;
+			return !contract.getNeuralConfigurations().isEmpty();
+		}
 		
 		
 		return false;
@@ -118,7 +131,8 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 	public Object[] getElements(Object inputElement) {
 		if(inputElement instanceof RateContainer
 				|| inputElement instanceof RootContainer
-				|| inputElement instanceof ExContractContainer){
+				|| inputElement instanceof ExContractContainer
+				|| inputElement instanceof IbContract){
 			return this.getChildren(inputElement);
 		}
 		return null;
@@ -252,6 +266,7 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			for(IbContract contract:contracts){
 				//System.out.println("Add new contract: "+contract.getId());
 				exContractRoot.addExContract(contract);
+				neuralProvider.getNeuralConfigurations(contract);
 			}
 		}
 		

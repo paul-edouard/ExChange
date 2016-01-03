@@ -7,14 +7,12 @@ import javax.ejb.Remote;
 import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 
 @Remote
 public interface ContractInfoBeanRemote {
 	
-	//Search metodes
-	
-	//void searchContractInfo(String symbol, String Sectype);
-	//List<ExContract> searchContractExchange(String symbol, String exchange);
+	//Search methodes
 	List<IbContract> searchContracts(String symbol,SecType secType);
 	
 	//JPA Methodes
@@ -24,8 +22,8 @@ public interface ContractInfoBeanRemote {
 	public IbContract getContract(int id);
 	public List<IbContract> getAllContracts();
 	
+	//Commission
 	public IbCommission getCommission(IbContract contract);
 	public IbCommission update(IbCommission commission);
 	
-
 }

@@ -52,9 +52,11 @@ import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.IbTopMktData;
+import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.parts.MyMDirtyable;
 import com.munch.exchange.parts.RateEditorPart;
 import com.munch.exchange.parts.chart.ChartEditorPart;
+import com.munch.exchange.parts.neural.NeuralConfigurationEditorPart;
 import com.munch.exchange.services.IBundleResourceLoader;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataListener;
@@ -138,6 +140,10 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 					else if(item instanceof IbContract){
 						IbContract contract=(IbContract) item;
 						openGraphEditor(contract);
+					}
+					else if(item instanceof NeuralConfiguration){
+						NeuralConfiguration config=(NeuralConfiguration)  item;
+						openNeuralConfigurationEditor(config);
 					}
 					
 				}
@@ -334,6 +340,57 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 	}
 	
 	
+	//
+	//OPEN NEURAL CONFIGURATION EDITOR FUNCTIONS
+	//
+	
+	private void openNeuralConfigurationEditor(NeuralConfiguration config){
+		
+		MPart part=searchPart(NeuralConfigurationEditorPart.EDITOR_ID,String.valueOf(config.getId()));
+		if(part!=null &&  part.getContributionURI()!=null){
+			if(part.getContext()==null){
+				setNeuralConfigurationEditorContext(part,config);
+			}
+			
+				partService.bringToTop(part);
+				return;
+		}
+		
+		//Create the part
+		part=createNeuralConfigurationEditorPart(config);
+		
+		//add the part to the corresponding Stack
+		MPartStack myStack=(MPartStack)modelService.find("com.munch.exchange.partstack.rightup", application);
+		myStack.getChildren().add(part);
+		//Open the part
+		partService.showPart(part, PartState.ACTIVATE);	
+	}
+	
+	private MPart createNeuralConfigurationEditorPart(NeuralConfiguration config){
+		MPart part = partService.createPart(NeuralConfigurationEditorPart.EDITOR_ID);
+		
+		//MPart part =MBasicFactory.INSTANCE.createPartDescrip;
+		
+		part.setLabel(config.getContract().getSymbol()+", "+config.getName());
+//		part.setIconURI(getIconURI(contract));
+		part.setVisible(true);
+		part.setDirty(false);
+		part.getTags().add(String.valueOf(config.getId()));
+		part.getTags().add(EPartService.REMOVE_ON_HIDE_TAG);
+		
+		setNeuralConfigurationEditorContext(part,config);
+		
+		return part;
+	}
+	
+	private void setNeuralConfigurationEditorContext(MPart part,NeuralConfiguration config){
+		part.setContext(context.createChild());
+		part.getContext().set(NeuralConfiguration.class, config);
+		part.getContext().set(MDirtyable.class, new MyMDirtyable(part));
+	}
+	
+	
+	
 	
 	@Inject
 	private void openRate(@Optional  @UIEventTopic(IEventConstant.RATE_OPEN) ExchangeRate rate ){
@@ -403,6 +460,16 @@ public class RatesOverviewPart implements IIBTopMktDataListener{
 			Object[] elements=treeViewer.getExpandedElements();
 			treeViewer.refresh();
 			treeViewer.setExpandedElements(elements);
+		}
+	}
+	
+	@Inject
+	private void contractNeuralConfigurationChanged(@Optional  @UIEventTopic(IEventConstant.CONTRACT_NEURAL_CONFIGURATION_CHANGED) IbContract contract ){
+		
+		if(treeViewer!=null && contract!=null){
+//			Object[] elements=treeViewer.getExpandedElements();
+			treeViewer.refresh();
+//			treeViewer.setExpandedElements(elements);
 		}
 	}
 	

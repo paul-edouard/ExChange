@@ -17,8 +17,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import com.munch.exchange.model.core.ib.IbTopMktData;
-
 public class TopMktDataClient implements MessageListener {
 	
 	
