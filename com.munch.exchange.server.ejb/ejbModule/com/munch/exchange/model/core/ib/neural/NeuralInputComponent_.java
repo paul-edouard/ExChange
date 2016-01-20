@@ -5,7 +5,7 @@ import javax.annotation.Generated;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-01-03T11:07:39.491+0100")
+@Generated(value="Dali", date="2016-01-17T17:08:11.523+0100")
 @StaticMetamodel(NeuralInputComponent.class)
 public class NeuralInputComponent_ {
 	public static volatile SingularAttribute<NeuralInputComponent, Integer> id;

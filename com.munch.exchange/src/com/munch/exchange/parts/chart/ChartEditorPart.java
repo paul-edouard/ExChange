@@ -258,7 +258,9 @@ public class ChartEditorPart{
 				logger.info(comboBarSize.getText());
 				BarSize newBarSize=IbBar.getBarSizeFromString(comboBarSize.getText());
 				if(newBarSize==barRecorder.getBarSize())return;
+				
 				barRecorder.setBarSize(newBarSize);
+				selectedGroup.setBarSize(newBarSize);
 				
 				comboWhatToShow.setEnabled(false);
 				comboBarSize.setEnabled(false);
@@ -283,6 +285,7 @@ public class ChartEditorPart{
 			//if(selectedGroup!=null)
 			//	selectedGroup.removeAllListeners();
 			selectedGroup=container.getIndicatorGroup().copy();
+			selectedGroup.setBarSize(IbBar.getBarSizeFromString(comboBarSize.getText()));
 			eventBroker.post(IEventConstant.IB_CHART_INDICATOR_GROUP_SELECTED, selectedGroup);
 		}
 	}

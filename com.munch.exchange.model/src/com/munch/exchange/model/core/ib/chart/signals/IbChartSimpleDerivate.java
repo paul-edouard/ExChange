@@ -51,15 +51,18 @@ public class IbChartSimpleDerivate extends IbChartIndicator {
 
 	@Override
 	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
-		double[] prices=this.barsToDoubleArray(bars, DataType.CLOSE);
-		long[] times=this.getTimeArray(bars);
+		double[] prices=IbBar.barsToDoubleArray(bars, DataType.CLOSE);
+		long[] times=IbBar.getTimeArray(bars);
+//		System.out.println("Compute simple derivate");
 		double[] ama=SimpleDerivate.compute(prices);
 		
 		if(reset){
+//			System.out.println("Reset set all points");
 			this.getChartSerie(SD).setPointValues(times,ama);
 			this.getChartSerie(SD).setValidAtPosition(1);
 		}
 		else{
+//			System.out.println("Add new points only");
 			this.getChartSerie(SD).addNewPointsOnly(times,ama);
 		}
 		

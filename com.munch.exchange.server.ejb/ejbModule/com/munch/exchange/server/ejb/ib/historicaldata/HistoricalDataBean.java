@@ -173,6 +173,8 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 			
     	}
     	
+//    	em.flush();
+    	
     	if(copies.isEmpty())return copies;
     	
     	BarSize copySize=copies.get(0).getSize();

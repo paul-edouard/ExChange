@@ -6,8 +6,11 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorColumn;
@@ -490,14 +493,14 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 	public static List<String> getAllBarSizesAsString(){
 		List<String> barSizes=new LinkedList<String>();
 		
-		barSizes.add("1 minute");
-		barSizes.add("2 minutes");
-		barSizes.add("3 minutes");
-		barSizes.add("5 minutes");
-		barSizes.add("10 minutes");
-		barSizes.add("15 minutes");
-		barSizes.add("20 minutes");
-		barSizes.add("30 minutes");
+		barSizes.add("1 min");
+		barSizes.add("2 mins");
+		barSizes.add("3 mins");
+		barSizes.add("5 mins");
+		barSizes.add("10 mins");
+		barSizes.add("15 mins");
+		barSizes.add("20 mins");
+		barSizes.add("30 mins");
 		
 		barSizes.add("1 hour");
 		barSizes.add("4 hours");
@@ -520,6 +523,15 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 		
 		if(sizeStr.equals("1 hour")){return BarSize._1_hour;}
 		else if(sizeStr.equals("4 hours")){return BarSize._4_hours;}
+		
+		if(sizeStr.equals("1 min")){return BarSize._1_min;}
+		else if(sizeStr.equals("2 mins")){return BarSize._2_mins;}
+		else if(sizeStr.equals("3 mins")){return BarSize._3_mins;}
+		else if(sizeStr.equals("5 mins")){return BarSize._5_mins;}
+		else if(sizeStr.equals("10 mins")){return BarSize._10_mins;}
+		else if(sizeStr.equals("15 mins")){return BarSize._15_mins;}
+		else if(sizeStr.equals("20 mins")){return BarSize._20_mins;}
+		else if(sizeStr.equals("30 mins")){return BarSize._30_mins;}
 		
 		return BarSize._1_day;
 	}
@@ -590,6 +602,98 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 		return blocks;
 	}
 	
+	public static LinkedList<LinkedList<IbBar>> splitBarListInDayBlocks(List<IbBar> bars){
+		
+		LinkedList<LinkedList<IbBar>> blocks=new LinkedList<LinkedList<IbBar>>();
+		if(bars.size()==0)return blocks;
+		
+		IbBar firstBar=bars.get(0);
+		Calendar currentDay=getCurrentDayOf(firstBar.getTimeInMs());
+		Calendar nextDay=addOneDayTo(currentDay);
+		
+		
+		LinkedList<IbBar> dayBlock=new LinkedList<IbBar>();
+		
+		for(IbBar bar:bars){
+			if(bar.getTimeInMs() >= nextDay.getTimeInMillis()){
+				blocks.add(dayBlock);
+				dayBlock=new LinkedList<IbBar>();
+				dayBlock.add(bar);
+				
+				while(bar.getTimeInMs() >= nextDay.getTimeInMillis())
+					nextDay=addOneDayTo(nextDay);
+				continue;
+			}
+			
+			dayBlock.add(bar);
+		}
+		
+		if(!dayBlock.isEmpty()){
+			blocks.add(dayBlock);
+		}
+		
+		
+		
+		return blocks;
+		
+	}
+	
+	public static LinkedList<LinkedList<IbBar>> collectPercentageOfBlocks(LinkedList<LinkedList<IbBar>> allBlocks, int percentRequired){
+		LinkedList<LinkedList<IbBar>> optBlocks=new LinkedList<LinkedList<IbBar>>();
+		
+		LinkedList<LinkedList<IbBar>> allBlocksCopy=new LinkedList<LinkedList<IbBar>>();
+		allBlocksCopy.addAll(allBlocks);
+		
+		double numberOfBlocks=0;
+		//int percentRequired=spinnerPercentOfData.getSelection();
+		double numberOfRequired=  allBlocks.size()*(((double) percentRequired)/100.0);
+		//logger.info("Percent of bars required: "+percentRequired);
+		//logger.info("Number of required bars: "+numberOfRequired);
+		
+		Set<LinkedList<IbBar>> blocksToDelete=new HashSet<LinkedList<IbBar>>();
+		
+		while(numberOfBlocks<numberOfRequired ){
+			
+			if(allBlocks.isEmpty())break;
+			
+			Random rand = new Random();
+			int index=rand.nextInt(allBlocks.size());
+			LinkedList<IbBar> removedBlock=allBlocks.remove(index);
+			blocksToDelete.add(removedBlock);
+//			optBlocks.add(removedBlock);
+			
+			numberOfBlocks+=1;
+		}
+		
+		for(LinkedList<IbBar> block:allBlocksCopy){
+			if(blocksToDelete.contains(block)){
+				optBlocks.add(block);
+			}
+		}
+		
+		
+		//logger.info("Number of blocks: "+optBlocks.size());
+		//logger.info("Number of bars: "+numberOfBars);
+		
+		return optBlocks;
+	}
+	
+	
+	public static Calendar getCurrentDayOf(long dateInMs){
+		Calendar date=Calendar.getInstance();
+		date.setTimeInMillis(dateInMs);
+		
+		date.set(Calendar.MILLISECOND, 0);
+		date.set(Calendar.SECOND, 0);
+		date.set(Calendar.MINUTE, 0);
+		date.set(Calendar.HOUR_OF_DAY, 0);
+		
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+//		System.out.println(sdf.format(date.getTime()));
+		
+		return date;
+	}
+	
 	public static Calendar getLastSundayOfDate(long dateInMs){
 		Calendar date=Calendar.getInstance();
 		date.setTimeInMillis(dateInMs);
@@ -624,7 +728,53 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 		return nextSunday;
 	}
 	
- 	
+	public static Calendar addOneDayTo(Calendar date){
+		
+		Calendar nextDay=Calendar.getInstance();
+		nextDay.setTimeInMillis(date.getTimeInMillis());
+		nextDay.add(Calendar.DAY_OF_YEAR, 1);
+		
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+//		System.out.println(sdf.format(nextDay.getTime()));
+
+		return nextDay;
+	}
+	
+	public static double[] barsToDoubleArray(List<IbBar> bars,DataType dataType){
+		return barsToDoubleArray(bars, dataType, bars.size());
+	}
+	
+	public static double[] barsToDoubleArray(List<IbBar> bars,DataType dataType,int numberOfValues){
+		
+		int min=Math.min(bars.size(), numberOfValues);
+		int last=bars.size()-min;
+		double[] array=new double[min];
+		IbBar[] barArray=bars.toArray(new IbBar[bars.size()]);
+		
+		for(int i=bars.size()-1;i>=last;i--){
+			array[i-last]=barArray[i].getData(dataType);
+		}
+		return array;
+	}
+	
+	public static long[] getTimeArray(List<IbBar> bars,int numberOfValues){
+		int min=Math.min(bars.size(), numberOfValues);
+		int last=bars.size()-min;
+		long[] array=new long[min];
+		IbBar[] barArray=bars.toArray(new IbBar[bars.size()]);
+		for(int i=bars.size()-1;i>=last;i--){
+			array[i-last]=barArray[i].getTimeInMs();
+		}
+		return array;
+	}
+	
+	public static long[] getTimeArray(List<IbBar> bars){
+		return getTimeArray(bars, bars.size());
+	}
+	
+	
+	
+	
  	
 	public static void main(String[] args){
 		int a=13;
@@ -638,6 +788,9 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 		Calendar date=Calendar.getInstance();
 		Calendar lastSunday=IbBar.getLastSundayOfDate(date.getTimeInMillis());
 		addOneWeekTo(lastSunday);
+		
+		Calendar currentDay=IbBar.getCurrentDayOf(date.getTimeInMillis());
+		addOneDayTo(currentDay);
 		
 	}
 	

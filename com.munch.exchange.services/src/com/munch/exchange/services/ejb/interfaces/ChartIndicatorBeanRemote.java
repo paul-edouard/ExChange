@@ -4,7 +4,9 @@ import java.util.List;
 
 import javax.ejb.Remote;
 
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 
@@ -15,11 +17,14 @@ public interface ChartIndicatorBeanRemote {
 	public void update(IbChartIndicatorGroup group);
 	public void removeGroup(int id);
 	public IbChartIndicatorGroup getGroup(int id);
+	public IbChartIndicator getIndicator(int id);
+	
 	
 	//Chart Signal
 	public List<IbChartSignalOptimizedParameters> updateOptimizedParameters(IbChartSignal signal);
 	public IbChartSignal getSignal(int id);
 	
-	
+	//Chart Serie
+	public IbChartSerie getSerie(int id);
 
 }

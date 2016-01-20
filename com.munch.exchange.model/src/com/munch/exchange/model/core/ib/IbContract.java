@@ -27,6 +27,7 @@ import com.ib.controller.Types.SecType;
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
+import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
 
 
 @Entity
@@ -47,6 +48,11 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	
 	@OneToOne(mappedBy="contract",cascade=CascadeType.ALL)
 	private IbCommission commission;
+	
+	/*
+	@OneToOne(mappedBy="contract",cascade=CascadeType.ALL)
+	private NeuralIndicatorInput neuralIndicatorInput;
+	*/
 	
 	@OneToMany(mappedBy="contract",cascade=CascadeType.ALL)
 	private List<NeuralConfiguration> neuralConfigurations=new LinkedList<NeuralConfiguration>();
@@ -293,6 +299,15 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 		return c;
 	}
 	
+	
+	public boolean allowShortPosition(){
+		switch (secType) {
+		case STK:
+			return false;
+		}
+		
+		return true;
+	}
 	
 	public int getId() {
 		return id;
@@ -660,12 +675,11 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 		this.notes = notes;
 	}
 	
+
 	public List<NeuralConfiguration> getNeuralConfigurations() {
 		return neuralConfigurations;
 	}
 	
-	
-
 	public void setNeuralConfigurations(
 			List<NeuralConfiguration> neuralConfigurations) {
 		this.neuralConfigurations = neuralConfigurations;

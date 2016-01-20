@@ -5,6 +5,9 @@ import java.util.List;
 
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
+import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
+import com.munch.exchange.model.core.ib.neural.NeuralInput;
+import com.munch.exchange.model.core.ib.neural.NeuralTrainingElement;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
 import com.munch.exchange.services.ejb.interfaces.IIBNeuralProvider;
 import com.munch.exchange.services.ejb.interfaces.NeuralBeanRemote;
@@ -69,10 +72,51 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 	}
 
 	@Override
-	public void updateNeuralConfiguration(NeuralConfiguration configuration) {
+	public List<NeuralInput> updateNeuralInputs(NeuralConfiguration configuration) {
 		if(beanRemote==null)init();
 		
-		beanRemote.getService().updateNeuralConfiguration(configuration);
+		/*List<NeuralInput> neuralInputs=*/beanRemote.getService().updateNeuralInputs(configuration);
+		
+		return loadNeuralInputs(configuration);
+	}
+
+	@Override
+	public List<NeuralInput> loadNeuralInputs(NeuralConfiguration configuration) {
+		if(beanRemote==null)init();
+		
+		List<NeuralInput> neuralInputs=beanRemote.getService().loadNeuralInputs(configuration);
+		configuration.setNeuralInputs(neuralInputs);
+		
+		for(NeuralInput input: neuralInputs){
+			input.setNeuralConfiguration(configuration);
+		}
+		
+		return neuralInputs;
+	}
+
+	@Override
+	public List<NeuralTrainingElement> loadTrainingData(
+			NeuralConfiguration configuration) {
+		if(beanRemote==null)init();
+		
+		List<NeuralTrainingElement> elements=beanRemote.getService().loadTrainingData(configuration);
+		configuration.setNeuralTrainingElements(elements);
+		
+		for(NeuralTrainingElement element: elements){
+			element.setNeuralConfiguration(configuration);
+		}
+		
+		return elements;
+	}
+
+	@Override
+	public List<NeuralTrainingElement> updateTrainingData(
+			NeuralConfiguration configuration) {
+		if(beanRemote==null)init();
+		
+		beanRemote.getService().updateTrainingData(configuration);
+		
+		return loadTrainingData(configuration);
 	}
 	
 	

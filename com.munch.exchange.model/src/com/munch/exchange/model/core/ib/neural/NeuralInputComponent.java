@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib.neural;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,6 +12,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
+
+import org.encog.util.arrayutil.NormalizationAction;
+import org.encog.util.arrayutil.NormalizedField;
 
 import com.munch.exchange.model.core.ib.Copyable;
 
@@ -48,16 +53,25 @@ public class NeuralInputComponent implements Serializable, Copyable<NeuralInputC
 	
 	private double lowerRange;
 	
+	@Transient
+	private double[] values;
 	
+	@Transient
+	private double[] times;
+	
+	@Transient
+	private double[] adaptedValues;
+	
+	@Transient
+	private double[] adaptedtimes;
+	
+	@Transient
+	private NormalizedField normalizedField;
 	
 
 	public NeuralInputComponent() {
 		super();
 	}
-
-
-
-
 
 	@Override
 	public NeuralInputComponent copy() {
@@ -74,8 +88,87 @@ public class NeuralInputComponent implements Serializable, Copyable<NeuralInputC
 		
 		return c;
 	}
+	
+	
+	public String getName(){
+		String name=neuralInput.getName()+" "+componentType.toString()+" "+offset;
+		switch (this.componentType) {
+		case DIFF:
+			name+=" "+period;
+			break;
+		case MEAN:
+			name+=" "+period;
+			break;
+		default:
+			break;
+		}
+		
+		
+		return name;
+	}
+	
+	public void computeValues(){
+		
+		if (values == null || times == null || values.length == 0
+				|| times.length == 0) {
 
-	public int getId() {
+			double[][] valuesTimes = null;
+			switch (componentType) {
+			case DIRECT:
+				valuesTimes = computeDirect(neuralInput.getValues(),
+						neuralInput.getTimes(), offset);
+				break;
+			case DIFF:
+				valuesTimes = computeDiff(neuralInput.getValues(),
+						neuralInput.getTimes(), offset, period);
+				break;
+			case MEAN:
+				valuesTimes = computeMean(neuralInput.getValues(),
+						neuralInput.getTimes(), offset, period);
+				break;
+			}
+			if (valuesTimes == null)
+				return;
+
+			values = valuesTimes[0];
+			times = valuesTimes[1];
+		}
+	}
+	
+	public void computeRanges(){
+		if(values==null)return;
+		
+		upperRange=Double.NEGATIVE_INFINITY;
+		lowerRange=Double.POSITIVE_INFINITY;
+		
+		for(int i=0;i<values.length;i++){
+			if(values[i]>upperRange){
+				upperRange=values[i];
+			}
+			if(values[i]<lowerRange){
+				lowerRange=values[i];
+			}
+		}
+		
+		
+	}
+	
+	public double getNormalizedAdaptedValueAt(int i){
+		double value=adaptedValues[i];
+		
+		if(normalizedField==null){
+			normalizedField=new NormalizedField(NormalizationAction.Normalize, this.getName(), lowerRange, upperRange, -0.9, 0.9);
+		}
+		
+		return normalizedField.normalize(value);
+	}
+	
+//	#######################
+//	##   GETTER & SETTER ##
+//	#######################
+	
+	
+	 public int getId() {
 		return id;
 	}
 
@@ -127,12 +220,131 @@ public class NeuralInputComponent implements Serializable, Copyable<NeuralInputC
 		return lowerRange;
 	}
 
-
 	public void setLowerRange(double lowerRange) {
 		this.lowerRange = lowerRange;
 	}
 	
+
+
+	public double[] getValues() {
+		return values;
+	}
+	
+
+
+	public void setValues(double[] values) {
+		this.values = values;
+	}
+	
+
+
+	public double[] getTimes() {
+		return times;
+	}
+	
+
+
+	public void setTimes(double[] times) {
+		this.times = times;
+	}
+	
+
+
+	public double[] getAdaptedValues() {
+		return adaptedValues;
+	}
+	
+
+
+	public void setAdaptedValues(double[] adaptedValues) {
+		this.adaptedValues = adaptedValues;
+	}
+	
+	public void setAdaptedValues(LinkedList<Double> adaptedValues) {
+		double[] adaptedValuesArray=new double[adaptedValues.size()];
+		int i=0;
+		for(Double value:adaptedValues){
+			adaptedValuesArray[i]=value;
+			i++;
+		}
+		this.setAdaptedValues(adaptedValuesArray);
+	}
+	
+
+
+	public double[] getAdaptedtimes() {
+		return adaptedtimes;
+	}
+	
+
+
+	public void setAdaptedtimes(double[] adaptedtimes) {
+		this.adaptedtimes = adaptedtimes;
+	}
+	
+	public void setAdaptedtimes(LinkedList<Double> adaptedTimes) {
+		double[] adaptedTimesArray=new double[adaptedTimes.size()];
+		int i=0;
+		for(Double time:adaptedTimes){
+			adaptedTimesArray[i]=time;
+			i++;
+		}
+		this.setAdaptedtimes(adaptedTimesArray);
+	}
 	
 	
+	private static double[][] computeDirect(double[] in_values, double[] in_times, int offset){
+		if(in_values.length !=in_times.length)return null;
+		int size=in_values.length-offset;
+		if(size<1)return null;
+		
+		double[] values=new double[size];
+		double[] times=new double[size];
+		
+		for(int i=0;i<size;i++){
+			values[i]=in_values[i];
+			times[i]=in_times[i+offset];
+		}
+		
+		double[][] valuesTimes={values, times};
+		return valuesTimes;
+	}
+	
+	private static double[][] computeDiff(double[] in_values, double[] in_times, int offset, int period){
+		double[][] in_valuesTimes = computeDirect(in_values, in_times, offset);
+		if(in_valuesTimes==null)return null;
+		
+		int size=in_valuesTimes[0].length-period;
+		double[] values=new double[size];
+		double[] times=new double[size];
+		
+		for(int i=0;i<size;i++){
+			values[i]=in_valuesTimes[0][i+period]-in_valuesTimes[0][i];
+			times[i]=in_valuesTimes[1][i+period];
+		}
+		
+		double[][] valuesTimes={values, times};
+		return valuesTimes;
+	}
+	
+	private static double[][] computeMean(double[] in_values, double[] in_times, int offset, int period){
+		double[][] in_valuesTimes = computeDirect(in_values, in_times, offset);
+		if(in_valuesTimes==null)return null;
+		
+		int size=in_valuesTimes[0].length-period;
+		double[] values=new double[size];
+		double[] times=new double[size];
+		
+		for(int i=0;i<size;i++){
+			for(int j=0;j<=period;j++){
+				values[i]+=in_valuesTimes[0][i+j];
+			}
+			values[i]/=period;
+			times[i]=in_valuesTimes[1][i+period];
+		}
+		
+		double[][] valuesTimes={values, times};
+		return valuesTimes;
+	}
 
 }

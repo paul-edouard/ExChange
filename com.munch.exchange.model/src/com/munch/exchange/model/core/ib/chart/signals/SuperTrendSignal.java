@@ -74,7 +74,7 @@ public class SuperTrendSignal extends IbChartSignal {
 	@Override
 	public void computeSignalPointFromBarBlock(List<IbBar> bars, boolean reset) {
 		
-		long[] times=this.getTimeArray(bars);
+		long[] times=IbBar.getTimeArray(bars);
 		
 		//Set all signal point to -1
 		//System.out.println("Bar Size: "+bars.size()+", Valid at position: "+this.getValidAtPosition());
@@ -88,9 +88,9 @@ public class SuperTrendSignal extends IbChartSignal {
 		}
 		
 		
-		double[] close=this.barsToDoubleArray(bars, DataType.CLOSE);
-		double[] high=this.barsToDoubleArray(bars, DataType.HIGH);
-		double[] low=this.barsToDoubleArray(bars, DataType.LOW);
+		double[] close=IbBar.barsToDoubleArray(bars, DataType.CLOSE);
+		double[] high=IbBar.barsToDoubleArray(bars, DataType.HIGH);
+		double[] low=IbBar.barsToDoubleArray(bars, DataType.LOW);
 		
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
 		double factor=this.getChartParameter(FACTOR).getValue();

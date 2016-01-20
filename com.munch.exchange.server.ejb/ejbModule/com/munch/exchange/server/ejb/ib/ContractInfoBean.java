@@ -17,6 +17,7 @@ import com.ib.controller.NewContract;
 import com.ib.controller.NewContractDetails;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.server.ejb.ib.topmktdata.TopMktDataMsgSenderCollector;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
 
@@ -195,7 +196,9 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 
 	@Override
 	public List<IbContract> getAllContracts() {
-		return em.createNamedQuery("IbContract.getAll", IbContract.class).getResultList();
+		List<IbContract> contracts=em.createNamedQuery("IbContract.getAll", IbContract.class).getResultList();
+		em.flush();
+		return contracts;
 	}
 
 	@Override
@@ -208,6 +211,15 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	public IbCommission update(IbCommission commission) {
 		em.merge(commission);
 		return commission;
+	}
+
+	@Override
+	public IbBarContainer getBarContainer(IbContract contract,long id) {
+		IbContract c=getContract(contract.getId());
+		for(IbBarContainer container:c.getBars()){
+			if(container.getId()==id)return container;
+		}
+		return null;
 	}
 
 	

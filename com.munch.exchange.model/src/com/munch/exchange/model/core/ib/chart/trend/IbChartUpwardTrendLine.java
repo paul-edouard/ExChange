@@ -109,8 +109,8 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 				this.getChartParameter(OFFSET).getIntegerValue();
 		double factor=this.getChartParameter(FACTOR).getValue();
 		
-		double[] Eprices=this.barsToDoubleArray(bars, DataType.LOW,numberOfValues);
-		long[] Etimes=this.getTimeArray(bars,numberOfValues);
+		double[] Eprices=IbBar.barsToDoubleArray(bars, DataType.LOW,numberOfValues);
+		long[] Etimes=IbBar.getTimeArray(bars,numberOfValues);
 		
 		if(period>Eprices.length){
 			logger.info("Period is too lang, the max value is: "+Eprices.length);

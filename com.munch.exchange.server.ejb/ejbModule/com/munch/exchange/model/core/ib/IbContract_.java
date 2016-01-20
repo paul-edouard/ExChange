@@ -10,7 +10,7 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-01-03T11:07:39.444+0100")
+@Generated(value="Dali", date="2016-01-17T17:46:18.887+0100")
 @StaticMetamodel(IbContract.class)
 public class IbContract_ {
 	public static volatile SingularAttribute<IbContract, Integer> id;

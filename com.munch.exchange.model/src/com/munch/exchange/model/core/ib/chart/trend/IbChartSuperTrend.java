@@ -95,11 +95,11 @@ public class IbChartSuperTrend extends IbChartIndicator{
 
 	@Override
 	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
-		double[] close=this.barsToDoubleArray(bars, DataType.CLOSE);
-		double[] high=this.barsToDoubleArray(bars, DataType.HIGH);
-		double[] low=this.barsToDoubleArray(bars, DataType.LOW);
+		double[] close=IbBar.barsToDoubleArray(bars, DataType.CLOSE);
+		double[] high=IbBar.barsToDoubleArray(bars, DataType.HIGH);
+		double[] low=IbBar.barsToDoubleArray(bars, DataType.LOW);
 		
-		long[] times=this.getTimeArray(bars);
+		long[] times=IbBar.getTimeArray(bars);
 		
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
 		double factor=this.getChartParameter(FACTOR).getValue();

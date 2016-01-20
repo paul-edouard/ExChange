@@ -16,6 +16,7 @@ import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorFactory;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
 
 
 
@@ -39,7 +40,6 @@ public class IbBarContainer extends IbBar implements Copyable<IbBarContainer>{
 	
 	@OneToOne(mappedBy="container",cascade=CascadeType.ALL)
 	private IbChartIndicatorGroup indicatorGroup;
-	
 	
 	public IbBarContainer(IbContract contract, WhatToShow whatToShow) {
 		super();

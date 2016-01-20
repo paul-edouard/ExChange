@@ -1,13 +1,12 @@
 package com.munch.exchange.services.ejb.providers;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
-import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
-import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
 import com.munch.exchange.services.ejb.interfaces.HistoricalDataBeanRemote;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
@@ -48,7 +47,9 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 	public List<IbBar> getAllBars(IbBarContainer exContractBars,
 			BarSize size) {
 		if(beanRemote==null)init();
-		return beanRemote.getService().getAllBars(exContractBars,size);
+		List<IbBar> bars=beanRemote.getService().getAllBars(exContractBars,size);
+		Collections.sort(bars);
+		return bars;
 	}
 
 	@Override

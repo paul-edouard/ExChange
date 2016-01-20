@@ -260,7 +260,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		//Clean the Signal Series close the empty block with 0
 //		startTimeCounter();
 //		long interval=bars.get(0).getIntervallInSec();
-//		cleanSignalSerie(interval);
+		cleanSignalSerie();
 //		stopTimeCounter("Clean the Signal Series close the empty block with 0");
 		
 		//Create the Signal Map
@@ -422,10 +422,11 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	 * 
 	 * @param interval
 	 */
-	private void cleanSignalSerie(long interval){
+	private void cleanSignalSerie(){
 		if(this.getSignalSerie().getPoints().size()==0)
 			return;
 		
+		/*
 		List<IbChartPoint> points=this.getSignalSerie().getPoints();
 		
 		long timePoint=points.get(0).getTime();
@@ -441,21 +442,17 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			
 		}
 		this.getSignalSerie().sortPoints();
-		
+		*/
 		//Clean signal Serie for contract that allow only long position
 		IbContract contract= getContract();
 		if(contract==null)return;
+		if(contract.allowShortPosition())return;
 		
-		if(contract.getSecType()==SecType.STK){
-			//Set negative signal (short) to neutral
-			for(int i=0;i<this.getSignalSerie().getPoints().size();i++){
-				IbChartPoint point=this.getSignalSerie().getPoints().get(i);
-				if(point.getValue()<this.getNeutralSignal())
-					point.setValue(this.getNeutralSignal());
-				
+		for(IbChartPoint point:this.getSignalSerie().getPoints()){
+			if(point.getValue()<this.getNeutralSignal()){
+				point.setValue(this.getNeutralSignal());
 			}
 		}
-		
 		
 		
 	}
@@ -537,6 +534,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	private IbContract getContract(){
 		if(contract==null){
+			if(this.getGroup()==null)return null;
 			IbChartIndicatorGroup rootGroup=this.getGroup().getRoot();
 			if(rootGroup!=null && rootGroup.getContainer()!=null)
 				contract=rootGroup.getContainer().getContract();

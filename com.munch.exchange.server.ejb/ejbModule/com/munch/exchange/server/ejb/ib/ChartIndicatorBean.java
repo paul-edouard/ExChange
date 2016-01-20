@@ -9,8 +9,10 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
+import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.services.ejb.interfaces.ChartIndicatorBeanRemote;
@@ -88,10 +90,20 @@ public class ChartIndicatorBean implements ChartIndicatorBeanRemote{
 
 	@Override
 	public IbChartSignal getSignal(int id) {
-		System.out.println("Try to get the signal!");
+//		System.out.println("Try to get the signal!");
 		IbChartSignal signal = em.find(IbChartSignal.class, id);
-		System.out.println("Signal: "+signal.getId());
+//		System.out.println("Signal: "+signal.getId());
 		return (IbChartSignal)signal.copy();
+	}
+
+	@Override
+	public IbChartSerie getSerie(int id) {
+		return em.find(IbChartSerie.class, id).copy();
+	}
+
+	@Override
+	public IbChartIndicator getIndicator(int id) {
+		return em.find(IbChartIndicator.class, id).copy();
 	}
 
 	

@@ -13,7 +13,8 @@ import com.munch.exchange.services.internal.yql.json.JSONTokener;
 
 public class FredApi {
 	
-	protected static String URL="http://api.stlouisfed.org/fred/";
+//	protected static String URL="http://api.stlouisfed.org/fred/";
+	protected static String URL="none";
 	
 	private static Logger logger = Logger.getLogger(FredApi.class);
 	

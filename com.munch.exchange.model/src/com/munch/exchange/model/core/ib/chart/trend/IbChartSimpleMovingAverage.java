@@ -73,8 +73,8 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 
 	@Override
 	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
-		double[] prices=this.barsToDoubleArray(bars, DataType.CLOSE);
-		long[] times=this.getTimeArray(bars);
+		double[] prices=IbBar.barsToDoubleArray(bars, DataType.CLOSE);
+		long[] times=IbBar.getTimeArray(bars);
 		double[] sma=MovingAverage.SMA(prices,
 			this.getChartParameter(PERIOD).getIntegerValue());
 		if(reset){

@@ -15,12 +15,14 @@ import javax.persistence.Inheritance;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
 import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
+import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
 
 @Entity
 @Inheritance
@@ -35,6 +37,10 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private int id;
+	
+	@OneToOne(fetch=FetchType.EAGER)
+	@JoinColumn(name="NEURAL_INPUT_ID")
+	private NeuralIndicatorInput neuralIndicatorInput;
 	
 	protected String name;
 	private boolean isActivated=false;
@@ -298,6 +304,14 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	}
 	
 	
+	public NeuralIndicatorInput getNeuralIndicatorInput() {
+		return neuralIndicatorInput;
+	}
+
+	public void setNeuralIndicatorInput(NeuralIndicatorInput neuralIndicatorInput) {
+		this.neuralIndicatorInput = neuralIndicatorInput;
+	}
+
 	public abstract void initName();
 	
 	public abstract void createSeries();
@@ -335,34 +349,7 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	
 	//public abstract void computeLast(List<IbBar> bars);
 	
-	protected double[] barsToDoubleArray(List<IbBar> bars,DataType dataType){
-		return barsToDoubleArray(bars, dataType, bars.size());
-	}
 	
-	protected double[] barsToDoubleArray(List<IbBar> bars,DataType dataType,int numberOfValues){
-		int min=Math.min(bars.size(), numberOfValues);
-		int last=bars.size()-min;
-		double[] array=new double[min];
-		for(int i=bars.size()-1;i>=last;i--){
-			array[i-last]=bars.get(i).getData(dataType);
-		}
-		return array;
-	}
-	
-	protected long[] getTimeArray(List<IbBar> bars,int numberOfValues){
-		int min=Math.min(bars.size(), numberOfValues);
-		int last=bars.size()-min;
-		long[] array=new long[min];
-		for(int i=bars.size()-1;i>=last;i--){
-			array[i-last]=bars.get(i).getTimeInMs();
-		}
-		return array;
-	}
-	
-	protected long[] getTimeArray(List<IbBar> bars){
-		return getTimeArray(bars, bars.size());
-	}
-
 	protected List<IbBar> isolateLastNeededBars(List<IbBar> bars){
 		
 		LinkedList<IbBar> neededBars=new LinkedList<IbBar>();

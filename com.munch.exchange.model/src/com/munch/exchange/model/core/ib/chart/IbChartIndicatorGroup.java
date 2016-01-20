@@ -16,6 +16,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
+import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
@@ -41,6 +42,9 @@ ComparableAttributes<IbChartIndicatorGroup>{
 	
 	@Transient
 	private boolean isDirty=false;
+	
+	@Transient
+	private BarSize barSize;
 	
 	@OneToMany(mappedBy="group",cascade=CascadeType.ALL)
 	private List<IbChartIndicator> indicators;
@@ -128,6 +132,18 @@ ComparableAttributes<IbChartIndicatorGroup>{
 	public IbChartIndicator searchIndicator(String name){
 		for(IbChartIndicator ind:indicators){
 			if(ind.getName().equals(name))return ind;
+		}
+		return null;
+	}
+	
+	public IbChartIndicator searchIndicator(int id){
+		for(IbChartIndicatorGroup child:this.getChildren()){
+			IbChartIndicator indicator=child.searchIndicator(id);
+			if(indicator!=null)return indicator;
+		}
+		
+		for(IbChartIndicator ind:indicators){
+			if(ind.getId()==id)return ind;
 		}
 		return null;
 	}
@@ -281,6 +297,16 @@ ComparableAttributes<IbChartIndicatorGroup>{
 	public void setContainer(IbBarContainer container) {
 		this.container = container;
 	}
+
+	public BarSize getBarSize() {
+		return barSize;
+	}
+
+	public void setBarSize(BarSize barSize) {
+		this.barSize = barSize;
+	}
+	
+	
 	
 	//Listener
 	/*

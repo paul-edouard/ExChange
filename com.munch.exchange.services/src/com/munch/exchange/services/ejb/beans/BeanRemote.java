@@ -7,8 +7,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
-
 
 public class BeanRemote<T> {
 	
@@ -157,6 +155,8 @@ public class BeanRemote<T> {
 			jndiProps.put("jboss.naming.client.ejb.context", true);
 			// create a context passing these properties
 			context = new InitialContext(jndiProps);
+			
+			System.out.println("Creation of the context: "+context.toString());
 
 		}
 		return context;

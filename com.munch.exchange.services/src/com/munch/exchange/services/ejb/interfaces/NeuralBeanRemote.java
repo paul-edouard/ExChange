@@ -6,6 +6,8 @@ import javax.ejb.Remote;
 
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
+import com.munch.exchange.model.core.ib.neural.NeuralInput;
+import com.munch.exchange.model.core.ib.neural.NeuralTrainingElement;
 
 
 
@@ -17,7 +19,15 @@ public interface NeuralBeanRemote {
 	public List<NeuralConfiguration> getNeuralConfigurations(IbContract contract);
 	public NeuralConfiguration addNeuralConfiguration(IbContract contract,String configurationName);
 	public void removeNeuralConfiguration(IbContract contract,NeuralConfiguration configuration);
-	public void updateNeuralConfiguration(NeuralConfiguration configuration);
+	
+	//Neural Inputs
+	public List<NeuralInput> loadNeuralInputs(NeuralConfiguration configuration);
+	public List<NeuralInput> updateNeuralInputs(NeuralConfiguration configuration);
+	
+	//Training Data
+	public List<NeuralTrainingElement> loadTrainingData(NeuralConfiguration configuration);
+	public List<NeuralTrainingElement> updateTrainingData(NeuralConfiguration configuration);
+	
 	
 	
 }

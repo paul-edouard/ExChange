@@ -1364,30 +1364,6 @@ IbChartSignalOptimizationControllerListener{
 		}
 		
 
-		private LinkedList<LinkedList<IbBar>> collectOptimizationBlocks(LinkedList<LinkedList<IbBar>> allBlocks, int percentRequired){
-			LinkedList<LinkedList<IbBar>> optBlocks=new LinkedList<>();
-			int numberOfBars=0;
-			//int percentRequired=spinnerPercentOfData.getSelection();
-			int numberOfRequired=allCollectedBars.size()*percentRequired/100;
-			//logger.info("Percent of bars required: "+percentRequired);
-			//logger.info("Number of required bars: "+numberOfRequired);
-			
-			while(numberOfBars<numberOfRequired ){
-				
-				if(allBlocks.isEmpty())break;
-				
-				Random rand = new Random();
-				int index=rand.nextInt(allBlocks.size());
-				LinkedList<IbBar> removedBlock=allBlocks.remove(index);
-				optBlocks.add(removedBlock);
-				
-				numberOfBars+=removedBlock.size();
-			}
-			//logger.info("Number of blocks: "+optBlocks.size());
-			//logger.info("Number of bars: "+numberOfBars);
-			
-			return optBlocks;
-		}
 		
 		/*
 		private LinkedList<LinkedList<IbBar>> splitCollectedBarsInBlocks(){
@@ -1474,7 +1450,7 @@ IbChartSignalOptimizationControllerListener{
 		if(!optimizationBarsMap.containsKey(bazSize+percentOfDataRequired)){
 			
 			LinkedList<LinkedList<IbBar>> allBlocks=IbBar.splitBarListInWeekBlocks(allCollectedBars);
-			LinkedList<LinkedList<IbBar>> optBlocks=collectOptimizationBlocks(allBlocks,percentOfDataRequired);
+			LinkedList<LinkedList<IbBar>> optBlocks=IbBar.collectPercentageOfBlocks(allBlocks,percentOfDataRequired);
 		
 			LinkedList<IbBar> optimizationBars=new LinkedList<IbBar>();
 			HashSet<Long> timeSet=new HashSet<>();
@@ -1501,32 +1477,6 @@ IbChartSignalOptimizationControllerListener{
 			
 		}
 	}
-	
-	private LinkedList<LinkedList<IbBar>> collectOptimizationBlocks(LinkedList<LinkedList<IbBar>> allBlocks, int percentRequired){
-		LinkedList<LinkedList<IbBar>> optBlocks=new LinkedList<>();
-		int numberOfBars=0;
-		//int percentRequired=spinnerPercentOfData.getSelection();
-		int numberOfRequired=allCollectedBars.size()*percentRequired/100;
-		//logger.info("Percent of bars required: "+percentRequired);
-		//logger.info("Number of required bars: "+numberOfRequired);
-		
-		while(numberOfBars<numberOfRequired ){
-			
-			if(allBlocks.isEmpty())break;
-			
-			Random rand = new Random();
-			int index=rand.nextInt(allBlocks.size());
-			LinkedList<IbBar> removedBlock=allBlocks.remove(index);
-			optBlocks.add(removedBlock);
-			
-			numberOfBars+=removedBlock.size();
-		}
-		//logger.info("Number of blocks: "+optBlocks.size());
-		//logger.info("Number of bars: "+numberOfBars);
-		
-		return optBlocks;
-	}
-	
 	
 	
 	//#######################################################

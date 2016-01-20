@@ -2,8 +2,10 @@ package com.munch.exchange.services.ejb.providers;
 
 import java.util.List;
 
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
+import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
@@ -76,6 +78,18 @@ public class IBChartIndicatorProvider implements IIBChartIndicatorProvider {
 	public IbChartSignal getSignal(int id) {
 		if(beanRemote==null)init();
 		return beanRemote.getService().getSignal(id);
+	}
+
+	@Override
+	public IbChartSerie getSerie(int id) {
+		if(beanRemote==null)init();
+		return beanRemote.getService().getSerie(id);
+	}
+
+	@Override
+	public IbChartIndicator getIndicator(int id) {
+		if(beanRemote==null)init();
+		return beanRemote.getService().getIndicator(id);
 	}
 
 	

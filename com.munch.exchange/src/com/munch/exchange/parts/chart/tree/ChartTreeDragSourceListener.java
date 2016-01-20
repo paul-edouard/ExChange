@@ -6,9 +6,13 @@ import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.dnd.TextTransfer;
 
+import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.chart.ChartIndicator;
+import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
+import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 
 public class ChartTreeDragSourceListener implements DragSourceListener  {
 	
@@ -28,11 +32,14 @@ public class ChartTreeDragSourceListener implements DragSourceListener  {
 
 	@Override
 	public void dragStart(DragSourceEvent event) {
-		System.out.println("Start Drag");
+//		System.out.println("Start Drag");
 	}
 
 	@Override
 	public void dragSetData(DragSourceEvent event) {
+		
+//		System.out.println("Drag Set Data");
+		
 		// Here you do the convertion to the type which is expected.
 	    IStructuredSelection selection = (IStructuredSelection) treeViewer
 	    .getSelection();
@@ -52,6 +59,21 @@ public class ChartTreeDragSourceListener implements DragSourceListener  {
 	    			dataString += String.valueOf(indicator.getId())+"\n"; 
 	    		}
 	    	}
+	    	else if(array[j] instanceof IbChartSerie){
+	    		IbChartSerie serie=(IbChartSerie) array[j];
+	    		IbChartIndicator indicator=serie.getIndicator();
+	    		BarSize barSize=indicator.getGroup().getRoot().getBarSize();
+	    		IbBarContainer container=indicator.getGroup().getRoot().getContainer();
+	    		IbContract contract=container.getContract();
+	    		
+	    		if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+	    			//Contract
+	    			dataString += contract.getId()+";"+container.getId()+";"+
+	    			barSize.toString()+";"+indicator.getId()+";"+serie.getName();
+//	    			System.out.println("dataString="+dataString);
+	    		}
+	    		
+	    	}
 	    }
 	    
 	    event.data=dataString;
@@ -60,7 +82,7 @@ public class ChartTreeDragSourceListener implements DragSourceListener  {
 
 	@Override
 	public void dragFinished(DragSourceEvent event) {
-		System.out.println("Finshed Drag");
+//		System.out.println("Finshed Drag");
 	}
 	
 	
