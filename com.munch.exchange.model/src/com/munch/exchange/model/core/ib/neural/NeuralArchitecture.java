@@ -2,6 +2,7 @@ package com.munch.exchange.model.core.ib.neural;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -116,12 +117,14 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	@GeneratedValue(strategy=GenerationType.AUTO)
  	private int id;
 	
+	private String name;
+	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="CONFIGURATION_ID")
 	private NeuralConfiguration neuralConfiguration;
 
 	@OneToMany(mappedBy="neuralArchitecture",cascade=CascadeType.ALL)
-	private List<NeuralNetwork> neuralNetworks;
+	private List<NeuralNetwork> neuralNetworks=new LinkedList<NeuralNetwork>();
 	
 	@Enumerated(EnumType.STRING)
 	private ArchitectureType type=ArchitectureType.FeedFoward;
@@ -140,8 +143,21 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 
 	@Override
 	public NeuralArchitecture copy() {
-		// TODO Auto-generated method stub
-		return null;
+		NeuralArchitecture cp=new NeuralArchitecture();
+		
+		cp.id=this.id;
+		cp.name=this.name;
+		cp.neuralConfiguration=this.neuralConfiguration;
+		cp.type=this.type;
+		cp.hiddenLayerDescription=this.hiddenLayerDescription;
+		cp.activation=this.activation;
+		
+		cp.neuralNetworks=new LinkedList<NeuralNetwork>();
+		for(NeuralNetwork network:this.neuralNetworks){
+			cp.neuralNetworks.add(network.copy());
+		}
+		
+		return cp;
 	}
 	
 	@Override
@@ -169,9 +185,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 //		Get the number of inputs
 		int nbOfInputNeurons=0;
 		for (NeuralInput input : neuralConfiguration.getNeuralInputs()) {
-			for(NeuralInputComponent component: input.getComponents()){
-				nbOfInputNeurons++;
-			}
+			nbOfInputNeurons+=input.getComponents().size();
 		}
 		
 //		Get the number of output
@@ -183,11 +197,39 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		}
 		int nbOfOutputNeurons=encode(Position.NEUTRAL).length;
 		
+		int[] hiddenLayers=hiddenLayerDescriptionToIntArray();
 		
+		//Create the pattern
+		NeuralNetworkPattern pattern=type.getPattern();
+		if(pattern==null)return null;
 		
+		//Set the pattern
+		pattern.setInputNeurons(nbOfInputNeurons);
+		for(int i=0;i<hiddenLayers.length;i++){
+			pattern.addHiddenLayer(hiddenLayers[i]);
+		}
+		pattern.setOutputNeurons(nbOfOutputNeurons);
+		pattern.setActivationFunction(activation.getFunc());
 		
-		return null;
+		BasicNetwork network = (BasicNetwork)pattern.generate();
+		network.reset();
+		
+		return network;
 	}
+	
+	private int[] hiddenLayerDescriptionToIntArray(){
+		if(hiddenLayerDescription == null|| hiddenLayerDescription.isEmpty())
+			return null;
+		
+		String[] hidddenLayersDes=hiddenLayerDescription.split(",");
+		int[] hiddenLayers=new int[hidddenLayersDes.length];
+		for(int i=0;i<hidddenLayersDes.length;i++){
+			hiddenLayers[i]=Integer.valueOf(hidddenLayersDes[i]);
+		}
+		
+		return hiddenLayers;
+	}
+	
 	
 	private double[] encode(Position pos){
 		if(equilateralOutput==null)return null;
@@ -213,6 +255,22 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Activation getActivation() {
+		return activation;
+	}
+
+	public void setActivation(Activation activation) {
+		this.activation = activation;
 	}
 
 	public NeuralConfiguration getNeuralConfiguration() {

@@ -5,6 +5,7 @@ import java.util.List;
 import javax.ejb.Remote;
 
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralInput;
 import com.munch.exchange.model.core.ib.neural.NeuralTrainingElement;
@@ -27,6 +28,10 @@ public interface NeuralBeanRemote {
 	//Training Data
 	public List<NeuralTrainingElement> loadTrainingData(NeuralConfiguration configuration);
 	public List<NeuralTrainingElement> updateTrainingData(NeuralConfiguration configuration);
+	
+	//Neural Architectures
+	public List<NeuralArchitecture> loadNeuralArchitecture(NeuralConfiguration configuration);
+	public List<NeuralArchitecture> updateNeuralArchitecture(NeuralConfiguration configuration);
 	
 	
 	

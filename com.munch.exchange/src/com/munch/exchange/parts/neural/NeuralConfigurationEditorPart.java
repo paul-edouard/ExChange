@@ -25,6 +25,7 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -42,6 +43,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -52,6 +54,7 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.wb.swt.ResourceManager;
 
 import com.ib.controller.Types.WhatToShow;
+import com.munch.exchange.dialog.AddNeuralArchitectureDialog;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
@@ -77,6 +80,9 @@ public class NeuralConfigurationEditorPart {
 	private Button btnResetMinmax;
 	private Button btnEdit;
 	private TabFolder tabFolder;
+	
+	@Inject
+	private Shell shell;
 	
 	@Inject
 	IEclipseContext context;
@@ -109,6 +115,9 @@ public class NeuralConfigurationEditorPart {
 	private Combo comboReferenceData;
 	private Combo comboSplitStrategy;
 	private Combo comboBarSize;
+	private Tree treeArchitecture;
+	private TreeViewer treeViewerArchitecture;
+	private ProgressBar progressBarArchitecture;
 	
 	
 	@Inject
@@ -481,13 +490,54 @@ public class NeuralConfigurationEditorPart {
 		textNbOfData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		textNbOfData.setEditable(false);
 		
+		
+		
+//		#############################
+//		##       ARCHITECTURE      ##
+//		#############################
+		
 		TabItem tbtmArchitectures = new TabItem(tabFolder, SWT.NONE);
 		tbtmArchitectures.setImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/eclipse/action3.gif"));
 		tbtmArchitectures.setText("Architectures");
 		
-		Composite compositeArchitectures = new Composite(tabFolder, SWT.NONE);
-		tbtmArchitectures.setControl(compositeArchitectures);
-		compositeArchitectures.setLayout(new GridLayout(1, false));
+		Composite compositeArchitecture = new Composite(tabFolder, SWT.NONE);
+		tbtmArchitectures.setControl(compositeArchitecture);
+		compositeArchitecture.setLayout(new GridLayout(1, false));
+		
+		Composite compositeArchitectureTop = new Composite(compositeArchitecture, SWT.NONE);
+		compositeArchitectureTop.setLayout(new GridLayout(1, false));
+		compositeArchitectureTop.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		treeViewerArchitecture = new TreeViewer(compositeArchitectureTop, SWT.BORDER);
+		treeArchitecture = treeViewerArchitecture.getTree();
+		treeArchitecture.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		Menu menuArchitecture = new Menu(treeArchitecture);
+		treeArchitecture.setMenu(menuArchitecture);
+		
+		MenuItem mntmAddNew = new MenuItem(menuArchitecture, SWT.NONE);
+		mntmAddNew.setImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/eclipse/add_obj.gif"));
+		mntmAddNew.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				AddNeuralArchitectureDialog dialog=new AddNeuralArchitectureDialog(shell);
+				if (dialog.open() == Window.OK) {
+//					logger.info("Architecture Name: "+dialog.getNeuralArchitecture().getName());
+					neuralConfiguration.getNeuralArchitectures().add(dialog.getNeuralArchitecture());
+					dialog.getNeuralArchitecture().setNeuralConfiguration(neuralConfiguration);
+					neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+				}
+			}
+		});
+		mntmAddNew.setText("Add New");
+		
+		Composite compositeArchitectureBottom = new Composite(compositeArchitecture, SWT.NONE);
+		compositeArchitectureBottom.setLayout(new GridLayout(1, false));
+		compositeArchitectureBottom.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		
+		progressBarArchitecture = new ProgressBar(compositeArchitectureBottom, SWT.NONE);
+		progressBarArchitecture.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		progressBarArchitecture.setBounds(0, 0, 260, 26);
 		
 		
 //		########################
@@ -500,6 +550,7 @@ public class NeuralConfigurationEditorPart {
 	private void preGuiFunc(){
 		logger.info("Neural Config: "+neuralConfiguration);
 		neuralProvider.loadNeuralInputs(neuralConfiguration);
+		neuralProvider.loadNeuralArchitecture(neuralConfiguration);
 	}
 	
 	private void postGuiFunc(){

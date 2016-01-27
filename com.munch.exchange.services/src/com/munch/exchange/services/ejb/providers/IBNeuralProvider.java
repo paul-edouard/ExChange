@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
 import com.munch.exchange.model.core.ib.neural.NeuralInput;
@@ -117,6 +118,31 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 		beanRemote.getService().updateTrainingData(configuration);
 		
 		return loadTrainingData(configuration);
+	}
+
+	@Override
+	public List<NeuralArchitecture> loadNeuralArchitecture(
+			NeuralConfiguration configuration) {
+		if(beanRemote==null)init();
+		
+		List<NeuralArchitecture> neuralArchitectures=beanRemote.getService().loadNeuralArchitecture(configuration);
+		configuration.setNeuralArchitectures(neuralArchitectures);
+		
+		for(NeuralArchitecture neuralArchitecture: neuralArchitectures){
+			neuralArchitecture.setNeuralConfiguration(configuration);
+		}
+		
+		return neuralArchitectures;
+	}
+
+	@Override
+	public List<NeuralArchitecture> updateNeuralArchitecture(
+			NeuralConfiguration configuration) {
+		if(beanRemote==null)init();
+		
+		beanRemote.getService().updateNeuralArchitecture(configuration);
+		
+		return loadNeuralArchitecture(configuration);
 	}
 	
 	

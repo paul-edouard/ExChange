@@ -11,6 +11,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
 import com.munch.exchange.model.core.ib.neural.NeuralInput;
@@ -195,6 +196,56 @@ public class NeuralBean implements NeuralBeanRemote{
 		
 		
 		return savedConfig.getNeuralTrainingElements();
+	}
+
+
+	@Override
+	public List<NeuralArchitecture> loadNeuralArchitecture(
+			NeuralConfiguration configuration) {
+		NeuralConfiguration savedConfig=em.find(NeuralConfiguration.class, configuration.getId());
+		savedConfig.getNeuralArchitectures().size();
+		
+		List<NeuralArchitecture> architectures=new LinkedList<NeuralArchitecture>();
+		for(NeuralArchitecture architecture:architectures){
+			architectures.add(architecture.copy());
+		}
+		
+		em.flush();
+		
+		return architectures;
+	}
+
+
+	@Override
+	public List<NeuralArchitecture> updateNeuralArchitecture(
+			NeuralConfiguration configuration) {
+		NeuralConfiguration savedConfig = em.find(NeuralConfiguration.class,
+				configuration.getId());
+
+		// Tries to find the architectures to remove
+		for (NeuralArchitecture saved_architecture : savedConfig
+				.getNeuralArchitectures()) {
+			boolean inputFound = false;
+			for (NeuralArchitecture new_architecture : configuration
+					.getNeuralArchitectures()) {
+				if (new_architecture.getId() == saved_architecture.getId()) {
+					inputFound = true;
+					break;
+				}
+			}
+
+			if (!inputFound) {
+				em.remove(saved_architecture);
+			}
+		}
+
+		savedConfig = em.merge(configuration);
+		em.flush();
+
+		return savedConfig.getNeuralArchitectures();
+		
+		
+		
 	}
 	
 
