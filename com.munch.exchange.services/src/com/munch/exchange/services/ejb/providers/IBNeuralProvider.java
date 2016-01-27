@@ -126,6 +126,8 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 		if(beanRemote==null)init();
 		
 		List<NeuralArchitecture> neuralArchitectures=beanRemote.getService().loadNeuralArchitecture(configuration);
+//		System.out.println("Nb of loaded architectures: "+neuralArchitectures.size());
+		
 		configuration.setNeuralArchitectures(neuralArchitectures);
 		
 		for(NeuralArchitecture neuralArchitecture: neuralArchitectures){

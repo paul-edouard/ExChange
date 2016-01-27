@@ -205,8 +205,9 @@ public class NeuralBean implements NeuralBeanRemote{
 		NeuralConfiguration savedConfig=em.find(NeuralConfiguration.class, configuration.getId());
 		savedConfig.getNeuralArchitectures().size();
 		
+		
 		List<NeuralArchitecture> architectures=new LinkedList<NeuralArchitecture>();
-		for(NeuralArchitecture architecture:architectures){
+		for(NeuralArchitecture architecture:savedConfig.getNeuralArchitectures()){
 			architectures.add(architecture.copy());
 		}
 		

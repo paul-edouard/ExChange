@@ -57,6 +57,7 @@ import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.dialog.AddNeuralArchitectureDialog;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration.ReferenceData;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration.SplitStrategy;
@@ -65,6 +66,7 @@ import com.munch.exchange.model.core.ib.neural.NeuralDayPositionInput;
 import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
 import com.munch.exchange.model.core.ib.neural.NeuralInput;
 import com.munch.exchange.model.core.ib.neural.NeuralInputComponent;
+import com.munch.exchange.model.core.ib.neural.NeuralNetwork;
 import com.munch.exchange.model.core.ib.neural.NeuralTrainingElement;
 import com.munch.exchange.model.core.ib.neural.NeuralInputComponent.ComponentType;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
@@ -508,9 +510,15 @@ public class NeuralConfigurationEditorPart {
 		compositeArchitectureTop.setLayout(new GridLayout(1, false));
 		compositeArchitectureTop.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
-		treeViewerArchitecture = new TreeViewer(compositeArchitectureTop, SWT.BORDER);
+		treeViewerArchitecture = new TreeViewer(compositeArchitectureTop,SWT.BORDER| SWT.MULTI
+				| SWT.V_SCROLL | SWT.FULL_SELECTION);
+		treeViewerArchitecture.setContentProvider(new NeuralConfiguationArchitectureContentProvider());
+		treeViewerArchitecture.setInput(neuralConfiguration);
+		
 		treeArchitecture = treeViewerArchitecture.getTree();
 		treeArchitecture.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		treeArchitecture.setHeaderVisible(true);
+		treeArchitecture.setLinesVisible(true);
 		
 		Menu menuArchitecture = new Menu(treeArchitecture);
 		treeArchitecture.setMenu(menuArchitecture);
@@ -526,10 +534,26 @@ public class NeuralConfigurationEditorPart {
 					neuralConfiguration.getNeuralArchitectures().add(dialog.getNeuralArchitecture());
 					dialog.getNeuralArchitecture().setNeuralConfiguration(neuralConfiguration);
 					neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+					
+					logger.info("Nb of Architectures: "+neuralConfiguration.getNeuralArchitectures().size());
+					
+					treeViewerArchitecture.refresh();
 				}
 			}
 		});
 		mntmAddNew.setText("Add New");
+		
+		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewerArchitecture, SWT.NONE);
+		treeViewerColumn.setLabelProvider(new NeuralArchitectureIdLabelProvider());
+		TreeColumn trclmnArchitectureId = treeViewerColumn.getColumn();
+		trclmnArchitectureId.setWidth(100);
+		trclmnArchitectureId.setText("Id");
+		
+		TreeViewerColumn treeViewerColumn_1 = new TreeViewerColumn(treeViewerArchitecture, SWT.NONE);
+		treeViewerColumn_1.setLabelProvider(new NeuralArchitectureNameLabelProvider());
+		TreeColumn trclmnArchitectureName = treeViewerColumn_1.getColumn();
+		trclmnArchitectureName.setWidth(100);
+		trclmnArchitectureName.setText("Name");
 		
 		Composite compositeArchitectureBottom = new Composite(compositeArchitecture, SWT.NONE);
 		compositeArchitectureBottom.setLayout(new GridLayout(1, false));
@@ -551,6 +575,9 @@ public class NeuralConfigurationEditorPart {
 		logger.info("Neural Config: "+neuralConfiguration);
 		neuralProvider.loadNeuralInputs(neuralConfiguration);
 		neuralProvider.loadNeuralArchitecture(neuralConfiguration);
+		
+		logger.info("Nb of Architectures: "+neuralConfiguration.getNeuralArchitectures().size());
+		
 	}
 	
 	private void postGuiFunc(){
@@ -1021,6 +1048,42 @@ public class NeuralConfigurationEditorPart {
 		}
 		
 	}
+	
+	
+//	Neural Architecture Id
+	class NeuralArchitectureIdLabelProvider extends ColumnLabelProvider{
+		
+		@Override
+		public String getText(Object element) {
+			
+			if(element instanceof NeuralArchitecture){
+				NeuralArchitecture neuralArchitecture=(NeuralArchitecture) element;
+				return String.valueOf(neuralArchitecture.getId());
+			}
+			else if(element instanceof NeuralNetwork){
+				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
+				return String.valueOf(neuralNetwork.getId());
+			}
+			
+			return "";
+		}
+	}
+	
+//	Neural Architecture Name
+	class NeuralArchitectureNameLabelProvider extends ColumnLabelProvider{
+		
+		@Override
+		public String getText(Object element) {
+			
+			if(element instanceof NeuralArchitecture){
+				NeuralArchitecture neuralArchitecture=(NeuralArchitecture) element;
+				return String.valueOf(neuralArchitecture.getName());
+			}
+			
+			return "";
+		}
+	}
+	
 	
 	//###################################
 	//##     Column Editing Support    ##

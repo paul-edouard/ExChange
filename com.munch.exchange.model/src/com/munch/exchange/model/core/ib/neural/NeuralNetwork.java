@@ -65,4 +65,27 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 		return c;
 	}
 
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public NeuralArchitecture getNeuralArchitecture() {
+		return neuralArchitecture;
+	}
+
+	public void setNeuralArchitecture(NeuralArchitecture neuralArchitecture) {
+		this.neuralArchitecture = neuralArchitecture;
+	}
+
+	public void setNetwork(byte[] network) {
+		this.network = network;
+	}
+	
+	
+	
+
 }
