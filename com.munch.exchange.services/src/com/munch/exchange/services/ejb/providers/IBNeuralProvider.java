@@ -1,6 +1,7 @@
 package com.munch.exchange.services.ejb.providers;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.IbContract;
@@ -126,15 +127,14 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 		if(beanRemote==null)init();
 		
 		List<NeuralArchitecture> neuralArchitectures=beanRemote.getService().loadNeuralArchitecture(configuration);
-//		System.out.println("Nb of loaded architectures: "+neuralArchitectures.size());
-		
-		configuration.setNeuralArchitectures(neuralArchitectures);
 		
 		for(NeuralArchitecture neuralArchitecture: neuralArchitectures){
 			neuralArchitecture.setNeuralConfiguration(configuration);
 		}
+		configuration.setNeuralArchitectures(neuralArchitectures);
 		
 		return neuralArchitectures;
+		
 	}
 
 	@Override

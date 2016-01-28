@@ -147,7 +147,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		
 		cp.id=this.id;
 		cp.name=this.name;
-		cp.neuralConfiguration=this.neuralConfiguration;
+//		cp.neuralConfiguration=this.neuralConfiguration;
 		cp.type=this.type;
 		cp.hiddenLayerDescription=this.hiddenLayerDescription;
 		cp.activation=this.activation;
