@@ -68,7 +68,7 @@ public class NeuralIndicatorInput extends NeuralInput{
 	
 	@Override
 	public void load() {
-		System.out.println("Neural input name: "+this.getName());
+//		System.out.println("Neural input name: "+this.getName());
 		this.getBarContainer();
 		this.getContract();
 		this.getIndicator();

@@ -38,6 +38,10 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 	private Spinner spinnerHidderLayer2;
 	private Button btnHidderLayer;
 	private Spinner spinnerVolume;
+	private Label lblBlockProfitLimit;
+	private Spinner spinnerBlockProfitLimit;
+	private Label lblTradeProfitLimit;
+	private Spinner spinnerTradeProfitLimit;
 
 	/**
 	 * Create the dialog.
@@ -79,6 +83,26 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 		spinnerVolume.setMinimum(1);
 		spinnerVolume.setSelection(10);
 		spinnerVolume.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		
+		lblBlockProfitLimit = new Label(container, SWT.NONE);
+		lblBlockProfitLimit.setText("Block Profit Limit:");
+		
+		spinnerBlockProfitLimit = new Spinner(container, SWT.BORDER);
+		spinnerBlockProfitLimit.setIncrement(100);
+		spinnerBlockProfitLimit.setMaximum(10000);
+		spinnerBlockProfitLimit.setMinimum(100);
+		spinnerBlockProfitLimit.setSelection(500);
+		spinnerBlockProfitLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		
+		lblTradeProfitLimit = new Label(container, SWT.NONE);
+		lblTradeProfitLimit.setText("Trade Profit Limit:");
+		
+		spinnerTradeProfitLimit = new Spinner(container, SWT.BORDER);
+		spinnerTradeProfitLimit.setIncrement(10);
+		spinnerTradeProfitLimit.setMaximum(1000);
+		spinnerTradeProfitLimit.setMinimum(10);
+		spinnerTradeProfitLimit.setSelection(100);
+		spinnerTradeProfitLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		
 		Label lblType = new Label(container, SWT.NONE);
 		lblType.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
@@ -179,7 +203,7 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(609, 485);
+		return new Point(498, 543);
 	}
 	
 	
@@ -213,6 +237,8 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 		
 		neuralArchitecture.setName(txtName.getText());
 		neuralArchitecture.setVolume(spinnerVolume.getSelection());
+		neuralArchitecture.setBlockProfitLimit(spinnerBlockProfitLimit.getSelection());
+		neuralArchitecture.setTradeProfitLimit(spinnerTradeProfitLimit.getSelection());
 		neuralArchitecture.setType(type);
 		neuralArchitecture.setActivation(activation);
 		neuralArchitecture.setHiddenLayerDescription(hiddenLayerDes);

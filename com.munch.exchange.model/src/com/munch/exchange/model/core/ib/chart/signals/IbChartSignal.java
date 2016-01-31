@@ -190,7 +190,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		colorSELL[2]=0;
 		IbChartSerie sellLong=new IbChartSerie(this,this.getName()+" "+SELL_LONG_SIGNAL,RendererType.MAIN,false,true,colorSELL, ShapeType.DOWN_TRIANGLE);
 		this.series.add(sellLong);
-		IbChartSerie sellShort=new IbChartSerie(this,this.getName()+" "+SELL_LONG_SIGNAL,RendererType.MAIN,false,true,colorSELL, ShapeType.UP_TRIANGLE);
+		IbChartSerie sellShort=new IbChartSerie(this,this.getName()+" "+SELL_SHORT_SIGNAL,RendererType.MAIN,false,true,colorSELL, ShapeType.UP_TRIANGLE);
 		this.series.add(sellShort);
 		
 	}

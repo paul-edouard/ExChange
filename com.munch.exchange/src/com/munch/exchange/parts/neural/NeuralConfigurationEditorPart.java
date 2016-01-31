@@ -10,9 +10,14 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.contexts.ContextInjectionFactory;
 import org.eclipse.e4.core.contexts.EclipseContextFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.model.application.ui.MDirtyable;
@@ -39,6 +44,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
@@ -61,6 +67,7 @@ import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing;
 
 import com.ib.controller.Types.WhatToShow;
+import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddNeuralArchitectureDialog;
 import com.munch.exchange.dialog.TrainNeuralArchitectureDialog;
 import com.munch.exchange.model.core.ib.bar.IbBar;
@@ -99,6 +106,9 @@ public class NeuralConfigurationEditorPart {
 	IEclipseContext context;
 	
 	@Inject
+	private IEventBroker eventBroker;
+	
+	@Inject
 	private NeuralConfiguration neuralConfiguration;
 	
 	private NeuralArchitecture neuralArchitecture;
@@ -134,6 +144,8 @@ public class NeuralConfigurationEditorPart {
 	private MenuItem mntmDeleteArchitecture;
 	private MenuItem mntmTrainArchitecture;
 	private Menu menuArchitecture;
+	
+	private static int epoch=-1;
 	
 	
 	@Inject
@@ -541,7 +553,7 @@ public class NeuralConfigurationEditorPart {
 					TreeItem item=treeArchitecture.getSelection()[0];
 					if(item.getData() instanceof NeuralArchitecture){
 						mntmDeleteArchitecture.setEnabled(true);
-						mntmTrainArchitecture.setEnabled(true);
+						mntmTrainArchitecture.setEnabled(epoch<0);
 					}
 					
 				}
@@ -778,10 +790,13 @@ public class NeuralConfigurationEditorPart {
 //		Compute the neural indicator values and reset the ranges of the components
 		neuralConfiguration.computeAllNeuralIndicatorInputs(true);
 		
-		treeViewerInputData.refresh();
-		treeViewerInputData.expandAll();
+		
 		neuralProvider.updateNeuralInputs(neuralConfiguration);
 		btnResetMinmax.setEnabled(neuralConfiguration.isResetMinMaxNeeded());
+		
+		treeViewerInputData.refresh();
+		treeViewerInputData.expandAll();
+		
 	}
 	
 
@@ -921,6 +936,9 @@ public class NeuralConfigurationEditorPart {
 	}
 	
 	
+	/**
+	 * 4. Train a architecture 
+	 */
 	private void trainArchitecture(NeuralArchitecture architecture){
 		neuralArchitecture=architecture;
 		
@@ -956,15 +974,24 @@ public class NeuralConfigurationEditorPart {
 				dialog.getPopulation());
 		}
 		
-		int epoch = 1;
-
-		for(int i=0;i<dialog.getNbOfEpoch();i++) {
-			train.iteration();
-			System.out
-					.println("Epoch #" + epoch + " Score:" + train.getError());
-			epoch++;
-		} 
-		train.finishTraining();
+		progressBarArchitecture.setMinimum(0);
+		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch());
+		
+		neuralArchitecture.prepareScoring();
+		
+		NetworkTrainer trainer=new NetworkTrainer(train, dialog.getNbOfEpoch());
+		trainer.schedule();
+		
+		
+//		int epoch = 1;
+//
+//		for(int i=0;i<dialog.getNbOfEpoch();i++) {
+//			train.iteration();
+//			System.out
+//					.println("Epoch #" + epoch + " Score:" + train.getError());
+//			epoch++;
+//		} 
+//		train.finishTraining();
 		
 	}
 	
@@ -1004,6 +1031,10 @@ public class NeuralConfigurationEditorPart {
 		treeInputData.setEnabled(false);
 		
 		dirty.setDirty(false);
+		
+		treeViewerInputData.refresh();
+		treeViewerInputData.expandAll();
+		
 	}
 	
 	
@@ -1468,4 +1499,63 @@ public class NeuralConfigurationEditorPart {
 		}
 		
 	}
+	
+	
+	//######################################
+  	//##           Trainer Job            ##
+  	//######################################
+	private class NetworkTrainer extends Job{
+		
+		MLTrain train;
+		int nbOfEpoch;
+		
+		public NetworkTrainer(MLTrain train,int nbOfEpoch) {
+			super("NetworkTrainer");
+			this.train=train;
+			this.nbOfEpoch=nbOfEpoch;
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			
+			String text="Training is starting!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			epoch = 0;
+			updateProgressBarArchitecture();
+			for(int i=0;i<nbOfEpoch;i++) {
+				train.iteration();
+				text="Epoch #" + epoch + " Score:" + train.getError();
+				eventBroker.post(IEventConstant.TEXT_INFO,text);
+				
+				epoch++;
+				updateProgressBarArchitecture();
+			} 
+			train.finishTraining();
+			
+			text="Training finished, best score:" + train.getError();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			epoch=-1;
+			
+			return Status.OK_STATUS;
+		}
+		
+	}
+	
+	private void updateProgressBarArchitecture(){
+		Display.getDefault().asyncExec(
+		new Runnable() {
+			
+			@Override
+			public void run() {
+				progressBarArchitecture.setSelection(epoch);
+			}
+		}
+		);
+				
+	}
+	
+	
 }

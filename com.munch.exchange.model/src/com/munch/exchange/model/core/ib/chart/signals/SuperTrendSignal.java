@@ -28,6 +28,7 @@ public class SuperTrendSignal extends IbChartSignal {
 	
 	public static final String ST_UP="Trend Limit Up";
 	public static final String ST_DN="Trend Limit Down";
+	public static final String RELATIVE_DISTANCE="Relative Distance";
 	public static final String PERIOD="Period";
 	public static final String FACTOR="Factor";
 	
@@ -61,6 +62,16 @@ public class SuperTrendSignal extends IbChartSignal {
 		IbChartSerie serie_down=new IbChartSerie(this,this.name+" "+ST_DN,RendererType.MAIN,false,true,colorR);
 		this.series.add(serie_down);
 		
+		
+		int[] colorN=new int[3];
+		colorN[0]=200;
+		colorN[1]=10;
+		colorN[2]=200;
+		IbChartSerie serie_rel_dist=new IbChartSerie(this,this.name+" "+RELATIVE_DISTANCE,RendererType.SECOND,false,false,colorN);
+		this.series.add(serie_rel_dist);
+		
+		
+		
 		super.createSeries();
 	}
 
@@ -83,6 +94,7 @@ public class SuperTrendSignal extends IbChartSignal {
 				this.getSignalSerie().addPoint(times[i],-1);
 				this.getChartSerie(this.name+" "+ST_UP).addPoint(times[i],Double.NaN);
 				this.getChartSerie(this.name+" "+ST_DN).addPoint(times[i],Double.NaN);
+				this.getChartSerie(this.name+" "+RELATIVE_DISTANCE).addPoint(times[i],Double.NaN);
 			}
 			return;
 		}
@@ -108,6 +120,7 @@ public class SuperTrendSignal extends IbChartSignal {
 			this.getSignalSerie().setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue());
 			this.getChartSerie(this.name+" "+ST_UP).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue());
 			this.getChartSerie(this.name+" "+ST_DN).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue());
+			this.getChartSerie(this.name+" "+RELATIVE_DISTANCE).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue());
 			
 		}
 		
@@ -117,6 +130,7 @@ public class SuperTrendSignal extends IbChartSignal {
 		this.getSignalSerie().addNewPointsOnly(times,SuTr[0]);
 		this.getChartSerie(this.name+" "+ST_UP).addNewPointsOnly(times,SuTr[1]);
 		this.getChartSerie(this.name+" "+ST_DN).addNewPointsOnly(times,SuTr[2]);
+		this.getChartSerie(this.name+" "+RELATIVE_DISTANCE).addNewPointsOnly(times,SuTr[3]);
 		
 		
 	}

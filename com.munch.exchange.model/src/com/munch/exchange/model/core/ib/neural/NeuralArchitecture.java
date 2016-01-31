@@ -33,6 +33,8 @@ import org.encog.neural.pattern.ElmanPattern;
 import org.encog.neural.pattern.FeedForwardPattern;
 import org.encog.neural.pattern.JordanPattern;
 import org.encog.neural.pattern.NeuralNetworkPattern;
+import org.encog.util.arrayutil.NormalizationAction;
+import org.encog.util.arrayutil.NormalizedField;
 
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbCommission;
@@ -156,11 +158,27 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	
 	private long volume=10;
 	
+	private double blockProfitLimit=10000.0;
+	
+	private double tradeProfitLimit=500.0;
+	
+	
 	@Enumerated(EnumType.STRING)
 	private Activation activation=Activation.TANH;
 	
 	@Transient
 	private Equilateral equilateralOutput;
+	
+	@Transient
+	private NormalizedField normalizedTotalProfitLimit;
+	
+	@Transient
+	private NormalizedField normalizedTradeProfitLimit;
+	
+	@Transient
+	private NeuralInputComponent[] components;
+	
+	
 	
 	public NeuralArchitecture() {
 		super();
@@ -174,6 +192,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		cp.name=this.name;
 //		cp.neuralConfiguration=this.neuralConfiguration;
 		cp.type=this.type;
+		cp.blockProfitLimit=this.blockProfitLimit;
+		cp.tradeProfitLimit=this.tradeProfitLimit;
 		cp.volume=this.volume;
 		cp.hiddenLayerDescription=this.hiddenLayerDescription;
 		cp.activation=this.activation;
@@ -186,9 +206,21 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		return cp;
 	}
 	
-	@Override
-	public double calculateScore(MLMethod method) {
-		BasicNetwork basicNetwork=(BasicNetwork) method;
+	/**
+	 * try to prepare the scoring 
+	 * 
+	 * @return
+	 */
+	public boolean prepareScoring(){
+		
+		normalizedTotalProfitLimit=new NormalizedField(NormalizationAction.Normalize,
+				this.getName()+" Total Profit Limit",
+				-blockProfitLimit, blockProfitLimit, -0.9, 0.9);
+		
+		normalizedTradeProfitLimit=new NormalizedField(NormalizationAction.Normalize,
+				this.getName()+" Trade Profit Limit",
+				-blockProfitLimit, blockProfitLimit, -0.9, 0.9);
+		
 		
 //		Create the Component Array
 		int nbOfComponents=0;
@@ -196,13 +228,21 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			nbOfComponents+=input.getComponents().size();
 		}
 		
-		NeuralInputComponent[] components=new NeuralInputComponent[nbOfComponents];
+		components=new NeuralInputComponent[nbOfComponents];
 		int i=0;
 		for (NeuralInput input : neuralConfiguration.getNeuralInputs()) {
 			for(NeuralInputComponent component:input.getComponents()){
 				components[i]=component;i++;
 			}
 		}
+		
+		return false;
+	}
+	
+	
+	@Override
+	public double calculateScore(MLMethod method) {
+		BasicNetwork basicNetwork=(BasicNetwork) method;
 		
 //		Loop over the training Blocks
 		double totalProfit=0.0;
@@ -212,10 +252,11 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			double profit=0.0;
 			double risk=0.0;
 			double maxProfit=0.0;
+			double tradeProfit=0.0;
 			Position lastPosition=Position.NEUTRAL;
 			IbBar previewBar=block.get(0);
 			
-			i=0;
+			int i=0;
 			for(IbBar bar:block){
 //				Jump first bar
 				if(i==0){i++;continue;}
@@ -230,7 +271,9 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 				
 //				Add the profit and calculate the risk
 				if(lastPosition!=Position.NEUTRAL){
-					profit+=Position.getSignal(lastPosition)*(price-previewPrice)*volume;
+					double diffProfit=Position.getSignal(lastPosition)*(price-previewPrice)*volume;
+					profit+=diffProfit;
+					tradeProfit+=diffProfit;
 					
 //					Calculate the risk
 					if(profit>maxProfit)
@@ -247,6 +290,13 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 				for(int j=0;j<components.length;j++){
 					input.setData(j, components[j].getNormalizedAdaptedValueAt(daptedValueIndex));
 				}
+//				Add the Current Trade Profit
+				input.setData(components.length,normalizedTradeProfitLimit.normalize(tradeProfit));
+//				Add the Current Block Profit
+				input.setData(components.length+1,normalizedTotalProfitLimit.normalize(profit));
+//				Add the current risk profit
+				input.setData(components.length+2,normalizedTotalProfitLimit.normalize(risk));
+				
 				
 //				Compute the raw
 				MLData output = basicNetwork.compute(input);
@@ -262,6 +312,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 					if(com!=null){
 						profit-=absDiffSignal*com.calculate(volume, price);
 					}
+//					Reset the trade profit
+					tradeProfit=0;
 				}
 				
 				if(maxRisk<-risk){
@@ -306,6 +358,14 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		for (NeuralInput input : neuralConfiguration.getNeuralInputs()) {
 			nbOfInputNeurons+=input.getComponents().size();
 		}
+//		Block Profit
+		nbOfInputNeurons++;
+//		Block Risk
+		nbOfInputNeurons++;
+//		Trade Profit
+		nbOfInputNeurons++;
+				
+		
 		
 //		Get the number of output
 		if(neuralConfiguration.getContract().allowShortPosition()){
@@ -439,6 +499,22 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 
 	public void setVolume(long volume) {
 		this.volume = volume;
+	}
+
+	public double getBlockProfitLimit() {
+		return blockProfitLimit;
+	}
+
+	public void setBlockProfitLimit(double totalProfitLimit) {
+		this.blockProfitLimit = totalProfitLimit;
+	}
+
+	public double getTradeProfitLimit() {
+		return tradeProfitLimit;
+	}
+
+	public void setTradeProfitLimit(double traideProfitLimit) {
+		this.tradeProfitLimit = traideProfitLimit;
 	}
 
 	public static void main(String args[])

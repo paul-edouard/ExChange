@@ -79,6 +79,8 @@ public class NeuralInputComponent implements Serializable, Copyable<NeuralInputC
 		
 		c.id=id;
 		
+		c.componentType=componentType;
+		
 		c.neuralInput=neuralInput;
 		c.offset=offset;
 		c.period=period;

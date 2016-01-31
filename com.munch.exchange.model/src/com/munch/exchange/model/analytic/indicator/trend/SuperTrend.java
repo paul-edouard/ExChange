@@ -161,7 +161,7 @@ public class SuperTrend {
 	
 	public static double[][] compute(double[] close, double[] high, double[] low, int Period, double multiplier, double startTrend){
 		
-		double[][] SuTr=new double[3][close.length];
+		double[][] SuTr=new double[4][close.length];
 		
 		double[] ATR=AverageTrueRange.compute(close, high, low, Period);
 		double[] up=new double[close.length];
@@ -170,6 +170,7 @@ public class SuperTrend {
 		double[] Trend=new double[close.length];
 		double[] TrendUp=new double[close.length];
 		double[] TrendDown=new double[close.length];
+		double[] RelDist=new double[close.length];
 		
 		
 		int changeOfTrend=1;
@@ -240,6 +241,7 @@ public class SuperTrend {
 		            TrendUp[i-1] = TrendDown[i-1];
 		            changeOfTrend = 0;
 		         }
+		         RelDist[i]=TrendUp[i]-close[i];
 		      }
 		      else if (Trend[i]==-1) {
 		         TrendDown[i]=up[i];
@@ -247,6 +249,7 @@ public class SuperTrend {
 		            TrendDown[i-1] = TrendUp[i-1];
 		            changeOfTrend = 0;
 		         }
+		         RelDist[i]=TrendDown[i]-close[i];
 		      }
 			
 			
@@ -256,6 +259,7 @@ public class SuperTrend {
 		SuTr[0]=Trend;
 		SuTr[1]=TrendUp;
 		SuTr[2]=TrendDown;
+		SuTr[3]=RelDist;
 		
 		
 		return SuTr;

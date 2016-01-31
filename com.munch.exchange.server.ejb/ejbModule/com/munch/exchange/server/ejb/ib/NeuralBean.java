@@ -112,6 +112,17 @@ public class NeuralBean implements NeuralBeanRemote{
 		savedConfig=em.merge(configuration);
 		em.flush();
 		
+//		for(NeuralInput input: savedConfig.getNeuralInputs()){
+//		for(NeuralInputComponent component:input.getComponents()){
+//			System.out.println("savedConfig: "+component.getComponentType().toString());
+//		}}
+//		
+//		for(NeuralInput input: configuration.getNeuralInputs()){
+//			for(NeuralInputComponent component:input.getComponents()){
+//				System.out.println("Configuration: "+component.getComponentType().toString());
+//			}}
+		
+		
 		return savedConfig.getNeuralInputs();
 		
 	}
@@ -142,6 +153,9 @@ public class NeuralBean implements NeuralBeanRemote{
 		List<NeuralInput> inputs=new LinkedList<NeuralInput>();
 		for(NeuralInput ni_saved:savedConfig.getNeuralInputs()){
 			ni_saved.getComponents().size();
+			for(NeuralInputComponent component:ni_saved.getComponents()){
+				System.out.println("SAved: "+component.getComponentType().toString());
+			}
 			ni_saved.load();
 			inputs.add(ni_saved.copy());
 		}

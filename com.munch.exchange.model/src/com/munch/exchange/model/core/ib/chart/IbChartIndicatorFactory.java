@@ -221,9 +221,33 @@ public class IbChartIndicatorFactory {
 			parent.setDirty(true);
 		}
 		
+//		Add new parameters
+		LinkedList<IbChartParameter> parametersToAdd=new LinkedList<IbChartParameter>();
+		for(IbChartParameter newParam:new_ind.parameters){
+			boolean paramFound=false;
+			for(IbChartParameter oldParam:old_ind.parameters){
+				if(newParam.getName().equals(oldParam.getName()) && 
+						newParam.getType()==oldParam.getType()){
+					paramFound=true;break;
+				}
+			}
+			
+			if(paramFound)continue;
+			
+		}
+		
+		for(IbChartParameter param:parametersToAdd){
+			IbChartParameter cp=param.copy();
+			cp.setIndicator(old_ind);
+			old_ind.parameters.add(cp);
+			parent.setDirty(true);
+		}
+		
+		
+		
 //		System.out.println("2. Parent dirty: "+parent.isDirty());
 		
-		//Clean not used parameters
+		//Clean not used Series
 		LinkedList<IbChartSerie> seriesToDelete=new LinkedList<IbChartSerie>();
 		for(IbChartSerie oldSerie:old_ind.series){
 			boolean serieFound=false;
@@ -256,6 +280,32 @@ public class IbChartIndicatorFactory {
 			old_ind.series.removeAll(seriesToDelete);
 			parent.setDirty(true);
 		}
+		
+		
+		//Add new Series
+		
+		LinkedList<IbChartSerie> seriesToAdd=new LinkedList<IbChartSerie>();
+		for(IbChartSerie newSerie:new_ind.series){
+			boolean serieFound=false;
+			for(IbChartSerie oldSerie:old_ind.series){
+				if(oldSerie.getName().equals(newSerie.getName())){
+					serieFound=true;break;
+				}
+			}
+			
+			if(serieFound)continue;
+			seriesToAdd.add(newSerie);
+		}
+		
+		for(IbChartSerie serie:seriesToAdd){
+			IbChartSerie cp=serie.copy();
+			cp.setIndicator(old_ind);
+			old_ind.series.add(cp);
+			parent.setDirty(true);
+		}
+		
+		
+		
 		
 //		System.out.println("4. Parent dirty: "+parent.isDirty());
 		

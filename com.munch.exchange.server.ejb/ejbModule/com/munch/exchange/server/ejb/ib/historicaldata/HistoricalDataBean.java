@@ -57,6 +57,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		List<IbBarContainer> contractBars= ex_contract.getBars();
 		
 		//Load and update the Chart indicators
+		
 		for(IbBarContainer container:contractBars){
 			IbChartIndicatorGroup rootGroup=container.getIndicatorGroup();
 			
@@ -67,6 +68,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 //			log.info("2. Group is Dirty: "+rootGroup.isDirty());
 			
 			if(rootGroup.isDirty()){
+				
 				em.persist(rootGroup);
 				rootGroup.setDirty(false);
 				
@@ -74,6 +76,8 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 			}
 			
 			loadChildGroup(rootGroup);
+			
+			
 			
 		}
 		
@@ -83,6 +87,8 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 			contractBarsCopies.add(container.copy());
 		}
 		*/
+		
+		
 		
 		return contractBars;
 	}

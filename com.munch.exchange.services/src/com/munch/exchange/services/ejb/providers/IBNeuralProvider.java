@@ -9,6 +9,7 @@ import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
 import com.munch.exchange.model.core.ib.neural.NeuralInput;
+import com.munch.exchange.model.core.ib.neural.NeuralInputComponent;
 import com.munch.exchange.model.core.ib.neural.NeuralTrainingElement;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
 import com.munch.exchange.services.ejb.interfaces.IIBNeuralProvider;
@@ -77,6 +78,14 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 	public List<NeuralInput> updateNeuralInputs(NeuralConfiguration configuration) {
 		if(beanRemote==null)init();
 		
+//		for(NeuralInput input: configuration.getNeuralInputs()){
+//			for(NeuralInputComponent component:input.getComponents()){
+//				System.out.println("Update: "+component.getComponentType().toString());
+//			}
+//			
+//		}
+		
+		
 		/*List<NeuralInput> neuralInputs=*/beanRemote.getService().updateNeuralInputs(configuration);
 		
 		return loadNeuralInputs(configuration);
@@ -91,6 +100,9 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 		
 		for(NeuralInput input: neuralInputs){
 			input.setNeuralConfiguration(configuration);
+//			for(NeuralInputComponent component:input.getComponents()){
+//				System.out.println("Load: "+component.getComponentType().toString());
+//			}
 		}
 		
 		return neuralInputs;
