@@ -52,12 +52,21 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.wb.swt.ResourceManager;
+import org.encog.ml.MLMethod;
+import org.encog.ml.MLResettable;
+import org.encog.ml.MethodFactory;
+import org.encog.ml.genetic.MLMethodGeneticAlgorithm;
+import org.encog.ml.train.MLTrain;
+import org.encog.neural.networks.BasicNetwork;
+import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing;
 
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.dialog.AddNeuralArchitectureDialog;
+import com.munch.exchange.dialog.TrainNeuralArchitectureDialog;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
+import com.munch.exchange.model.core.ib.neural.NeuralArchitecture.TrainingMethod;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration.ReferenceData;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration.SplitStrategy;
@@ -91,6 +100,8 @@ public class NeuralConfigurationEditorPart {
 	
 	@Inject
 	private NeuralConfiguration neuralConfiguration;
+	
+	private NeuralArchitecture neuralArchitecture;
 	
 	@Inject
 	private IIBNeuralProvider neuralProvider;
@@ -575,6 +586,7 @@ public class NeuralConfigurationEditorPart {
 					if(item.getData() instanceof NeuralArchitecture){
 //						Train the selected Architecture
 						trainArchitecture((NeuralArchitecture) item.getData());
+						
 					}
 				}
 			}
@@ -617,6 +629,12 @@ public class NeuralConfigurationEditorPart {
 		TreeColumn trclmnArchitectureName = treeViewerColumnArchiName.getColumn();
 		trclmnArchitectureName.setWidth(100);
 		trclmnArchitectureName.setText("Name");
+		
+		TreeViewerColumn treeViewerColumnVolume = new TreeViewerColumn(treeViewerArchitecture, SWT.NONE);
+		treeViewerColumnVolume.setLabelProvider(new NeuralArchitectureVolumeLabelProvider());
+		TreeColumn trclmnVolume = treeViewerColumnVolume.getColumn();
+		trclmnVolume.setWidth(100);
+		trclmnVolume.setText("Volume");
 		
 		TreeViewerColumn treeViewerColumnArchiType = new TreeViewerColumn(treeViewerArchitecture, SWT.NONE);
 		treeViewerColumnArchiType.setLabelProvider(new NeuralArchitectureTypeLabelProvider());
@@ -903,9 +921,50 @@ public class NeuralConfigurationEditorPart {
 	}
 	
 	
-	private void trainArchitecture(NeuralArchitecture neuralArchitecture){
-		logger.info("Train Architecture: "+neuralArchitecture.getName());
+	private void trainArchitecture(NeuralArchitecture architecture){
+		neuralArchitecture=architecture;
 		
+		
+//		logger.info("Train Architecture: "+neuralArchitecture.getName());
+		TrainNeuralArchitectureDialog dialog=new TrainNeuralArchitectureDialog(shell);
+		if (dialog.open() != Window.OK)return;
+		
+		logger.info("Architecture Name: "+neuralArchitecture.getName());
+		
+		BasicNetwork network = neuralArchitecture.createNetwork();
+		MLTrain train;
+		
+		if(dialog.getTrainingMethod()==TrainingMethod.SIMULATED_ANNEALING){
+			train = new NeuralSimulatedAnnealing(
+					network,
+					neuralArchitecture,
+					dialog.getStartTemperature(),
+					dialog.getStopTemperature(),
+					dialog.getCycles());
+		}
+		else{
+			train = new MLMethodGeneticAlgorithm(
+				new MethodFactory(){
+					@Override
+					public MLMethod factor() {
+						final BasicNetwork network = neuralArchitecture.createNetwork();
+						((MLResettable)network).reset();
+						return network;
+					}
+				},
+				neuralArchitecture,
+				dialog.getPopulation());
+		}
+		
+		int epoch = 1;
+
+		for(int i=0;i<dialog.getNbOfEpoch();i++) {
+			train.iteration();
+			System.out
+					.println("Epoch #" + epoch + " Score:" + train.getError());
+			epoch++;
+		} 
+		train.finishTraining();
 		
 	}
 	
@@ -1164,6 +1223,21 @@ public class NeuralConfigurationEditorPart {
 			if(element instanceof NeuralArchitecture){
 				NeuralArchitecture neuralArchitecture=(NeuralArchitecture) element;
 				return String.valueOf(neuralArchitecture.getName());
+			}
+			
+			return "";
+		}
+	}
+	
+//	Neural Architecture Volume
+	class NeuralArchitectureVolumeLabelProvider extends ColumnLabelProvider{
+		
+		@Override
+		public String getText(Object element) {
+			
+			if(element instanceof NeuralArchitecture){
+				NeuralArchitecture neuralArchitecture=(NeuralArchitecture) element;
+				return String.valueOf(neuralArchitecture.getVolume());
 			}
 			
 			return "";

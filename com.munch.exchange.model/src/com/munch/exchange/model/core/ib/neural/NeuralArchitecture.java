@@ -26,6 +26,8 @@ import org.encog.engine.network.activation.ActivationTANH;
 import org.encog.mathutil.Equilateral;
 import org.encog.ml.CalculateScore;
 import org.encog.ml.MLMethod;
+import org.encog.ml.data.MLData;
+import org.encog.ml.data.basic.BasicMLData;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.pattern.ElmanPattern;
 import org.encog.neural.pattern.FeedForwardPattern;
@@ -33,7 +35,9 @@ import org.encog.neural.pattern.JordanPattern;
 import org.encog.neural.pattern.NeuralNetworkPattern;
 
 import com.munch.exchange.model.core.ib.Copyable;
+import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.IbBar;
 
 
 @Entity
@@ -78,6 +82,19 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			}
 		}
 		
+		public static int getSignal(Position position){
+			if(position==LONG){
+				return 1;
+			}
+			else if(position==NEUTRAL){
+				return 0;
+			}
+			else{
+				return -1;
+			}
+		}
+		
+		
 		public static Position getPosition(int intPos){
 			if(intPos==0)
 				return LONG;
@@ -112,6 +129,12 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		}
 	}
 	
+	public static enum TrainingMethod{
+		GENETIC_ALGORITHM, SIMULATED_ANNEALING;
+	}
+	
+	
+	
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -131,6 +154,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	
 	private String hiddenLayerDescription="";
 	
+	private long volume=10;
+	
 	@Enumerated(EnumType.STRING)
 	private Activation activation=Activation.TANH;
 	
@@ -149,6 +174,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		cp.name=this.name;
 //		cp.neuralConfiguration=this.neuralConfiguration;
 		cp.type=this.type;
+		cp.volume=this.volume;
 		cp.hiddenLayerDescription=this.hiddenLayerDescription;
 		cp.activation=this.activation;
 		
@@ -164,9 +190,102 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	public double calculateScore(MLMethod method) {
 		BasicNetwork basicNetwork=(BasicNetwork) method;
 		
+//		Create the Component Array
+		int nbOfComponents=0;
+		for (NeuralInput input : neuralConfiguration.getNeuralInputs()) {
+			nbOfComponents+=input.getComponents().size();
+		}
+		
+		NeuralInputComponent[] components=new NeuralInputComponent[nbOfComponents];
+		int i=0;
+		for (NeuralInput input : neuralConfiguration.getNeuralInputs()) {
+			for(NeuralInputComponent component:input.getComponents()){
+				components[i]=component;i++;
+			}
+		}
+		
+//		Loop over the training Blocks
+		double totalProfit=0.0;
+		double maxRisk=0.0;
+		for(LinkedList<IbBar> block:neuralConfiguration.getTrainingBlocks()){
+			
+			double profit=0.0;
+			double risk=0.0;
+			double maxProfit=0.0;
+			Position lastPosition=Position.NEUTRAL;
+			IbBar previewBar=block.get(0);
+			
+			i=0;
+			for(IbBar bar:block){
+//				Jump first bar
+				if(i==0){i++;continue;}
+				
+				long time=bar.getTimeInMs();
+				if(!neuralConfiguration.getAdpatedTimesMap().containsKey(time))continue;
+				
+				//TODO Only start on open exchange
+				
+				double previewPrice=previewBar.getClose();
+				double price=bar.getClose();
+				
+//				Add the profit and calculate the risk
+				if(lastPosition!=Position.NEUTRAL){
+					profit+=Position.getSignal(lastPosition)*(price-previewPrice)*volume;
+					
+//					Calculate the risk
+					if(profit>maxProfit)
+						maxProfit=profit;
+					
+					risk=profit-maxProfit;
+				}
+				
+				
+				int daptedValueIndex=neuralConfiguration.getAdpatedTimesMap().get(time);
+				
+//				Create the input data raw
+				MLData input = new BasicMLData(basicNetwork.getInputCount());
+				for(int j=0;j<components.length;j++){
+					input.setData(j, components[j].getNormalizedAdaptedValueAt(daptedValueIndex));
+				}
+				
+//				Compute the raw
+				MLData output = basicNetwork.compute(input);
+				Position position=decode(output.getData());
+				
+				
+				double diffSignal=Position.getSignal(position)-Position.getSignal(lastPosition);
+				double absDiffSignal=Math.abs(diffSignal);
+				
+//				Modification of the position, the commission will reduce the profit
+				if(position!=lastPosition){
+					IbCommission com=this.getNeuralConfiguration().getContract().getCommission();
+					if(com!=null){
+						profit-=absDiffSignal*com.calculate(volume, price);
+					}
+				}
+				
+				if(maxRisk<-risk){
+					maxRisk=-risk;
+				}
+				
+				lastPosition=position;
+				previewBar=bar;
+				
+			}
+			
+//			Close the last position
+			
+			totalProfit+=profit;
+			
+		}
 		
 		
-		return 0;
+//		System.out.println("Profit: "+totalProfit);
+//		System.out.println("Risk: "+maxRisk);
+//		
+//		System.out.println("Score: "+(totalProfit-maxRisk));
+		
+		return totalProfit-maxRisk;
 	}
 
 	@Override
@@ -179,7 +298,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		return false;
 	}
 	
-	private  BasicNetwork createNetwork(){
+	public  BasicNetwork createNetwork(){
 		
 		
 //		Get the number of inputs
@@ -312,6 +431,14 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 
 	public void setEquilateralOutput(Equilateral equilateralOutput) {
 		this.equilateralOutput = equilateralOutput;
+	}
+	
+	public long getVolume() {
+		return volume;
+	}
+
+	public void setVolume(long volume) {
+		this.volume = volume;
 	}
 
 	public static void main(String args[])

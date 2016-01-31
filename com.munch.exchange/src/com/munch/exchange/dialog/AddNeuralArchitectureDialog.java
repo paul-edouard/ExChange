@@ -37,6 +37,7 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 	private Spinner spinnerHidderLayer1;
 	private Spinner spinnerHidderLayer2;
 	private Button btnHidderLayer;
+	private Spinner spinnerVolume;
 
 	/**
 	 * Create the dialog.
@@ -69,6 +70,15 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 		
 		txtName = new Text(container, SWT.BORDER);
 		txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Label lblVolume = new Label(container, SWT.NONE);
+		lblVolume.setText("Volume:");
+		
+		spinnerVolume = new Spinner(container, SWT.BORDER);
+		spinnerVolume.setMaximum(100000);
+		spinnerVolume.setMinimum(1);
+		spinnerVolume.setSelection(10);
+		spinnerVolume.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		
 		Label lblType = new Label(container, SWT.NONE);
 		lblType.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
@@ -202,6 +212,7 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 		}
 		
 		neuralArchitecture.setName(txtName.getText());
+		neuralArchitecture.setVolume(spinnerVolume.getSelection());
 		neuralArchitecture.setType(type);
 		neuralArchitecture.setActivation(activation);
 		neuralArchitecture.setHiddenLayerDescription(hiddenLayerDes);
