@@ -37,6 +37,7 @@
 	<class>com.munch.exchange.model.core.ib.neural.NeuralTrainingElement</class>
 	<class>com.munch.exchange.model.core.ib.neural.NeuralConfiguration</class>
 	<class>com.munch.exchange.model.core.ib.neural.NeuralArchitecture</class>
+	<class>com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

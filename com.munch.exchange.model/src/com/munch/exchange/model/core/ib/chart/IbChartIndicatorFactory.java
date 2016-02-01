@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
@@ -42,6 +43,12 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(trendLine, IbChartDownwardTrendLine.class);
 		addChartIndicator(trendLine, IbChartUpwardTrendLine.class);
 		addChartIndicator(trendLine, IbChartSuperTrend.class);
+		
+		//================================
+		//==         OSCILLATOR         ==
+		//================================
+		IbChartIndicatorGroup oscillator=searchOrCreateSubGroup(root,"Oscillator");
+		addChartIndicator(oscillator, IbChartAverageTrueRange.class);
 		
 		
 		//================================

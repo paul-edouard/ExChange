@@ -7,7 +7,7 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-01-31T15:41:47.131+0100")
+@Generated(value="Dali", date="2016-02-01T21:56:47.371+0100")
 @StaticMetamodel(NeuralArchitecture.class)
 public class NeuralArchitecture_ {
 	public static volatile SingularAttribute<NeuralArchitecture, Integer> id;
@@ -17,7 +17,7 @@ public class NeuralArchitecture_ {
 	public static volatile SingularAttribute<NeuralArchitecture, ArchitectureType> type;
 	public static volatile SingularAttribute<NeuralArchitecture, String> hiddenLayerDescription;
 	public static volatile SingularAttribute<NeuralArchitecture, Long> volume;
-	public static volatile SingularAttribute<NeuralArchitecture, Activation> activation;
-	public static volatile SingularAttribute<NeuralArchitecture, Double> tradeProfitLimit;
 	public static volatile SingularAttribute<NeuralArchitecture, Double> blockProfitLimit;
+	public static volatile SingularAttribute<NeuralArchitecture, Double> tradeProfitLimit;
+	public static volatile SingularAttribute<NeuralArchitecture, Activation> activation;
 }
