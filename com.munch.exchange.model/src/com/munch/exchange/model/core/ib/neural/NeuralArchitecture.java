@@ -423,6 +423,12 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		
 	}
 	
+	public void addNeuralNetwork(BasicNetwork basicNetwork){
+		NeuralNetwork network=new NeuralNetwork();
+		network.setNetwork(basicNetwork);
+		network.setNeuralArchitecture(this);
+		this.neuralNetworks.add(network);
+	}
 	
 //	#######################
 //	##   GETTER & SETTER ##

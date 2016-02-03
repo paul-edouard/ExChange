@@ -41,6 +41,11 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	private byte[] network;
 	
 	
+	public NeuralNetwork() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	public BasicNetwork getNetwork(){
 		ByteArrayInputStream bis = new ByteArrayInputStream(network);
 		BasicNetwork basicNetwork = (BasicNetwork)EncogDirectoryPersistence.loadObject(bis);

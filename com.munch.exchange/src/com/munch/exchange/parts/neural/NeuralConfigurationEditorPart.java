@@ -1537,6 +1537,10 @@ public class NeuralConfigurationEditorPart {
 			text="Training finished, best score:" + train.getError();
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
+			neuralArchitecture.addNeuralNetwork((BasicNetwork)train.getMethod());
+			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+			refreshTreeArchitecture();
+			
 			epoch=-1;
 			
 			return Status.OK_STATUS;
@@ -1551,6 +1555,19 @@ public class NeuralConfigurationEditorPart {
 			@Override
 			public void run() {
 				progressBarArchitecture.setSelection(epoch);
+			}
+		}
+		);
+				
+	}
+	
+	private void refreshTreeArchitecture(){
+		Display.getDefault().asyncExec(
+		new Runnable() {
+			
+			@Override
+			public void run() {
+			treeViewerArchitecture.refresh();
 			}
 		}
 		);
