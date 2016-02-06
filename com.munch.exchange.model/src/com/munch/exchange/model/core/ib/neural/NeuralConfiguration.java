@@ -276,6 +276,9 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 				
 				if(key==null)continue;
 				
+				
+				
+				
 				if(neuralTrainingElements.contains(key)){
 					trainingBlocks.add(block);
 				}
