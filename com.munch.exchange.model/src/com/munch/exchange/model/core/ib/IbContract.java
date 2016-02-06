@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -39,6 +40,10 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	 */
 	private static final long serialVersionUID = 6597196075952688514L;
 	
+	public static enum TradingPeriod {
+		DAILY, WEEKLY, NONE;
+	}
+	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private int id;
@@ -57,7 +62,8 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	@OneToMany(mappedBy="contract",cascade=CascadeType.ALL)
 	private List<NeuralConfiguration> neuralConfigurations=new LinkedList<NeuralConfiguration>();
 	
-	
+	private long startTradeTimeInMs=0;
+	private long endTradeTimeInMs=0;
 	
 	private int    conId;
 	private String symbol;
@@ -230,6 +236,9 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 		
 		c.id=this.id;
 		
+		c.startTradeTimeInMs=this.startTradeTimeInMs;
+		c.endTradeTimeInMs=this.endTradeTimeInMs;
+		
 		
 		
 		c.conId=this.conId;
@@ -302,14 +311,70 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	
 	public boolean allowShortPosition(){
 		switch (secType) {
-		case STK:
-			return false;
+			case STK:return false;
+			case CASH:return true;
+			case IND:return false;
 		}
 		
 		return true;
 	}
 	
-	public int getId() {
+	public TradingPeriod getTraidingPeriod(){
+		switch (secType) {
+			case STK:return TradingPeriod.DAILY;
+			case CASH:return TradingPeriod.WEEKLY;
+			case IND:return TradingPeriod.NONE;
+		}
+		
+		return TradingPeriod.NONE;
+	}
+	
+	public long[] getRelativeTraidingPeriod(long dateInMs){
+		long[] startEndTime = new long[2];
+		
+		if(this.getTraidingPeriod()==TradingPeriod.WEEKLY){
+			Calendar startDate=Calendar.getInstance();
+			startDate.setTimeInMillis(dateInMs);
+			
+			startDate.set(Calendar.MILLISECOND, 0);
+			startDate.set(Calendar.SECOND, 0);
+			startDate.set(Calendar.MINUTE, 0);
+			startDate.set(Calendar.HOUR_OF_DAY, 0);
+			
+			while(startDate.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY){
+				startDate.add(Calendar.DAY_OF_WEEK, -1);
+			}
+			startEndTime[0]=startDate.getTimeInMillis();
+			
+			startDate.add(Calendar.DAY_OF_WEEK, +5);
+			startEndTime[1]=startDate.getTimeInMillis();
+		}
+		else if(this.getTraidingPeriod()==TradingPeriod.DAILY){
+			Calendar date=Calendar.getInstance();
+			date.setTimeInMillis(dateInMs);
+			date.set(Calendar.MILLISECOND, 0);
+			date.set(Calendar.SECOND, 0);
+			date.set(Calendar.MINUTE, 0);
+			date.set(Calendar.HOUR_OF_DAY, 0);
+			
+			long dayStart=date.getTimeInMillis();
+			
+			date.add(Calendar.MILLISECOND,(int) startTradeTimeInMs);
+			startEndTime[0]=date.getTimeInMillis();
+			
+			date.setTimeInMillis(dayStart);
+			date.add(Calendar.MILLISECOND,(int) endTradeTimeInMs);
+			startEndTime[1]=date.getTimeInMillis();
+			
+		}
+		
+		return startEndTime;
+	}
+	
+	
+	
+	
+ 	public int getId() {
 		return id;
 	}
 	public void setId(int id) {
@@ -693,6 +758,25 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 
 	public void setCommission(IbCommission commission) {
 		this.commission = commission;
+	}
+	
+	
+	
+
+	public long getStartTradeTimeInMs() {
+		return startTradeTimeInMs;
+	}
+
+	public void setStartTradeTimeInMs(long startTradeTime) {
+		this.startTradeTimeInMs = startTradeTime;
+	}
+
+	public long getEndTradeTimeInMs() {
+		return endTradeTimeInMs;
+	}
+
+	public void setEndTradeTimeInMs(long endTradeTime) {
+		this.endTradeTimeInMs = endTradeTime;
 	}
 
 	@Override

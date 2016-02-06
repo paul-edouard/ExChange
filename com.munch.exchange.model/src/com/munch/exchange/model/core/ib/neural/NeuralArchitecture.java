@@ -232,7 +232,9 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		int i=0;
 		for (NeuralInput input : neuralConfiguration.getNeuralInputs()) {
 			for(NeuralInputComponent component:input.getComponents()){
-				components[i]=component;i++;
+				components[i]=component;
+				components[i].createNormalizedValues();
+				i++;
 			}
 		}
 		
@@ -256,6 +258,9 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			Position lastPosition=Position.NEUTRAL;
 			IbBar previewBar=block.get(0);
 			
+			long[] relTraindingPeriod=neuralConfiguration.getContract().
+					getRelativeTraidingPeriod(previewBar.getTimeInMs());
+			
 			int i=0;
 			for(IbBar bar:block){
 //				Jump first bar
@@ -263,8 +268,9 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 				
 				long time=bar.getTimeInMs();
 				if(!neuralConfiguration.getAdpatedTimesMap().containsKey(time))continue;
+//				Test if the stock exchange is open
+				if(relTraindingPeriod[0]>time || time>relTraindingPeriod[1])continue;
 				
-				//TODO Only start on open exchange
 				
 				double previewPrice=previewBar.getClose();
 				double price=bar.getClose();
@@ -337,7 +343,11 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 //		
 //		System.out.println("Score: "+(totalProfit-maxRisk));
 		
-		return totalProfit-maxRisk;
+//		return totalProfit-maxRisk;
+		
+		
+		return totalProfit;
+		
 	}
 
 	@Override

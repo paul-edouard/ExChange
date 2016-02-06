@@ -70,6 +70,7 @@ import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddNeuralArchitectureDialog;
 import com.munch.exchange.dialog.TrainNeuralArchitectureDialog;
+import com.munch.exchange.model.core.ib.IbContract.TradingPeriod;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
@@ -460,10 +461,11 @@ public class NeuralConfigurationEditorPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				searchReferenceDataFunc();
+				distributeDataFunc();
 			}
 		});
 		btnSearch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		btnSearch.setText("Search");
+		btnSearch.setText("Search & Distribute");
 		
 		Label lblPercentOfTraining = new Label(compositeDataSetCommandItems, SWT.NONE);
 		lblPercentOfTraining.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -481,7 +483,13 @@ public class NeuralConfigurationEditorPart {
 		comboSplitStrategy = new Combo(compositeDataSetCommandItems, SWT.NONE);
 		comboSplitStrategy.setItems(new String[] {"WEEK", "DAY"});
 		comboSplitStrategy.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		comboSplitStrategy.select(0);
+		if(neuralConfiguration.getContract().getTraidingPeriod()==TradingPeriod.WEEKLY){
+			comboSplitStrategy.select(0);
+		}
+		else{
+			comboSplitStrategy.select(1);
+		}
+		comboSplitStrategy.setEnabled(false);
 		
 		btnDistribute = new Button(compositeDataSetCommandItems, SWT.NONE);
 		btnDistribute.setEnabled(false);
@@ -493,6 +501,7 @@ public class NeuralConfigurationEditorPart {
 		});
 		btnDistribute.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		btnDistribute.setText("Distribute");
+		btnDistribute.setEnabled(false);
 		
 		treeViewerTrainingData = new TreeViewer(compositeDataSet,SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL | SWT.FULL_SELECTION);
@@ -555,6 +564,9 @@ public class NeuralConfigurationEditorPart {
 						mntmDeleteArchitecture.setEnabled(true);
 						mntmTrainArchitecture.setEnabled(epoch<0);
 					}
+					else if(item.getData() instanceof NeuralNetwork){
+						mntmTrainArchitecture.setEnabled(epoch<0);
+					}
 					
 				}
 				
@@ -600,6 +612,10 @@ public class NeuralConfigurationEditorPart {
 						trainArchitecture((NeuralArchitecture) item.getData());
 						
 					}
+					else if(item.getData() instanceof NeuralNetwork){
+						trainNeuralNetork((NeuralNetwork)item.getData() );
+					}
+					//trainNeuralNetork(NeuralNetwork network)
 				}
 			}
 		});
@@ -640,31 +656,31 @@ public class NeuralConfigurationEditorPart {
 		treeViewerColumnArchiName.setLabelProvider(new NeuralArchitectureNameLabelProvider());
 		TreeColumn trclmnArchitectureName = treeViewerColumnArchiName.getColumn();
 		trclmnArchitectureName.setWidth(100);
-		trclmnArchitectureName.setText("Name");
+		trclmnArchitectureName.setText("Name/Score");
 		
 		TreeViewerColumn treeViewerColumnVolume = new TreeViewerColumn(treeViewerArchitecture, SWT.NONE);
 		treeViewerColumnVolume.setLabelProvider(new NeuralArchitectureVolumeLabelProvider());
 		TreeColumn trclmnVolume = treeViewerColumnVolume.getColumn();
 		trclmnVolume.setWidth(100);
-		trclmnVolume.setText("Volume");
+		trclmnVolume.setText("Volume/Tr. Profit");
 		
 		TreeViewerColumn treeViewerColumnArchiType = new TreeViewerColumn(treeViewerArchitecture, SWT.NONE);
 		treeViewerColumnArchiType.setLabelProvider(new NeuralArchitectureTypeLabelProvider());
 		TreeColumn trclmnArchitectureType = treeViewerColumnArchiType.getColumn();
 		trclmnArchitectureType.setWidth(100);
-		trclmnArchitectureType.setText("Type");
+		trclmnArchitectureType.setText("Type/Tr. Risk");
 		
 		TreeViewerColumn treeViewerColumnArchiHiddenLayer = new TreeViewerColumn(treeViewerArchitecture, SWT.NONE);
 		treeViewerColumnArchiHiddenLayer.setLabelProvider(new NeuralArchitectureLayerDescriptionLabelProvider());
 		TreeColumn trclmnHiddenLayer = treeViewerColumnArchiHiddenLayer.getColumn();
 		trclmnHiddenLayer.setWidth(100);
-		trclmnHiddenLayer.setText("Hidden Layer");
+		trclmnHiddenLayer.setText("Hidden Layer/B.T. Profit");
 		
 		TreeViewerColumn treeViewerColumnArchiActivation = new TreeViewerColumn(treeViewerArchitecture, SWT.NONE);
 		treeViewerColumnArchiActivation.setLabelProvider(new NeuralArchitectureActivationFunctionLabelProvider());
 		TreeColumn trclmnActivation = treeViewerColumnArchiActivation.getColumn();
 		trclmnActivation.setWidth(100);
-		trclmnActivation.setText("Activation");
+		trclmnActivation.setText("Activation/B.T. Risk");
 		
 		Composite compositeArchitectureBottom = new Composite(compositeArchitecture, SWT.NONE);
 		compositeArchitectureBottom.setLayout(new GridLayout(1, false));
@@ -697,6 +713,7 @@ public class NeuralConfigurationEditorPart {
 		treeViewerInputData.expandAll();
 		treeViewerArchitecture.refresh();
 		btnResetMinmax.setEnabled(neuralConfiguration.isResetMinMaxNeeded());
+		btnEdit.setEnabled(neuralConfiguration.getNeuralArchitectures().isEmpty());
 		
 		neuralProvider.loadTrainingData(neuralConfiguration);
 		
@@ -993,6 +1010,11 @@ public class NeuralConfigurationEditorPart {
 //		} 
 //		train.finishTraining();
 		
+	}
+	
+	private void trainNeuralNetork(NeuralNetwork network){
+		logger.info("Layer count: "+network.getNetwork().getLayerCount());
+//		network.getNetwork().getLayerCount()
 	}
 	
 	

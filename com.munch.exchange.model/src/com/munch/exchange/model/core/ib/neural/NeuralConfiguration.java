@@ -228,29 +228,63 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		}
 		
 		
-		for(LinkedList<IbBar> block:allBlocks){
-			backTestingBlocks.add(block);
-		}
 		
 		
-//		Creation of the training blocks
-		trainingBlocks=IbBar.collectPercentageOfBlocks(backTestingBlocks, this.getPercentOfTrainingData());
-		neuralTrainingElements.clear();
-		
-		
-		for(LinkedList<IbBar> block:trainingBlocks){
-			switch (this.getSplitStrategy()) {
-			case WEEK:
-				Calendar sunday=IbBar.getLastSundayOfDate(block.get(0).getTimeInMs());
-				String dateKey=String.valueOf(sunday.getTimeInMillis());
-				neuralTrainingElements.add(new NeuralTrainingElement(dateKey));
-				break;
-			case DAY:
-				Calendar day=IbBar.getCurrentDayOf(block.get(0).getTimeInMs());
-				String key=String.valueOf(day.getTimeInMillis());
-				neuralTrainingElements.add(new NeuralTrainingElement(key));
-				break;
+		if (neuralTrainingElements.isEmpty()) {
+			for(LinkedList<IbBar> block:allBlocks){
+				backTestingBlocks.add(block);
 			}
+			
+			// Creation of the training blocks
+			trainingBlocks = IbBar.collectPercentageOfBlocks(backTestingBlocks,
+					this.getPercentOfTrainingData());
+			// neuralTrainingElements.clear();
+
+			for (LinkedList<IbBar> block : trainingBlocks) {
+				switch (this.getSplitStrategy()) {
+				case WEEK:
+					Calendar sunday = IbBar.getLastSundayOfDate(block.get(0)
+							.getTimeInMs());
+					String dateKey = String.valueOf(sunday.getTimeInMillis());
+					neuralTrainingElements.add(new NeuralTrainingElement(dateKey));
+					break;
+				case DAY:
+					Calendar day = IbBar.getCurrentDayOf(block.get(0)
+							.getTimeInMs());
+					String key = String.valueOf(day.getTimeInMillis());
+					neuralTrainingElements.add(new NeuralTrainingElement(key));
+					break;
+				}
+			}
+		} else {
+			for(LinkedList<IbBar> block:allBlocks){
+				
+				String key=null;
+				
+				switch (this.getSplitStrategy()) {
+				case WEEK:
+					Calendar sunday = IbBar.getLastSundayOfDate(block.get(0)
+							.getTimeInMs());
+					key = String.valueOf(sunday.getTimeInMillis());
+					break;
+				case DAY:
+					Calendar day = IbBar.getCurrentDayOf(block.get(0)
+							.getTimeInMs());
+					key = String.valueOf(day.getTimeInMillis());
+					break;
+				}
+				
+				if(key==null)continue;
+				
+				if(neuralTrainingElements.contains(key)){
+					trainingBlocks.add(block);
+				}
+				else{
+					backTestingBlocks.add(block);
+				}
+			}
+			
+
 		}
 		
 		

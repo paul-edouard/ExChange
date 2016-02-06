@@ -68,6 +68,9 @@ public class NeuralInputComponent implements Serializable, Copyable<NeuralInputC
 	@Transient
 	private NormalizedField normalizedField;
 	
+	@Transient
+	private double[] normalizedValues;
+	
 
 	public NeuralInputComponent() {
 		super();
@@ -155,14 +158,20 @@ public class NeuralInputComponent implements Serializable, Copyable<NeuralInputC
 		
 	}
 	
-	public double getNormalizedAdaptedValueAt(int i){
-		double value=adaptedValues[i];
-		
+	
+	public void createNormalizedValues(){
 		if(normalizedField==null){
 			normalizedField=new NormalizedField(NormalizationAction.Normalize, this.getName(), lowerRange, upperRange, -0.9, 0.9);
 		}
 		
-		return normalizedField.normalize(value);
+		normalizedValues=new double[adaptedValues.length];
+		for(int i=0;i<adaptedValues.length;i++){
+			normalizedValues[i]=normalizedField.normalize(adaptedValues[i]);
+		}
+	}
+	
+	public double getNormalizedAdaptedValueAt(int i){
+		return normalizedValues[i];
 	}
 	
 //	#######################

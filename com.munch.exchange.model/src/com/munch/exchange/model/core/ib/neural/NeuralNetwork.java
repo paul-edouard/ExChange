@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.persist.EncogDirectoryPersistence;
@@ -39,6 +40,22 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	
 	@Lob
 	private byte[] network;
+	
+	@Transient
+	private double score;
+	
+	@Transient
+	private double trainingProfit;
+	
+	@Transient
+	private double trainingRisk;
+	
+	@Transient
+	private double backTestingProfit;
+	
+	@Transient
+	private double backTestingRisk;
+	
 	
 	
 	public NeuralNetwork() {
@@ -88,6 +105,48 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 
 	public void setNetwork(byte[] network) {
 		this.network = network;
+	}
+	
+	
+
+	public double getScore() {
+		return score;
+	}
+
+	public void setScore(double score) {
+		this.score = score;
+	}
+
+	public double getTrainingProfit() {
+		return trainingProfit;
+	}
+
+	public void setTrainingProfit(double trainingProfit) {
+		this.trainingProfit = trainingProfit;
+	}
+
+	public double getTrainingRisk() {
+		return trainingRisk;
+	}
+
+	public void setTrainingRisk(double trainingRisk) {
+		this.trainingRisk = trainingRisk;
+	}
+
+	public double getBackTestingProfit() {
+		return backTestingProfit;
+	}
+
+	public void setBackTestingProfit(double backTestingProfit) {
+		this.backTestingProfit = backTestingProfit;
+	}
+
+	public double getBackTestingRisk() {
+		return backTestingRisk;
+	}
+
+	public void setBackTestingRisk(double backTestingRisk) {
+		this.backTestingRisk = backTestingRisk;
 	}
 	
 	
