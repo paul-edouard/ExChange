@@ -70,7 +70,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		}
 		
 		public void updateProfit(double diff){
-			profit+=diff;
+			updateProfitOnly(diff);
 			tradeProfit+=diff;
 			
 //			Update the maxProfit
@@ -84,7 +84,10 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			if(maxRisk<-risk){
 				maxRisk=-risk;
 			}
-			
+		}
+		
+		public void updateProfitOnly(double diff){
+			profit+=diff;
 		}
 		
 		public void resetTradeProfit(){
@@ -113,6 +116,12 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		public double getTradeProfit() {
 			return tradeProfit;
 		}
+
+		public void setRisk(double risk) {
+			this.risk = risk;
+		}
+		
+		
 
 		
 		
@@ -319,18 +328,21 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	public double calculateScore(MLMethod method) {
 		BasicNetwork basicNetwork=(BasicNetwork) method;
 		
+		ProfitAndRisk profitAndRiskTotal=calculateProfitAndRiskOfBlocks(
+				neuralConfiguration.getTrainingBlocks(), basicNetwork);
+		
 //		Loop over the training Blocks
-		double totalProfit=0.0;
-		double maxRisk=0.0;
-		for(LinkedList<IbBar> block:neuralConfiguration.getTrainingBlocks()){
-			
-			ProfitAndRisk profitAndRisk=calculateProfitAndRiskOfBlock(block, basicNetwork);
-			
-			totalProfit+=profitAndRisk.getProfit();
-			if(maxRisk<profitAndRisk.getMaxRisk())
-				maxRisk=profitAndRisk.getMaxRisk();
-			
-		}
+//		double totalProfit=0.0;
+//		double maxRisk=0.0;
+//		for(LinkedList<IbBar> block:neuralConfiguration.getTrainingBlocks()){
+//			
+//			ProfitAndRisk profitAndRisk=calculateProfitAndRiskOfBlock(block, basicNetwork);
+//			
+//			totalProfit+=profitAndRisk.getProfit();
+//			if(maxRisk<profitAndRisk.getMaxRisk())
+//				maxRisk=profitAndRisk.getMaxRisk();
+//			
+//		}
 		
 		
 //		System.out.println("Profit: "+totalProfit);
@@ -341,7 +353,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 //		return totalProfit-maxRisk;
 		
 		
-		return totalProfit;
+		return profitAndRiskTotal.getProfit();
 		
 	}
 	
@@ -544,9 +556,26 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		return profitAndRisk;
 		
 	}
+	
+	private ProfitAndRisk calculateProfitAndRiskOfBlocks(LinkedList<LinkedList<IbBar>> blocks,BasicNetwork basicNetwork ){
+		ProfitAndRisk profitAndRiskTotal=new ProfitAndRisk();
 		
+		for(LinkedList<IbBar> block:blocks){
+			
+			ProfitAndRisk profitAndRiskOfBlock=calculateProfitAndRiskOfBlock(block, basicNetwork);
+			
+			profitAndRiskTotal.updateProfitOnly(profitAndRiskOfBlock.getProfit());
+			
+			if(profitAndRiskTotal.getRisk()<profitAndRiskOfBlock.getMaxRisk())
+				profitAndRiskTotal.setRisk(profitAndRiskOfBlock.getMaxRisk());
+			
+		}
 		
+		return profitAndRiskTotal;
 		
+	}
+	
+	
 		
 	public void addNeuralNetwork(BasicNetwork basicNetwork){
 		NeuralNetwork network=new NeuralNetwork();
@@ -555,6 +584,27 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		this.neuralNetworks.add(network);
 	}
 	
+	
+	public void evaluateProfitAndRiskOfAllNetworks(){
+		prepareScoring();
+		
+		for(NeuralNetwork network:this.neuralNetworks){
+			
+//			Evaluate the Training data set
+			ProfitAndRisk profitAndRiskTraining=calculateProfitAndRiskOfBlocks(
+					neuralConfiguration.getTrainingBlocks(), network.getNetwork());
+			network.setScore(profitAndRiskTraining.getProfit());
+			network.setTrainingProfit(profitAndRiskTraining.getProfit());
+			network.setTrainingRisk(profitAndRiskTraining.getRisk());
+			
+//			Evaluate the back testing data set
+			ProfitAndRisk profitAndRiskBackTesting=calculateProfitAndRiskOfBlocks(
+					neuralConfiguration.getBackTestingBlocks(), network.getNetwork());
+			network.setBackTestingProfit(profitAndRiskBackTesting.getProfit());
+			network.setBackTestingRisk(profitAndRiskBackTesting.getRisk());
+			
+		}
+	}
 	
 	
 //	#######################

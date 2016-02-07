@@ -149,6 +149,7 @@ public class NeuralConfigurationEditorPart {
 	
 	private static int epoch=-1;
 	private static int dataSetCounter=-1;
+	private MenuItem mntmEvaluateArchitecture;
 	
 	
 	@Inject
@@ -630,6 +631,19 @@ public class NeuralConfigurationEditorPart {
 		});
 		mntmTrainArchitecture.setImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/eclipse/lrun_obj.gif"));
 		mntmTrainArchitecture.setText("Train");
+		
+		mntmEvaluateArchitecture = new MenuItem(menuArchitecture, SWT.NONE);
+		mntmEvaluateArchitecture.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				for(NeuralArchitecture architecture:neuralConfiguration.getNeuralArchitectures()){
+					architecture.evaluateProfitAndRiskOfAllNetworks();
+				}
+				treeViewerArchitecture.refresh();
+				treeViewerArchitecture.expandAll();
+			}
+		});
+		mntmEvaluateArchitecture.setText("Evaluate");
 		
 		new MenuItem(menuArchitecture, SWT.SEPARATOR);
 		
@@ -1195,6 +1209,10 @@ public class NeuralConfigurationEditorPart {
 				NeuralArchitecture neuralArchitecture=(NeuralArchitecture) element;
 				return String.valueOf(neuralArchitecture.getName());
 			}
+			else if(element instanceof NeuralNetwork){
+				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
+				return String.valueOf(neuralNetwork.getScore());
+			}
 			
 			return "";
 		}
@@ -1209,6 +1227,10 @@ public class NeuralConfigurationEditorPart {
 			if(element instanceof NeuralArchitecture){
 				NeuralArchitecture neuralArchitecture=(NeuralArchitecture) element;
 				return String.valueOf(neuralArchitecture.getVolume());
+			}
+			else if(element instanceof NeuralNetwork){
+				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
+				return String.valueOf(neuralNetwork.getTrainingProfit());
 			}
 			
 			return "";
@@ -1225,6 +1247,10 @@ public class NeuralConfigurationEditorPart {
 				NeuralArchitecture neuralArchitecture=(NeuralArchitecture) element;
 				return neuralArchitecture.getType().toString();
 			}
+			else if(element instanceof NeuralNetwork){
+				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
+				return String.valueOf(neuralNetwork.getTrainingRisk());
+			}
 			
 			return "";
 		}
@@ -1240,6 +1266,10 @@ public class NeuralConfigurationEditorPart {
 				NeuralArchitecture neuralArchitecture=(NeuralArchitecture) element;
 				return neuralArchitecture.getHiddenLayerDescription();
 			}
+			else if(element instanceof NeuralNetwork){
+				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
+				return String.valueOf(neuralNetwork.getBackTestingProfit());
+			}
 			
 			return "";
 		}
@@ -1254,6 +1284,10 @@ public class NeuralConfigurationEditorPart {
 			if(element instanceof NeuralArchitecture){
 				NeuralArchitecture neuralArchitecture=(NeuralArchitecture) element;
 				return neuralArchitecture.getActivation().toString();
+			}
+			else if(element instanceof NeuralNetwork){
+				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
+				return String.valueOf(neuralNetwork.getBackTestingRisk());
 			}
 			
 			return "";
@@ -1701,8 +1735,4 @@ public class NeuralConfigurationEditorPart {
 		);
 				
 	}
-	
-	
-	
-	
 }
