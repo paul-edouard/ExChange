@@ -341,6 +341,10 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 			startDate.set(Calendar.MINUTE, 0);
 			startDate.set(Calendar.HOUR_OF_DAY, 0);
 			
+			if(startDate.get(Calendar.DAY_OF_WEEK)==Calendar.SUNDAY){
+				startDate.add(Calendar.DAY_OF_WEEK, +1);
+			}
+			
 			while(startDate.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY){
 				startDate.add(Calendar.DAY_OF_WEEK, -1);
 			}

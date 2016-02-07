@@ -1,7 +1,9 @@
 package com.munch.exchange.model.core.ib.neural;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -49,6 +51,75 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	 * 
 	 */
 	private static final long serialVersionUID = -2002340365998939571L;
+	
+	private class ProfitAndRisk{
+		private double profit;
+		private double risk;
+		
+		private double maxProfit;
+		private double maxRisk;
+		
+		private double tradeProfit;
+		
+		void ProfitAndRisk(){
+			profit=0;
+			risk=0;
+			maxProfit=0;
+			maxRisk=0;
+			tradeProfit=0.0;
+		}
+		
+		public void updateProfit(double diff){
+			profit+=diff;
+			tradeProfit+=diff;
+			
+//			Update the maxProfit
+			if(profit>maxProfit)
+				maxProfit=profit;
+			
+//			Calculate the risk
+			risk=profit-maxProfit;
+			
+//			Update the maxRisk
+			if(maxRisk<-risk){
+				maxRisk=-risk;
+			}
+			
+		}
+		
+		public void resetTradeProfit(){
+			tradeProfit=0;
+		}
+
+		public double getProfit() {
+			return profit;
+		}
+
+		public double getRisk() {
+			return risk;
+		}
+
+
+		public double getMaxProfit() {
+			return maxProfit;
+		}
+
+		
+
+		public double getMaxRisk() {
+			return maxRisk;
+		}
+
+		public double getTradeProfit() {
+			return tradeProfit;
+		}
+
+		
+		
+		
+		
+	}
+	
 	
 	public static enum  ArchitectureType {
 		FeedFoward, Elman, Jordan, Neat;
@@ -200,7 +271,9 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		
 		cp.neuralNetworks=new LinkedList<NeuralNetwork>();
 		for(NeuralNetwork network:this.neuralNetworks){
-			cp.neuralNetworks.add(network.copy());
+			NeuralNetwork network_cp=network.copy();
+			network_cp.setNeuralArchitecture(cp);
+			cp.neuralNetworks.add(network_cp);
 		}
 		
 		return cp;
@@ -251,89 +324,11 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		double maxRisk=0.0;
 		for(LinkedList<IbBar> block:neuralConfiguration.getTrainingBlocks()){
 			
-			double profit=0.0;
-			double risk=0.0;
-			double maxProfit=0.0;
-			double tradeProfit=0.0;
-			Position lastPosition=Position.NEUTRAL;
-			IbBar previewBar=block.get(0);
+			ProfitAndRisk profitAndRisk=calculateProfitAndRiskOfBlock(block, basicNetwork);
 			
-			long[] relTraindingPeriod=neuralConfiguration.getContract().
-					getRelativeTraidingPeriod(previewBar.getTimeInMs());
-			
-			int i=0;
-			for(IbBar bar:block){
-//				Jump first bar
-				if(i==0){i++;continue;}
-				
-				long time=bar.getTimeInMs();
-				if(!neuralConfiguration.getAdpatedTimesMap().containsKey(time))continue;
-//				Test if the stock exchange is open
-				if(relTraindingPeriod[0]>time || time>relTraindingPeriod[1])continue;
-				
-				
-				double previewPrice=previewBar.getClose();
-				double price=bar.getClose();
-				
-//				Add the profit and calculate the risk
-				if(lastPosition!=Position.NEUTRAL){
-					double diffProfit=Position.getSignal(lastPosition)*(price-previewPrice)*volume;
-					profit+=diffProfit;
-					tradeProfit+=diffProfit;
-					
-//					Calculate the risk
-					if(profit>maxProfit)
-						maxProfit=profit;
-					
-					risk=profit-maxProfit;
-				}
-				
-				
-				int daptedValueIndex=neuralConfiguration.getAdpatedTimesMap().get(time);
-				
-//				Create the input data raw
-				MLData input = new BasicMLData(basicNetwork.getInputCount());
-				for(int j=0;j<components.length;j++){
-					input.setData(j, components[j].getNormalizedAdaptedValueAt(daptedValueIndex));
-				}
-//				Add the Current Trade Profit
-				input.setData(components.length,normalizedTradeProfitLimit.normalize(tradeProfit));
-//				Add the Current Block Profit
-				input.setData(components.length+1,normalizedTotalProfitLimit.normalize(profit));
-//				Add the current risk profit
-				input.setData(components.length+2,normalizedTotalProfitLimit.normalize(risk));
-				
-				
-//				Compute the raw
-				MLData output = basicNetwork.compute(input);
-				Position position=decode(output.getData());
-				
-				
-				double diffSignal=Position.getSignal(position)-Position.getSignal(lastPosition);
-				double absDiffSignal=Math.abs(diffSignal);
-				
-//				Modification of the position, the commission will reduce the profit
-				if(position!=lastPosition){
-					IbCommission com=this.getNeuralConfiguration().getContract().getCommission();
-					if(com!=null){
-						profit-=absDiffSignal*com.calculate(volume, price);
-					}
-//					Reset the trade profit
-					tradeProfit=0;
-				}
-				
-				if(maxRisk<-risk){
-					maxRisk=-risk;
-				}
-				
-				lastPosition=position;
-				previewBar=bar;
-				
-			}
-			
-//			Close the last position
-			
-			totalProfit+=profit;
+			totalProfit+=profitAndRisk.getProfit();
+			if(maxRisk<profitAndRisk.getMaxRisk())
+				maxRisk=profitAndRisk.getMaxRisk();
 			
 		}
 		
@@ -349,7 +344,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		return totalProfit;
 		
 	}
-
+	
 	@Override
 	public boolean shouldMinimize() {
 		return false;
@@ -433,12 +428,134 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		
 	}
 	
+	
+	
+	private ProfitAndRisk calculateProfitAndRiskOfBlock(LinkedList<IbBar> block,BasicNetwork basicNetwork){
+		
+		ProfitAndRisk profitAndRisk=new ProfitAndRisk();
+		if(block==null || block.isEmpty())return profitAndRisk;
+		
+		basicNetwork.clearContext();
+		
+		Position lastPosition=Position.NEUTRAL;
+		IbBar previewBar=block.get(0);
+		
+		
+		long[] relTraindingPeriod=neuralConfiguration.getContract().
+				getRelativeTraidingPeriod(previewBar.getTimeInMs());
+				
+		int i=0;
+		for(IbBar bar:block){
+			
+//			#####################################################				
+//			####  1. Check if the bar should be calculated   ####
+//			#####################################################	
+//			Jump first bar
+			if(i==0){i++;continue;}
+			
+			long time=bar.getTimeInMs();
+			if(!neuralConfiguration.getAdpatedTimesMap().containsKey(time))continue;
+//			#####################################################		
+			
+			
+//			#################################################################
+//			####  2. Update the profit if the current position is open   ####
+//			#################################################################
+			double previewPrice=previewBar.getClose();
+			double price=bar.getClose();
+			
+//			Add the profit and calculate the risk
+			if(lastPosition!=Position.NEUTRAL){
+				double diffProfit=Position.getSignal(lastPosition)*(price-previewPrice)*volume;
+				profitAndRisk.updateProfit(diffProfit);
+			}
+			
+//			Close the open position before living
+			if(time>=relTraindingPeriod[1]){
+				if(lastPosition!=Position.NEUTRAL){
+//					Sold the last position
+					IbCommission com=this.getNeuralConfiguration().getContract().getCommission();
+					if(com!=null){
+						double profitDiff=-com.calculate(volume, price);
+						profitAndRisk.updateProfit(profitDiff);
+					}
+				}
+				break;
+			}
+//			#################################################################
+			
+			
+//			#######################################################			
+//			####  3. Create the new data raw for the network   ####
+//			#######################################################
+			int daptedValueIndex=neuralConfiguration.getAdpatedTimesMap().get(time);
+			
+//			Create the input data raw
+			MLData input = new BasicMLData(basicNetwork.getInputCount());
+			for(int j=0;j<components.length;j++){
+				input.setData(j, components[j].getNormalizedAdaptedValueAt(daptedValueIndex));
+			}
+//			Add the Current Trade Profit
+			input.setData(components.length,normalizedTradeProfitLimit.normalize(profitAndRisk.getTradeProfit()));
+//			Add the Current Block Profit
+			input.setData(components.length+1,normalizedTotalProfitLimit.normalize(profitAndRisk.getProfit()));
+//			Add the current risk profit
+			input.setData(components.length+2,normalizedTotalProfitLimit.normalize(profitAndRisk.getRisk()));
+//			#######################################################	
+			
+			
+//			#######################################################			
+//			####  4. Calculate the new position                ####
+//			#######################################################
+//			Compute the raw
+			MLData output = basicNetwork.compute(input);
+//			Test if the stock exchange is open otherwise the position will be ignore
+			if(relTraindingPeriod[0]>time)continue;
+			
+			Position position=decode(output.getData());
+//			#######################################################
+			
+			
+//			#######################################################			
+//			####  5. Calculate the commission                  ####
+//			#######################################################
+			
+//			Modification of the position, the commission will reduce the profit
+			if(position!=lastPosition){
+				
+				double diffSignal=Position.getSignal(position)-Position.getSignal(lastPosition);
+				double absDiffSignal=Math.abs(diffSignal);
+			
+				IbCommission com=this.getNeuralConfiguration().getContract().getCommission();
+				if(com!=null){
+					double profitDiff=-absDiffSignal*com.calculate(volume, price);
+					profitAndRisk.updateProfit(profitDiff);
+				}
+//				Reset the trade profit
+				profitAndRisk.resetTradeProfit();
+			}
+			
+	
+			lastPosition=position;
+			previewBar=bar;
+		}
+		
+		
+		return profitAndRisk;
+		
+	}
+		
+		
+		
+		
 	public void addNeuralNetwork(BasicNetwork basicNetwork){
 		NeuralNetwork network=new NeuralNetwork();
 		network.setNetwork(basicNetwork);
 		network.setNeuralArchitecture(this);
 		this.neuralNetworks.add(network);
 	}
+	
+	
 	
 //	#######################
 //	##   GETTER & SETTER ##

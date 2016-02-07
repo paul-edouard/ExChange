@@ -16,6 +16,7 @@ import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
 import com.munch.exchange.model.core.ib.neural.NeuralInput;
 import com.munch.exchange.model.core.ib.neural.NeuralInputComponent;
+import com.munch.exchange.model.core.ib.neural.NeuralNetwork;
 import com.munch.exchange.model.core.ib.neural.NeuralTrainingElement;
 import com.munch.exchange.services.ejb.interfaces.NeuralBeanRemote;
 
@@ -175,7 +176,9 @@ public class NeuralBean implements NeuralBeanRemote{
 		
 		List<NeuralTrainingElement> elements=new LinkedList<NeuralTrainingElement>();
 		for(NeuralTrainingElement saved_element:savedConfig.getNeuralTrainingElements()){
-			elements.add(saved_element.copy());
+			NeuralTrainingElement cp=saved_element.copy();
+			cp.setNeuralConfiguration(configuration);
+			elements.add(cp);
 		}
 		
 		em.flush();
@@ -246,6 +249,7 @@ public class NeuralBean implements NeuralBeanRemote{
 			for (NeuralArchitecture new_architecture : configuration
 					.getNeuralArchitectures()) {
 				if (new_architecture.getId() == saved_architecture.getId()) {
+					findNeuralNetworkToRemove(saved_architecture, new_architecture);
 					inputFound = true;
 					break;
 				}
@@ -261,11 +265,23 @@ public class NeuralBean implements NeuralBeanRemote{
 
 		return savedConfig.getNeuralArchitectures();
 		
-		
-		
 	}
 	
-
+	private void findNeuralNetworkToRemove(NeuralArchitecture saved_architecture,NeuralArchitecture new_architecture){
+		for(NeuralNetwork saved_network:saved_architecture.getNeuralNetworks()){
+			boolean inputFound = false;
+			for(NeuralNetwork new_network:new_architecture.getNeuralNetworks()){
+				if(saved_network.getId()==new_network.getId()){
+					inputFound = true;
+					break;
+				}
+			}
+			
+			if (!inputFound) {
+				em.remove(saved_network);
+			}
+		}
+	}
 
 	
 

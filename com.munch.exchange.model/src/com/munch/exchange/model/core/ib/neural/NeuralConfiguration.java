@@ -241,20 +241,30 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 			// neuralTrainingElements.clear();
 
 			for (LinkedList<IbBar> block : trainingBlocks) {
+				
+				String key=null;
+				
 				switch (this.getSplitStrategy()) {
 				case WEEK:
 					Calendar sunday = IbBar.getLastSundayOfDate(block.get(0)
 							.getTimeInMs());
-					String dateKey = String.valueOf(sunday.getTimeInMillis());
-					neuralTrainingElements.add(new NeuralTrainingElement(dateKey));
+					key = String.valueOf(sunday.getTimeInMillis());
 					break;
+					
 				case DAY:
 					Calendar day = IbBar.getCurrentDayOf(block.get(0)
 							.getTimeInMs());
-					String key = String.valueOf(day.getTimeInMillis());
-					neuralTrainingElements.add(new NeuralTrainingElement(key));
+					key = String.valueOf(day.getTimeInMillis());
 					break;
 				}
+				
+				if(key!=null){
+					NeuralTrainingElement element=new NeuralTrainingElement(key);
+					element.setNeuralConfiguration(this);
+					neuralTrainingElements.add(element);
+				}
+				
+				
 			}
 		} else {
 			for(LinkedList<IbBar> block:allBlocks){
@@ -276,10 +286,15 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 				
 				if(key==null)continue;
 				
+				boolean isTrainingElement=false;
+				for(NeuralTrainingElement element:neuralTrainingElements){
+					if(element.getName().equals(key)){
+						isTrainingElement=true;break;
+					}
+				}
 				
 				
-				
-				if(neuralTrainingElements.contains(key)){
+				if(isTrainingElement){
 					trainingBlocks.add(block);
 				}
 				else{

@@ -134,7 +134,7 @@ public class NeuralConfigurationEditorPart {
 	private Tree treeTrainingData;
 	private TreeViewer treeViewerTrainingData;
 	private Spinner spinnerPercentOfTrainingData;
-	private Button btnDistribute;
+	private Button btnViewTrainingData;
 	private Button btnSearch;
 	private Combo comboReferenceData;
 	private Combo comboSplitStrategy;
@@ -145,8 +145,10 @@ public class NeuralConfigurationEditorPart {
 	private MenuItem mntmDeleteArchitecture;
 	private MenuItem mntmTrainArchitecture;
 	private Menu menuArchitecture;
+	private ProgressBar progressBarDataSet;
 	
 	private static int epoch=-1;
+	private static int dataSetCounter=-1;
 	
 	
 	@Inject
@@ -460,12 +462,18 @@ public class NeuralConfigurationEditorPart {
 		btnSearch.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				searchReferenceDataFunc();
-				distributeDataFunc();
+				
+				SearchAndDistribute job=new SearchAndDistribute();
+				job.schedule();
+				
+				btnSearch.setEnabled(false);
+				
+//				searchReferenceDataFunc();
+//				distributeDataFunc();
 			}
 		});
 		btnSearch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		btnSearch.setText("Search & Distribute");
+		btnSearch.setText("Search And Distribute");
 		
 		Label lblPercentOfTraining = new Label(compositeDataSetCommandItems, SWT.NONE);
 		lblPercentOfTraining.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -491,22 +499,22 @@ public class NeuralConfigurationEditorPart {
 		}
 		comboSplitStrategy.setEnabled(false);
 		
-		btnDistribute = new Button(compositeDataSetCommandItems, SWT.NONE);
-		btnDistribute.setEnabled(false);
-		btnDistribute.addSelectionListener(new SelectionAdapter() {
+		btnViewTrainingData = new Button(compositeDataSetCommandItems, SWT.NONE);
+		btnViewTrainingData.setEnabled(false);
+		btnViewTrainingData.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				distributeDataFunc();
+				viewInputData();
 			}
 		});
-		btnDistribute.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		btnDistribute.setText("Distribute");
-		btnDistribute.setEnabled(false);
+		btnViewTrainingData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		btnViewTrainingData.setText("View Data");
+		btnViewTrainingData.setEnabled(false);
 		
 		treeViewerTrainingData = new TreeViewer(compositeDataSet,SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL | SWT.FULL_SELECTION);
 		treeViewerTrainingData.setContentProvider(new NeuralConfigurationTrainingDataContentProvider());
-		treeViewerTrainingData.setInput(neuralConfiguration);
+//		treeViewerTrainingData.setInput(neuralConfiguration);
 		
 		treeTrainingData = treeViewerTrainingData.getTree();
 		treeTrainingData.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -517,7 +525,7 @@ public class NeuralConfigurationEditorPart {
 		composite.setLayout(new GridLayout(3, false));
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		
-		ProgressBar progressBarDataSet = new ProgressBar(composite, SWT.NONE);
+		progressBarDataSet = new ProgressBar(composite, SWT.NONE);
 		progressBarDataSet.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Label lblNbOfData = new Label(composite, SWT.NONE);
@@ -565,6 +573,7 @@ public class NeuralConfigurationEditorPart {
 						mntmTrainArchitecture.setEnabled(epoch<0);
 					}
 					else if(item.getData() instanceof NeuralNetwork){
+						mntmDeleteArchitecture.setEnabled(true);
 						mntmTrainArchitecture.setEnabled(epoch<0);
 					}
 					
@@ -636,6 +645,14 @@ public class NeuralConfigurationEditorPart {
 						neuralConfiguration.getNeuralArchitectures().remove(architecture);
 						neuralProvider.updateNeuralArchitecture(neuralConfiguration);
 						treeViewerArchitecture.refresh();
+						treeViewerArchitecture.expandAll();
+					}
+					else if(item.getData() instanceof NeuralNetwork){
+						NeuralNetwork network=(NeuralNetwork) item.getData();
+						network.getNeuralArchitecture().getNeuralNetworks().remove(network);
+						neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+						treeViewerArchitecture.refresh();
+						treeViewerArchitecture.expandAll();
 					}
 					
 				}
@@ -699,7 +716,7 @@ public class NeuralConfigurationEditorPart {
 	}
 	
 	private void preGuiFunc(){
-		logger.info("Neural Config: "+neuralConfiguration);
+//		logger.info("Neural Config: "+neuralConfiguration);
 		neuralProvider.loadNeuralInputs(neuralConfiguration);
 		neuralProvider.loadNeuralArchitecture(neuralConfiguration);
 		
@@ -713,12 +730,13 @@ public class NeuralConfigurationEditorPart {
 		treeViewerInputData.expandAll();
 		treeViewerArchitecture.refresh();
 		btnResetMinmax.setEnabled(neuralConfiguration.isResetMinMaxNeeded());
-		btnEdit.setEnabled(neuralConfiguration.getNeuralArchitectures().isEmpty());
+		btnEdit.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
 		
 		neuralProvider.loadTrainingData(neuralConfiguration);
 		
 //		Initialization of the bar size
 		comboBarSize.setText(neuralConfiguration.getSize().toString());
+		comboBarSize.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
 		
 //		Initialization of the reference data type
 		if(neuralConfiguration.getReferenceData()!=null){
@@ -754,6 +772,7 @@ public class NeuralConfigurationEditorPart {
 		
 //		Initialization of percent of training data
 		spinnerPercentOfTrainingData.setSelection(neuralConfiguration.getPercentOfTrainingData());
+		spinnerPercentOfTrainingData.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
 		
 		
 		addColumn("Name",150,new NeuralTrainingDataLabelProvider());
@@ -792,9 +811,6 @@ public class NeuralConfigurationEditorPart {
 	}
 	
 	
-	
-	
-	
 	/**
 	 * 1. Search the historical data of each neural indicator input
 	 * and then compute the values and the range of each component
@@ -816,117 +832,19 @@ public class NeuralConfigurationEditorPart {
 		
 	}
 	
-
-	/**
-	 * 2. Search the reference data
-	 */
-	private void searchReferenceDataFunc(){
-		
-//		Save the bar Size
-		neuralConfiguration.setSize(IbBar.getBarSizeFromString(comboBarSize
-				.getText()));
-		
-//		Save the reference data
-		if (comboReferenceData.getSelectionIndex() == 0) {
-			neuralConfiguration.setReferenceData(ReferenceData.MID_POINT);
-		} else if (comboReferenceData.getSelectionIndex() == 1) {
-			neuralConfiguration.setReferenceData(ReferenceData.BID_AND_ASK);
-		}
-
-//		Search the reference data
-		neuralConfiguration.clearAllCollectedBars();
-		
-		List<IbBarContainer> containers = historicalDataProvider
-				.getAllExContractBars(neuralConfiguration.getContract());
-		
-		for (IbBarContainer container : containers) {
-
-			// Collect the mid point data
-			if (neuralConfiguration.getReferenceData() == ReferenceData.MID_POINT
-					&& container.getType() == WhatToShow.MIDPOINT) {
-				List<IbBar> allBars = historicalDataProvider.getAllBars(
-						container, neuralConfiguration.getSize());
-				neuralConfiguration.setAllMidPointBars(allBars);
-			}
-
-			// Collect the Ask Data
-			if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
-					&& container.getType() == WhatToShow.ASK) {
-				List<IbBar> allBars = historicalDataProvider.getAllBars(
-						container, neuralConfiguration.getSize());
-				neuralConfiguration.setAllAskBars(allBars);
-			}
-
-			// Collect the Bid Data
-			if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
-					&& container.getType() == WhatToShow.BID) {
-				List<IbBar> allBars = historicalDataProvider.getAllBars(
-						container, neuralConfiguration.getSize());
-				neuralConfiguration.setAllBidBars(allBars);
-			}
-
-		}
-
-		
-		switch (neuralConfiguration.getReferenceData()) {
-		case MID_POINT:
-			textNbOfData.setText(String.valueOf(neuralConfiguration
-					.getAllMidPointBars().size()));
-			break;
-		case BID_AND_ASK:
-			textNbOfData.setText(String.valueOf((neuralConfiguration
-					.getAllAskBars().size() + neuralConfiguration
-					.getAllBidBars().size()) / 2));
-			break;
-		}
-
-		btnDistribute.setEnabled(true);
-		
-	}
-	
-	
-	/**
-	 * 3. Split the data and distribute them 
-	 */
-	private void distributeDataFunc(){
-		
+	private void viewInputData(){
 //		Clear the tree
 		removeAllInputsColumns();
 		
-//		Save the percent of training data
-		neuralConfiguration.setPercentOfTrainingData(spinnerPercentOfTrainingData.getSelection());
-		
-//		Save the split strategy
-		if (comboSplitStrategy.getSelectionIndex() == 0) {
-			neuralConfiguration.setSplitStrategy(SplitStrategy.WEEK);
-		} else if (comboSplitStrategy.getSelectionIndex() == 1) {
-			neuralConfiguration.setSplitStrategy(SplitStrategy.DAY);
-		}
-		
-//		Split the data
-		neuralConfiguration.splitReferenceData();
-		
-//		Fill the neural input bar collector
-		fillTheNeuralInputsBarsCollector();
-		
-//		Compute the neural indicator values and reset the ranges of the components
-		neuralConfiguration.computeAllNeuralIndicatorInputs();
-		
-//		In order to save memory clear the data collector
-		neuralConfiguration.getNeuralInputsBarsCollector().clear();
-		
-//		Compute the adapted Data of each components
-		neuralConfiguration.computeAdaptedDataOfEachComponents();
+		treeViewerTrainingData.setInput(neuralConfiguration);
 		
 //		Refresh the tree
 		createAllTrainingDataColumns();
 		treeViewerTrainingData.refresh();
 		
-//		save the configuration
-		neuralProvider.updateTrainingData(neuralConfiguration);
-		
-		
 	}
+	
+	
 	
 	/**
 	 * Search all needed bars and save them in the data collector
@@ -964,7 +882,7 @@ public class NeuralConfigurationEditorPart {
 		TrainNeuralArchitectureDialog dialog=new TrainNeuralArchitectureDialog(shell);
 		if (dialog.open() != Window.OK)return;
 		
-		logger.info("Architecture Name: "+neuralArchitecture.getName());
+//		logger.info("Architecture Name: "+neuralArchitecture.getName());
 		
 		BasicNetwork network = neuralArchitecture.createNetwork();
 		MLTrain train;
@@ -992,7 +910,7 @@ public class NeuralConfigurationEditorPart {
 		}
 		
 		progressBarArchitecture.setMinimum(0);
-		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch());
+		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
 		
 		neuralArchitecture.prepareScoring();
 		
@@ -1048,7 +966,7 @@ public class NeuralConfigurationEditorPart {
 		//Save the Input
 		neuralProvider.updateNeuralInputs(neuralConfiguration);
 		
-		btnEdit.setEnabled(true);
+		btnEdit.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
 		btnResetMinmax.setEnabled(neuralConfiguration.isResetMinMaxNeeded());
 		treeInputData.setEnabled(false);
 		
@@ -1551,6 +1469,8 @@ public class NeuralConfigurationEditorPart {
 				text="Epoch #" + epoch + " Score:" + train.getError();
 				eventBroker.post(IEventConstant.TEXT_INFO,text);
 				
+				//TODO Calculate the expected end of training
+				
 				epoch++;
 				updateProgressBarArchitecture();
 			} 
@@ -1559,11 +1479,21 @@ public class NeuralConfigurationEditorPart {
 			text="Training finished, best score:" + train.getError();
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
+			
+			text="Please wait the network will be saved...";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
 			neuralArchitecture.addNeuralNetwork((BasicNetwork)train.getMethod());
 			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
 			refreshTreeArchitecture();
 			
+			epoch++;
+			updateProgressBarArchitecture();
+			
 			epoch=-1;
+			
+			text="Data are now saved!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
 			return Status.OK_STATUS;
 		}
@@ -1595,6 +1525,184 @@ public class NeuralConfigurationEditorPart {
 		);
 				
 	}
+	
+	
+	//######################################
+  	//##   Search And Distribute Job      ##
+  	//######################################
+	
+	private class SearchAndDistribute extends Job{
+
+		public SearchAndDistribute() {
+			super("Search and distribute");
+			readGuiData();
+		}
+		
+		private void readGuiData(){
+//			Save the bar Size
+			neuralConfiguration.setSize(IbBar.getBarSizeFromString(comboBarSize
+					.getText()));
+			
+//			Save the reference data
+			if (comboReferenceData.getSelectionIndex() == 0) {
+				neuralConfiguration.setReferenceData(ReferenceData.MID_POINT);
+			} else if (comboReferenceData.getSelectionIndex() == 1) {
+				neuralConfiguration.setReferenceData(ReferenceData.BID_AND_ASK);
+			}
+			
+//			Clear the tree
+			removeAllInputsColumns();
+			
+//			Save the percent of training data
+			neuralConfiguration.setPercentOfTrainingData(spinnerPercentOfTrainingData.getSelection());
+			
+//			Save the split strategy
+			if (comboSplitStrategy.getSelectionIndex() == 0) {
+				neuralConfiguration.setSplitStrategy(SplitStrategy.WEEK);
+			} else if (comboSplitStrategy.getSelectionIndex() == 1) {
+				neuralConfiguration.setSplitStrategy(SplitStrategy.DAY);
+			}
+			
+			progressBarDataSet.setMaximum(8);
+			progressBarDataSet.setSelection(0);
+			dataSetCounter=0;
+			
+		}
+		
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			
+			searchReferenceDataFunc();
+			
+			distributeDataFunc();
+			
+			return Status.OK_STATUS;
+		}
+		
+		/**
+		 * 2. Search the reference data
+		 */
+		private void searchReferenceDataFunc(){
+			
+
+//			Search the reference data
+			neuralConfiguration.clearAllCollectedBars();
+			updateProgressBarDataSet();
+			
+			List<IbBarContainer> containers = historicalDataProvider
+					.getAllExContractBars(neuralConfiguration.getContract());
+			
+			for (IbBarContainer container : containers) {
+
+				// Collect the mid point data
+				if (neuralConfiguration.getReferenceData() == ReferenceData.MID_POINT
+						&& container.getType() == WhatToShow.MIDPOINT) {
+					List<IbBar> allBars = historicalDataProvider.getAllBars(
+							container, neuralConfiguration.getSize());
+					neuralConfiguration.setAllMidPointBars(allBars);
+				}
+
+				// Collect the Ask Data
+				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
+						&& container.getType() == WhatToShow.ASK) {
+					List<IbBar> allBars = historicalDataProvider.getAllBars(
+							container, neuralConfiguration.getSize());
+					neuralConfiguration.setAllAskBars(allBars);
+				}
+
+				// Collect the Bid Data
+				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
+						&& container.getType() == WhatToShow.BID) {
+					List<IbBar> allBars = historicalDataProvider.getAllBars(
+							container, neuralConfiguration.getSize());
+					neuralConfiguration.setAllBidBars(allBars);
+				}
+
+			}
+			
+			updateProgressBarDataSet();
+			refreshNbOfDataText();
+			
+		}
+		
+		
+		/**
+		 * 3. Split the data and distribute them 
+		 */
+		private void distributeDataFunc(){
+			
+			
+//			Split the data
+			neuralConfiguration.splitReferenceData();
+			updateProgressBarDataSet();
+			
+//			Fill the neural input bar collector
+			fillTheNeuralInputsBarsCollector();
+			updateProgressBarDataSet();
+			
+//			Compute the neural indicator values and reset the ranges of the components
+			neuralConfiguration.computeAllNeuralIndicatorInputs();
+			updateProgressBarDataSet();
+			
+//			In order to save memory clear the data collector
+			neuralConfiguration.getNeuralInputsBarsCollector().clear();
+			updateProgressBarDataSet();
+			
+//			Compute the adapted Data of each components
+			neuralConfiguration.computeAdaptedDataOfEachComponents();
+			updateProgressBarDataSet();
+			
+//			save the configuration
+			neuralProvider.updateTrainingData(neuralConfiguration);
+			updateProgressBarDataSet();
+			
+		}
+			
+	}
+	
+	
+	private void refreshNbOfDataText(){
+		Display.getDefault().asyncExec(
+		new Runnable() {
+			
+			@Override
+			public void run() {
+				switch (neuralConfiguration.getReferenceData()) {
+				case MID_POINT:
+					textNbOfData.setText(String.valueOf(neuralConfiguration
+							.getAllMidPointBars().size()));
+					break;
+				case BID_AND_ASK:
+					textNbOfData.setText(String.valueOf((neuralConfiguration
+							.getAllAskBars().size() + neuralConfiguration
+							.getAllBidBars().size()) / 2));
+					break;
+				}
+			}
+		}
+		);
+
+	}
+	
+	
+	private void updateProgressBarDataSet(){
+		Display.getDefault().asyncExec(
+		new Runnable() {
+			
+			@Override
+			public void run() {
+				dataSetCounter++;
+				progressBarDataSet.setSelection(dataSetCounter);
+				if(dataSetCounter==8)
+					btnViewTrainingData.setEnabled(true);
+			}
+		}
+		);
+				
+	}
+	
+	
 	
 	
 }

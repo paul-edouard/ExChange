@@ -2,7 +2,6 @@
 <persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
 	<persistence-unit name="com.munch.exchange.server.ejb">
 	<jta-data-source>java:jboss/datasources/exchange</jta-data-source>
-	<class>com.munch.exchange.model.core.ib.IbContract</class>
 	<class>com.munch.exchange.model.core.ib.bar.IbBar</class>
 	<class>com.munch.exchange.model.core.ib.bar.IbDayBar</class>
 	<class>com.munch.exchange.model.core.ib.bar.IbHourBar</class>
@@ -38,6 +37,7 @@
 	<class>com.munch.exchange.model.core.ib.neural.NeuralConfiguration</class>
 	<class>com.munch.exchange.model.core.ib.neural.NeuralArchitecture</class>
 	<class>com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange</class>
+	<class>com.munch.exchange.model.core.ib.IbContract</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	
