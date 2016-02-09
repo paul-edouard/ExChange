@@ -898,6 +898,7 @@ public class NeuralConfigurationEditorPart {
 		
 //		logger.info("Architecture Name: "+neuralArchitecture.getName());
 		
+		
 		BasicNetwork network = neuralArchitecture.createNetwork();
 		MLTrain train;
 		
@@ -1519,6 +1520,11 @@ public class NeuralConfigurationEditorPart {
 			
 			neuralArchitecture.addNeuralNetwork((BasicNetwork)train.getMethod());
 			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+			
+//			BasicNetwork network = (BasicNetwork)train.getMethod();
+//			System.out.println("Score: "+neuralArchitecture.calculateScore(network));
+//			System.out.println("Weigth: "+network.dumpWeights());
+			
 			refreshTreeArchitecture();
 			
 			epoch++;

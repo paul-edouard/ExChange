@@ -2,6 +2,14 @@ package com.munch.exchange.model.core.ib.neural;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 
 import javax.persistence.Entity;
@@ -16,6 +24,7 @@ import javax.persistence.Transient;
 
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.persist.EncogDirectoryPersistence;
+import org.encog.util.obj.SerializeObject;
 
 import com.munch.exchange.model.core.ib.Copyable;
 
@@ -69,12 +78,12 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 		return basicNetwork;
 	}
 	
+	
 	public void setNetwork(BasicNetwork basicNetwork){
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		EncogDirectoryPersistence.saveObject(bos,basicNetwork);
 		network = bos.toByteArray();
 	}
-	
 	
 	
 	@Override
@@ -150,6 +159,24 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	}
 	
 	
+	public static Serializable load(InputStream inputStream)
+			throws IOException, ClassNotFoundException {
+		Serializable object;
+		ObjectInputStream in = null;
+		in = new ObjectInputStream(inputStream);
+		object = (Serializable) in.readObject();
+		in.close();
+		return object;
+	}
+
+	public static void save(OutputStream outputStream, final Serializable object)
+			throws IOException {
+		ObjectOutputStream out = null;
+
+		out = new ObjectOutputStream(outputStream);
+		out.writeObject(object);
+		out.close();
+	}
 	
 
 }

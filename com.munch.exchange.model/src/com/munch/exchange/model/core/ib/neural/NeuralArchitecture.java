@@ -30,7 +30,9 @@ import org.encog.ml.CalculateScore;
 import org.encog.ml.MLMethod;
 import org.encog.ml.data.MLData;
 import org.encog.ml.data.basic.BasicMLData;
+import org.encog.ml.train.MLTrain;
 import org.encog.neural.networks.BasicNetwork;
+import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing;
 import org.encog.neural.pattern.ElmanPattern;
 import org.encog.neural.pattern.FeedForwardPattern;
 import org.encog.neural.pattern.JordanPattern;
@@ -295,6 +297,14 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	 */
 	public boolean prepareScoring(){
 		
+		if(neuralConfiguration.getContract().allowShortPosition()){
+			equilateralOutput=new Equilateral(3, -1, 1);
+		}
+		else{
+			equilateralOutput=new Equilateral(2, -1, 1);
+		}
+		
+		
 		normalizedTotalProfitLimit=new NormalizedField(NormalizationAction.Normalize,
 				this.getName()+" Total Profit Limit",
 				-blockProfitLimit, blockProfitLimit, -0.9, 0.9);
@@ -523,8 +533,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			MLData output = basicNetwork.compute(input);
 //			Test if the stock exchange is open otherwise the position will be ignore
 			if(relTraindingPeriod[0]>time)continue;
-			
 			Position position=decode(output.getData());
+//			System.out.println("Profit: "+profitAndRisk.getProfit()+"Position: "+position.toString());
 //			#######################################################
 			
 			
@@ -558,12 +568,16 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	}
 	
 	private ProfitAndRisk calculateProfitAndRiskOfBlocks(LinkedList<LinkedList<IbBar>> blocks,BasicNetwork basicNetwork ){
+		
+//		BasicNetwork network = (BasicNetwork)train.getMethod();
+		
+	
 		ProfitAndRisk profitAndRiskTotal=new ProfitAndRisk();
 		
 		for(LinkedList<IbBar> block:blocks){
 			
 			ProfitAndRisk profitAndRiskOfBlock=calculateProfitAndRiskOfBlock(block, basicNetwork);
-			
+//			System.out.println("Profit of block: "+profitAndRiskOfBlock.getProfit());
 			profitAndRiskTotal.updateProfitOnly(profitAndRiskOfBlock.getProfit());
 			
 			if(profitAndRiskTotal.getRisk()<profitAndRiskOfBlock.getMaxRisk())
@@ -588,7 +602,15 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	public void evaluateProfitAndRiskOfAllNetworks(){
 		prepareScoring();
 		
+		
+		
+		
 		for(NeuralNetwork network:this.neuralNetworks){
+			
+//			System.out.println("Score: "+this.calculateScore(network.getNetwork()));
+//			System.out.println("Weigth: "+network.getNetwork().dumpWeights());
+//			
+			
 			
 //			Evaluate the Training data set
 			ProfitAndRisk profitAndRiskTraining=calculateProfitAndRiskOfBlocks(
@@ -596,6 +618,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			network.setScore(profitAndRiskTraining.getProfit());
 			network.setTrainingProfit(profitAndRiskTraining.getProfit());
 			network.setTrainingRisk(profitAndRiskTraining.getRisk());
+//			System.out.println("Network Training Profit: "+network.getTrainingProfit());
+//			System.out.println("Network Training Risk: "+network.getTrainingRisk());
 			
 //			Evaluate the back testing data set
 			ProfitAndRisk profitAndRiskBackTesting=calculateProfitAndRiskOfBlocks(

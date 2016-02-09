@@ -157,6 +157,7 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 		beanRemote.getService().updateNeuralArchitecture(configuration);
 		
 		return loadNeuralArchitecture(configuration);
+	
 	}
 	
 	
