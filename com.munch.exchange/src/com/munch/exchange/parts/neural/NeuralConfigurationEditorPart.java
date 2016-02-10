@@ -114,6 +114,8 @@ public class NeuralConfigurationEditorPart {
 	
 	private NeuralArchitecture neuralArchitecture;
 	
+	private List<NeuralNetwork> selectedNetworks=new LinkedList<NeuralNetwork>();
+	
 	@Inject
 	private IIBNeuralProvider neuralProvider;
 	
@@ -623,7 +625,7 @@ public class NeuralConfigurationEditorPart {
 						
 					}
 					else if(item.getData() instanceof NeuralNetwork){
-						trainNeuralNetork((NeuralNetwork)item.getData() );
+						trainNeuralNetwork((NeuralNetwork)item.getData() );
 					}
 					//trainNeuralNetork(NeuralNetwork network)
 				}
@@ -891,8 +893,6 @@ public class NeuralConfigurationEditorPart {
 	private void trainArchitecture(NeuralArchitecture architecture){
 		neuralArchitecture=architecture;
 		
-		
-//		logger.info("Train Architecture: "+neuralArchitecture.getName());
 		TrainNeuralArchitectureDialog dialog=new TrainNeuralArchitectureDialog(shell);
 		if (dialog.open() != Window.OK)return;
 		
@@ -900,11 +900,33 @@ public class NeuralConfigurationEditorPart {
 		
 		
 		BasicNetwork network = neuralArchitecture.createNetwork();
+		NeuralNetwork neuralNetwork=new NeuralNetwork();
+		neuralNetwork.setNetwork(network);
+		selectedNetworks.clear();selectedNetworks.add(neuralNetwork);
+		
+		prepareAndStartTraining( dialog);
+		
+	}
+	
+	private void trainNeuralNetwork(NeuralNetwork neuralNetwork){
+		neuralArchitecture=neuralNetwork.getNeuralArchitecture();
+		
+		TrainNeuralArchitectureDialog dialog=new TrainNeuralArchitectureDialog(shell);
+		if (dialog.open() != Window.OK)return;
+		
+		
+		selectedNetworks.clear();selectedNetworks.add(neuralNetwork);
+		
+		prepareAndStartTraining( dialog);
+		
+	}
+	
+	private void prepareAndStartTraining(TrainNeuralArchitectureDialog dialog){
 		MLTrain train;
 		
-		if(dialog.getTrainingMethod()==TrainingMethod.SIMULATED_ANNEALING){
+		if(dialog.getTrainingMethod()==TrainingMethod.SIMULATED_ANNEALING && selectedNetworks.size()==1){
 			train = new NeuralSimulatedAnnealing(
-					network,
+					selectedNetworks.get(0).getNetwork(),
 					neuralArchitecture,
 					dialog.getStartTemperature(),
 					dialog.getStopTemperature(),
@@ -913,11 +935,21 @@ public class NeuralConfigurationEditorPart {
 		else{
 			train = new MLMethodGeneticAlgorithm(
 				new MethodFactory(){
+					
+					int nbOfCall=-1;
 					@Override
 					public MLMethod factor() {
-						final BasicNetwork network = neuralArchitecture.createNetwork();
+						nbOfCall++;
+						while(nbOfCall<selectedNetworks.size()){
+							BasicNetwork network = selectedNetworks.get(0).getNetwork();
+							network.reset();
+							return network;
+						}
+						
+						final BasicNetwork network=  neuralArchitecture.createNetwork();
 						((MLResettable)network).reset();
 						return network;
+						
 					}
 				},
 				neuralArchitecture,
@@ -931,24 +963,8 @@ public class NeuralConfigurationEditorPart {
 		
 		NetworkTrainer trainer=new NetworkTrainer(train, dialog.getNbOfEpoch());
 		trainer.schedule();
-		
-		
-//		int epoch = 1;
-//
-//		for(int i=0;i<dialog.getNbOfEpoch();i++) {
-//			train.iteration();
-//			System.out
-//					.println("Epoch #" + epoch + " Score:" + train.getError());
-//			epoch++;
-//		} 
-//		train.finishTraining();
-		
 	}
 	
-	private void trainNeuralNetork(NeuralNetwork network){
-		logger.info("Layer count: "+network.getNetwork().getLayerCount());
-//		network.getNetwork().getLayerCount()
-	}
 	
 	
  	private void createDropAdaptor(Viewer viewer){

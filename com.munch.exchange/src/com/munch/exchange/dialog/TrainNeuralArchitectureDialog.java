@@ -20,6 +20,7 @@ import org.eclipse.swt.events.ModifyEvent;
 
 public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 	
+	private boolean allowSimulatedAnnealing=true;
 	private TrainingMethod trainingMethod; 
 	private int population;
 	private int cycles;
@@ -40,6 +41,12 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 	 */
 	public TrainNeuralArchitectureDialog(Shell parentShell) {
 		super(parentShell);
+	}
+	
+	public TrainNeuralArchitectureDialog(Shell parentShell, boolean allowSimulatedAnnealing) {
+		super(parentShell);
+		
+		this.allowSimulatedAnnealing=allowSimulatedAnnealing;
 	}
 
 	/**
@@ -152,7 +159,9 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 		}
 		comboTrainingMethod.select(0);
 		
-		
+		if(!allowSimulatedAnnealing){
+			comboTrainingMethod.setEnabled(false);
+		}
 	}
 	
 	
