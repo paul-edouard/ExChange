@@ -964,6 +964,7 @@ public class NeuralConfigurationEditorPart {
 		NEATPopulation pop = new NEATPopulation(network.getInputCount(),
 												network.getOutputCount(),
 												dialog.getPopulation());
+		pop.setNEATActivationFunction(network.getActivation(0));
 		pop.setInitialConnectionDensity(dialog.getConnectionDensity());// not required, but speeds training
 		pop.reset();
 		

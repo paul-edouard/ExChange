@@ -542,8 +542,6 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			
 //			if(i%500==0){
 //			System.out.println("Adapted value index: "+daptedValueIndex+", Input: "+Arrays.toString(input.getData())+", output: "+Arrays.toString(output.getData())+", Position: "+position.toString());
-
-			//				System.out.println("Break");
 //			}
 //			System.out.println("Profit: "+profitAndRisk.getProfit()+"Position: "+position.toString());
 //			#######################################################
