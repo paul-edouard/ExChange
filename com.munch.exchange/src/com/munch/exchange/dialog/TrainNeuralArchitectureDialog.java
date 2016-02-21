@@ -133,7 +133,7 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 		spinnerPopulation.setIncrement(100);
 		spinnerPopulation.setPageIncrement(100);
 		spinnerPopulation.setMaximum(10000);
-		spinnerPopulation.setMinimum(100);
+		spinnerPopulation.setMinimum(50);
 		spinnerPopulation.setSelection(500);
 		spinnerPopulation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		

@@ -356,6 +356,9 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 				component.setAdaptedtimes(reducedAdaptedTimes);
 				component.setAdaptedValues(reducedAdaptedValues);
 				
+//				double[] adaptedValues=Arrays.copyOfRange(component.getAdaptedValues(), 1000, 1050);
+//				System.out.println("Adapted Values: "+Arrays.toString(adaptedValues));
+				
 			}
 		}
 		
@@ -367,6 +370,8 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 //						+", last value: "+component.getAdaptedValues()[component.getAdaptedValues().length-1]);
 //			}
 //		}
+		
+		
 		
 		
 	}

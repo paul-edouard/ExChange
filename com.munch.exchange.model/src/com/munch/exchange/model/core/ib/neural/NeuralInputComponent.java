@@ -160,13 +160,16 @@ public class NeuralInputComponent implements Serializable, Copyable<NeuralInputC
 	
 	
 	public void createNormalizedValues(){
+//		System.out.println("\nLower Range: "+lowerRange+", Upper Range: "+upperRange);
 		if(normalizedField==null){
-			normalizedField=new NormalizedField(NormalizationAction.Normalize, this.getName(), lowerRange, upperRange, -0.9, 0.9);
+			normalizedField=new NormalizedField(NormalizationAction.Normalize, this.getName(), upperRange, lowerRange, 0.9, -0.9);
 		}
 		
 		normalizedValues=new double[adaptedValues.length];
 		for(int i=0;i<adaptedValues.length;i++){
 			normalizedValues[i]=normalizedField.normalize(adaptedValues[i]);
+//			if(i%1000==0)
+//				System.out.println("Adpated Value: "+adaptedValues[i]+", Normalized Value: "+normalizedValues[i]);
 		}
 	}
 	
@@ -356,6 +359,15 @@ public class NeuralInputComponent implements Serializable, Copyable<NeuralInputC
 		
 		double[][] valuesTimes={values, times};
 		return valuesTimes;
+	}
+	
+	
+	public static void main(String args[])
+	{
+		NormalizedField normalizedField=new NormalizedField(NormalizationAction.Normalize, "Test", 0.03843399999999941, -0.059494499999999784, 0.9, -0.9);
+		
+		System.out.println(normalizedField.normalize(-2.9199999999995896E-4));
+		
 	}
 
 }

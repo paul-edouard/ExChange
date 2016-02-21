@@ -115,16 +115,20 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 				ArchitectureType type=types[comboType.getSelectionIndex()];
 				if(type==ArchitectureType.Elman){
 					btnHidderLayer.setEnabled(false);
+					spinnerHidderLayer1.setEnabled(true);
 				}
 				else if(type==ArchitectureType.FeedFoward){
 					btnHidderLayer.setEnabled(true);
+					spinnerHidderLayer1.setEnabled(true);
 				}
 				else if(type==ArchitectureType.Jordan){
 					btnHidderLayer.setEnabled(false);
+					spinnerHidderLayer1.setEnabled(true);
 				}
 				else if(type==ArchitectureType.Neat){
 					btnHidderLayer.setEnabled(false);
-					setErrorMessage("Neat is not available");
+					spinnerHidderLayer1.setEnabled(false);
+//					setErrorMessage("Neat is not available");
 				}
 			}
 		});
@@ -222,10 +226,12 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 		
 		ArchitectureType[] types=NeuralArchitecture.ArchitectureType.values();
 		ArchitectureType type=types[comboType.getSelectionIndex()];
+		/*
 		if(type==ArchitectureType.Neat){
 			this.setErrorMessage("Neat is not available");
 			return;
 		}
+		*/
 		
 		Activation[] activations=NeuralArchitecture.Activation.values();
 		Activation activation=activations[comboActivationFunction.getSelectionIndex()];
@@ -241,6 +247,8 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 		neuralArchitecture.setTradeProfitLimit(spinnerTradeProfitLimit.getSelection());
 		neuralArchitecture.setType(type);
 		neuralArchitecture.setActivation(activation);
+		if(type==ArchitectureType.Neat)
+			hiddenLayerDes="";
 		neuralArchitecture.setHiddenLayerDescription(hiddenLayerDes);
 		
 		super.okPressed();

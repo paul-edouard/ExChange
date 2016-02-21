@@ -22,6 +22,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
+import org.encog.neural.neat.NEATNetwork;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.persist.EncogDirectoryPersistence;
 import org.encog.util.obj.SerializeObject;
@@ -78,10 +79,22 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 		return basicNetwork;
 	}
 	
+	public NEATNetwork getNEATNetwork(){
+		ByteArrayInputStream bis = new ByteArrayInputStream(network);
+		NEATNetwork neatNetwork = (NEATNetwork)EncogDirectoryPersistence.loadObject(bis);
+		return neatNetwork;
+	}
+	
 	
 	public void setNetwork(BasicNetwork basicNetwork){
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		EncogDirectoryPersistence.saveObject(bos,basicNetwork);
+		network = bos.toByteArray();
+	}
+	
+	public void setNetwork(NEATNetwork neatNetwork){
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		EncogDirectoryPersistence.saveObject(bos,neatNetwork);
 		network = bos.toByteArray();
 	}
 	

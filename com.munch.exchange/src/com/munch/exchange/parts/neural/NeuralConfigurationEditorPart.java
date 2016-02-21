@@ -61,19 +61,25 @@ import org.eclipse.wb.swt.ResourceManager;
 import org.encog.ml.MLMethod;
 import org.encog.ml.MLResettable;
 import org.encog.ml.MethodFactory;
+import org.encog.ml.ea.train.EvolutionaryAlgorithm;
 import org.encog.ml.genetic.MLMethodGeneticAlgorithm;
 import org.encog.ml.train.MLTrain;
+import org.encog.neural.neat.NEATNetwork;
+import org.encog.neural.neat.NEATPopulation;
+import org.encog.neural.neat.NEATUtil;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing;
 
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddNeuralArchitectureDialog;
+import com.munch.exchange.dialog.NeatTrainingDialog;
 import com.munch.exchange.dialog.TrainNeuralArchitectureDialog;
 import com.munch.exchange.model.core.ib.IbContract.TradingPeriod;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
+import com.munch.exchange.model.core.ib.neural.NeuralArchitecture.ArchitectureType;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture.TrainingMethod;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration.ReferenceData;
@@ -150,8 +156,11 @@ public class NeuralConfigurationEditorPart {
 	private ProgressBar progressBarDataSet;
 	
 	private static int epoch=-1;
+	private static boolean cancelTraining=false;
+	
 	private static int dataSetCounter=-1;
 	private MenuItem mntmEvaluateArchitecture;
+	private MenuItem mntmTrainAll;
 	
 	
 	@Inject
@@ -567,13 +576,16 @@ public class NeuralConfigurationEditorPart {
 			public void mouseDown(MouseEvent e) {
 				mntmDeleteArchitecture.setEnabled(false);
 				mntmTrainArchitecture.setEnabled(false);
+				mntmTrainAll.setEnabled(false);
 				
 				if(e.button==3 && treeArchitecture.getSelection().length==1){
 					
 					TreeItem item=treeArchitecture.getSelection()[0];
 					if(item.getData() instanceof NeuralArchitecture){
+						NeuralArchitecture archi=(NeuralArchitecture) item.getData();
 						mntmDeleteArchitecture.setEnabled(true);
 						mntmTrainArchitecture.setEnabled(epoch<0);
+						mntmTrainAll.setEnabled(epoch<0 && archi.getNeuralNetworks().size()>0);
 					}
 					else if(item.getData() instanceof NeuralNetwork){
 						mntmDeleteArchitecture.setEnabled(true);
@@ -621,7 +633,13 @@ public class NeuralConfigurationEditorPart {
 					TreeItem item=treeArchitecture.getSelection()[0];
 					if(item.getData() instanceof NeuralArchitecture){
 //						Train the selected Architecture
-						trainArchitecture((NeuralArchitecture) item.getData());
+						NeuralArchitecture architecture=(NeuralArchitecture) item.getData();
+						if(architecture.getType()==ArchitectureType.Neat){
+							trainNeatArchitecture(architecture);
+						}
+						else{
+							trainArchitecture(architecture);
+						}
 						
 					}
 					else if(item.getData() instanceof NeuralNetwork){
@@ -633,6 +651,22 @@ public class NeuralConfigurationEditorPart {
 		});
 		mntmTrainArchitecture.setImage(ResourceManager.getPluginImage("com.munch.exchange", "icons/eclipse/lrun_obj.gif"));
 		mntmTrainArchitecture.setText("Train");
+		
+		mntmTrainAll = new MenuItem(menuArchitecture, SWT.NONE);
+		mntmTrainAll.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				
+				TreeItem item=treeArchitecture.getSelection()[0];
+				if(item.getData() instanceof NeuralArchitecture){
+//					Train the selected Architecture
+					trainAllNeuralNetworks((NeuralArchitecture) item.getData());
+					
+				}
+				
+			}
+		});
+		mntmTrainAll.setText("Train All");
 		
 		mntmEvaluateArchitecture = new MenuItem(menuArchitecture, SWT.NONE);
 		mntmEvaluateArchitecture.addSelectionListener(new SelectionAdapter() {
@@ -716,12 +750,21 @@ public class NeuralConfigurationEditorPart {
 		trclmnActivation.setText("Activation/B.T. Risk");
 		
 		Composite compositeArchitectureBottom = new Composite(compositeArchitecture, SWT.NONE);
-		compositeArchitectureBottom.setLayout(new GridLayout(1, false));
+		compositeArchitectureBottom.setLayout(new GridLayout(2, false));
 		compositeArchitectureBottom.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		
 		progressBarArchitecture = new ProgressBar(compositeArchitectureBottom, SWT.NONE);
 		progressBarArchitecture.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		progressBarArchitecture.setBounds(0, 0, 260, 26);
+		
+		Button btnCancelTraining = new Button(compositeArchitectureBottom, SWT.NONE);
+		btnCancelTraining.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				cancelTraining=true;
+			}
+		});
+		btnCancelTraining.setText("Cancel");
 		
 		
 //		########################
@@ -908,6 +951,36 @@ public class NeuralConfigurationEditorPart {
 		
 	}
 	
+	private void trainNeatArchitecture(NeuralArchitecture architecture){
+		neuralArchitecture=architecture;
+		
+		NeatTrainingDialog dialog=new NeatTrainingDialog(shell);
+		if (dialog.open() != Window.OK)return;
+		
+		logger.info("Start Neat Trainig of Architecture Name: "+neuralArchitecture.getName());
+		
+		BasicNetwork network = neuralArchitecture.createNetwork();
+		
+		NEATPopulation pop = new NEATPopulation(network.getInputCount(),
+												network.getOutputCount(),
+												dialog.getPopulation());
+		pop.setInitialConnectionDensity(dialog.getConnectionDensity());// not required, but speeds training
+		pop.reset();
+		
+		EvolutionaryAlgorithm train = NEATUtil.constructNEATTrainer(pop,neuralArchitecture);
+		
+		progressBarArchitecture.setMinimum(0);
+		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
+		
+		neuralArchitecture.prepareScoring();
+		
+		NeatTrainer trainer=new NeatTrainer(train, pop, dialog.getNbOfEpoch());
+		trainer.schedule();
+		
+		
+		//TODO
+	}
+	
 	private void trainNeuralNetwork(NeuralNetwork neuralNetwork){
 		neuralArchitecture=neuralNetwork.getNeuralArchitecture();
 		
@@ -916,6 +989,21 @@ public class NeuralConfigurationEditorPart {
 		
 		
 		selectedNetworks.clear();selectedNetworks.add(neuralNetwork);
+		
+		prepareAndStartTraining( dialog);
+		
+	}
+	
+	private void trainAllNeuralNetworks(NeuralArchitecture architecture){
+		neuralArchitecture=architecture;
+		
+		TrainNeuralArchitectureDialog dialog=new TrainNeuralArchitectureDialog(shell,false);
+		if (dialog.open() != Window.OK)return;
+		
+		selectedNetworks.clear();
+		for(NeuralNetwork neuralNetwork:neuralArchitecture.getNeuralNetworks()){
+			selectedNetworks.add(neuralNetwork);
+		}
 		
 		prepareAndStartTraining( dialog);
 		
@@ -1504,6 +1592,7 @@ public class NeuralConfigurationEditorPart {
 			super("NetworkTrainer");
 			this.train=train;
 			this.nbOfEpoch=nbOfEpoch;
+			cancelTraining=false;
 		}
 
 		@Override
@@ -1516,7 +1605,14 @@ public class NeuralConfigurationEditorPart {
 			epoch = 0;
 			updateProgressBarArchitecture();
 			for(int i=0;i<nbOfEpoch;i++) {
+				if(cancelTraining){
+					text="Training is cancel!";
+					eventBroker.post(IEventConstant.TEXT_INFO,text);	
+					break;
+				}
+				
 				train.iteration();
+				
 				text="Epoch #" + epoch + " Score:" + train.getError();
 				eventBroker.post(IEventConstant.TEXT_INFO,text);
 				
@@ -1555,6 +1651,79 @@ public class NeuralConfigurationEditorPart {
 		}
 		
 	}
+	
+	private class NeatTrainer extends Job{
+		
+		EvolutionaryAlgorithm train;
+		int nbOfEpoch;
+		NEATPopulation pop;
+
+		public NeatTrainer(EvolutionaryAlgorithm train,NEATPopulation pop, int nbOfEpoch) {
+			super("Neat Trainer");
+			this.train=train;
+			this.nbOfEpoch=nbOfEpoch;
+			this.pop=pop;
+			cancelTraining=false;
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			String text="Training is starting!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			epoch = 0;
+			updateProgressBarArchitecture();
+			for(int i=0;i<nbOfEpoch;i++) {
+				if(cancelTraining){
+					text="Training is cancel!";
+					eventBroker.post(IEventConstant.TEXT_INFO,text);	
+					break;
+				}
+				
+				
+				train.iteration();
+				
+				
+				text="Epoch #" + epoch + " Score:" + train.getError()+ ", Species:" + pop.getSpecies().size();
+				eventBroker.post(IEventConstant.TEXT_INFO,text);
+				
+				
+				//TODO Calculate the expected end of training
+				
+				epoch++;
+				updateProgressBarArchitecture();
+			} 
+			train.finishTraining();
+			
+			text="Training finished, best score:" + train.getError();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			text="Please wait the network will be saved...";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
+//			neuralArchitecture.addNeuralNetwork(network);
+//			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+//			
+			
+			refreshTreeArchitecture();
+			
+			epoch++;
+			updateProgressBarArchitecture();
+			
+			epoch=-1;
+			
+			text="Data are now saved!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			return Status.OK_STATUS;
+		}
+		
+	}
+	
 	
 	private void updateProgressBarArchitecture(){
 		Display.getDefault().asyncExec(
