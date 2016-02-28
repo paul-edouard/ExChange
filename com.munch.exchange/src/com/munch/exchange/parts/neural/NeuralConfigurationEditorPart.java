@@ -61,12 +61,16 @@ import org.eclipse.wb.swt.ResourceManager;
 import org.encog.ml.MLMethod;
 import org.encog.ml.MLResettable;
 import org.encog.ml.MethodFactory;
+import org.encog.ml.ea.population.Population;
 import org.encog.ml.ea.train.EvolutionaryAlgorithm;
 import org.encog.ml.genetic.MLMethodGeneticAlgorithm;
 import org.encog.ml.train.MLTrain;
+import org.encog.neural.hyperneat.substrate.Substrate;
+import org.encog.neural.hyperneat.substrate.SubstrateFactory;
 import org.encog.neural.neat.NEATNetwork;
 import org.encog.neural.neat.NEATPopulation;
 import org.encog.neural.neat.NEATUtil;
+import org.encog.neural.neat.training.species.OriginalNEATSpeciation;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing;
 
@@ -637,6 +641,9 @@ public class NeuralConfigurationEditorPart {
 						if(architecture.getType()==ArchitectureType.Neat){
 							trainNeatArchitecture(architecture);
 						}
+						else if(architecture.getType()==ArchitectureType.HyperNeat){
+							trainHyperNeatArchitecture(architecture);
+						}
 						else{
 							trainArchitecture(architecture);
 						}
@@ -959,12 +966,13 @@ public class NeuralConfigurationEditorPart {
 		
 		logger.info("Start Neat Trainig of Architecture Name: "+neuralArchitecture.getName());
 		
+//		Only use in order to get the number of input and ouput
 		BasicNetwork network = neuralArchitecture.createNetwork();
 		
 		NEATPopulation pop = new NEATPopulation(network.getInputCount(),
 												network.getOutputCount(),
 												dialog.getPopulation());
-		pop.setNEATActivationFunction(network.getActivation(0));
+//		pop.setNEATActivationFunction(network.getActivation(0));
 		pop.setInitialConnectionDensity(dialog.getConnectionDensity());// not required, but speeds training
 		pop.reset();
 		
@@ -973,14 +981,48 @@ public class NeuralConfigurationEditorPart {
 		progressBarArchitecture.setMinimum(0);
 		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
 		
-		neuralArchitecture.prepareScoring();
+		neuralArchitecture.prepareScoring(1,0);
 		
 		NeatTrainer trainer=new NeatTrainer(train, pop, dialog.getNbOfEpoch());
 		trainer.schedule();
 		
-		
-		//TODO
 	}
+	
+	
+	private void trainHyperNeatArchitecture(NeuralArchitecture architecture){
+		neuralArchitecture=architecture;
+		
+		NeatTrainingDialog dialog=new NeatTrainingDialog(shell);
+		if (dialog.open() != Window.OK)return;
+		
+		logger.info("Start Neat Trainig of Architecture Name: "+neuralArchitecture.getName());
+		logger.info("Population Size: "+dialog.getPopulation());
+		
+//		Only use in order to get the number of input and ouput
+//		BasicNetwork network = neuralArchitecture.createNetwork();
+		Substrate substrate = neuralArchitecture.createHyperNeatSubstrat();
+		NEATPopulation pop= new NEATPopulation(substrate, dialog.getPopulation());
+//		pop.setNEATActivationFunction(network.getActivation(0));
+		pop.setActivationCycles(4);
+		pop.reset();
+		
+		EvolutionaryAlgorithm train = NEATUtil.constructNEATTrainer(pop,neuralArchitecture);
+		
+		OriginalNEATSpeciation speciation = new OriginalNEATSpeciation();
+		speciation.setCompatibilityThreshold(1);
+		train.setSpeciation(speciation = new OriginalNEATSpeciation());
+		
+		progressBarArchitecture.setMinimum(0);
+		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
+		
+		neuralArchitecture.prepareScoring(1,0);
+		
+		NeatTrainer trainer=new NeatTrainer(train, pop, dialog.getNbOfEpoch());
+		trainer.schedule();
+		
+	}
+	
+	
 	
 	private void trainNeuralNetwork(NeuralNetwork neuralNetwork){
 		neuralArchitecture=neuralNetwork.getNeuralArchitecture();
@@ -1048,7 +1090,7 @@ public class NeuralConfigurationEditorPart {
 		progressBarArchitecture.setMinimum(0);
 		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
 		
-		neuralArchitecture.prepareScoring();
+		neuralArchitecture.prepareScoring(1,-1);
 		
 		NetworkTrainer trainer=new NetworkTrainer(train, dialog.getNbOfEpoch());
 		trainer.schedule();
@@ -1704,10 +1746,15 @@ public class NeuralConfigurationEditorPart {
 			text="Please wait the network will be saved...";
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
+			Population population=train.getPopulation();
+			//population.getSpecies().get
+			//population.getSpecies().get(0).getLeader().get
 			
-			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
-//			neuralArchitecture.addNeuralNetwork(network);
-//			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+			
+			
+//			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
+			neuralArchitecture.addNeuralNetwork(population);
+			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
 //			
 			
 			refreshTreeArchitecture();

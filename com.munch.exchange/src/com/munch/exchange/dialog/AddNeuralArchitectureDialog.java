@@ -247,7 +247,7 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 		neuralArchitecture.setTradeProfitLimit(spinnerTradeProfitLimit.getSelection());
 		neuralArchitecture.setType(type);
 		neuralArchitecture.setActivation(activation);
-		if(type==ArchitectureType.Neat)
+		if(type==ArchitectureType.Neat || type==ArchitectureType.HyperNeat)
 			hiddenLayerDes="";
 		neuralArchitecture.setHiddenLayerDescription(hiddenLayerDes);
 		

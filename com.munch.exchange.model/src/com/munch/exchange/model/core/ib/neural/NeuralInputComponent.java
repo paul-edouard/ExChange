@@ -159,10 +159,10 @@ public class NeuralInputComponent implements Serializable, Copyable<NeuralInputC
 	}
 	
 	
-	public void createNormalizedValues(){
+	public void createNormalizedValues(double high, double low){
 //		System.out.println("\nLower Range: "+lowerRange+", Upper Range: "+upperRange);
 		if(normalizedField==null){
-			normalizedField=new NormalizedField(NormalizationAction.Normalize, this.getName(), upperRange, lowerRange, 0.9, -0.9);
+			normalizedField=new NormalizedField(NormalizationAction.Normalize, this.getName(), upperRange, lowerRange, high, low);
 		}
 		
 		normalizedValues=new double[adaptedValues.length];

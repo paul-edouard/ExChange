@@ -33,8 +33,14 @@ import org.encog.ml.MLMethod;
 import org.encog.ml.MLRegression;
 import org.encog.ml.data.MLData;
 import org.encog.ml.data.basic.BasicMLData;
+import org.encog.ml.ea.population.Population;
 import org.encog.ml.train.MLTrain;
+import org.encog.neural.hyperneat.HyperNEATCODEC;
+import org.encog.neural.hyperneat.substrate.Substrate;
+import org.encog.neural.hyperneat.substrate.SubstrateNode;
+import org.encog.neural.neat.NEATCODEC;
 import org.encog.neural.neat.NEATNetwork;
+import org.encog.neural.neat.NEATPopulation;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing;
 import org.encog.neural.pattern.ElmanPattern;
@@ -57,6 +63,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	 * 
 	 */
 	private static final long serialVersionUID = -2002340365998939571L;
+	
+	private static final int NumberOfInternNeurons = 3;
 	
 	private class ProfitAndRisk{
 		private double profit;
@@ -134,10 +142,10 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	
 	
 	public static enum  ArchitectureType {
-		FeedFoward, Elman, Jordan, Neat;
+		FeedFoward, Elman, Jordan, Neat, HyperNeat;
 		
 		public NeuralNetworkPattern getPattern(){
-			if(this == FeedFoward || this == Neat){
+			if(this == FeedFoward || this == Neat || this == HyperNeat){
 				return new FeedForwardPattern();
 			}
 			else if(this == Elman){
@@ -296,23 +304,23 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	 * 
 	 * @return
 	 */
-	public boolean prepareScoring(){
+	public boolean prepareScoring(double high, double low){
 		
 		if(neuralConfiguration.getContract().allowShortPosition()){
-			equilateralOutput=new Equilateral(3, -1, 1);
+			equilateralOutput=new Equilateral(3, high, low);
 		}
 		else{
-			equilateralOutput=new Equilateral(2, -1, 1);
+			equilateralOutput=new Equilateral(2, high, low);
 		}
 		
 		
 		normalizedTotalProfitLimit=new NormalizedField(NormalizationAction.Normalize,
 				this.getName()+" Total Profit Limit",
-				blockProfitLimit, -blockProfitLimit, 0.9, -0.9);
+				blockProfitLimit, -blockProfitLimit, high*0.9, low*0.9);
 		
 		normalizedTradeProfitLimit=new NormalizedField(NormalizationAction.Normalize,
 				this.getName()+" Trade Profit Limit",
-				blockProfitLimit, -blockProfitLimit, 0.9, -0.9);
+				blockProfitLimit, -blockProfitLimit, high*0.9, low*0.9);
 		
 		
 //		Create the Component Array
@@ -326,7 +334,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		for (NeuralInput input : neuralConfiguration.getNeuralInputs()) {
 			for(NeuralInputComponent component:input.getComponents()){
 				components[i]=component;
-				components[i].createNormalizedValues();
+				components[i].createNormalizedValues(high*0.9, low*0.9);
 				i++;
 			}
 		}
@@ -334,9 +342,69 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		return false;
 	}
 	
+	public Substrate createHyperNeatSubstrat(){
+		Substrate result = new Substrate(3);
+		
+		double maxInputSize=0;
+		for (NeuralInput input : neuralConfiguration.getNeuralInputs()) {
+			if(input.getComponents().size()>maxInputSize)
+				maxInputSize=input.getComponents().size();
+		}
+		
+		double colTick = -  2.0 / maxInputSize;
+		double rawTick = -  2.0 / (neuralConfiguration.getNeuralInputs().size()+3);
+		
+		double colOrig = -1.0 + (colTick / 2.0);
+		double rawOrig = -1.0 + (rawTick / 2.0);
+		
+		
+//		Create the input neurons
+		for (int row = 0; row < neuralConfiguration.getNeuralInputs().size(); row++) {
+			NeuralInput input=neuralConfiguration.getNeuralInputs().get(row);
+			for (int col = 0; col < input.getComponents().size(); col++) {
+//				NeuralInputComponent component=input.getComponents().get(col);
+				SubstrateNode inputNode = result.createInputNode();
+				inputNode.getLocation()[0] = -1;
+				inputNode.getLocation()[1] = colOrig + (row * colTick);
+				inputNode.getLocation()[2] = rawOrig + (col * rawTick);
+			}
+		}
+		
+		
+//		Create the inputs for the intern neurons (Current Trade Profit, Current Block Profit, current risk )
+		int size=neuralConfiguration.getNeuralInputs().size();
+		for(int i=0;i<NumberOfInternNeurons;i++){
+			SubstrateNode inputNode = result.createInputNode();
+			inputNode.getLocation()[0] = -1;
+			inputNode.getLocation()[1] = colOrig ;
+			inputNode.getLocation()[2] = rawOrig + ((size+i) * rawTick);
+		}
+		
+//		create the output neurons
+		int nbOfOutputs=getNumberOfOutputNeurons(1,0);
+		double rawOutputTick = -  2.0 / nbOfOutputs;
+		double rawOutputOrig= -1.0 + (rawOutputTick / 2.0);
+		
+		for(int orow = 0; orow <nbOfOutputs;orow++){
+			SubstrateNode outputNode = result.createOutputNode();
+			outputNode.getLocation()[0] = 1;
+			outputNode.getLocation()[1] = rawOutputOrig + (orow * rawOutputTick);
+			outputNode.getLocation()[2] =0;
+			
+			// link this output node to every input node
+			for (SubstrateNode inputNode : result.getInputNodes()) {
+				result.createLink(inputNode, outputNode);
+			}
+		}
+		
+		
+		
+		return result;
+	}
+	
 	
 	@Override
-	public double calculateScore(MLMethod method) {
+ 	public double calculateScore(MLMethod method) {
 		
 //		BasicNetwork basicNetwork=(BasicNetwork) method;
 		
@@ -388,14 +456,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		nbOfInputNeurons++;
 		
 		
-//		Get the number of output
-		if(neuralConfiguration.getContract().allowShortPosition()){
-			equilateralOutput=new Equilateral(3, -1, 1);
-		}
-		else{
-			equilateralOutput=new Equilateral(2, -1, 1);
-		}
-		int nbOfOutputNeurons=encode(Position.NEUTRAL).length;
+
 		
 		int[] hiddenLayers=hiddenLayerDescriptionToIntArray();
 		
@@ -408,7 +469,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		for(int i=0;i<hiddenLayers.length;i++){
 			pattern.addHiddenLayer(hiddenLayers[i]);
 		}
-		pattern.setOutputNeurons(nbOfOutputNeurons);
+		pattern.setOutputNeurons(getNumberOfOutputNeurons(1,-1));
 		pattern.setActivationFunction(activation.getFunc());
 		
 		BasicNetwork network = (BasicNetwork)pattern.generate();
@@ -416,6 +477,20 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		
 		return network;
 	}
+	
+	private int getNumberOfOutputNeurons(double high, double low){
+//		Get the number of output
+		if(neuralConfiguration.getContract().allowShortPosition()){
+			equilateralOutput=new Equilateral(3, high, low);
+		}
+		else{
+			equilateralOutput=new Equilateral(2, high, low);
+		}
+		int nbOfOutputNeurons=encode(Position.NEUTRAL).length;
+		
+		return nbOfOutputNeurons;
+	}
+	
 	
 	private int[] hiddenLayerDescriptionToIntArray(){
 		if(hiddenLayerDescription == null|| hiddenLayerDescription.isEmpty())
@@ -438,6 +513,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	}
 	
 	private Position decode(double[] activations){
+//		System.out.println("Activation: "+Arrays.toString(activations));
+		
 		if(equilateralOutput==null)return Position.NEUTRAL;
 		
 		return Position.getPosition(equilateralOutput.decode(activations));
@@ -539,7 +616,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			if(relTraindingPeriod[0]>time)continue;
 			Position position=decode(output.getData());
 //			i++;
-			
+//			
 //			if(i%500==0){
 //			System.out.println("Adapted value index: "+daptedValueIndex+", Input: "+Arrays.toString(input.getData())+", output: "+Arrays.toString(output.getData())+", Position: "+position.toString());
 //			}
@@ -775,19 +852,16 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		this.neuralNetworks.add(network);
 	}
 	
-	public void addNeuralNetwork(NEATNetwork neatNetwork){
+	public void addNeuralNetwork(Population population){
 		NeuralNetwork network=new NeuralNetwork();
-		network.setNetwork(neatNetwork);
+		network.setNEATPopulation(population);
 		network.setNeuralArchitecture(this);
 		this.neuralNetworks.add(network);
 	}
 	
 	
 	public void evaluateProfitAndRiskOfAllNetworks(){
-		prepareScoring();
-		
-		
-		
+		prepareScoring(1,-1);
 		
 		for(NeuralNetwork network:this.neuralNetworks){
 			
@@ -795,8 +869,26 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 //			System.out.println("Weigth: "+network.getNetwork().dumpWeights());
 //			
 			MLMethod method=null;
-			if(this.getType()==ArchitectureType.Neat){
-				method=network.getNEATNetwork();
+			if(this.getType()==ArchitectureType.Neat ){
+				prepareScoring(1,0);
+				NEATCODEC codec=new NEATCODEC();
+				method=codec.decode(network.getNEATPopulation().getBestGenome());
+			}
+			else if(this.getType()==ArchitectureType.HyperNeat){
+				prepareScoring(1,0);
+				HyperNEATCODEC codec=new HyperNEATCODEC();
+				NEATPopulation pop=(NEATPopulation)network.getNEATPopulation();
+				pop.setSubstrate(this.createHyperNeatSubstrat());
+				
+				NEATNetwork n=(NEATNetwork)codec.decode(pop.getBestGenome());
+				
+				
+				for(ActivationFunction function :n.getActivationFunctions()){
+					System.out.println("Activation fnct: "+function.toString());
+				}
+//				method=codec.decode(pop.getBestGenome());
+				method=n;
+				
 			}
 			else{
 				method=network.getNetwork();
@@ -917,7 +1009,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	public static void main(String args[])
 	{
 		
-		Equilateral equilateralOutput=new Equilateral(3, -1, 1);
+		Equilateral equilateralOutput=new Equilateral(3, 1, 0);
 		double[] encodeLong=equilateralOutput.encode(Position.getInt(Position.LONG));
 		System.out.println("Encode LONG: "+Arrays.toString(encodeLong));
 		
@@ -927,7 +1019,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		double[] encodeShort=equilateralOutput.encode(Position.getInt(Position.SHORT));
 		System.out.println("Encode SHORT: "+Arrays.toString(encodeShort));
 		
-		double[] testDecode={-0.7,-0.7};
+		double[] testDecode={0.3,0.8};
 		Position position=Position.getPosition(equilateralOutput.decode(testDecode));
 		System.out.println("Decoden "+Arrays.toString(testDecode)+": "+position.toString());
 		
