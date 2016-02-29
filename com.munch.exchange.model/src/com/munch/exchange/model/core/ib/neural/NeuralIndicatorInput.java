@@ -57,8 +57,8 @@ public class NeuralIndicatorInput extends NeuralInput{
 		
 		cp.size=this.size;
 		cp.type=this.type;
-		cp.contract=this.contract;
-		cp.barContainer=this.barContainer;
+		cp.contract=this.contract.copy();
+		cp.barContainer=this.barContainer.copy();
 		cp.indicator=this.indicator.copy();
 		cp.indicator.getSeries().clear();
 		cp.indicator.setNeuralIndicatorInput(cp);

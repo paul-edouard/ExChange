@@ -24,7 +24,6 @@ import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 
 @Entity
 public class NeuralConfiguration implements Serializable, Copyable<NeuralConfiguration>,Comparable<NeuralConfiguration>{
@@ -123,7 +122,7 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		
 		c.name=name;
 		c.creationDate=creationDate;
-		c.contract=contract;
+		c.contract=contract.copy();
 		
 		/*
 		c.neuralInputs.clear();

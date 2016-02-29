@@ -66,7 +66,7 @@ public abstract class NeuralInput implements Serializable, Copyable<NeuralInput>
 			target.components.add(component_copy);
 		}
 		
-		target.neuralConfiguration=input.neuralConfiguration;
+		target.neuralConfiguration=input.neuralConfiguration.copy();
 		target.name=input.name;
 	}
 	

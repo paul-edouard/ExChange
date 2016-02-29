@@ -150,14 +150,23 @@ public class NeuralBean implements NeuralBeanRemote{
 	public List<NeuralInput> loadNeuralInputs(NeuralConfiguration configuration) {
 		NeuralConfiguration savedConfig=em.find(NeuralConfiguration.class, configuration.getId());
 		savedConfig.getNeuralInputs().size();
+		savedConfig.getContract();
+		
+//		System.out.println("Load NeuralConfiguration: "+savedConfig.getName());
 		
 		List<NeuralInput> inputs=new LinkedList<NeuralInput>();
 		for(NeuralInput ni_saved:savedConfig.getNeuralInputs()){
+//			System.out.println("Neural Input: "+ni_saved.getId());
 			ni_saved.getComponents().size();
-			for(NeuralInputComponent component:ni_saved.getComponents()){
-				System.out.println("SAved: "+component.getComponentType().toString());
-			}
+//			for(NeuralInputComponent component:ni_saved.getComponents()){
+//				System.out.println("Saved: "+component.getComponentType().toString());
+//			}
 			ni_saved.load();
+//			if(ni_saved instanceof NeuralIndicatorInput){
+//				NeuralIndicatorInput nii=(NeuralIndicatorInput) ni_saved;
+//				System.out.println("Contract Id: "+nii.getContract().getId());
+//			}
+			
 			inputs.add(ni_saved.copy());
 		}
 		
@@ -165,6 +174,7 @@ public class NeuralBean implements NeuralBeanRemote{
 		
 		
 		return inputs;
+//		return null;
 	}
 
 
