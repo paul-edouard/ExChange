@@ -94,6 +94,7 @@ import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
 import com.munch.exchange.model.core.ib.neural.NeuralInput;
 import com.munch.exchange.model.core.ib.neural.NeuralInputComponent;
 import com.munch.exchange.model.core.ib.neural.NeuralNetwork;
+import com.munch.exchange.model.core.ib.neural.NeuralNetworkRating;
 import com.munch.exchange.model.core.ib.neural.NeuralTrainingElement;
 import com.munch.exchange.model.core.ib.neural.NeuralInputComponent.ComponentType;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
@@ -683,7 +684,7 @@ public class NeuralConfigurationEditorPart {
 					architecture.evaluateProfitAndRiskOfAllNetworks();
 				}
 				treeViewerArchitecture.refresh();
-				treeViewerArchitecture.expandAll();
+				treeViewerArchitecture.expandToLevel(2);
 			}
 		});
 		mntmEvaluateArchitecture.setText("Evaluate");
@@ -1342,6 +1343,15 @@ public class NeuralConfigurationEditorPart {
 				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
 				return String.valueOf(neuralNetwork.getId());
 			}
+			else if(element instanceof NeuralNetworkRating){
+				NeuralNetworkRating rating=(NeuralNetworkRating)element;
+				if(rating.getChildren().isEmpty()){
+					return IbBar.format(rating.getId());
+				}
+				else{
+					return rating.getName();
+				}
+			}
 			
 			return "";
 		}
@@ -1359,7 +1369,12 @@ public class NeuralConfigurationEditorPart {
 			}
 			else if(element instanceof NeuralNetwork){
 				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
-				return String.valueOf(neuralNetwork.getScore());
+				return String.valueOf(neuralNetwork.getTrainingRating().getScore());
+			}
+			else if(element instanceof NeuralNetworkRating){
+				NeuralNetworkRating rating=(NeuralNetworkRating)element;
+				return String.valueOf(rating.getScore());
+				
 			}
 			
 			return "";
@@ -1378,7 +1393,11 @@ public class NeuralConfigurationEditorPart {
 			}
 			else if(element instanceof NeuralNetwork){
 				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
-				return String.valueOf(neuralNetwork.getTrainingProfit());
+				return String.valueOf(neuralNetwork.getTrainingRating().getProfit());
+			}
+			else if(element instanceof NeuralNetworkRating){
+				NeuralNetworkRating rating=(NeuralNetworkRating)element;
+				return String.valueOf(rating.getProfit());
 			}
 			
 			return "";
@@ -1397,7 +1416,16 @@ public class NeuralConfigurationEditorPart {
 			}
 			else if(element instanceof NeuralNetwork){
 				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
-				return String.valueOf(neuralNetwork.getTrainingRisk());
+				return String.valueOf(neuralNetwork.getTrainingRating().getRisk());
+			}
+			else if(element instanceof NeuralNetworkRating){
+				NeuralNetworkRating rating=(NeuralNetworkRating)element;
+				if(rating.getChildren().isEmpty()){
+					return String.valueOf(rating.getMaxRisk());
+				}
+				else{
+					return String.valueOf(rating.getRisk());
+				}
 			}
 			
 			return "";
@@ -1416,7 +1444,7 @@ public class NeuralConfigurationEditorPart {
 			}
 			else if(element instanceof NeuralNetwork){
 				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
-				return String.valueOf(neuralNetwork.getBackTestingProfit());
+				return String.valueOf(neuralNetwork.getBackTestingRating().getProfit());
 			}
 			
 			return "";
@@ -1435,7 +1463,7 @@ public class NeuralConfigurationEditorPart {
 			}
 			else if(element instanceof NeuralNetwork){
 				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
-				return String.valueOf(neuralNetwork.getBackTestingRisk());
+				return String.valueOf(neuralNetwork.getBackTestingRating().getRisk());
 			}
 			
 			return "";

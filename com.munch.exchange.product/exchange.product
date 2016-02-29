@@ -9,8 +9,8 @@
    <launcherArgs>
       <programArgs>-clearPersistedState
 -vmargs
--Xms512m
--Xmx1024m</programArgs>
+-Xms1024m
+-Xmx2048m</programArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 

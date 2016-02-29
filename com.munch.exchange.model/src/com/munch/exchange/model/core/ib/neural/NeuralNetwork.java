@@ -2,15 +2,13 @@ package com.munch.exchange.model.core.ib.neural;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.HashMap;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -23,12 +21,19 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 import org.encog.ml.ea.population.Population;
+import org.encog.neural.neat.NEATNetwork;
+import org.encog.neural.neat.NEATPopulation;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.persist.EncogDirectoryPersistence;
 
 
 
+
+
+
+
 import com.munch.exchange.model.core.ib.Copyable;
+import com.munch.exchange.model.core.ib.neural.NeuralArchitecture.ArchitectureType;
 
 
 @Entity
@@ -52,26 +57,26 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	@Lob
 	private byte[] network;
 	
-	@Transient
-	private double score;
 	
 	@Transient
-	private double trainingProfit;
+	NeuralNetworkRating trainingRating = new NeuralNetworkRating();
 	
 	@Transient
-	private double trainingRisk;
+	NeuralNetworkRating backTestingRating = new NeuralNetworkRating();
 	
 	@Transient
-	private double backTestingProfit;
+	private NEATPopulation population=null;
 	
 	@Transient
-	private double backTestingRisk;
+	private HashMap<NEATNetwork, NeuralNetworkRating> trainingRatingMap = new HashMap<NEATNetwork, NeuralNetworkRating>();
+
+	@Transient
+	private HashMap<NEATNetwork, NeuralNetworkRating> backTestingRatingMap = new HashMap<NEATNetwork, NeuralNetworkRating>();
 	
 	
 	
 	public NeuralNetwork() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public BasicNetwork getNetwork(){
@@ -80,9 +85,11 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 		return basicNetwork;
 	}
 	
-	public Population getNEATPopulation(){
+	public NEATPopulation getNEATPopulation(){
+		if(population!=null)return population;
+		
 		ByteArrayInputStream bis = new ByteArrayInputStream(network);
-		Population population = (Population)EncogDirectoryPersistence.loadObject(bis);
+		population = (NEATPopulation)EncogDirectoryPersistence.loadObject(bis);
 		return population;
 	}
 	
@@ -97,6 +104,14 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		EncogDirectoryPersistence.saveObject(bos,population);
 		network = bos.toByteArray();
+	}
+	
+	public boolean isNEAT(){
+		
+		if(this.neuralArchitecture.getType()==ArchitectureType.Neat || this.neuralArchitecture.getType()==ArchitectureType.HyperNeat)
+			return true;
+		
+		return false;
 	}
 	
 	
@@ -131,48 +146,30 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	}
 	
 	
-
-	public double getScore() {
-		return score;
+	public NeuralNetworkRating getTrainingRating() {
+		return trainingRating;
 	}
 
-	public void setScore(double score) {
-		this.score = score;
+	public void setTrainingRating(NeuralNetworkRating trainingRating) {
+		this.trainingRating = trainingRating;
 	}
 
-	public double getTrainingProfit() {
-		return trainingProfit;
+	public NeuralNetworkRating getBackTestingRating() {
+		return backTestingRating;
 	}
 
-	public void setTrainingProfit(double trainingProfit) {
-		this.trainingProfit = trainingProfit;
+	public void setBackTestingRating(NeuralNetworkRating backTestingRating) {
+		this.backTestingRating = backTestingRating;
 	}
 
-	public double getTrainingRisk() {
-		return trainingRisk;
+	public HashMap<NEATNetwork, NeuralNetworkRating> getTrainingRatingMap() {
+		return trainingRatingMap;
 	}
 
-	public void setTrainingRisk(double trainingRisk) {
-		this.trainingRisk = trainingRisk;
+	public HashMap<NEATNetwork, NeuralNetworkRating> getBackTestingRatingMap() {
+		return backTestingRatingMap;
 	}
 
-	public double getBackTestingProfit() {
-		return backTestingProfit;
-	}
-
-	public void setBackTestingProfit(double backTestingProfit) {
-		this.backTestingProfit = backTestingProfit;
-	}
-
-	public double getBackTestingRisk() {
-		return backTestingRisk;
-	}
-
-	public void setBackTestingRisk(double backTestingRisk) {
-		this.backTestingRisk = backTestingRisk;
-	}
-	
-	
 	public static Serializable load(InputStream inputStream)
 			throws IOException, ClassNotFoundException {
 		Serializable object;

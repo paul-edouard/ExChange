@@ -6,6 +6,8 @@ import org.eclipse.jface.viewers.Viewer;
 
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
+import com.munch.exchange.model.core.ib.neural.NeuralNetwork;
+import com.munch.exchange.model.core.ib.neural.NeuralNetworkRating;
 
 public class NeuralConfiguationArchitectureContentProvider implements
 		IStructuredContentProvider, ITreeContentProvider {
@@ -38,6 +40,26 @@ public class NeuralConfiguationArchitectureContentProvider implements
 			NeuralArchitecture neuralArchitecture=(NeuralArchitecture) parentElement;
 			return neuralArchitecture.getNeuralNetworks().toArray();
 		}
+		else if(parentElement instanceof NeuralNetwork){
+			NeuralNetwork neuralNetwork=(NeuralNetwork) parentElement;
+//			if(!neuralNetwork.isNEAT()){
+				if(neuralNetwork.getTrainingRating().getChildren().isEmpty())
+					return null;
+				if(neuralNetwork.getBackTestingRating().getChildren().isEmpty())
+					return null;
+				
+				Object[] objects=new Object[2];
+				objects[0]=neuralNetwork.getTrainingRating();
+				objects[1]=neuralNetwork.getBackTestingRating();
+				return objects;
+//			}
+		}
+		else if(parentElement instanceof NeuralNetworkRating){
+			NeuralNetworkRating rating=(NeuralNetworkRating)parentElement;
+			return rating.getChildren().toArray();
+		}
+		
+		
 		return null;
 	}
 
@@ -57,12 +79,30 @@ public class NeuralConfiguationArchitectureContentProvider implements
 			NeuralArchitecture neuralArchitecture=(NeuralArchitecture) element;
 			return !neuralArchitecture.getNeuralNetworks().isEmpty();
 		}
+		else if(element instanceof NeuralNetwork){
+			NeuralNetwork neuralNetwork=(NeuralNetwork) element;
+//			if(!neuralNetwork.isNEAT()){
+				if(neuralNetwork.getTrainingRating().getChildren().isEmpty())
+					return false;
+				if(neuralNetwork.getBackTestingRating().getChildren().isEmpty())
+					return false;
+				return true;
+//			}
+		}
+		else if(element instanceof NeuralNetworkRating){
+			NeuralNetworkRating rating=(NeuralNetworkRating)element;
+			return !rating.getChildren().isEmpty();
+		}
+		
 		return false;
 	}
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-		if(inputElement instanceof NeuralConfiguration || inputElement instanceof NeuralArchitecture){
+		if(inputElement instanceof NeuralConfiguration ||
+				inputElement instanceof NeuralArchitecture ||
+				inputElement instanceof NeuralNetwork ||
+				inputElement instanceof NeuralNetworkRating ){
 			return getChildren(inputElement);
 		}
 		return null;

@@ -773,8 +773,6 @@ public abstract  class IbBar implements Serializable,Comparable<IbBar>{
 	}
 	
 	
-	
-	
  	
 	public static void main(String[] args){
 		int a=13;
