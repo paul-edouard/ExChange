@@ -1,6 +1,7 @@
 package com.munch.exchange.server.ejb.ib.historicaldata;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -110,6 +111,16 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 
 			HistoricalDataLoaders.INSTANCE.init(allBars, time);
 			ut.commit();
+			
+			//Test if some data are still loading
+			for (BarLoader loader : HistoricalDataLoaders.INSTANCE.getLoaders()) {
+				if(loader.isLoading()){
+					log.warning("Some Data are still loading please retry later");
+					return;
+				}
+			}
+			
+			
 			// Start the loading of the data for each loaders
 			for (BarLoader loader : HistoricalDataLoaders.INSTANCE.getLoaders()) {
 				if(loader.isLoading())continue;
@@ -245,7 +256,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		for(int i=0;i<intervalls.size()-1;i++){
     			//Load the bars from the given interval
     			List<Bar> bars=loader.loadBarsFromTo(intervalls.get(i), intervalls.get(i+1), barSize);
-        		log.info("Number of "+clazz.getSimpleName() +" found: "+bars.size()
+        		log.info("Number1 of "+clazz.getSimpleName() +" found: "+bars.size()
         				+" in the intervall ["+Bar.format(intervalls.get(i))+", "+Bar.format(intervalls.get(i+1))+"]");
         		
         		if(isWorking && bars.size()==0)
@@ -480,8 +491,12 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     
     private void saveBars(List<IbBar> bars,boolean withTransation){
     	
+    	
+    	log.info("Save the bars! "+bars.size()+" bars: ");
+    	
     	if(withTransation){
     	try {
+    		Calendar start=Calendar.getInstance();
 			ut.begin();
 			
 			//Clean the bar list from double bars
@@ -500,10 +515,23 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 			}
 			
 			//Save each bars
+			int i=0;
 			for(IbBar bar : bars){
 				em.persist(bar);
+				if ((i % 500) == 0) {
+			          ut.commit();
+			          em.clear();          
+			          ut.begin();
+			      }
+				i++;
+				//em.persist(arg0);
 			}
 			ut.commit();
+			
+			Calendar end=Calendar.getInstance();
+			long time_s=(end.getTimeInMillis()-start.getTimeInMillis());
+			log.info("Time needed to persit "+bars.size()+" bars: "+time_s+ " ms");
+			
 		} catch (NotSupportedException | SystemException | SecurityException |
 				IllegalStateException | RollbackException | HeuristicMixedException | HeuristicRollbackException e) {
 			log.warning(e.toString());

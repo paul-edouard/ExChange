@@ -61,8 +61,10 @@ import org.eclipse.wb.swt.ResourceManager;
 import org.encog.ml.MLMethod;
 import org.encog.ml.MLResettable;
 import org.encog.ml.MethodFactory;
+import org.encog.ml.ea.genome.Genome;
 import org.encog.ml.ea.population.Population;
 import org.encog.ml.ea.train.EvolutionaryAlgorithm;
+import org.encog.ml.ea.train.basic.BasicEA;
 import org.encog.ml.genetic.MLMethodGeneticAlgorithm;
 import org.encog.ml.train.MLTrain;
 import org.encog.neural.hyperneat.substrate.Substrate;
@@ -978,6 +980,7 @@ public class NeuralConfigurationEditorPart {
 		pop.reset();
 		
 		EvolutionaryAlgorithm train = NEATUtil.constructNEATTrainer(pop,neuralArchitecture);
+		train.setValidationMode(true);
 		
 		progressBarArchitecture.setMinimum(0);
 		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
@@ -1008,10 +1011,19 @@ public class NeuralConfigurationEditorPart {
 		pop.reset();
 		
 		EvolutionaryAlgorithm train = NEATUtil.constructNEATTrainer(pop,neuralArchitecture);
+		train.setValidationMode(true);
 		
 		OriginalNEATSpeciation speciation = new OriginalNEATSpeciation();
 		speciation.setCompatibilityThreshold(1);
 		train.setSpeciation(speciation = new OriginalNEATSpeciation());
+		train.setShouldIgnoreExceptions(false);
+		//train.getM
+		if(train instanceof BasicEA){
+			BasicEA ea =(BasicEA) train;
+			System.out.println("Max Operation error: "+ea.getMaxOperationErrors());
+			ea.setMaxOperationErrors(5);
+//			ea.setValidationMode(true);
+		}
 		
 		progressBarArchitecture.setMinimum(0);
 		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
@@ -1092,6 +1104,7 @@ public class NeuralConfigurationEditorPart {
 		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
 		
 		neuralArchitecture.prepareScoring(1,-1);
+		
 		
 		NetworkTrainer trainer=new NetworkTrainer(train, dialog.getNbOfEpoch());
 		trainer.schedule();
@@ -1656,6 +1669,14 @@ public class NeuralConfigurationEditorPart {
   	//######################################
 	private class NetworkTrainer extends Job{
 		
+		
+		public class GenomeEvalutor{
+			Genome genome;
+			double testScore;
+			
+		}
+		
+		
 		MLTrain train;
 		int nbOfEpoch;
 		
@@ -1683,6 +1704,18 @@ public class NeuralConfigurationEditorPart {
 				}
 				
 				train.iteration();
+				
+				if(train instanceof MLMethodGeneticAlgorithm){
+					MLMethodGeneticAlgorithm genTrain=(MLMethodGeneticAlgorithm) train;
+					List<Genome> genomes=genTrain.getGenetic().getPopulation().flatten();
+					for(Genome genome:genomes){
+						System.out.println("Genome Score: "+genome.getScore());
+						BasicNetwork network=(BasicNetwork)genTrain.getGenetic().getCODEC().decode(genome);
+//						network.
+						//genome.
+					}
+				}
+				
 				
 				text="Epoch #" + epoch + " Score:" + train.getError();
 				eventBroker.post(IEventConstant.TEXT_INFO,text);

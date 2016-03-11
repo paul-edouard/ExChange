@@ -645,7 +645,11 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			varianz+=diff*diff;
 		}
 		varianz/=profitAndRiskTotal.getChildren().size();
-		double score=(profitAndRiskTotal.getProfit()-Math.sqrt(varianz))/profitAndRiskTotal.getChildren().size();
+		
+//		double score=(profitAndRiskTotal.getProfit()/profitAndRiskTotal.getChildren().size()-Math.sqrt(varianz)/2);
+		
+		double score=profitAndRiskTotal.getProfit()/profitAndRiskTotal.getChildren().size();
+		
 		
 		profitAndRiskTotal.setScore(score);
 		
