@@ -96,7 +96,7 @@ public class NeuralIndicatorInput extends NeuralInput{
 				i++;
 			}
 
-			indicator.getSeries().clear();
+			
 		}
 		
 		for(NeuralInputComponent component:this.getComponents()){
@@ -104,6 +104,10 @@ public class NeuralIndicatorInput extends NeuralInput{
 			if(resetComponentRanges)
 				component.computeRanges();
 		}
+		
+		indicator.getSeries().clear();
+		values=null;
+		times=null;
 		
 		
 	}

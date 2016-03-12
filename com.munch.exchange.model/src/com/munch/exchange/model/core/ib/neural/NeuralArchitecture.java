@@ -451,6 +451,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	}
 	
 	
+	
 	/**
 	 * Calculate the profit of the bar block. The most of time this are the bar of a week or of a day
 	 * 
@@ -603,7 +604,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		
 	}
 	
-	private NeuralNetworkRating calculateProfitAndRiskOfBlocks(LinkedList<LinkedList<IbBar>> blocks,MLMethod method){
+	public NeuralNetworkRating calculateProfitAndRiskOfBlocks(LinkedList<LinkedList<IbBar>> blocks,MLMethod method){
 		
 		
 		int nbOfInputs=((MLInput) method).getInputCount();

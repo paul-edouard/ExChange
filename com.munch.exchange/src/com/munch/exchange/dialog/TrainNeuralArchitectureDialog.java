@@ -17,6 +17,10 @@ import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture.TrainingMethod;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.DateTime;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 
 public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 	
@@ -27,6 +31,8 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 	private int stopTemperature;
 	private int startTemperature;
 	private int nbOfEpoch;
+	private long timeout;
+	private boolean timeoutSet;
 	
 	private Combo comboTrainingMethod;
 	private Spinner spinnerPopulation;
@@ -34,10 +40,13 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 	private Spinner spinnerStopTemperature;
 	private Spinner spinnerStartTemperature;
 	private Spinner spinnerEpoch;
+	private DateTime dateTime;
+	private Button btnTimeout;
 
 	/**
 	 * Create the dialog.
 	 * @param parentShell
+	 * @wbp.parser.constructor
 	 */
 	public TrainNeuralArchitectureDialog(Shell parentShell) {
 		super(parentShell);
@@ -146,6 +155,22 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 		spinnerEpoch.setMinimum(1);
 		spinnerEpoch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
+		btnTimeout = new Button(container, SWT.CHECK);
+		btnTimeout.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dateTime.setEnabled(btnTimeout.getSelection());
+				spinnerEpoch.setEnabled(!btnTimeout.getSelection());
+				timeoutSet=btnTimeout.getSelection();
+			}
+		});
+		btnTimeout.setText("Timeout:");
+		
+		dateTime = new DateTime(container, SWT.BORDER | SWT.TIME | SWT.SHORT);
+		dateTime.setEnabled(false);
+		dateTime.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		dateTime.setTime(1, 0, 0);
+		
 		fillCombos();
 		
 		return area;
@@ -178,7 +203,8 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 		stopTemperature = spinnerStopTemperature.getSelection();
 		startTemperature = spinnerStartTemperature.getSelection();
 		nbOfEpoch = spinnerEpoch.getSelection();
-		
+		timeout=dateTime.getHours()*3600+dateTime.getMinutes()*60;
+		timeout*=1000;
 		super.okPressed();
 	}
 
@@ -232,6 +258,15 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 
 	public int getStartTemperature() {
 		return startTemperature;
+	}
+	
+
+	public long getTimeout() {
+		return timeout;
+	}
+
+	public boolean isTimeoutSet() {
+		return timeoutSet;
 	}
 	
 	

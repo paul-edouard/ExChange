@@ -215,18 +215,37 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		trainingBlocks.clear();
 		backTestingBlocks.clear();
 		
-		allBlocks=null;
+		allBlocks=new LinkedList<LinkedList<IbBar>>();
+		
+		
+		LinkedList<LinkedList<IbBar>> allBlocksTemp=null;
 		
 		switch (this.getSplitStrategy()) {
 		case WEEK:
-			allBlocks=IbBar.splitBarListInWeekBlocks(this.getReferenceBars());
+			allBlocksTemp=IbBar.splitBarListInWeekBlocks(this.getReferenceBars());
 			break;
 		case DAY:
-			allBlocks=IbBar.splitBarListInDayBlocks(this.getReferenceBars());
+			allBlocksTemp=IbBar.splitBarListInDayBlocks(this.getReferenceBars());
 			break;
 		}
 		
+		//Search the block with the maximum of values
+		int maxSize=Integer.MIN_VALUE;
+		for(LinkedList<IbBar> block:allBlocksTemp){
+			if(block.size()>maxSize)
+				maxSize=block.size();
+		}
+//		System.out.println("Maximum block size: "+maxSize);
 		
+		//Remove the blocks that contains only the half of the data
+		for(LinkedList<IbBar> block:allBlocksTemp){
+			if(block.size()<maxSize/2){
+				System.out.println("NeuralConfiguration-> Block with size: "+block.size() +" will be ignored!");
+				continue;
+			}
+			allBlocks.add(block);
+		}
+		allBlocksTemp.clear();
 		
 		
 		if (neuralTrainingElements.isEmpty()) {
@@ -489,6 +508,15 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	public HashMap<String, List<IbBar>> getNeuralInputsBarsCollector() {
 		return neuralInputsBarsCollector;
 	}
+	
+	public void clearNeuralInputsBarsCollector(){
+		for(String key:neuralInputsBarsCollector.keySet()){
+			neuralInputsBarsCollector.get(key).clear();
+		}
+		neuralInputsBarsCollector.clear();
+	}
+	
+	
 
 	public void setNeuralInputsBarsCollector(
 			HashMap<String, List<IbBar>> neuralInputsBarsCollector) {

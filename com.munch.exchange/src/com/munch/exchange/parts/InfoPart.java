@@ -74,12 +74,15 @@ public class InfoPart {
 		
 		
 		if(!isAbleToReact(text))return;
-		if(styledText.getLineCount()==0)
-			styledText.append("- "+DateTool.getCurrentDateString()+" >> "+text);
-		else
-			styledText.append("\n- "+DateTool.getCurrentDateString()+" >> "+text);
-		styledText.setTopIndex(styledText.getTopIndex()+1);
 		
+		String[] tockens=text.split("\n");
+		for(int i=0;i<tockens.length;i++){
+			if(styledText.getLineCount()==0)
+				styledText.append("- "+DateTool.getCurrentDateString()+" >> "+tockens[i]);
+			else
+				styledText.append("\n- "+DateTool.getCurrentDateString()+" >> "+tockens[i]);
+			styledText.setTopIndex(styledText.getTopIndex()+1);
+		}
 	}
 	
 	
