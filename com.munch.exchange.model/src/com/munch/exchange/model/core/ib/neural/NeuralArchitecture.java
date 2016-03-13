@@ -50,6 +50,8 @@ import org.encog.neural.pattern.NeuralNetworkPattern;
 import org.encog.util.arrayutil.NormalizationAction;
 import org.encog.util.arrayutil.NormalizedField;
 
+import com.munch.exchange.model.core.encog.CalculateNovelty;
+import com.munch.exchange.model.core.encog.NoveltySearchPopulation;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
@@ -57,7 +59,7 @@ import com.munch.exchange.model.core.ib.bar.IbBar;
 
 
 @Entity
-public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitecture>, CalculateScore{
+public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitecture>, CalculateNovelty{
 
 	/**
 	 * 
@@ -70,7 +72,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	
 	
 	public static enum  ArchitectureType {
-		FeedFoward, Elman, Jordan, Neat, HyperNeat;
+		FeedFoward, Elman, Jordan, Neat, HyperNeat, NoveltySearchNeat;
 		
 		public NeuralNetworkPattern getPattern(){
 			if(this == FeedFoward || this == Neat || this == HyperNeat){
@@ -367,6 +369,20 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 //		return true;
 		return false;
 	}
+	
+	@Override
+	public double calculateNovelty(MLMethod method,
+			NoveltySearchPopulation population) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double calculateBehavior(MLMethod method) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
 	
 	public  BasicNetwork createNetwork(){
 		
@@ -835,6 +851,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		System.out.println("Decoden "+Arrays.toString(testDecode)+": "+position.toString());
 		
 	}
+
+	
 	
 	
 	

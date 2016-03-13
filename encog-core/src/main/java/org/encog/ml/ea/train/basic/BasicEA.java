@@ -603,6 +603,8 @@ public class BasicEA implements EvolutionaryAlgorithm, MultiThreadable,
 			while (numToSpawn-- > 0) {
 				final EAWorker worker = new EAWorker(this, species);
 				this.threadList.add(worker);
+//				this.threadList.add(createWorker(species));
+				
 			}
 		}
 
@@ -642,6 +644,13 @@ public class BasicEA implements EvolutionaryAlgorithm, MultiThreadable,
         // purge invalid genomes
         this.population.purgeInvalidGenomes();
 	}
+	
+
+//	public Callable<Object> createWorker(Species species){
+//		return new EAWorker(this, species);
+//	}
+	
+	
 
 	/**
 	 * {@inheritDoc}

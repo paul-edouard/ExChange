@@ -82,6 +82,9 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddNeuralArchitectureDialog;
 import com.munch.exchange.dialog.NeatTrainingDialog;
 import com.munch.exchange.dialog.TrainNeuralArchitectureDialog;
+import com.munch.exchange.model.core.encog.NoveltySearchEA;
+import com.munch.exchange.model.core.encog.NoveltySearchPopulation;
+import com.munch.exchange.model.core.encog.NoveltySearchUtil;
 import com.munch.exchange.model.core.ib.IbContract.TradingPeriod;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
@@ -997,6 +1000,42 @@ public class NeuralConfigurationEditorPart {
 		
 	}
 	
+	private void trainNoveltySearchArchitecture(NeuralArchitecture architecture){
+		
+		neuralArchitecture=architecture;
+		
+		NeatTrainingDialog dialog=new NeatTrainingDialog(shell);
+		if (dialog.open() != Window.OK)return;
+		
+		logger.info("Start Neat Trainig of Architecture Name: "+neuralArchitecture.getName());
+		
+//		Only use in order to get the number of input and ouput
+		BasicNetwork network = neuralArchitecture.createNetwork();
+		
+		NoveltySearchPopulation pop = new NoveltySearchPopulation(network.getInputCount(),
+												network.getOutputCount(),
+												dialog.getPopulation());
+//		pop.setNEATActivationFunction(network.getActivation(0));
+		pop.setInitialConnectionDensity(dialog.getConnectionDensity());// not required, but speeds training
+		pop.reset();
+		
+		//TODO Neural Architecture has to be able to implements more than the scroing methode
+		NoveltySearchEA ns_ea=NoveltySearchUtil.constructNoveltySearchTrainer(pop, neuralArchitecture);
+		ns_ea.setValidationMode(true);
+		ns_ea.setMaxArchiveSize(1000);
+		ns_ea.setNbOfNearestNeighbor(100);
+		
+		progressBarArchitecture.setMinimum(0);
+		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
+		
+		neuralArchitecture.prepareScoring(1,0);
+		
+		NoveltySearchTrainer trainer=new NoveltySearchTrainer(ns_ea, pop, dialog.getNbOfEpoch());
+		trainer.schedule();
+		
+		
+	}
+	
 	
 	private void trainHyperNeatArchitecture(NeuralArchitecture architecture){
 		neuralArchitecture=architecture;
@@ -1908,6 +1947,86 @@ public class NeuralConfigurationEditorPart {
 		
 	}
 	
+	
+	private class NoveltySearchTrainer extends Job{
+		
+		NoveltySearchEA train;
+		int nbOfEpoch;
+		NoveltySearchPopulation pop;
+
+		public NoveltySearchTrainer(NoveltySearchEA train,NoveltySearchPopulation pop, int nbOfEpoch) {
+			super("Novelty Search Trainer");
+			this.train=train;
+			this.nbOfEpoch=nbOfEpoch;
+			this.pop=pop;
+			cancelTraining=false;
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			String text="Training is starting!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			epoch = 0;
+			updateProgressBarArchitecture();
+			for(int i=0;i<nbOfEpoch;i++) {
+				if(cancelTraining){
+					text="Training is cancel!";
+					eventBroker.post(IEventConstant.TEXT_INFO,text);	
+					break;
+				}
+				
+				
+				train.iteration();
+				
+				
+				text="Epoch #" + epoch + " Score:" + train.getError()+ ", Species:" + pop.getSpecies().size();
+				eventBroker.post(IEventConstant.TEXT_INFO,text);
+				
+				
+				//TODO Calculate the expected end of training
+				
+				epoch++;
+				updateProgressBarArchitecture();
+			} 
+			train.finishTraining();
+			
+			text="Training finished, best score:" + train.getError();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			text="Please wait the network will be saved...";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			Population population=train.getPopulation();
+			//population.getSpecies().get
+			//population.getSpecies().get(0).getLeader().get
+			
+			
+			
+//			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
+			neuralArchitecture.addNeuralNetwork(population);
+			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+//			
+			
+			refreshTreeArchitecture();
+			
+			epoch++;
+			updateProgressBarArchitecture();
+			
+			epoch=-1;
+			
+			text="Data are now saved!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			return Status.OK_STATUS;
+		}
+		
+
+		
+		
+	}
 	
 	private void updateProgressBarArchitecture(){
 		Display.getDefault().asyncExec(
