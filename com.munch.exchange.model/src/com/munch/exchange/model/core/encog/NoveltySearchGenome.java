@@ -20,7 +20,7 @@ public class NoveltySearchGenome extends NEATGenome {
 	
 	private double birthNovelty;	
 	
-	private double behavior;
+	private double behavior=Double.NaN;
 	
 	private double relativeDistance;
 

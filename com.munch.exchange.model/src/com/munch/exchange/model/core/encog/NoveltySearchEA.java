@@ -3,10 +3,15 @@ package com.munch.exchange.model.core.encog;
 
 import java.util.concurrent.Callable;
 
+import org.encog.EncogError;
 import org.encog.ml.MLContext;
 import org.encog.ml.MLMethod;
 import org.encog.ml.ea.genome.Genome;
 import org.encog.ml.ea.population.Population;
+import org.encog.ml.ea.sort.MaximizeAdjustedScoreComp;
+import org.encog.ml.ea.sort.MaximizeScoreComp;
+import org.encog.ml.ea.sort.MinimizeAdjustedScoreComp;
+import org.encog.ml.ea.sort.MinimizeScoreComp;
 import org.encog.ml.ea.train.basic.TrainEA;
 
 public class NoveltySearchEA extends TrainEA {
@@ -37,6 +42,15 @@ public class NoveltySearchEA extends TrainEA {
 		
 		
 		this.theNoveltyFunction=theNoveltyFunction;
+		
+		
+		// Reset the score best compare method based on behavior
+		if (this.theNoveltyFunction.shouldMinimize()) {
+			this.setBestComparator(new MinimizeBehaviorComp());
+		} else {
+			this.setBestComparator(new MaximizeBehaviorComp());
+		}
+		
 		
 	}
 
@@ -73,17 +87,16 @@ public class NoveltySearchEA extends TrainEA {
 		
 		g_novel.setBehavior(behavior);
 		
-		
-		// now set the scores
-//		g.setScore(score);
-//		g.setAdjustedScore(score);
-		
-		
-		//Calculate now the novelty
-		
+//		The score is temporaly set to equals to the behavior in oder to get throught the best comparision
+		g_novel.setScore(behavior);
+		g_novel.setAdjustedScore(behavior);
 		
 		
 	}
+	
+	
+	
+	
 	
 	
 
@@ -91,6 +104,9 @@ public class NoveltySearchEA extends TrainEA {
 //	public Callable<Object> createWorker(Species species) {
 //		return new NoveltySearchWorker(this, species);
 //	}
+
+	
+
 
 	public int getMaxArchiveSize() {
 		return maxArchiveSize;

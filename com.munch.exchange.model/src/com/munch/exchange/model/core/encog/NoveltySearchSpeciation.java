@@ -33,10 +33,20 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 	public void performSpeciation(List<Genome> genomeList) { 
 		
 //		TODO Minimal Criteria Novelty Search, remove some bad genomes
+
+		
 		
 		
 //		Recalculate the novelty of each members
 		List<NoveltySearchGenome> newGenomes=convertToNoveltySearchGenome(genomeList);
+//		Set the behavior equals to the score if NaN
+		for(NoveltySearchGenome nov_genome:newGenomes){
+			if(Double.isNaN(nov_genome.getBehavior())){
+				nov_genome.setBehavior(nov_genome.getScore());
+			}
+		}
+		
+		
 		List<NoveltySearchGenome> popGenomes=convertToNoveltySearchGenome(population.flatten());
 		List<NoveltySearchGenome> allGenomes=new LinkedList<NoveltySearchGenome>();
 		allGenomes.addAll(newGenomes);
@@ -111,6 +121,8 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 		novelty/=nearestNeighbors.size();
 	
 		n_genome.setNovelty(novelty);
+		
+//		Now the score is really set equals to the novelty
 		n_genome.setScore(novelty);
 		n_genome.setAdjustedScore(novelty);
 		
