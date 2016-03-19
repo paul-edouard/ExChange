@@ -703,7 +703,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 //			System.out.println("Weigth: "+network.getNetwork().dumpWeights());
 //			
 			MLMethod method=null;
-			if(this.getType()==ArchitectureType.Neat ){
+			if(this.getType()==ArchitectureType.Neat ||
+					this.getType()==ArchitectureType.NoveltySearchNeat){
 				prepareScoring(1,0);
 				NEATCODEC codec=new NEATCODEC();
 				method=codec.decode(network.getNEATPopulation().getBestGenome());
@@ -718,6 +719,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 				method=(NEATNetwork)codec.decode(pop.getBestGenome());
 				
 			}
+			
 			else{
 				method=network.getNetwork();
 			}

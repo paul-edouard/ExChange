@@ -75,6 +75,7 @@ import org.encog.neural.neat.NEATUtil;
 import org.encog.neural.neat.training.species.OriginalNEATSpeciation;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing;
+import org.encog.persist.PersistorRegistry;
 import org.moeaframework.analysis.collector.ElapsedTimeCollector;
 
 import com.ib.controller.Types.WhatToShow;
@@ -85,6 +86,7 @@ import com.munch.exchange.dialog.TrainNeuralArchitectureDialog;
 import com.munch.exchange.model.core.encog.NoveltySearchEA;
 import com.munch.exchange.model.core.encog.NoveltySearchPopulation;
 import com.munch.exchange.model.core.encog.NoveltySearchUtil;
+import com.munch.exchange.model.core.encog.PersistNoveltySearchPopulation;
 import com.munch.exchange.model.core.ib.IbContract.TradingPeriod;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
@@ -801,6 +803,11 @@ public class NeuralConfigurationEditorPart {
 		neuralProvider.loadNeuralArchitecture(neuralConfiguration);
 		
 		logger.info("Nb of Architectures: "+neuralConfiguration.getNeuralArchitectures().size());
+		
+//		Add the Novelty Search Persistor
+		
+		PersistorRegistry.getInstance().add(new PersistNoveltySearchPopulation());
+		
 		
 	}
 	
@@ -2009,8 +2016,8 @@ public class NeuralConfigurationEditorPart {
 			
 			
 //			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
-//			neuralArchitecture.addNeuralNetwork(population);
-//			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+			neuralArchitecture.addNeuralNetwork(population);
+			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
 //			
 			
 			refreshTreeArchitecture();

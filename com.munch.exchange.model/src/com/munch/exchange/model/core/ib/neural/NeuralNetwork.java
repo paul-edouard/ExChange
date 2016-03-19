@@ -108,7 +108,9 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	
 	public boolean isNEAT(){
 		
-		if(this.neuralArchitecture.getType()==ArchitectureType.Neat || this.neuralArchitecture.getType()==ArchitectureType.HyperNeat)
+		if(this.neuralArchitecture.getType()==ArchitectureType.Neat 
+				|| this.neuralArchitecture.getType()==ArchitectureType.HyperNeat
+				|| this.neuralArchitecture.getType()==ArchitectureType.NoveltySearchNeat)
 			return true;
 		
 		return false;
