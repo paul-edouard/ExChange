@@ -38,7 +38,9 @@ public class NoveltySearchUtil {
 		final NoveltySearchEA result = new NoveltySearchEA(population, calculateScore);
 		result.setSpeciation(new NoveltySearchSpeciation(result, population, calculateScore) );
 
-		result.setSelection(new TruncationSelection(result, 0.3));
+		result.setSelection(new NoveltySearchTournamentSelection(result, 4));
+		result.addScoreAdjuster(new NoveltySearchScoreAjuster(0));
+		
 		final CompoundOperator weightMutation = new CompoundOperator();
 		weightMutation.getComponents().add(
 				0.1125,

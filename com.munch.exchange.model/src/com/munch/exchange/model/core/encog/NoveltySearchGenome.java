@@ -16,13 +16,13 @@ public class NoveltySearchGenome extends NEATGenome {
 	private static final long serialVersionUID = -7861162145149450525L;
 	
 	
-	private double novelty;
+	private double novelty=Double.NaN;
 	
-	private double birthNovelty;	
+	private double birthNovelty=Double.NaN;	
 	
 	private double behavior=Double.NaN;
 	
-	private double relativeDistance;
+	private double relativeDistance=Double.NaN;
 
 	public NoveltySearchGenome() {
 		super();

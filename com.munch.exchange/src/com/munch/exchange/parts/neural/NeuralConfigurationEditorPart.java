@@ -655,6 +655,9 @@ public class NeuralConfigurationEditorPart {
 						else if(architecture.getType()==ArchitectureType.HyperNeat){
 							trainHyperNeatArchitecture(architecture);
 						}
+						else if(architecture.getType()==ArchitectureType.NoveltySearchNeat){
+							trainNoveltySearchArchitecture(architecture);
+						}
 						else{
 							trainArchitecture(architecture);
 						}
@@ -1022,7 +1025,7 @@ public class NeuralConfigurationEditorPart {
 		//TODO Neural Architecture has to be able to implements more than the scroing methode
 		NoveltySearchEA ns_ea=NoveltySearchUtil.constructNoveltySearchTrainer(pop, neuralArchitecture);
 		ns_ea.setValidationMode(true);
-		ns_ea.setMaxArchiveSize(1000);
+		ns_ea.setMaxArchiveSize(3000);
 		ns_ea.setNbOfNearestNeighbor(100);
 		
 		progressBarArchitecture.setMinimum(0);
@@ -2006,8 +2009,8 @@ public class NeuralConfigurationEditorPart {
 			
 			
 //			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
-			neuralArchitecture.addNeuralNetwork(population);
-			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+//			neuralArchitecture.addNeuralNetwork(population);
+//			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
 //			
 			
 			refreshTreeArchitecture();

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.encog.ml.ea.genome.Genome;
+import org.encog.ml.ea.train.basic.BasicEA;
 import org.encog.neural.neat.training.species.OriginalNEATSpeciation;
 
 public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
@@ -35,7 +36,7 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 //		TODO Minimal Criteria Novelty Search, remove some bad genomes
 
 		
-		
+		System.out.println("Start the Speciation for "+genomeList.size()+" genomes");
 		
 //		Recalculate the novelty of each members
 		List<NoveltySearchGenome> newGenomes=convertToNoveltySearchGenome(genomeList);
@@ -54,11 +55,21 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 		allGenomes.addAll(population.getArchive());
 		
 		
+		List<Genome> validGenomes= new LinkedList<Genome>();
+		
 //		Calculate the novelty of the new genomes
 		for(NoveltySearchGenome genome:newGenomes){
 			calculateNovelty(genome, allGenomes);
 //			Save the first novelty in order to be able to add the genome to the archive
 			genome.setBirthNovelty(genome.getNovelty());
+			
+			BasicEA.calculateScoreAdjustment(genome,this.noveltySearchEA.getScoreAdjusters());
+			if(Double.isNaN(genome.getAdjustedScore())){
+//				System.out.println("Sorry the genome is no valid!");
+				continue;
+			}
+			validGenomes.add(genome);
+			
 			
 //			Add the new genome to the archive
 			if(population.getArchive().isEmpty()){
@@ -95,9 +106,60 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 			calculateNovelty(genome, allGenomes);
 		}
 		
+//		Reduce the list to new genome with the one that 
+		
+		
+		System.out.println("Population before neat speciation: "+population.size());
+		System.out.println("Size of the Archive: "+population.getArchive().size());
+		
+		printBestGenomes("Old population", popGenomes);
+		printBestGenomes("Valid genomes", convertToNoveltySearchGenome(validGenomes));
+		
 //		Perform the normal speciation the score is now replace with the novelty
-		super.performSpeciation(genomeList);
+		super.performSpeciation(validGenomes);
+		
+		System.out.println("Population after neat speciation: "+population.size());
+		printBestGenomes("New population", convertToNoveltySearchGenome(population.flatten()));
 	}
+	
+	private void printBestGenomes(String message, List<NoveltySearchGenome> genomes){
+		if(genomes.isEmpty()){
+			System.out.println("\n"+message+ " list is empty!");
+			return;
+		}
+		
+		NoveltySearchGenome bestnovelty=getBestNovelty(genomes);
+		NoveltySearchGenome bestbehavior=getBestBehavior(genomes);
+		
+		System.out.println("\n"+message);
+		System.out.println("Best novelty: novelty="+bestnovelty.getNovelty()+", behavior="+bestnovelty.getBehavior());
+		System.out.println("Best behavior: novelty="+bestbehavior.getNovelty()+", behavior="+bestbehavior.getBehavior());
+		
+	}
+	
+	
+	private NoveltySearchGenome getBestNovelty(List<NoveltySearchGenome> genomes){
+		if(genomes.isEmpty())return null;
+		NoveltySearchGenome best=genomes.get(0);
+		for(NoveltySearchGenome genome:genomes){
+			if(genome.getNovelty() > best.getNovelty())
+				best=genome;
+		}
+		
+		return best;
+	}
+	
+	private NoveltySearchGenome getBestBehavior(List<NoveltySearchGenome> genomes){
+		if(genomes.isEmpty())return null;
+		NoveltySearchGenome best=genomes.get(0);
+		for(NoveltySearchGenome genome:genomes){
+			if(genome.getBehavior() > best.getBehavior())
+				best=genome;
+		}
+		
+		return best;
+	}
+	
 	
 	
 	private List<NoveltySearchGenome> convertToNoveltySearchGenome(List<Genome> genomeList){
@@ -121,6 +183,8 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 		novelty/=nearestNeighbors.size();
 	
 		n_genome.setNovelty(novelty);
+		
+//		System.out.println("Genome: novelty="+n_genome.getNovelty()+", behavior="+n_genome.getBehavior());
 		
 //		Now the score is really set equals to the novelty
 		n_genome.setScore(novelty);
@@ -146,14 +210,14 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 			
 //			The current relative distance is lower than the lowest one of the current neighbors
 			if(nearestNeighbors.size()==noveltySearchEA.getNbOfNearestNeighbor() &&
-					nearestNeighbors.getLast().getRelativeDistance()>genome.getRelativeDistance()){
+					nearestNeighbors.getLast().getRelativeDistance() < genome.getRelativeDistance()){
 				continue;
 			}
 			
 			int i=0;
 			boolean isInserted=false;
 			for(NoveltySearchGenome neighbor:nearestNeighbors){
-				if(genome.getRelativeDistance()>neighbor.getRelativeDistance()){
+				if(genome.getRelativeDistance() < neighbor.getRelativeDistance()){
 					nearestNeighbors.add(i, genome);
 					isInserted=true;
 					break;

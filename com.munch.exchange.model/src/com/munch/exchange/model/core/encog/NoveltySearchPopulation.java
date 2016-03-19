@@ -72,9 +72,9 @@ public class NoveltySearchPopulation extends NEATPopulation {
 			final NEATGenome genome = getGenomeFactory().factor(rnd, this,
 					this.getInputCount(), this.getOutputCount(),
 					this.getInitialConnectionDensity());
-			if(genome instanceof NoveltySearchGenome){
-				System.out.println("OK the genome is of type NoveltySearchGenome!");
-			}
+//			if(genome instanceof NoveltySearchGenome){
+//				System.out.println("OK the genome is of type NoveltySearchGenome!");
+//			}
 			defaultSpecies.add(genome);
 		}
 		defaultSpecies.setLeader(defaultSpecies.getMembers().get(0));

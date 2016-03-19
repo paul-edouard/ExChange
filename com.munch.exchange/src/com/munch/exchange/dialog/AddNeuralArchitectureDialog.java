@@ -125,7 +125,7 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 					btnHidderLayer.setEnabled(false);
 					spinnerHidderLayer1.setEnabled(true);
 				}
-				else if(type==ArchitectureType.Neat){
+				else if(type==ArchitectureType.Neat || type==ArchitectureType.HyperNeat || type==ArchitectureType.NoveltySearchNeat){
 					btnHidderLayer.setEnabled(false);
 					spinnerHidderLayer1.setEnabled(false);
 //					setErrorMessage("Neat is not available");
@@ -247,7 +247,7 @@ public class AddNeuralArchitectureDialog extends TitleAreaDialog {
 		neuralArchitecture.setTradeProfitLimit(spinnerTradeProfitLimit.getSelection());
 		neuralArchitecture.setType(type);
 		neuralArchitecture.setActivation(activation);
-		if(type==ArchitectureType.Neat || type==ArchitectureType.HyperNeat)
+		if(type==ArchitectureType.Neat || type==ArchitectureType.HyperNeat || type==ArchitectureType.NoveltySearchNeat)
 			hiddenLayerDes="";
 		neuralArchitecture.setHiddenLayerDescription(hiddenLayerDes);
 		

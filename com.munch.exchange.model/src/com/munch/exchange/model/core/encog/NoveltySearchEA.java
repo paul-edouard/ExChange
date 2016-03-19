@@ -1,17 +1,10 @@
 package com.munch.exchange.model.core.encog;
 
 
-import java.util.concurrent.Callable;
-
-import org.encog.EncogError;
 import org.encog.ml.MLContext;
 import org.encog.ml.MLMethod;
 import org.encog.ml.ea.genome.Genome;
 import org.encog.ml.ea.population.Population;
-import org.encog.ml.ea.sort.MaximizeAdjustedScoreComp;
-import org.encog.ml.ea.sort.MaximizeScoreComp;
-import org.encog.ml.ea.sort.MinimizeAdjustedScoreComp;
-import org.encog.ml.ea.sort.MinimizeScoreComp;
 import org.encog.ml.ea.train.basic.TrainEA;
 
 public class NoveltySearchEA extends TrainEA {
@@ -45,6 +38,7 @@ public class NoveltySearchEA extends TrainEA {
 		
 		
 		// Reset the score best compare method based on behavior
+		
 		if (this.theNoveltyFunction.shouldMinimize()) {
 			this.setBestComparator(new MinimizeBehaviorComp());
 		} else {
@@ -106,6 +100,25 @@ public class NoveltySearchEA extends TrainEA {
 //	}
 
 	
+
+
+	@Override
+	public double getError() {
+		// do we have a best genome, and does it have an error?
+				if (this.getBestGenome() != null) {
+					double err = ((NoveltySearchGenome)this.getBestGenome()).getBehavior();
+					if( !Double.isNaN(err) ) {
+						return err;
+					}
+				} 
+				
+				// otherwise, assume the worst!
+				if (theNoveltyFunction.shouldMinimize()) {
+					return Double.POSITIVE_INFINITY;
+				} else {
+					return Double.NEGATIVE_INFINITY;
+				}
+	}
 
 
 	public int getMaxArchiveSize() {

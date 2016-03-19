@@ -75,7 +75,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		FeedFoward, Elman, Jordan, Neat, HyperNeat, NoveltySearchNeat;
 		
 		public NeuralNetworkPattern getPattern(){
-			if(this == FeedFoward || this == Neat || this == HyperNeat){
+			if(this == FeedFoward || this == Neat || this == HyperNeat || this==NoveltySearchNeat){
 				return new FeedForwardPattern();
 			}
 			else if(this == Elman){
@@ -380,7 +380,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	@Override
 	public double calculateBehavior(MLMethod method) {
 		// TODO Auto-generated method stub
-		return 0;
+		return calculateScore(method);
 	}
 	
 	
