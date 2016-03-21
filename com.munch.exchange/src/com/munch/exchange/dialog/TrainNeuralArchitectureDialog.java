@@ -33,6 +33,7 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 	private int nbOfEpoch;
 	private long timeout;
 	private boolean timeoutSet;
+	private int nbOfBackTestingEvaluation;
 	
 	private Combo comboTrainingMethod;
 	private Spinner spinnerPopulation;
@@ -42,6 +43,8 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 	private Spinner spinnerEpoch;
 	private DateTime dateTime;
 	private Button btnTimeout;
+	private Label lblBackTEvaluation;
+	private Spinner spinnerBackTestingEval;
 
 	/**
 	 * Create the dialog.
@@ -87,6 +90,7 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 					spinnerPopulation.setEnabled(true);
 					spinnerStartTemperature.setEnabled(false);
 					spinnerStopTemperature.setEnabled(false);
+					spinnerBackTestingEval.setEnabled(true);
 					break;
 					
 					
@@ -96,6 +100,7 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 					spinnerPopulation.setEnabled(false);
 					spinnerStartTemperature.setEnabled(true);
 					spinnerStopTemperature.setEnabled(true);
+					spinnerBackTestingEval.setEnabled(false);
 					
 					break;
 				}
@@ -145,6 +150,15 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 		spinnerPopulation.setMinimum(50);
 		spinnerPopulation.setSelection(500);
 		spinnerPopulation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		
+		lblBackTEvaluation = new Label(container, SWT.NONE);
+		lblBackTEvaluation.setText("Back T. Evaluation:");
+		
+		spinnerBackTestingEval = new Spinner(container, SWT.BORDER);
+		spinnerBackTestingEval.setMaximum(200);
+		spinnerBackTestingEval.setMinimum(1);
+		spinnerBackTestingEval.setSelection(20);
+		spinnerBackTestingEval.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		
 		Label lblEpoch = new Label(container, SWT.NONE);
 		lblEpoch.setText("Nb. of Epoch:");
@@ -205,6 +219,8 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 		nbOfEpoch = spinnerEpoch.getSelection();
 		timeout=dateTime.getHours()*3600+dateTime.getMinutes()*60;
 		timeout*=1000;
+		nbOfBackTestingEvaluation=spinnerBackTestingEval.getSelection();
+		
 		super.okPressed();
 	}
 
@@ -225,7 +241,7 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(468, 522);
+		return new Point(468, 545);
 	}
 
 	public int getCycles() {
@@ -267,6 +283,10 @@ public class TrainNeuralArchitectureDialog extends TitleAreaDialog {
 
 	public boolean isTimeoutSet() {
 		return timeoutSet;
+	}
+
+	public int getNbOfBackTestingEvaluation() {
+		return nbOfBackTestingEvaluation;
 	}
 	
 	

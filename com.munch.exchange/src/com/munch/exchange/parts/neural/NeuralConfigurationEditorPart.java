@@ -84,6 +84,7 @@ import com.munch.exchange.dialog.AddNeuralArchitectureDialog;
 import com.munch.exchange.dialog.NeatTrainingDialog;
 import com.munch.exchange.dialog.TrainNeuralArchitectureDialog;
 import com.munch.exchange.model.core.encog.NoveltySearchEA;
+import com.munch.exchange.model.core.encog.NoveltySearchGenome;
 import com.munch.exchange.model.core.encog.NoveltySearchPopulation;
 import com.munch.exchange.model.core.encog.NoveltySearchUtil;
 import com.munch.exchange.model.core.encog.PersistNoveltySearchPopulation;
@@ -1014,7 +1015,7 @@ public class NeuralConfigurationEditorPart {
 		
 		neuralArchitecture=architecture;
 		
-		NeatTrainingDialog dialog=new NeatTrainingDialog(shell);
+		NeatTrainingDialog dialog=new NeatTrainingDialog(shell,true);
 		if (dialog.open() != Window.OK)return;
 		
 		logger.info("Start Neat Trainig of Architecture Name: "+neuralArchitecture.getName());
@@ -1032,17 +1033,25 @@ public class NeuralConfigurationEditorPart {
 		//TODO Neural Architecture has to be able to implements more than the scroing methode
 		NoveltySearchEA ns_ea=NoveltySearchUtil.constructNoveltySearchTrainer(pop, neuralArchitecture);
 		ns_ea.setValidationMode(true);
-		ns_ea.setMaxArchiveSize(3000);
-		ns_ea.setNbOfNearestNeighbor(100);
+		ns_ea.setMaxArchiveSize(dialog.getArchiveSize());
+		ns_ea.setNbOfNearestNeighbor(dialog.getNbOfneighbors());
 		
 		progressBarArchitecture.setMinimum(0);
-		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
 		
 		neuralArchitecture.prepareScoring(1,0);
 		
-		NoveltySearchTrainer trainer=new NoveltySearchTrainer(ns_ea, pop, dialog.getNbOfEpoch());
-		trainer.schedule();
-		
+		if(dialog.isTimeoutSet()){
+			progressBarArchitecture.setMaximum((int)(dialog.getTimeout()/1000)+1);
+			NoveltySearchTrainer trainer=new NoveltySearchTrainer(ns_ea, dialog.getTimeout(),
+					dialog.getNbOfBackTestingEvaluation());
+			trainer.schedule();
+		}
+		else{
+			progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
+			NoveltySearchTrainer trainer=new NoveltySearchTrainer(ns_ea, dialog.getNbOfEpoch(),
+					dialog.getNbOfBackTestingEvaluation());
+			trainer.schedule();
+		}
 		
 	}
 	
@@ -1161,12 +1170,14 @@ public class NeuralConfigurationEditorPart {
 		
 		if(dialog.isTimeoutSet()){
 			progressBarArchitecture.setMaximum((int)(dialog.getTimeout()/1000)+1);
-			NetworkTrainer trainer=new NetworkTrainer(train, dialog.getTimeout());
+			NetworkTrainer trainer=new NetworkTrainer(train, dialog.getTimeout(),
+					dialog.getNbOfBackTestingEvaluation());
 			trainer.schedule();
 		}
 		else{
 			progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
-			NetworkTrainer trainer=new NetworkTrainer(train, dialog.getNbOfEpoch());
+			NetworkTrainer trainer=new NetworkTrainer(train, dialog.getNbOfEpoch(),
+					dialog.getNbOfBackTestingEvaluation());
 			trainer.schedule();
 		}
 	}
@@ -1216,7 +1227,641 @@ public class NeuralConfigurationEditorPart {
 	
 	
 	
+	//######################################
+  	//##           Trainer Job            ##
+  	//######################################
+	private class NetworkTrainer extends Job{
+		
+		
+		MLTrain train;
+		int nbOfEpoch=Integer.MAX_VALUE;
+		BestGenomes bestGenomes=new BestGenomes();
+		long timeout=Long.MAX_VALUE;
+		long startedTime;
+		long currentTime;
+		int nbOfBackTestingEvaluation;
+		
+		public NetworkTrainer(MLTrain train,int nbOfEpoch, int nbOfBackTestingEvaluation) {
+			super("NetworkTrainer");
+			this.train=train;
+			this.nbOfEpoch=nbOfEpoch;
+			this.nbOfBackTestingEvaluation=nbOfBackTestingEvaluation;
+			cancelTraining=false;
+		}
+		
+		public NetworkTrainer(MLTrain train,long timeout, int nbOfBackTestingEvaluation) {
+			super("NetworkTrainer");
+			this.train=train;
+			this.timeout=timeout;
+			this.nbOfBackTestingEvaluation=nbOfBackTestingEvaluation;
+			cancelTraining=false;
+		}
+		
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			
+			preTraining();
+			int i=0;
+//			for(int i=0;i<nbOfEpoch;i++) {
+			while(true){
+//				Test if the max period is reached
+				if(i>=nbOfEpoch)break;
+				
+//				Test if the timeout is reached
+				if(timeout<Long.MAX_VALUE){
+					currentTime=Calendar.getInstance().getTimeInMillis();
+					if(currentTime-startedTime>timeout)break;
+					elapseTime=(int)((currentTime-startedTime)/1000);
+				}
+				
+//				The training is cancel!
+				if(cancelTraining){
+					eventBroker.post(IEventConstant.TEXT_INFO,"Training is cancel!");	
+					break;
+				}
+				
+//				Start a new iteration
+				train.iteration();
+				
+//				Start the post processing
+				postIteration();
+				
+				i++;
+			} 
+			
+			
+//			The trainig is finished the data will be saved
+			postTraining();
+			
+			return Status.OK_STATUS;
+		}
+		
+		
+		private void postIteration(){
+			if(train instanceof MLMethodGeneticAlgorithm){
+				MLMethodGeneticAlgorithm genTrain=(MLMethodGeneticAlgorithm) train;
+				List<Genome> genomes=genTrain.getGenetic().getPopulation().flatten();
+				int pos=0;
+				for(Genome genome:genomes){
+					if(pos>nbOfBackTestingEvaluation)break;
+					
+//					System.out.println("Genome Score: "+genome.getScore());
+					
+					if(bestGenomes.containsScore(genome.getScore()))continue;
+					
+					pos++;
+					
+					BasicNetwork network=(BasicNetwork)genTrain.getGenetic().getCODEC().decode(genome);
+					GenomeEvaluation g_eval=new GenomeEvaluation(genome);
+					
+					
+					NeuralNetworkRating backTestingRating=neuralArchitecture.calculateProfitAndRiskOfBlocks(neuralConfiguration.getBackTestingBlocks(), network);
+					g_eval.setBackTestingScore(backTestingRating.getScore());
+					bestGenomes.addGenomeEvaluation(g_eval);
+				}
+			}
+			
+			
+//			Print the current state
+			String text="Epoch #" + epoch + " Score:" + train.getError()+"\n";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+//			String[] texts=bestGenomes.toString().split("\n");
+//			for(int i=0;i<texts.length;i++)
+			eventBroker.post(IEventConstant.TEXT_INFO,bestGenomes.toString());
+			
+			//TODO Calculate the expected end of training
+			
+			epoch++;
+			updateProgressBarArchitecture();
+			
+		}
+		
+		private void preTraining(){
+			String text="Training is starting!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			startedTime=Calendar.getInstance().getTimeInMillis();
+			epoch = 0;
+			updateProgressBarArchitecture();
+		}
+		
+		private void postTraining(){
+			train.finishTraining();
+			
+			String text="Training finished, best score:" + train.getError();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			text="Please wait the network will be saved...";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			neuralArchitecture.addNeuralNetwork((BasicNetwork)train.getMethod());
+//			Add also the best genomes
+			if(train instanceof MLMethodGeneticAlgorithm){
+				MLMethodGeneticAlgorithm genTrain=(MLMethodGeneticAlgorithm) train;
+				for(GenomeEvaluation g_eval:bestGenomes.getBestGenomes()){
+					BasicNetwork network=(BasicNetwork)genTrain.getGenetic().getCODEC().decode(g_eval.getGenome());
+					neuralArchitecture.addNeuralNetwork(network);
+				}
+			}
+			
+			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+			
+			
+			refreshTreeArchitecture();
+			
+			epoch++;
+			updateProgressBarArchitecture();
+			
+			epoch=-1;
+			elapseTime=0;
+			
+			text="Data are now saved!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+		}
+		
+		
+	}
 	
+	private class NeatTrainer extends Job{
+		
+		EvolutionaryAlgorithm train;
+		int nbOfEpoch;
+		NEATPopulation pop;
+
+		public NeatTrainer(EvolutionaryAlgorithm train,NEATPopulation pop, int nbOfEpoch) {
+			super("Neat Trainer");
+			this.train=train;
+			this.nbOfEpoch=nbOfEpoch;
+			this.pop=pop;
+			cancelTraining=false;
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			String text="Training is starting!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			epoch = 0;
+			updateProgressBarArchitecture();
+			for(int i=0;i<nbOfEpoch;i++) {
+				if(cancelTraining){
+					text="Training is cancel!";
+					eventBroker.post(IEventConstant.TEXT_INFO,text);	
+					break;
+				}
+				
+				
+				train.iteration();
+				
+				
+				text="Epoch #" + epoch + " Score:" + train.getError()+ ", Species:" + pop.getSpecies().size();
+				eventBroker.post(IEventConstant.TEXT_INFO,text);
+				
+				
+				//TODO Calculate the expected end of training
+				
+				epoch++;
+				updateProgressBarArchitecture();
+			} 
+			train.finishTraining();
+			
+			text="Training finished, best score:" + train.getError();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			text="Please wait the network will be saved...";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			Population population=train.getPopulation();
+			//population.getSpecies().get
+			//population.getSpecies().get(0).getLeader().get
+			
+			
+			
+//			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
+			neuralArchitecture.addNeuralNetwork(population);
+			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+//			
+			
+			refreshTreeArchitecture();
+			
+			epoch++;
+			updateProgressBarArchitecture();
+			
+			epoch=-1;
+			
+			text="Data are now saved!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			return Status.OK_STATUS;
+		}
+		
+	}
+	
+	
+	private class NoveltySearchTrainer extends Job{
+		
+		NoveltySearchEA train;
+//		NoveltySearchPopulation pop;
+		
+		int nbOfEpoch=Integer.MAX_VALUE;
+		BestGenomes bestGenomes=new BestGenomes();
+		int nbOfBackTestingEvaluation;
+		long timeout=Long.MAX_VALUE;
+		long startedTime;
+		long currentTime;
+		
+
+		public NoveltySearchTrainer(NoveltySearchEA train,
+				int nbOfEpoch, int nbOfBackTestingEvaluation) {
+			super("Novelty Search Trainer");
+			this.train=train;
+			this.nbOfEpoch=nbOfEpoch;
+//			this.pop=pop;
+			this.nbOfBackTestingEvaluation=nbOfBackTestingEvaluation;
+			cancelTraining=false;
+		}
+		
+		public NoveltySearchTrainer(NoveltySearchEA train,
+				long timeout, int nbOfBackTestingEvaluation) {
+			super("Novelty Search Trainer");
+			this.train=train;
+			this.timeout=timeout;
+//			this.pop=pop;
+			this.nbOfBackTestingEvaluation=nbOfBackTestingEvaluation;
+			cancelTraining=false;
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			preTraining();
+			
+			int i=0;
+//			for(int i=0;i<nbOfEpoch;i++) {
+			while(true){
+//				Test if the max period is reached
+				if(i>=nbOfEpoch)break;
+				
+//				Test if the timeout is reached
+				if(timeout<Long.MAX_VALUE){
+					currentTime=Calendar.getInstance().getTimeInMillis();
+					if(currentTime-startedTime>timeout)break;
+					elapseTime=(int)((currentTime-startedTime)/1000);
+				}
+				
+//				The training is cancel!
+				if(cancelTraining){
+					eventBroker.post(IEventConstant.TEXT_INFO,"Training is cancel!");	
+					break;
+				}
+				
+//				Start a new iteration
+				train.iteration();
+				
+//				Start the post processing
+				postIteration();
+				
+				i++;
+			} 
+			
+			postTraining();
+			
+			return Status.OK_STATUS;
+		}
+		
+		private void postIteration(){
+
+//			Isolate the best genomes
+			List<Genome> sortedGenomes=getSortedGenomesFromPop(train.getPopulation());
+			
+			int pos=0;
+			for(Genome genome:sortedGenomes){
+				if(pos>nbOfBackTestingEvaluation)break;
+				
+				System.out.println("Genome Score: "+genome.getScore());
+				
+				if(bestGenomes.containsScore(genome.getScore()))continue;
+				
+//				Calculate the back testing score
+				MLMethod method=train.getCODEC().decode(genome);
+				NeuralNetworkRating backTestingRating=neuralArchitecture.calculateProfitAndRiskOfBlocks(neuralConfiguration.getBackTestingBlocks(), method);
+				
+//				Create and add the new evaluation
+				GenomeEvaluation g_eval=new GenomeEvaluation(genome, ((NoveltySearchGenome)genome).getBehavior());
+				g_eval.setBackTestingScore(backTestingRating.getScore());
+				bestGenomes.addGenomeEvaluation(g_eval);
+				
+				pos++;
+			}
+			
+			String text="Epoch #" + epoch + " Score:" + train.getError()+ ", Species:" + train.getPopulation().getSpecies().size();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			eventBroker.post(IEventConstant.TEXT_INFO,bestGenomes.toString());
+			
+			epoch++;
+			updateProgressBarArchitecture();
+		}
+		
+		private void preTraining(){
+			String text="Training is starting!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			startedTime=Calendar.getInstance().getTimeInMillis();
+			epoch = 0;
+			updateProgressBarArchitecture();
+		}
+		
+		private void postTraining(){
+			train.finishTraining();
+			
+			String text="Training finished, best score:" + train.getError();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			text="Please wait the network will be saved...";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+//			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
+			neuralArchitecture.addNeuralNetwork(train.getPopulation());
+			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+//			
+			
+			refreshTreeArchitecture();
+			
+			epoch++;
+			updateProgressBarArchitecture();
+			
+			epoch=-1;
+			
+			text="Data are now saved!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+		}
+		
+		
+	}
+	
+	
+	private List<Genome> getSortedGenomesFromPop(Population pop){
+		List<Genome> genomes=pop.flatten();
+		List<Genome> sortedGenomes=new LinkedList<Genome>();
+		for(Genome genome:genomes){
+			if(sortedGenomes.isEmpty()){
+				sortedGenomes.add(genome);continue;
+			}
+			
+			int i=0;
+			for(Genome sortedGenome:sortedGenomes){
+				if(sortedGenome.getScore() < genome.getScore()){
+					sortedGenomes.add(i, genome);
+					break;
+				}
+				i++;
+				if(i==sortedGenome.size()){
+					sortedGenomes.add(genome);
+				}
+			}
+			
+		}
+		
+		return sortedGenomes;
+	}
+	
+	private void updateProgressBarArchitecture(){
+		Display.getDefault().asyncExec(
+		new Runnable() {
+			
+			@Override
+			public void run() {
+				if(elapseTime>0){
+					progressBarArchitecture.setSelection(elapseTime);
+				}
+				else{
+					progressBarArchitecture.setSelection(epoch);
+				}
+			}
+		}
+		);
+				
+	}
+	
+	private void refreshTreeArchitecture(){
+		Display.getDefault().asyncExec(
+		new Runnable() {
+			
+			@Override
+			public void run() {
+			treeViewerArchitecture.refresh();
+			}
+		}
+		);
+				
+	}
+	
+	
+	//######################################
+  	//##   Search And Distribute Job      ##
+  	//######################################
+	
+	private class SearchAndDistribute extends Job{
+
+		public SearchAndDistribute() {
+			super("Search and distribute");
+			readGuiData();
+		}
+		
+		private void readGuiData(){
+//			Save the bar Size
+			neuralConfiguration.setSize(IbBar.getBarSizeFromString(comboBarSize
+					.getText()));
+			
+//			Save the reference data
+			if (comboReferenceData.getSelectionIndex() == 0) {
+				neuralConfiguration.setReferenceData(ReferenceData.MID_POINT);
+			} else if (comboReferenceData.getSelectionIndex() == 1) {
+				neuralConfiguration.setReferenceData(ReferenceData.BID_AND_ASK);
+			}
+			
+//			Clear the tree
+			removeAllInputsColumns();
+			
+//			Save the percent of training data
+			neuralConfiguration.setPercentOfTrainingData(spinnerPercentOfTrainingData.getSelection());
+			
+//			Save the split strategy
+			if (comboSplitStrategy.getSelectionIndex() == 0) {
+				neuralConfiguration.setSplitStrategy(SplitStrategy.WEEK);
+			} else if (comboSplitStrategy.getSelectionIndex() == 1) {
+				neuralConfiguration.setSplitStrategy(SplitStrategy.DAY);
+			}
+			
+			progressBarDataSet.setMaximum(8);
+			progressBarDataSet.setSelection(0);
+			dataSetCounter=0;
+			
+		}
+		
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			
+			searchReferenceDataFunc();
+			
+			distributeDataFunc();
+			
+			return Status.OK_STATUS;
+		}
+		
+		/**
+		 * 2. Search the reference data
+		 */
+		private void searchReferenceDataFunc(){
+			
+
+//			Search the reference data
+			neuralConfiguration.clearAllCollectedBars();
+			updateProgressBarDataSet();
+			
+			List<IbBarContainer> containers = historicalDataProvider
+					.getAllExContractBars(neuralConfiguration.getContract());
+			
+			for (IbBarContainer container : containers) {
+
+				// Collect the mid point data
+				if (neuralConfiguration.getReferenceData() == ReferenceData.MID_POINT
+						&& container.getType() == WhatToShow.MIDPOINT) {
+					List<IbBar> allBars = historicalDataProvider.getAllBars(
+							container, neuralConfiguration.getSize());
+					neuralConfiguration.setAllMidPointBars(allBars);
+				}
+
+				// Collect the Ask Data
+				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
+						&& container.getType() == WhatToShow.ASK) {
+					List<IbBar> allBars = historicalDataProvider.getAllBars(
+							container, neuralConfiguration.getSize());
+					neuralConfiguration.setAllAskBars(allBars);
+				}
+
+				// Collect the Bid Data
+				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
+						&& container.getType() == WhatToShow.BID) {
+					List<IbBar> allBars = historicalDataProvider.getAllBars(
+							container, neuralConfiguration.getSize());
+					neuralConfiguration.setAllBidBars(allBars);
+				}
+
+			}
+			
+			updateProgressBarDataSet();
+			refreshNbOfDataText();
+			
+		}
+		
+		
+		/**
+		 * 3. Split the data and distribute them 
+		 */
+		private void distributeDataFunc(){
+			printMemoryUsage("Start distribute");
+			
+//			Split the data
+			neuralConfiguration.splitReferenceData();
+			updateProgressBarDataSet();
+			printMemoryUsage("Split the data");
+			
+//			Fill the neural input bar collector
+			fillTheNeuralInputsBarsCollector();
+			updateProgressBarDataSet();
+			printMemoryUsage("Fill the neural input bar collector");
+			
+//			Compute the neural indicator values and reset the ranges of the components
+			neuralConfiguration.computeAllNeuralIndicatorInputs();
+			updateProgressBarDataSet();
+			printMemoryUsage("Compute the neural indicator values and reset the ranges of the components");
+			
+//			In order to save memory clear the data collector
+			neuralConfiguration.getNeuralInputsBarsCollector().clear();
+			updateProgressBarDataSet();
+			System.gc();
+			printMemoryUsage("In order to save memory clear the data collector");
+			
+//			Compute the adapted Data of each components
+			neuralConfiguration.computeAdaptedDataOfEachComponents();
+			updateProgressBarDataSet();
+			printMemoryUsage("Compute the adapted Data of each components");
+			
+//			save the configuration
+			neuralProvider.updateTrainingData(neuralConfiguration);
+			updateProgressBarDataSet();
+			
+			printMemoryUsage("End distribute");
+			System.gc();
+			printMemoryUsage("After garbage collector");
+			
+		}
+		
+		private void printMemoryUsage(String message){
+			long total = Runtime.getRuntime().totalMemory();
+			long used  = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+			System.out.println(message+", total="+total+ ", used="+used);
+			
+		}
+		
+		
+			
+	}
+	
+	
+	private void refreshNbOfDataText(){
+		Display.getDefault().asyncExec(
+		new Runnable() {
+			
+			@Override
+			public void run() {
+				switch (neuralConfiguration.getReferenceData()) {
+				case MID_POINT:
+					textNbOfData.setText(String.valueOf(neuralConfiguration
+							.getAllMidPointBars().size()));
+					break;
+				case BID_AND_ASK:
+					textNbOfData.setText(String.valueOf((neuralConfiguration
+							.getAllAskBars().size() + neuralConfiguration
+							.getAllBidBars().size()) / 2));
+					break;
+				}
+			}
+		}
+		);
+
+	}
+	
+	
+	private void updateProgressBarDataSet(){
+		Display.getDefault().asyncExec(
+		new Runnable() {
+			
+			@Override
+			public void run() {
+				dataSetCounter++;
+				progressBarDataSet.setSelection(dataSetCounter);
+				if(dataSetCounter==8)
+					btnViewTrainingData.setEnabled(true);
+			}
+		}
+		);
+				
+	}
+	
+	
+	
+
 	//##################################
 	//##     Column Label Provider    ##
 	//##################################
@@ -1725,542 +2370,6 @@ public class NeuralConfigurationEditorPart {
 	}
 	
 	
-	//######################################
-  	//##           Trainer Job            ##
-  	//######################################
-	private class NetworkTrainer extends Job{
-		
-		
-		MLTrain train;
-		int nbOfEpoch=Integer.MAX_VALUE;
-		BestGenomes bestGenomes=new BestGenomes();
-		long timeout=Long.MAX_VALUE;
-		long startedTime;
-		long currentTime;
-		
-		
-		public NetworkTrainer(MLTrain train,int nbOfEpoch) {
-			super("NetworkTrainer");
-			this.train=train;
-			this.nbOfEpoch=nbOfEpoch;
-			cancelTraining=false;
-		}
-		
-		public NetworkTrainer(MLTrain train,long timeout) {
-			super("NetworkTrainer");
-			this.train=train;
-			this.timeout=timeout;
-			cancelTraining=false;
-		}
-		
-
-		@Override
-		protected IStatus run(IProgressMonitor monitor) {
-			
-			preTraining();
-			int i=0;
-//			for(int i=0;i<nbOfEpoch;i++) {
-			while(true){
-//				Test if the max period is reached
-				if(i>=nbOfEpoch)break;
-				
-//				Test if the timeout is reached
-				if(timeout<Long.MAX_VALUE){
-					currentTime=Calendar.getInstance().getTimeInMillis();
-					if(currentTime-startedTime>timeout)break;
-					elapseTime=(int)((currentTime-startedTime)/1000);
-				}
-				
-//				The training is cancel!
-				if(cancelTraining){
-					eventBroker.post(IEventConstant.TEXT_INFO,"Training is cancel!");	
-					break;
-				}
-				
-//				Start a new iteration
-				train.iteration();
-				
-//				Start the post processing
-				postIteration();
-				
-				i++;
-			} 
-			
-			
-//			The trainig is finished the data will be saved
-			postTraining();
-			
-			return Status.OK_STATUS;
-		}
-		
-		
-		private void postIteration(){
-			if(train instanceof MLMethodGeneticAlgorithm){
-				MLMethodGeneticAlgorithm genTrain=(MLMethodGeneticAlgorithm) train;
-				List<Genome> genomes=genTrain.getGenetic().getPopulation().flatten();
-				int pos=0;
-				for(Genome genome:genomes){
-					if(pos>20)break;
-					pos++;
-					
-//					System.out.println("Genome Score: "+genome.getScore());
-					
-					if(bestGenomes.containsScore(genome.getScore()))continue;
-					
-					BasicNetwork network=(BasicNetwork)genTrain.getGenetic().getCODEC().decode(genome);
-					GenomeEvaluation g_eval=new GenomeEvaluation(genome);
-					
-					
-					NeuralNetworkRating backTestingRating=neuralArchitecture.calculateProfitAndRiskOfBlocks(neuralConfiguration.getBackTestingBlocks(), network);
-					g_eval.setBackTestingScore(backTestingRating.getScore());
-					bestGenomes.addGenomeEvaluation(g_eval);
-				}
-			}
-			
-			
-//			Print the current state
-			String text="Epoch #" + epoch + " Score:" + train.getError()+"\n";
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-//			String[] texts=bestGenomes.toString().split("\n");
-//			for(int i=0;i<texts.length;i++)
-			eventBroker.post(IEventConstant.TEXT_INFO,bestGenomes.toString());
-			
-			//TODO Calculate the expected end of training
-			
-			epoch++;
-			updateProgressBarArchitecture();
-			
-		}
-		
-		private void preTraining(){
-			String text="Training is starting!";
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-			startedTime=Calendar.getInstance().getTimeInMillis();
-			epoch = 0;
-			updateProgressBarArchitecture();
-		}
-		
-		private void postTraining(){
-			train.finishTraining();
-			
-			String text="Training finished, best score:" + train.getError();
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-			
-			text="Please wait the network will be saved...";
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-			neuralArchitecture.addNeuralNetwork((BasicNetwork)train.getMethod());
-//			Add also the best genomes
-			if(train instanceof MLMethodGeneticAlgorithm){
-				MLMethodGeneticAlgorithm genTrain=(MLMethodGeneticAlgorithm) train;
-				for(GenomeEvaluation g_eval:bestGenomes.getBestGenomes()){
-					BasicNetwork network=(BasicNetwork)genTrain.getGenetic().getCODEC().decode(g_eval.getGenome());
-					neuralArchitecture.addNeuralNetwork(network);
-				}
-			}
-			
-			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
-			
-			
-			refreshTreeArchitecture();
-			
-			epoch++;
-			updateProgressBarArchitecture();
-			
-			epoch=-1;
-			elapseTime=0;
-			
-			text="Data are now saved!";
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-		}
-		
-		
-	}
-	
-	private class NeatTrainer extends Job{
-		
-		EvolutionaryAlgorithm train;
-		int nbOfEpoch;
-		NEATPopulation pop;
-
-		public NeatTrainer(EvolutionaryAlgorithm train,NEATPopulation pop, int nbOfEpoch) {
-			super("Neat Trainer");
-			this.train=train;
-			this.nbOfEpoch=nbOfEpoch;
-			this.pop=pop;
-			cancelTraining=false;
-		}
-
-		@Override
-		protected IStatus run(IProgressMonitor monitor) {
-			String text="Training is starting!";
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-			
-			epoch = 0;
-			updateProgressBarArchitecture();
-			for(int i=0;i<nbOfEpoch;i++) {
-				if(cancelTraining){
-					text="Training is cancel!";
-					eventBroker.post(IEventConstant.TEXT_INFO,text);	
-					break;
-				}
-				
-				
-				train.iteration();
-				
-				
-				text="Epoch #" + epoch + " Score:" + train.getError()+ ", Species:" + pop.getSpecies().size();
-				eventBroker.post(IEventConstant.TEXT_INFO,text);
-				
-				
-				//TODO Calculate the expected end of training
-				
-				epoch++;
-				updateProgressBarArchitecture();
-			} 
-			train.finishTraining();
-			
-			text="Training finished, best score:" + train.getError();
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-			
-			text="Please wait the network will be saved...";
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-			Population population=train.getPopulation();
-			//population.getSpecies().get
-			//population.getSpecies().get(0).getLeader().get
-			
-			
-			
-//			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
-			neuralArchitecture.addNeuralNetwork(population);
-			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
-//			
-			
-			refreshTreeArchitecture();
-			
-			epoch++;
-			updateProgressBarArchitecture();
-			
-			epoch=-1;
-			
-			text="Data are now saved!";
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-			return Status.OK_STATUS;
-		}
-		
-	}
 	
 	
-	private class NoveltySearchTrainer extends Job{
-		
-		NoveltySearchEA train;
-		int nbOfEpoch;
-		NoveltySearchPopulation pop;
-
-		public NoveltySearchTrainer(NoveltySearchEA train,NoveltySearchPopulation pop, int nbOfEpoch) {
-			super("Novelty Search Trainer");
-			this.train=train;
-			this.nbOfEpoch=nbOfEpoch;
-			this.pop=pop;
-			cancelTraining=false;
-		}
-
-		@Override
-		protected IStatus run(IProgressMonitor monitor) {
-			String text="Training is starting!";
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-			
-			epoch = 0;
-			updateProgressBarArchitecture();
-			for(int i=0;i<nbOfEpoch;i++) {
-				if(cancelTraining){
-					text="Training is cancel!";
-					eventBroker.post(IEventConstant.TEXT_INFO,text);	
-					break;
-				}
-				
-				
-				train.iteration();
-				
-				
-				text="Epoch #" + epoch + " Score:" + train.getError()+ ", Species:" + pop.getSpecies().size();
-				eventBroker.post(IEventConstant.TEXT_INFO,text);
-				
-				
-				//TODO Calculate the expected end of training
-				
-				epoch++;
-				updateProgressBarArchitecture();
-			} 
-			train.finishTraining();
-			
-			text="Training finished, best score:" + train.getError();
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-			
-			text="Please wait the network will be saved...";
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-			Population population=train.getPopulation();
-			//population.getSpecies().get
-			//population.getSpecies().get(0).getLeader().get
-			
-			
-			
-//			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
-			neuralArchitecture.addNeuralNetwork(population);
-			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
-//			
-			
-			refreshTreeArchitecture();
-			
-			epoch++;
-			updateProgressBarArchitecture();
-			
-			epoch=-1;
-			
-			text="Data are now saved!";
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
-			
-			return Status.OK_STATUS;
-		}
-		
-
-		
-		
-	}
-	
-	private void updateProgressBarArchitecture(){
-		Display.getDefault().asyncExec(
-		new Runnable() {
-			
-			@Override
-			public void run() {
-				if(elapseTime>0){
-					progressBarArchitecture.setSelection(elapseTime);
-				}
-				else{
-					progressBarArchitecture.setSelection(epoch);
-				}
-			}
-		}
-		);
-				
-	}
-	
-	private void refreshTreeArchitecture(){
-		Display.getDefault().asyncExec(
-		new Runnable() {
-			
-			@Override
-			public void run() {
-			treeViewerArchitecture.refresh();
-			}
-		}
-		);
-				
-	}
-	
-	
-	//######################################
-  	//##   Search And Distribute Job      ##
-  	//######################################
-	
-	private class SearchAndDistribute extends Job{
-
-		public SearchAndDistribute() {
-			super("Search and distribute");
-			readGuiData();
-		}
-		
-		private void readGuiData(){
-//			Save the bar Size
-			neuralConfiguration.setSize(IbBar.getBarSizeFromString(comboBarSize
-					.getText()));
-			
-//			Save the reference data
-			if (comboReferenceData.getSelectionIndex() == 0) {
-				neuralConfiguration.setReferenceData(ReferenceData.MID_POINT);
-			} else if (comboReferenceData.getSelectionIndex() == 1) {
-				neuralConfiguration.setReferenceData(ReferenceData.BID_AND_ASK);
-			}
-			
-//			Clear the tree
-			removeAllInputsColumns();
-			
-//			Save the percent of training data
-			neuralConfiguration.setPercentOfTrainingData(spinnerPercentOfTrainingData.getSelection());
-			
-//			Save the split strategy
-			if (comboSplitStrategy.getSelectionIndex() == 0) {
-				neuralConfiguration.setSplitStrategy(SplitStrategy.WEEK);
-			} else if (comboSplitStrategy.getSelectionIndex() == 1) {
-				neuralConfiguration.setSplitStrategy(SplitStrategy.DAY);
-			}
-			
-			progressBarDataSet.setMaximum(8);
-			progressBarDataSet.setSelection(0);
-			dataSetCounter=0;
-			
-		}
-		
-
-		@Override
-		protected IStatus run(IProgressMonitor monitor) {
-			
-			searchReferenceDataFunc();
-			
-			distributeDataFunc();
-			
-			return Status.OK_STATUS;
-		}
-		
-		/**
-		 * 2. Search the reference data
-		 */
-		private void searchReferenceDataFunc(){
-			
-
-//			Search the reference data
-			neuralConfiguration.clearAllCollectedBars();
-			updateProgressBarDataSet();
-			
-			List<IbBarContainer> containers = historicalDataProvider
-					.getAllExContractBars(neuralConfiguration.getContract());
-			
-			for (IbBarContainer container : containers) {
-
-				// Collect the mid point data
-				if (neuralConfiguration.getReferenceData() == ReferenceData.MID_POINT
-						&& container.getType() == WhatToShow.MIDPOINT) {
-					List<IbBar> allBars = historicalDataProvider.getAllBars(
-							container, neuralConfiguration.getSize());
-					neuralConfiguration.setAllMidPointBars(allBars);
-				}
-
-				// Collect the Ask Data
-				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
-						&& container.getType() == WhatToShow.ASK) {
-					List<IbBar> allBars = historicalDataProvider.getAllBars(
-							container, neuralConfiguration.getSize());
-					neuralConfiguration.setAllAskBars(allBars);
-				}
-
-				// Collect the Bid Data
-				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
-						&& container.getType() == WhatToShow.BID) {
-					List<IbBar> allBars = historicalDataProvider.getAllBars(
-							container, neuralConfiguration.getSize());
-					neuralConfiguration.setAllBidBars(allBars);
-				}
-
-			}
-			
-			updateProgressBarDataSet();
-			refreshNbOfDataText();
-			
-		}
-		
-		
-		/**
-		 * 3. Split the data and distribute them 
-		 */
-		private void distributeDataFunc(){
-			printMemoryUsage("Start distribute");
-			
-//			Split the data
-			neuralConfiguration.splitReferenceData();
-			updateProgressBarDataSet();
-			printMemoryUsage("Split the data");
-			
-//			Fill the neural input bar collector
-			fillTheNeuralInputsBarsCollector();
-			updateProgressBarDataSet();
-			printMemoryUsage("Fill the neural input bar collector");
-			
-//			Compute the neural indicator values and reset the ranges of the components
-			neuralConfiguration.computeAllNeuralIndicatorInputs();
-			updateProgressBarDataSet();
-			printMemoryUsage("Compute the neural indicator values and reset the ranges of the components");
-			
-//			In order to save memory clear the data collector
-			neuralConfiguration.getNeuralInputsBarsCollector().clear();
-			updateProgressBarDataSet();
-			System.gc();
-			printMemoryUsage("In order to save memory clear the data collector");
-			
-//			Compute the adapted Data of each components
-			neuralConfiguration.computeAdaptedDataOfEachComponents();
-			updateProgressBarDataSet();
-			printMemoryUsage("Compute the adapted Data of each components");
-			
-//			save the configuration
-			neuralProvider.updateTrainingData(neuralConfiguration);
-			updateProgressBarDataSet();
-			
-			printMemoryUsage("End distribute");
-			System.gc();
-			printMemoryUsage("After garbage collector");
-			
-		}
-		
-		private void printMemoryUsage(String message){
-			long total = Runtime.getRuntime().totalMemory();
-			long used  = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-			System.out.println(message+", total="+total+ ", used="+used);
-			
-		}
-		
-		
-			
-	}
-	
-	
-	private void refreshNbOfDataText(){
-		Display.getDefault().asyncExec(
-		new Runnable() {
-			
-			@Override
-			public void run() {
-				switch (neuralConfiguration.getReferenceData()) {
-				case MID_POINT:
-					textNbOfData.setText(String.valueOf(neuralConfiguration
-							.getAllMidPointBars().size()));
-					break;
-				case BID_AND_ASK:
-					textNbOfData.setText(String.valueOf((neuralConfiguration
-							.getAllAskBars().size() + neuralConfiguration
-							.getAllBidBars().size()) / 2));
-					break;
-				}
-			}
-		}
-		);
-
-	}
-	
-	
-	private void updateProgressBarDataSet(){
-		Display.getDefault().asyncExec(
-		new Runnable() {
-			
-			@Override
-			public void run() {
-				dataSetCounter++;
-				progressBarDataSet.setSelection(dataSetCounter);
-				if(dataSetCounter==8)
-					btnViewTrainingData.setEnabled(true);
-			}
-		}
-		);
-				
-	}
 }
