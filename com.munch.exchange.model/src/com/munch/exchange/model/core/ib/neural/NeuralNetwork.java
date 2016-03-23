@@ -57,6 +57,9 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	@Lob
 	private byte[] network;
 	
+	@Lob
+	private byte[] pareto;
+	
 	
 	@Transient
 	NeuralNetworkRating trainingRating = new NeuralNetworkRating();
@@ -66,6 +69,9 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	
 	@Transient
 	private NEATPopulation population=null;
+	
+	@Transient
+	private NEATPopulation paretoPopulation=null;
 	
 	@Transient
 	private HashMap<NEATNetwork, NeuralNetworkRating> trainingRatingMap = new HashMap<NEATNetwork, NeuralNetworkRating>();
@@ -93,6 +99,14 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 		return population;
 	}
 	
+	public NEATPopulation getParetoPopulation(){
+		if(paretoPopulation!=null)return paretoPopulation;
+		
+		ByteArrayInputStream bis = new ByteArrayInputStream(pareto);
+		paretoPopulation = (NEATPopulation)EncogDirectoryPersistence.loadObject(bis);
+		return paretoPopulation;
+	}
+	
 	
 	public void setNetwork(BasicNetwork basicNetwork){
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -105,6 +119,13 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 		EncogDirectoryPersistence.saveObject(bos,population);
 		network = bos.toByteArray();
 	}
+	
+	public void setParetoPopulation(Population population){
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		EncogDirectoryPersistence.saveObject(bos,population);
+		pareto = bos.toByteArray();
+	}
+	
 	
 	public boolean isNEAT(){
 		
@@ -146,8 +167,7 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	public void setNetwork(byte[] network) {
 		this.network = network;
 	}
-	
-	
+
 	public NeuralNetworkRating getTrainingRating() {
 		return trainingRating;
 	}

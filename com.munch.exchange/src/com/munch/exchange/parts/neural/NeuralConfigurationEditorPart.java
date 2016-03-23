@@ -63,6 +63,8 @@ import org.encog.ml.MLResettable;
 import org.encog.ml.MethodFactory;
 import org.encog.ml.ea.genome.Genome;
 import org.encog.ml.ea.population.Population;
+import org.encog.ml.ea.species.BasicSpecies;
+import org.encog.ml.ea.species.Species;
 import org.encog.ml.ea.train.EvolutionaryAlgorithm;
 import org.encog.ml.ea.train.basic.BasicEA;
 import org.encog.ml.genetic.MLMethodGeneticAlgorithm;
@@ -1542,7 +1544,7 @@ public class NeuralConfigurationEditorPart {
 			for(Genome genome:sortedGenomes){
 				if(pos>nbOfBackTestingEvaluation)break;
 				
-				System.out.println("Genome Score: "+genome.getScore());
+//				System.out.println("Genome Score: "+genome.getScore());
 				
 				if(bestGenomes.containsScore(genome.getScore()))continue;
 				
@@ -1586,9 +1588,30 @@ public class NeuralConfigurationEditorPart {
 			text="Please wait the network will be saved...";
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
+			NoveltySearchPopulation pop=(NoveltySearchPopulation)train.getPopulation();
+			text="Population size before reduction: "+pop.flatten().size();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
-//			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
-			neuralArchitecture.addNeuralNetwork(train.getPopulation());
+			text="Archive size before reduction: "+pop.getArchive().size();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			reducePopulationSize(100);
+			
+			NoveltySearchPopulation paretoPopulation=bestGenomesToParetoPopulation();
+			
+			text="Population size after reduction: "+pop.flatten().size();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			text="Archive size after reduction: "+pop.getArchive().size();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			text="Pareto population: "+paretoPopulation.flatten().size();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+//			Add a new Neural Network to the architecture with the pareto front
+			neuralArchitecture.addNeuralNetwork(train.getPopulation(), paretoPopulation);
 			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
 //			
 			
@@ -1604,29 +1627,120 @@ public class NeuralConfigurationEditorPart {
 			
 		}
 		
+		private NoveltySearchPopulation bestGenomesToParetoPopulation(){
+			NoveltySearchPopulation pop=(NoveltySearchPopulation)train.getPopulation();
+			
+			NoveltySearchPopulation paretoPop=new NoveltySearchPopulation(pop.getInputCount(),
+					pop.getOutputCount(), bestGenomes.size());
+			paretoPop.reset();
+			Species species=paretoPop.getSpecies().get(0);
+			species.getMembers().clear();
+			for(GenomeEvaluation g_eval:bestGenomes){
+				species.add(g_eval.getGenome());
+			}
+			return paretoPop;
+		}
+		
+		
+		private void reducePopulationSize( int maxPopSize){
+
+//			Reduce the size of the population, keep only the 100 best genomes and the 100 best archives
+			LinkedList<Genome> toKeep=new LinkedList<Genome>();
+			NoveltySearchPopulation pop=(NoveltySearchPopulation)train.getPopulation();
+			toKeep.add(pop.getBestGenome());
+			for(Species species:pop.getSpecies()){
+				for(Genome genome:species.getMembers()){
+					int i=0;
+					boolean isInserted=false;
+					for(Genome k_genome:toKeep){
+						if(genome.getScore()>k_genome.getScore()){
+							toKeep.add(i, genome);
+							if(toKeep.size()>maxPopSize){
+								toKeep.removeLast();
+							}
+							isInserted=true;
+							break;
+						}
+						i++;
+					}
+					
+					if(!isInserted && toKeep.size()<maxPopSize){
+						toKeep.add(genome);
+					}
+					
+				}
+			}
+			
+//			Remove the Genomes
+			for(Species species:pop.getSpecies()){
+				boolean noGenomeToRemove=true;
+				while(noGenomeToRemove){
+					noGenomeToRemove=false;
+					for(Genome genome:species.getMembers()){
+						if(!toKeep.contains(genome)){
+							species.getMembers().remove(genome);
+							noGenomeToRemove=true;
+							break;
+						}
+					}
+					if(species.getMembers().isEmpty())
+						break;
+					
+				}
+			}
+			
+//			Remove the empty Species
+			boolean noSpeciesToRemove=true;
+			while(noSpeciesToRemove){
+				noSpeciesToRemove=false;
+				for(Species species:pop.getSpecies()){
+					if(species.getMembers().isEmpty()){
+						pop.getSpecies().remove(species);
+						noSpeciesToRemove=true;
+						break;
+					}
+				}
+			}
+			
+//			Reduce the size of the archive
+			while(pop.getArchive().size()>maxPopSize){
+				pop.getArchive().removeLast();
+			}
+			
+			
+		}
+		
 		
 	}
 	
 	
 	private List<Genome> getSortedGenomesFromPop(Population pop){
 		List<Genome> genomes=pop.flatten();
+		
+		
 		List<Genome> sortedGenomes=new LinkedList<Genome>();
 		for(Genome genome:genomes){
+//			System.out.println(genome.getScore());
+			
 			if(sortedGenomes.isEmpty()){
 				sortedGenomes.add(genome);continue;
 			}
 			
 			int i=0;
+			boolean isInserted=false;
 			for(Genome sortedGenome:sortedGenomes){
 				if(sortedGenome.getScore() < genome.getScore()){
 					sortedGenomes.add(i, genome);
+					isInserted=true;
 					break;
 				}
 				i++;
-				if(i==sortedGenome.size()){
-					sortedGenomes.add(genome);
-				}
 			}
+			
+			if(!isInserted){
+				sortedGenomes.add(genome);
+			}
+			
 			
 		}
 		

@@ -690,6 +690,14 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		this.neuralNetworks.add(network);
 	}
 	
+	public void addNeuralNetwork(Population population, Population paretoPopulation){
+		NeuralNetwork network=new NeuralNetwork();
+		network.setNEATPopulation(population);
+		network.setParetoPopulation(paretoPopulation);
+		network.setNeuralArchitecture(this);
+		this.neuralNetworks.add(network);
+	}
+	
 	
 	/**
 	 * Evaluation of all the networks this could be done in different threads

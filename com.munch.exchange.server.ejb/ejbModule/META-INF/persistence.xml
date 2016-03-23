@@ -29,7 +29,6 @@
 	<class>com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters</class>
 	<class>com.munch.exchange.model.core.ib.neural.NeuralInput</class>
 	<class>com.munch.exchange.model.core.ib.neural.NeuralInputComponent</class>
-	<class>com.munch.exchange.model.core.ib.neural.NeuralNetwork</class>
 	<class>com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput</class>
 	<class>com.munch.exchange.model.core.ib.neural.NeuralDayOfWeekInput</class>
 	<class>com.munch.exchange.model.core.ib.neural.NeuralDayPositionInput</class>
@@ -38,6 +37,7 @@
 	<class>com.munch.exchange.model.core.ib.neural.NeuralArchitecture</class>
 	<class>com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange</class>
 	<class>com.munch.exchange.model.core.ib.IbContract</class>
+	<class>com.munch.exchange.model.core.ib.neural.NeuralNetwork</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	
