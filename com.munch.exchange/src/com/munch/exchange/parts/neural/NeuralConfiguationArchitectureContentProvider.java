@@ -1,10 +1,17 @@
 package com.munch.exchange.parts.neural;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.encog.ml.ea.genome.Genome;
+import org.encog.neural.neat.NEATPopulation;
 
+import com.munch.exchange.model.core.encog.NoveltySearchGenome;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
+import com.munch.exchange.model.core.ib.neural.NeuralArchitecture.ArchitectureType;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralNetwork;
 import com.munch.exchange.model.core.ib.neural.NeuralNetworkRating;
@@ -42,7 +49,32 @@ public class NeuralConfiguationArchitectureContentProvider implements
 		}
 		else if(parentElement instanceof NeuralNetwork){
 			NeuralNetwork neuralNetwork=(NeuralNetwork) parentElement;
-//			if(!neuralNetwork.isNEAT()){
+			
+			if(neuralNetwork.getNeuralArchitecture().getType()==ArchitectureType.NoveltySearchNeat
+					|| neuralNetwork.getNeuralArchitecture().getType()==ArchitectureType.Neat 
+					|| neuralNetwork.getNeuralArchitecture().getType()==ArchitectureType.HyperNeat){
+				
+//				System.out.println("Novelty search Netwotk found!");
+				
+				List<Object> objects=new LinkedList<>();
+				if(neuralNetwork.getNEATPopulation()!=null){
+					Object[] networkAndPop=new Object[2];
+					networkAndPop[0]=neuralNetwork;
+					networkAndPop[1]=neuralNetwork.getNEATPopulation();
+					objects.add(networkAndPop);
+				}
+				if(neuralNetwork.getParetoPopulation()!=null){
+					Object[] networkAndPop=new Object[2];
+					networkAndPop[0]=neuralNetwork;
+					networkAndPop[1]=neuralNetwork.getParetoPopulation();
+					objects.add(networkAndPop);
+				}
+				
+//				System.out.println("Nb of objects: "+objects.size());
+				
+				return objects.toArray();
+			}
+			else{
 				if(neuralNetwork.getTrainingRating().getChildren().isEmpty())
 					return null;
 				if(neuralNetwork.getBackTestingRating().getChildren().isEmpty())
@@ -52,7 +84,45 @@ public class NeuralConfiguationArchitectureContentProvider implements
 				objects[0]=neuralNetwork.getTrainingRating();
 				objects[1]=neuralNetwork.getBackTestingRating();
 				return objects;
-//			}
+			}
+		}
+		else if(parentElement instanceof Object[]){
+			Object[] parentObjects =(Object[]) parentElement;
+			if(parentObjects.length==2 && 
+					parentObjects[0] instanceof NeuralNetwork &&
+					parentObjects[1] instanceof NEATPopulation){
+				NeuralNetwork neuralNetwork=(NeuralNetwork) parentObjects[0];
+				NEATPopulation pop=(NEATPopulation)parentObjects[1];
+				List<Genome> genomes=pop.flatten();
+				List<Object[]> objects=new LinkedList<>();
+				for(Genome genome:genomes){
+					if(!neuralNetwork.getBackTestingRatingMap().containsKey(genome))
+						continue;
+					if(!neuralNetwork.getTrainingRatingMap().containsKey(genome))
+						continue;
+					
+					Object[] ratings=new Object[3];
+					ratings[0]=genome;
+					ratings[1]=neuralNetwork.getTrainingRatingMap().get(genome);
+					ratings[2]=neuralNetwork.getBackTestingRatingMap().get(genome);
+					
+					objects.add(ratings);
+				}
+				
+				if(objects.isEmpty())
+					return null;
+				
+				return objects.toArray();
+			}
+			else if(parentObjects.length==3 && 
+					parentObjects[0] instanceof Genome){
+				Object[] ratings=new Object[2];
+				ratings[0]=parentObjects[1];
+				ratings[1]=parentObjects[2];
+				
+				return ratings;
+			}
+			
 		}
 		else if(parentElement instanceof NeuralNetworkRating){
 			NeuralNetworkRating rating=(NeuralNetworkRating)parentElement;
@@ -81,13 +151,47 @@ public class NeuralConfiguationArchitectureContentProvider implements
 		}
 		else if(element instanceof NeuralNetwork){
 			NeuralNetwork neuralNetwork=(NeuralNetwork) element;
-//			if(!neuralNetwork.isNEAT()){
+			
+			if(neuralNetwork.getNeuralArchitecture().getType()==ArchitectureType.NoveltySearchNeat
+					|| neuralNetwork.getNeuralArchitecture().getType()==ArchitectureType.Neat 
+					|| neuralNetwork.getNeuralArchitecture().getType()==ArchitectureType.HyperNeat){
+				
+				if(neuralNetwork.getNEATPopulation()!=null)return true;
+				
+			}
+			else{
 				if(neuralNetwork.getTrainingRating().getChildren().isEmpty())
 					return false;
 				if(neuralNetwork.getBackTestingRating().getChildren().isEmpty())
 					return false;
 				return true;
-//			}
+			}
+		}
+		else if(element instanceof  Object[]){
+			Object[] objects =(Object[]) element;
+			if(objects.length==2 && 
+					objects[0] instanceof NeuralNetwork &&
+					objects[1] instanceof NEATPopulation){
+				
+				NeuralNetwork neuralNetwork=(NeuralNetwork) objects[0];
+				NEATPopulation pop=(NEATPopulation)objects[1];
+				System.out.println("Population: "+pop.getName());
+				List<Genome> genomes=pop.flatten();
+//				System.out.println("Population: "+pop.getName());
+				for(Genome genome:genomes){
+					if(neuralNetwork.getBackTestingRatingMap().containsKey(genome))
+						return true;
+					if(neuralNetwork.getTrainingRatingMap().containsKey(genome))
+						return true;
+				
+				}
+				
+			}
+			else if(objects.length==3 && objects[0] instanceof Genome){
+				return true;
+			}
+			
+			
 		}
 		else if(element instanceof NeuralNetworkRating){
 			NeuralNetworkRating rating=(NeuralNetworkRating)element;

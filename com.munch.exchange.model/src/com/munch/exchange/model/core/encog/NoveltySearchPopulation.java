@@ -20,6 +20,11 @@ public class NoveltySearchPopulation extends NEATPopulation {
 	 */
 	private static final long serialVersionUID = 6255665209476348120L;
 	
+	public static final String MAIN="MAIN";
+	public static final String PARETO="PARETO";
+	
+	
+	
 	
 	LinkedList<NoveltySearchGenome> archive=new LinkedList<NoveltySearchGenome>();
 	

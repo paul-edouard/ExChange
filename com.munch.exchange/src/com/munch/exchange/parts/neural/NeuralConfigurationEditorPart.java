@@ -87,6 +87,7 @@ import com.munch.exchange.dialog.NeatTrainingDialog;
 import com.munch.exchange.dialog.TrainNeuralArchitectureDialog;
 import com.munch.exchange.model.core.encog.NoveltySearchEA;
 import com.munch.exchange.model.core.encog.NoveltySearchGenome;
+import com.munch.exchange.model.core.encog.NoveltySearchGenomeFactory;
 import com.munch.exchange.model.core.encog.NoveltySearchPopulation;
 import com.munch.exchange.model.core.encog.NoveltySearchUtil;
 import com.munch.exchange.model.core.encog.PersistNoveltySearchPopulation;
@@ -1589,6 +1590,8 @@ public class NeuralConfigurationEditorPart {
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
 			NoveltySearchPopulation pop=(NoveltySearchPopulation)train.getPopulation();
+			pop.setName(NoveltySearchPopulation.MAIN);
+			
 			text="Population size before reduction: "+pop.flatten().size();
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
@@ -1599,6 +1602,7 @@ public class NeuralConfigurationEditorPart {
 			reducePopulationSize(100);
 			
 			NoveltySearchPopulation paretoPopulation=bestGenomesToParetoPopulation();
+			paretoPopulation.setName(NoveltySearchPopulation.PARETO);
 			
 			text="Population size after reduction: "+pop.flatten().size();
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
@@ -1611,7 +1615,8 @@ public class NeuralConfigurationEditorPart {
 			
 			
 //			Add a new Neural Network to the architecture with the pareto front
-			neuralArchitecture.addNeuralNetwork(train.getPopulation(), paretoPopulation);
+			neuralArchitecture.addNeuralNetwork(train.getPopulation(),NoveltySearchPopulation.MAIN,
+					paretoPopulation,NoveltySearchPopulation.PARETO);
 			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
 //			
 			
@@ -1636,8 +1641,14 @@ public class NeuralConfigurationEditorPart {
 			Species species=paretoPop.getSpecies().get(0);
 			species.getMembers().clear();
 			for(GenomeEvaluation g_eval:bestGenomes){
-				species.add(g_eval.getGenome());
+//				species.add(NoveltySearchGenomeFactory.g_eval.getGenome());
+				
+				species.add(new NoveltySearchGenome((NoveltySearchGenome)g_eval.getGenome()));
+				
 			}
+			species.setLeader(species.getMembers().get(0));
+//			getSpecies().add(species);
+			
 			return paretoPop;
 		}
 		
@@ -2175,6 +2186,21 @@ public class NeuralConfigurationEditorPart {
 			else if(element instanceof NeuralNetwork){
 				NeuralNetwork neuralNetwork=(NeuralNetwork) element;
 				return String.valueOf(neuralNetwork.getId());
+			}
+			else if(element instanceof Object[]){
+				Object[] objects =(Object[]) element;
+//				System.out.println("Object[0]: "+objects[0].getClass().getSimpleName());
+//				System.out.println("Object[1]: "+objects[1].getClass().getSimpleName());
+				if(objects.length==2 && objects[1] instanceof NEATPopulation ){
+					NEATPopulation pop=(NEATPopulation) objects[1];
+//					System.out.println("Name: "+pop.getName());
+					return pop.getName();
+				}
+				else if(objects.length==3 && objects[0] instanceof Genome){
+					Genome genome=(Genome) objects[0];
+					return "Genome: "+String.valueOf(genome.getBirthGeneration());
+					
+				}
 			}
 			else if(element instanceof NeuralNetworkRating){
 				NeuralNetworkRating rating=(NeuralNetworkRating)element;

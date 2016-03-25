@@ -3,6 +3,9 @@ package com.munch.exchange.model.core.ib.neural;
 import java.io.Serializable;
 import java.util.LinkedList;
 
+import org.encog.ml.MLMethod;
+import org.encog.neural.neat.NEATNetwork;
+
 public class NeuralNetworkRating implements Serializable{
 	
 	/**
@@ -25,6 +28,8 @@ public class NeuralNetworkRating implements Serializable{
 	private String name;
 	
 	private double score;
+	
+	private MLMethod method;
 	
 	
 	private LinkedList<NeuralNetworkRating> children=new LinkedList<NeuralNetworkRating>();
@@ -140,6 +145,15 @@ public class NeuralNetworkRating implements Serializable{
 
 	public void setScore(double score) {
 		this.score = score;
+	}
+	
+
+	public MLMethod getMethod() {
+		return method;
+	}
+
+	public void setMethod(MLMethod method) {
+		this.method = method;
 	}
 	
 	

@@ -482,6 +482,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 //		System.out.println("New Block: "+block.size());
 		
 		NeuralNetworkRating profitAndRisk=new NeuralNetworkRating();
+		profitAndRisk.setMethod(method);
 		if(block==null || block.isEmpty() )return profitAndRisk;
 		
 		if(method instanceof MLContext){
@@ -626,8 +627,11 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		int nbOfInputs=((MLInput) method).getInputCount();
 		
 		NeuralNetworkRating profitAndRiskTotal=new NeuralNetworkRating();
+		profitAndRiskTotal.setMethod(method);
 		
 		for(LinkedList<IbBar> block:blocks){
+			
+//			System.out.println("Calculate block!");
 			
 			NeuralNetworkRating profitAndRiskOfBlock=calculateProfitAndRiskOfBlock(block, method, nbOfInputs);
 			
@@ -690,10 +694,15 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		this.neuralNetworks.add(network);
 	}
 	
-	public void addNeuralNetwork(Population population, Population paretoPopulation){
+	public void addNeuralNetwork(Population population,String populationName,
+			Population paretoPopulation, String paretoName){
 		NeuralNetwork network=new NeuralNetwork();
 		network.setNEATPopulation(population);
+		network.setNetworkName(populationName);
+		
 		network.setParetoPopulation(paretoPopulation);
+		network.setParetoName(paretoName);
+		
 		network.setNeuralArchitecture(this);
 		this.neuralNetworks.add(network);
 	}
@@ -707,43 +716,50 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		
 		for(NeuralNetwork network:this.neuralNetworks){
 			
-//			System.out.println("Score: "+this.calculateScore(network.getNetwork()));
-//			System.out.println("Weigth: "+network.getNetwork().dumpWeights());
-//			
-			MLMethod method=null;
+			
 			if(this.getType()==ArchitectureType.Neat ||
-					this.getType()==ArchitectureType.NoveltySearchNeat){
-				prepareScoring(1,0);
-				NEATCODEC codec=new NEATCODEC();
-				method=codec.decode(network.getNEATPopulation().getBestGenome());
-			}
-			else if(this.getType()==ArchitectureType.HyperNeat){
-				prepareScoring(1,0);
-				HyperNEATCODEC codec=new HyperNEATCODEC();
-//				Create the substract in order to initilize the population
-				NEATPopulation pop=(NEATPopulation)network.getNEATPopulation();
-				pop.setSubstrate(this.createHyperNeatSubstrat());
-				
-				method=(NEATNetwork)codec.decode(pop.getBestGenome());
-				
+					this.getType()==ArchitectureType.NoveltySearchNeat || 
+					this.getType()==ArchitectureType.HyperNeat){
+//				prepareScoring(1,0);
+//				NEATCODEC codec=new NEATCODEC();
+//				method=codec.decode(network.getNEATPopulation().getBestGenome());
+				network.evaluateNEATPopulation(5);
+				network.evaluateParetoPopulation();
+			
 			}
 			
+//			else if(this.getType()==ArchitectureType.HyperNeat){
+//				prepareScoring(1,0);
+//				HyperNEATCODEC codec=new HyperNEATCODEC();
+////				Create the substract in order to initilize the population
+//				NEATPopulation pop=(NEATPopulation)network.getNEATPopulation();
+//				pop.setSubstrate(this.createHyperNeatSubstrat());
+//				
+//				method=(NEATNetwork)codec.decode(pop.getBestGenome());
+//				
+//			}
+//			
 			else{
+				MLMethod method=null;
 				method=network.getNetwork();
+				
+//				Evaluate the Training data set
+				NeuralNetworkRating trainingRating=calculateProfitAndRiskOfBlocks(
+						neuralConfiguration.getTrainingBlocks(), method);
+				trainingRating.setName("Training");
+				network.setTrainingRating(trainingRating);
+				
+				
+//				Evaluate the back testing data set
+				NeuralNetworkRating backTestingRating=calculateProfitAndRiskOfBlocks(
+						neuralConfiguration.getBackTestingBlocks(), method);
+				backTestingRating.setName("Back Testing");
+				network.setBackTestingRating(backTestingRating);
+				
+				
 			}
 			
-//			Evaluate the Training data set
-			NeuralNetworkRating trainingRating=calculateProfitAndRiskOfBlocks(
-					neuralConfiguration.getTrainingBlocks(), method);
-			trainingRating.setName("Training");
-			network.setTrainingRating(trainingRating);
-			
-			
-//			Evaluate the back testing data set
-			NeuralNetworkRating backTestingRating=calculateProfitAndRiskOfBlocks(
-					neuralConfiguration.getBackTestingBlocks(), method);
-			backTestingRating.setName("Back Testing");
-			network.setBackTestingRating(backTestingRating);
+
 			
 			
 		}

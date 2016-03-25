@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -20,11 +21,23 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
+import org.encog.ml.MLMethod;
+import org.encog.ml.ea.codec.GeneticCODEC;
+import org.encog.ml.ea.genome.Genome;
 import org.encog.ml.ea.population.Population;
+import org.encog.neural.hyperneat.HyperNEATCODEC;
+import org.encog.neural.neat.NEATCODEC;
 import org.encog.neural.neat.NEATNetwork;
 import org.encog.neural.neat.NEATPopulation;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.persist.EncogDirectoryPersistence;
+
+
+
+
+
+
+
 
 
 
@@ -57,8 +70,12 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	@Lob
 	private byte[] network;
 	
+	private String networkName;
+	
 	@Lob
 	private byte[] pareto;
+	
+	private String paretoName;
 	
 	
 	@Transient
@@ -74,10 +91,10 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	private NEATPopulation paretoPopulation=null;
 	
 	@Transient
-	private HashMap<NEATNetwork, NeuralNetworkRating> trainingRatingMap = new HashMap<NEATNetwork, NeuralNetworkRating>();
+	private HashMap<Genome, NeuralNetworkRating> trainingRatingMap = new HashMap<Genome, NeuralNetworkRating>();
 
 	@Transient
-	private HashMap<NEATNetwork, NeuralNetworkRating> backTestingRatingMap = new HashMap<NEATNetwork, NeuralNetworkRating>();
+	private HashMap<Genome, NeuralNetworkRating> backTestingRatingMap = new HashMap<Genome, NeuralNetworkRating>();
 	
 	
 	
@@ -94,16 +111,22 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	public NEATPopulation getNEATPopulation(){
 		if(population!=null)return population;
 		
+		if(network==null)return null;
+		
 		ByteArrayInputStream bis = new ByteArrayInputStream(network);
 		population = (NEATPopulation)EncogDirectoryPersistence.loadObject(bis);
+		population.setName(getNetworkName());
 		return population;
 	}
 	
 	public NEATPopulation getParetoPopulation(){
 		if(paretoPopulation!=null)return paretoPopulation;
 		
+		if(pareto==null)return null;
+		
 		ByteArrayInputStream bis = new ByteArrayInputStream(pareto);
 		paretoPopulation = (NEATPopulation)EncogDirectoryPersistence.loadObject(bis);
+		paretoPopulation.setName(getParetoName());
 		return paretoPopulation;
 	}
 	
@@ -137,6 +160,80 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 		return false;
 	}
 	
+	public void evaluateNEATPopulation(int nbOfBestGenomes){
+		if(this.getNEATPopulation()!=null)
+			evaluatePopulation(this.getNEATPopulation(), nbOfBestGenomes);
+	
+	}
+	
+	public void evaluateParetoPopulation(){
+		if(this.getParetoPopulation()!=null){
+			evaluatePopulation(this.getParetoPopulation(), Integer.MAX_VALUE);
+			
+			
+//			System.out.println("Evaluation of pareto population: size:" +this.getParetoPopulation().flatten().size());
+		}
+		
+		
+		
+		
+	}
+	
+	private void evaluatePopulation(NEATPopulation pop, int nbOfBestGenomes){
+		
+		System.out.println("Evaluation of population: "+pop.getName());
+		
+		
+		GeneticCODEC codec=new NEATCODEC();
+		
+		List<Genome> genomes=pop.flatten();
+		this.getNeuralArchitecture().prepareScoring(1, 0);
+		
+		if(this.getNeuralArchitecture().getType()==ArchitectureType.HyperNeat){
+			codec=new HyperNEATCODEC();
+			this.getNEATPopulation().setSubstrate(
+					this.getNeuralArchitecture().createHyperNeatSubstrat());
+		}
+		
+		NeuralConfiguration neuralConfiguration=this.getNeuralArchitecture().getNeuralConfiguration();
+		
+		int i=0;
+		for(Genome genome:genomes){
+//			System.out.println("Evaluation of genomes: "+i);
+			
+			if(i>=nbOfBestGenomes)break;
+			
+			System.out.println("Evaluation of genomes start: "+i);
+			
+			MLMethod method=(NEATNetwork)codec.decode(genome);
+			
+//			Evaluate the Training data set
+			NeuralNetworkRating trainingRating=this.getNeuralArchitecture().calculateProfitAndRiskOfBlocks(
+					neuralConfiguration.getTrainingBlocks(), method);
+//			System.out.println("score training:"+trainingRating.getScore());
+			trainingRating.setName("Training");
+			trainingRatingMap.put(genome, trainingRating);
+			
+			
+//			Evaluate the back testing data set
+			NeuralNetworkRating backTestingRating=this.getNeuralArchitecture().calculateProfitAndRiskOfBlocks(
+					neuralConfiguration.getBackTestingBlocks(), method);
+			backTestingRating.setName("Back Testing");
+			backTestingRatingMap.put(genome, backTestingRating);
+			
+			i++;
+		}
+		
+		System.out.println("backTestingRatingMap size: "+backTestingRatingMap.size());
+		
+		
+	}
+	
+	
+	
+	
+	
+	
 	
 	@Override
 	public NeuralNetwork copy() {
@@ -144,6 +241,10 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 		
 		c.id=id;
 		c.network=network;
+		c.pareto=pareto;
+		
+		c.paretoName=paretoName;
+		c.networkName=networkName;
 		
 		return c;
 	}
@@ -183,12 +284,29 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	public void setBackTestingRating(NeuralNetworkRating backTestingRating) {
 		this.backTestingRating = backTestingRating;
 	}
+	
+	
+	public String getNetworkName() {
+		return networkName;
+	}
 
-	public HashMap<NEATNetwork, NeuralNetworkRating> getTrainingRatingMap() {
+	public void setNetworkName(String networkName) {
+		this.networkName = networkName;
+	}
+
+	public String getParetoName() {
+		return paretoName;
+	}
+
+	public void setParetoName(String paretoName) {
+		this.paretoName = paretoName;
+	}
+
+	public HashMap<Genome, NeuralNetworkRating> getTrainingRatingMap() {
 		return trainingRatingMap;
 	}
 
-	public HashMap<NEATNetwork, NeuralNetworkRating> getBackTestingRatingMap() {
+	public HashMap<Genome, NeuralNetworkRating> getBackTestingRatingMap() {
 		return backTestingRatingMap;
 	}
 
