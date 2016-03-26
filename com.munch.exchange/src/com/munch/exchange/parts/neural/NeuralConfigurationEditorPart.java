@@ -67,6 +67,7 @@ import org.encog.ml.ea.species.BasicSpecies;
 import org.encog.ml.ea.species.Species;
 import org.encog.ml.ea.train.EvolutionaryAlgorithm;
 import org.encog.ml.ea.train.basic.BasicEA;
+import org.encog.ml.factory.method.NEATFactory;
 import org.encog.ml.genetic.MLMethodGeneticAlgorithm;
 import org.encog.ml.train.MLTrain;
 import org.encog.neural.hyperneat.substrate.Substrate;
@@ -614,6 +615,14 @@ public class NeuralConfigurationEditorPart {
 					}
 					
 				}
+				if(e.button==1 && treeArchitecture.getSelection().length==1){
+					TreeItem item=treeArchitecture.getSelection()[0];
+					if(item.getData() instanceof NeuralNetworkRating){
+						NeuralNetworkRating rating=(NeuralNetworkRating)item.getData();
+						eventBroker.post(IEventConstant.TEXT_INFO,rating.positionTrackingToString());
+						
+					}
+				}
 				
 				
 			}
@@ -1005,12 +1014,21 @@ public class NeuralConfigurationEditorPart {
 		train.setValidationMode(true);
 		
 		progressBarArchitecture.setMinimum(0);
-		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
 		
 		neuralArchitecture.prepareScoring(1,0);
 		
-		NeatTrainer trainer=new NeatTrainer(train, pop, dialog.getNbOfEpoch());
-		trainer.schedule();
+		if(dialog.isTimeoutSet()){
+			progressBarArchitecture.setMaximum((int)(dialog.getTimeout()/1000)+1);
+			NeatTrainer trainer=new NeatTrainer(train, dialog.getTimeout(),
+					dialog.getNbOfBackTestingEvaluation());
+			trainer.schedule();
+		}
+		else{
+			progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
+			NeatTrainer trainer=new NeatTrainer(train, dialog.getNbOfEpoch(),
+					dialog.getNbOfBackTestingEvaluation());
+			trainer.schedule();
+		}
 		
 	}
 	
@@ -1092,12 +1110,21 @@ public class NeuralConfigurationEditorPart {
 		}
 		
 		progressBarArchitecture.setMinimum(0);
-		progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
 		
 		neuralArchitecture.prepareScoring(1,0);
 		
-		NeatTrainer trainer=new NeatTrainer(train, pop, dialog.getNbOfEpoch());
-		trainer.schedule();
+		if(dialog.isTimeoutSet()){
+			progressBarArchitecture.setMaximum((int)(dialog.getTimeout()/1000)+1);
+			NeatTrainer trainer=new NeatTrainer(train, dialog.getTimeout(),
+					dialog.getNbOfBackTestingEvaluation());
+			trainer.schedule();
+		}
+		else{
+			progressBarArchitecture.setMaximum(dialog.getNbOfEpoch()+1);
+			NeatTrainer trainer=new NeatTrainer(train, dialog.getNbOfEpoch(),
+					dialog.getNbOfBackTestingEvaluation());
+			trainer.schedule();
+		}
 		
 	}
 	
@@ -1391,62 +1418,155 @@ public class NeuralConfigurationEditorPart {
 	private class NeatTrainer extends Job{
 		
 		EvolutionaryAlgorithm train;
-		int nbOfEpoch;
-		NEATPopulation pop;
+		int nbOfEpoch=Integer.MAX_VALUE;
+		
+		BestGenomes bestGenomes=new BestGenomes();
+		int nbOfBackTestingEvaluation;
+		long timeout=Long.MAX_VALUE;
+		long startedTime;
+		long currentTime;
+		
+		
+		
 
-		public NeatTrainer(EvolutionaryAlgorithm train,NEATPopulation pop, int nbOfEpoch) {
+		public NeatTrainer(EvolutionaryAlgorithm train, int nbOfEpoch, int nbOfBackTestingEvaluation) {
 			super("Neat Trainer");
 			this.train=train;
 			this.nbOfEpoch=nbOfEpoch;
-			this.pop=pop;
+			
+			this.nbOfBackTestingEvaluation=nbOfBackTestingEvaluation;
+			cancelTraining=false;
+		}
+		
+		public NeatTrainer(EvolutionaryAlgorithm train,
+				long timeout, int nbOfBackTestingEvaluation) {
+			super("Novelty Search Trainer");
+			this.train=train;
+			this.timeout=timeout;
+//			this.pop=pop;
+			this.nbOfBackTestingEvaluation=nbOfBackTestingEvaluation;
 			cancelTraining=false;
 		}
 
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
-			String text="Training is starting!";
-			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
+			preTraining();
 			
-			epoch = 0;
-			updateProgressBarArchitecture();
-			for(int i=0;i<nbOfEpoch;i++) {
+			System.out.println("Timeout: "+timeout);
+			
+			int i=0;
+//			for(int i=0;i<nbOfEpoch;i++) {
+			while(true){
+//				Test if the max period is reached
+				if(i>=nbOfEpoch)break;
+				
+//				Test if the timeout is reached
+				if(timeout<Long.MAX_VALUE){
+					currentTime=Calendar.getInstance().getTimeInMillis();
+					if(currentTime-startedTime>timeout)break;
+					elapseTime=(int)((currentTime-startedTime)/1000);
+				}
+				
+//				The training is cancel!
 				if(cancelTraining){
-					text="Training is cancel!";
-					eventBroker.post(IEventConstant.TEXT_INFO,text);	
+					eventBroker.post(IEventConstant.TEXT_INFO,"Training is cancel!");	
 					break;
 				}
 				
-				
+//				Start a new iteration
 				train.iteration();
 				
+//				Start the post processing
+				postIteration();
 				
-				text="Epoch #" + epoch + " Score:" + train.getError()+ ", Species:" + pop.getSpecies().size();
-				eventBroker.post(IEventConstant.TEXT_INFO,text);
-				
-				
-				//TODO Calculate the expected end of training
-				
-				epoch++;
-				updateProgressBarArchitecture();
+				i++;
 			} 
+			
+			postTraining();
+			
+			return Status.OK_STATUS;
+			
+		}
+		
+		
+		
+		private void postIteration(){
+
+//			Isolate the best genomes
+			List<Genome> sortedGenomes=getSortedGenomesFromPop(train.getPopulation());
+			
+			int pos=0;
+			for(Genome genome:sortedGenomes){
+				if(pos>nbOfBackTestingEvaluation)break;
+				
+//				System.out.println("Genome Score: "+genome.getScore());
+				
+				if(bestGenomes.containsScore(genome.getScore()))continue;
+				
+//				Calculate the back testing score
+				MLMethod method=train.getCODEC().decode(genome);
+				NeuralNetworkRating backTestingRating=neuralArchitecture.calculateProfitAndRiskOfBlocks(neuralConfiguration.getBackTestingBlocks(), method);
+				
+//				Create and add the new evaluation
+				GenomeEvaluation g_eval=new GenomeEvaluation(genome, genome.getScore());
+				g_eval.setBackTestingScore(backTestingRating.getScore());
+				bestGenomes.addGenomeEvaluation(g_eval);
+				
+				pos++;
+			}
+			
+			String text="Epoch #" + epoch + " Score:" + train.getError()+ ", Species:" + train.getPopulation().getSpecies().size();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			eventBroker.post(IEventConstant.TEXT_INFO,bestGenomes.toString());
+			
+			epoch++;
+			updateProgressBarArchitecture();
+		}
+		
+		private void preTraining(){
+			String text="Training is starting!";
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			startedTime=Calendar.getInstance().getTimeInMillis();
+			epoch = 0;
+			updateProgressBarArchitecture();
+		}
+		
+		private void postTraining(){
 			train.finishTraining();
 			
-			text="Training finished, best score:" + train.getError();
+			String text="Training finished, best score:" + train.getError();
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
 			
 			text="Please wait the network will be saved...";
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
-			Population population=train.getPopulation();
-			//population.getSpecies().get
-			//population.getSpecies().get(0).getLeader().get
+			NEATPopulation pop=(NEATPopulation)train.getPopulation();
+			pop.setName(NoveltySearchPopulation.MAIN);
+			
+			text="Population size before reduction: "+pop.flatten().size();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
 			
+			reducePopulationSize(100);
 			
-//			NEATNetwork network = (NEATNetwork)train.getCODEC().decode(train.getBestGenome());
-			neuralArchitecture.addNeuralNetwork(population);
+			NEATPopulation paretoPopulation=bestGenomesToParetoPopulation();
+			paretoPopulation.setName(NoveltySearchPopulation.PARETO);
+			
+			text="Population size after reduction: "+pop.flatten().size();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+			text="Pareto population: "+paretoPopulation.flatten().size();
+			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			
+//			Add a new Neural Network to the architecture with the pareto front
+			neuralArchitecture.addNeuralNetwork(train.getPopulation(),NoveltySearchPopulation.MAIN,
+					paretoPopulation,NoveltySearchPopulation.PARETO);
 			neuralProvider.updateNeuralArchitecture(neuralConfiguration);
 //			
 			
@@ -1460,8 +1580,90 @@ public class NeuralConfigurationEditorPart {
 			text="Data are now saved!";
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
 			
-			return Status.OK_STATUS;
 		}
+		
+		private NEATPopulation bestGenomesToParetoPopulation(){
+			NEATPopulation pop=(NEATPopulation)train.getPopulation();
+			
+			NEATPopulation paretoPop=new NEATPopulation(pop.getInputCount(),
+					pop.getOutputCount(), bestGenomes.size());
+			paretoPop.reset();
+			Species species=paretoPop.getSpecies().get(0);
+			species.getMembers().clear();
+			for(GenomeEvaluation g_eval:bestGenomes){
+				species.add(pop.getGenomeFactory().factor(g_eval.getGenome()));
+				
+			}
+			species.setLeader(species.getMembers().get(0));
+			
+			return paretoPop;
+		}
+		
+		
+		private void reducePopulationSize( int maxPopSize){
+
+//			Reduce the size of the population, keep only the 100 best genomes and the 100 best archives
+			LinkedList<Genome> toKeep=new LinkedList<Genome>();
+			NEATPopulation pop=(NEATPopulation)train.getPopulation();
+			toKeep.add(pop.getBestGenome());
+			for(Species species:pop.getSpecies()){
+				for(Genome genome:species.getMembers()){
+					int i=0;
+					boolean isInserted=false;
+					for(Genome k_genome:toKeep){
+						if(genome.getScore()>k_genome.getScore()){
+							toKeep.add(i, genome);
+							if(toKeep.size()>maxPopSize){
+								toKeep.removeLast();
+							}
+							isInserted=true;
+							break;
+						}
+						i++;
+					}
+					
+					if(!isInserted && toKeep.size()<maxPopSize){
+						toKeep.add(genome);
+					}
+					
+				}
+			}
+			
+//			Remove the Genomes
+			for(Species species:pop.getSpecies()){
+				boolean noGenomeToRemove=true;
+				while(noGenomeToRemove){
+					noGenomeToRemove=false;
+					for(Genome genome:species.getMembers()){
+						if(!toKeep.contains(genome)){
+							species.getMembers().remove(genome);
+							noGenomeToRemove=true;
+							break;
+						}
+					}
+					if(species.getMembers().isEmpty())
+						break;
+					
+				}
+			}
+			
+//			Remove the empty Species
+			boolean noSpeciesToRemove=true;
+			while(noSpeciesToRemove){
+				noSpeciesToRemove=false;
+				for(Species species:pop.getSpecies()){
+					if(species.getMembers().isEmpty()){
+						pop.getSpecies().remove(species);
+						noSpeciesToRemove=true;
+						break;
+					}
+				}
+			}
+			
+			
+			
+		}
+		
 		
 	}
 	

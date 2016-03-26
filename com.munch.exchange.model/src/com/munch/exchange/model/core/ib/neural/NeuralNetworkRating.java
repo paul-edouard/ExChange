@@ -1,10 +1,14 @@
 package com.munch.exchange.model.core.ib.neural;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.encog.ml.MLMethod;
-import org.encog.neural.neat.NEATNetwork;
+
+import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.neural.NeuralArchitecture.Position;
 
 public class NeuralNetworkRating implements Serializable{
 	
@@ -33,6 +37,9 @@ public class NeuralNetworkRating implements Serializable{
 	
 	
 	private LinkedList<NeuralNetworkRating> children=new LinkedList<NeuralNetworkRating>();
+	
+	private HashMap<Long, Position> positionTracking=new HashMap<Long, Position>();
+	private HashMap<Long, Double> profitTracking=new HashMap<Long, Double>();
 	
 	
 	public NeuralNetworkRating() {
@@ -70,8 +77,10 @@ public class NeuralNetworkRating implements Serializable{
 		tradeProfit=0;
 	}
 
-	public void newPosition(){
+	public void newPosition(long time, Position position){
 		nbOfPosition++;
+		positionTracking.put(time, position);
+		profitTracking.put(time, profit);
 	}
 	
 	public double getProfit() {
@@ -112,6 +121,22 @@ public class NeuralNetworkRating implements Serializable{
 		
 		children.add(profitAndRisk);
 	}
+	
+	public String positionTrackingToString(){
+		String text="Number of position="+nbOfPosition+"\n";
+		
+		LinkedList<Long> times=new LinkedList<Long>();
+		times.addAll(positionTracking.keySet());
+		Collections.sort(times);
+		
+		for(long time:times){
+			text+=IbBar.format(time)+": "+positionTracking.get(time).toString()+", "+ String.format ("%.2f",profitTracking.get(time))+"\n";
+		}
+		
+		
+		return text;
+	}
+	
 	
 
 	public LinkedList<NeuralNetworkRating> getChildren() {

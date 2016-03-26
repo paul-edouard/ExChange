@@ -492,7 +492,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		Position lastPosition=Position.NEUTRAL;
 		IbBar previewBar=block.getFirst();
 		IbBar lastBar=block.getLast();
-		
+		profitAndRisk.newPosition(previewBar.getTimeInMs(),lastPosition);
 		
 		long[] relTraindingPeriod=neuralConfiguration.getContract().
 				getRelativeTraidingPeriod(previewBar.getTimeInMs());
@@ -534,7 +534,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 						profitAndRisk.updateProfit(profitDiff);
 					}
 					
-					profitAndRisk.newPosition();
+					profitAndRisk.newPosition(time,Position.NEUTRAL);
 //					System.out.println("Sold last Position Profit: "+profitAndRisk.getProfit()+" last Position: "+lastPosition.toString());
 					
 				}
@@ -600,7 +600,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 				
 //				Reset the trade profit
 				profitAndRisk.resetTradeProfit();
-				profitAndRisk.newPosition();
+				profitAndRisk.newPosition(time,position);
 //				nbOfPosition++;
 			}
 			
@@ -612,10 +612,6 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		
 //		System.out.println("Nb of eval: "+i+", nb. of positions: "+nbOfPosition);
 		
-//		if(nbOfPosition<2 && i> 600){
-//			profitAndRisk.updateProfitOnly(Double.NEGATIVE_INFINITY);
-//			profitAndRisk.updateProfitOnly(-1000);
-//		}
 		
 		return profitAndRisk;
 		
@@ -720,25 +716,14 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			if(this.getType()==ArchitectureType.Neat ||
 					this.getType()==ArchitectureType.NoveltySearchNeat || 
 					this.getType()==ArchitectureType.HyperNeat){
-//				prepareScoring(1,0);
-//				NEATCODEC codec=new NEATCODEC();
-//				method=codec.decode(network.getNEATPopulation().getBestGenome());
+
+				
 				network.evaluateNEATPopulation(5);
 				network.evaluateParetoPopulation();
 			
 			}
 			
-//			else if(this.getType()==ArchitectureType.HyperNeat){
-//				prepareScoring(1,0);
-//				HyperNEATCODEC codec=new HyperNEATCODEC();
-////				Create the substract in order to initilize the population
-//				NEATPopulation pop=(NEATPopulation)network.getNEATPopulation();
-//				pop.setSubstrate(this.createHyperNeatSubstrat());
-//				
-//				method=(NEATNetwork)codec.decode(pop.getBestGenome());
-//				
-//			}
-//			
+		
 			else{
 				MLMethod method=null;
 				method=network.getNetwork();
