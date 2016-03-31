@@ -1,11 +1,17 @@
 package com.munch.exchange.model.core.encog;
 
 
+import java.util.ArrayList;
+
 import org.encog.ml.MLContext;
 import org.encog.ml.MLMethod;
 import org.encog.ml.ea.genome.Genome;
 import org.encog.ml.ea.population.Population;
+import org.encog.ml.ea.score.AdjustScore;
+import org.encog.ml.ea.score.parallel.ParallelScore;
 import org.encog.ml.ea.train.basic.TrainEA;
+
+import com.munch.exchange.model.core.ib.neural.NeuralNetworkRating;
 
 public class NoveltySearchEA extends TrainEA {
 	
@@ -61,6 +67,7 @@ public class NoveltySearchEA extends TrainEA {
 		NoveltySearchGenome g_novel=(NoveltySearchGenome) g;
 		
 		double behavior;
+		NeuralNetworkRating rating=null;
 
 		// deal with invalid decode
 		if (phenotype == null) {
@@ -73,12 +80,15 @@ public class NoveltySearchEA extends TrainEA {
 			if (phenotype instanceof MLContext) {
 				((MLContext) phenotype).clearContext();
 			}
+			
+			
 //			score = getScoreFunction().calculateScore(phenotype);
-			behavior=theNoveltyFunction.calculateBehavior(phenotype);
+			rating = theNoveltyFunction.calculateBehavior(phenotype);
+			behavior=rating.getScore();
 			
 			
 		}
-		
+		g_novel.setRating(rating);
 		g_novel.setBehavior(behavior);
 		
 //		The score is temporaly set to equals to the behavior in oder to get throught the best comparision
@@ -89,17 +99,17 @@ public class NoveltySearchEA extends TrainEA {
 	}
 	
 	
-	
-	
-	
-	
-
-//	@Override
-//	public Callable<Object> createWorker(Species species) {
-//		return new NoveltySearchWorker(this, species);
-//	}
 
 	
+	@Override
+	public void initializeStartPopulation() {
+		final ParallelBehavior pscore = new ParallelBehavior(getPopulation(),
+				getCODEC(), new ArrayList<AdjustScore>(), theNoveltyFunction, getScoreFunction(),
+				this.getThreadCount());
+		pscore.setThreadCount(this.getThreadCount());
+		pscore.process();
+		this.setThreadCount(pscore.getThreadCount());
+	}
 
 
 	@Override

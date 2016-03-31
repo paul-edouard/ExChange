@@ -59,7 +59,10 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 		
 //		Calculate the novelty of the new genomes
 		for(NoveltySearchGenome genome:newGenomes){
-			calculateNovelty(genome, allGenomes);
+			calculateNovelty.calculateNovelty(genome, allGenomes, noveltySearchEA.getNbOfNearestNeighbor());
+			
+			
+//			calculateNovelty(genome, allGenomes);
 //			Save the first novelty in order to be able to add the genome to the archive
 			genome.setBirthNovelty(genome.getNovelty());
 			
@@ -103,7 +106,8 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 		
 //		Recalculate the novelty of the current population
 		for(NoveltySearchGenome genome:popGenomes){
-			calculateNovelty(genome, allGenomes);
+			calculateNovelty.calculateNovelty(genome, allGenomes, noveltySearchEA.getNbOfNearestNeighbor());
+			
 		}
 		
 //		Reduce the list to new genome with the one that 
@@ -173,69 +177,9 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 	}
 	
 	
-	private void calculateNovelty(NoveltySearchGenome n_genome, List<NoveltySearchGenome> allGenomes){
-		
-		LinkedList<NoveltySearchGenome> nearestNeighbors=extractNeighbors(n_genome, allGenomes);
-		double novelty=0;
-		for(NoveltySearchGenome neighbor:nearestNeighbors){
-			novelty+=neighbor.getRelativeDistance();
-		}
-		novelty/=nearestNeighbors.size();
-	
-		n_genome.setNovelty(novelty);
-		
-//		System.out.println("Genome: novelty="+n_genome.getNovelty()+", behavior="+n_genome.getBehavior());
-		
-//		Now the score is really set equals to the novelty
-		n_genome.setScore(novelty);
-		n_genome.setAdjustedScore(novelty);
-		
-	}
 	
 	
-	private LinkedList<NoveltySearchGenome> extractNeighbors(NoveltySearchGenome n_genome, List<NoveltySearchGenome> allGenomes){
-		
-		LinkedList<NoveltySearchGenome> nearestNeighbors=new LinkedList<NoveltySearchGenome>();
-		
-		for(NoveltySearchGenome genome:allGenomes){
-			if(genome==n_genome)continue;
-			
-//			double relativeDistance=Math.abs(genome.getBehavior()-n_genome.getBehavior());
-			genome.setRelativeDistance(Math.abs(genome.getBehavior()-n_genome.getBehavior()));
-			
-			if(nearestNeighbors.isEmpty()){
-				nearestNeighbors.add(genome);
-				continue;
-			}
-			
-//			The current relative distance is lower than the lowest one of the current neighbors
-			if(nearestNeighbors.size()==noveltySearchEA.getNbOfNearestNeighbor() &&
-					nearestNeighbors.getLast().getRelativeDistance() < genome.getRelativeDistance()){
-				continue;
-			}
-			
-			int i=0;
-			boolean isInserted=false;
-			for(NoveltySearchGenome neighbor:nearestNeighbors){
-				if(genome.getRelativeDistance() < neighbor.getRelativeDistance()){
-					nearestNeighbors.add(i, genome);
-					isInserted=true;
-					break;
-				}
-				i++;
-			}
-			
-			if(!isInserted)
-				nearestNeighbors.add(genome);
-			
-			if(nearestNeighbors.size()>noveltySearchEA.getNbOfNearestNeighbor())
-				nearestNeighbors.removeLast();
-			
-		}
-		
-		return nearestNeighbors;
-		
-	}
+	
 	
 	
 	

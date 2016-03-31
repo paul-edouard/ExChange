@@ -8,6 +8,9 @@ import org.encog.neural.neat.training.NEATGenome;
 import org.encog.neural.neat.training.NEATLinkGene;
 import org.encog.neural.neat.training.NEATNeuronGene;
 
+import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
+import com.munch.exchange.model.core.ib.neural.NeuralNetworkRating;
+
 public class NoveltySearchGenome extends NEATGenome {
 
 	/**
@@ -23,6 +26,8 @@ public class NoveltySearchGenome extends NEATGenome {
 	private double behavior=Double.NaN;
 	
 	private double relativeDistance=Double.NaN;
+	
+	private NeuralNetworkRating rating=null;
 
 	public NoveltySearchGenome() {
 		super();
@@ -79,6 +84,15 @@ public class NoveltySearchGenome extends NEATGenome {
 
 	public void setRelativeDistance(double relativeDistance) {
 		this.relativeDistance = relativeDistance;
+	}
+	
+
+	public NeuralNetworkRating getRating() {
+		return rating;
+	}
+
+	public void setRating(NeuralNetworkRating rating) {
+		this.rating = rating;
 	}
 	
 	

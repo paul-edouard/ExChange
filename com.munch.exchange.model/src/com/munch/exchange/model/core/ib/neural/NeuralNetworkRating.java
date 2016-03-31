@@ -4,9 +4,13 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Set;
 
 import org.encog.ml.MLMethod;
 
+import sun.swing.plaf.synth.Paint9Painter.PaintType;
+
+import com.munch.exchange.model.core.encog.NoveltySearchGenome;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture.Position;
 
@@ -179,6 +183,116 @@ public class NeuralNetworkRating implements Serializable{
 
 	public void setMethod(MLMethod method) {
 		this.method = method;
+	}
+	
+	
+
+	public HashMap<Long, Position> getPositionTracking() {
+		return positionTracking;
+	}
+
+	public HashMap<Long, Double> getProfitTracking() {
+		return profitTracking;
+	}
+	
+	private HashMap<Long, Position> getAllPositionTracking(){
+		HashMap<Long, Position> allPositionTracking=new HashMap<Long, Position>();
+		
+		for(NeuralNetworkRating child:this.children){
+			allPositionTracking.putAll(child.getAllPositionTracking());
+		}
+		
+		allPositionTracking.putAll(positionTracking);
+		
+		return allPositionTracking;
+	}
+	
+	private HashMap<Long, Position> getAllPositionTrackingOfTimes(Set<Long> times){
+		HashMap<Long, Position> allPositionTracking=getAllPositionTracking();
+		LinkedList<Long> sortedKeys=new LinkedList<Long>();
+		sortedKeys.addAll(allPositionTracking.keySet());
+		Collections.sort(sortedKeys);
+		
+		for(Long time:times){
+			if(allPositionTracking.containsKey(time))continue;
+			
+			Position lastPos=Position.NEUTRAL;
+			for(Long key:sortedKeys){
+				if(key>time){
+					allPositionTracking.put(key, lastPos);
+				}
+				
+				lastPos=allPositionTracking.get(key);
+			}
+			
+		}
+		
+		return allPositionTracking;
+	}
+	
+	
+	private HashMap<Long, Double> getAllProfitTracking(){
+		HashMap<Long, Double> allProfitTracking=new HashMap<Long, Double>();
+		
+		for(NeuralNetworkRating child:this.children){
+			allProfitTracking.putAll(child.getAllProfitTracking());
+		}
+		
+		allProfitTracking.putAll(profitTracking);
+		
+		return allProfitTracking;
+	}
+	
+	private HashMap<Long, Double> getAllProfitTrackingOfTimes(Set<Long> times){
+		HashMap<Long, Double> allProfitTracking=getAllProfitTracking();
+		LinkedList<Long> sortedKeys=new LinkedList<Long>();
+		sortedKeys.addAll(allProfitTracking.keySet());
+		Collections.sort(sortedKeys);
+		
+		for(Long time:times){
+			if(allProfitTracking.containsKey(time))continue;
+			
+			double lastProfit=0;
+			for(Long key:sortedKeys){
+				if(key>time){
+					allProfitTracking.put(key, lastProfit);
+				}
+				
+				lastProfit=allProfitTracking.get(key);
+			}
+			
+		}
+		
+		return allProfitTracking;
+	}
+	
+	
+	public double calculateRelativDistance(NeuralNetworkRating other){
+		Set<Long> otherTimes=other.getAllPositionTracking().keySet();
+		Set<Long> times=this.getAllPositionTracking().keySet();
+		
+		HashMap<Long, Position> otherAllPositionTracking=other.getAllPositionTrackingOfTimes(times);
+		HashMap<Long, Position> allPositionTracking=this.getAllPositionTrackingOfTimes(otherTimes);
+		
+		LinkedList<Long> sortedKeys=new LinkedList<Long>();
+		sortedKeys.addAll(allPositionTracking.keySet());
+		Collections.sort(sortedKeys);
+		
+		double relDist=0;
+		
+		Long lastKey=sortedKeys.getFirst();
+		for(Long key:sortedKeys){
+			Position otherPos=otherAllPositionTracking.get(key);
+			Position pos=allPositionTracking.get(key);
+			
+			double dist=Math.abs(Position.getInt(otherPos)-Position.getInt(pos));
+			
+			relDist+=dist*((key-lastKey)/1000);
+			lastKey=key;
+		}
+		
+		return relDist;
+		
 	}
 	
 	

@@ -676,12 +676,7 @@ public class BasicEA implements EvolutionaryAlgorithm, MultiThreadable,
 		}
 
 		// score the initial population
-		final ParallelScore pscore = new ParallelScore(getPopulation(),
-				getCODEC(), new ArrayList<AdjustScore>(), getScoreFunction(),
-				this.actualThreadCount);
-		pscore.setThreadCount(this.actualThreadCount);
-		pscore.process();
-		this.actualThreadCount = pscore.getThreadCount();
+		initializeStartPopulation();
 
 		// start up the thread pool
 		if (this.actualThreadCount == 1) {
@@ -717,6 +712,17 @@ public class BasicEA implements EvolutionaryAlgorithm, MultiThreadable,
 		// purge invalid genomes
         this.population.purgeInvalidGenomes();
 	}
+	
+	public void initializeStartPopulation(){
+		final ParallelScore pscore = new ParallelScore(getPopulation(),
+				getCODEC(), new ArrayList<AdjustScore>(), getScoreFunction(),
+				this.actualThreadCount);
+		pscore.setThreadCount(this.actualThreadCount);
+		pscore.process();
+		this.actualThreadCount = pscore.getThreadCount();
+	}
+	
+	
 
 	/**
 	 * Called by a thread to report an error.

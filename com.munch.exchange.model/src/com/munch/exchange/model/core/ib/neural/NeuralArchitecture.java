@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -51,6 +52,7 @@ import org.encog.util.arrayutil.NormalizationAction;
 import org.encog.util.arrayutil.NormalizedField;
 
 import com.munch.exchange.model.core.encog.CalculateNovelty;
+import com.munch.exchange.model.core.encog.NoveltySearchGenome;
 import com.munch.exchange.model.core.encog.NoveltySearchPopulation;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbCommission;
@@ -335,25 +337,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	@Override
  	public double calculateScore(MLMethod method) {
 		
-//		BasicNetwork basicNetwork=(BasicNetwork) method;
-		
-//		ProfitAndRisk profitAndRiskTotal=calculateProfitAndRiskOfBlocks(neuralConfiguration.getTrainingBlocks(),method);
-		
-		
 		NeuralNetworkRating profitAndRiskTotal=calculateProfitAndRiskOfBlocks(
 				neuralConfiguration.getTrainingBlocks(), method);
-		
-		
-		
-//		System.out.println("Profit: "+totalProfit);
-//		System.out.println("Risk: "+maxRisk);
-//		
-//		System.out.println("Score: "+(totalProfit-maxRisk));
-		
-//		return totalProfit-maxRisk;
-//		System.out.println("Profit: "+profitAndRiskTotal.getProfit());
-		
-//		return profitAndRiskTotal.getProfit();v
 		
 		return profitAndRiskTotal.getScore();
 		
@@ -371,16 +356,87 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	}
 	
 	@Override
-	public double calculateNovelty(MLMethod method,
-			NoveltySearchPopulation population) {
-		// TODO Auto-generated method stub
-		return 0;
+	public void calculateNovelty(NoveltySearchGenome n_genome,
+			List<NoveltySearchGenome> allGenomes, int nbOfNearestNeighbor) {
+		
+//		System.out.println("Calculate novelty");
+		LinkedList<NoveltySearchGenome> nearestNeighbors=extractNeighbors(n_genome, allGenomes, nbOfNearestNeighbor);
+		
+		double novelty=0;
+		for(NoveltySearchGenome neighbor:nearestNeighbors){
+			novelty+=neighbor.getRelativeDistance();
+		}
+		novelty/=nearestNeighbors.size();
+	
+		n_genome.setNovelty(novelty);
+		
+		
+		System.out.println("Genome: novelty="+n_genome.getNovelty()+", behavior="+n_genome.getBehavior());
+		
+//		Now the score is really set equals to the novelty
+		n_genome.setScore(novelty);
+		n_genome.setAdjustedScore(novelty);
 	}
+	
+	private LinkedList<NoveltySearchGenome> extractNeighbors(NoveltySearchGenome n_genome, 
+			List<NoveltySearchGenome> allGenomes,  int nbOfNearestNeighbor){
+		
+		LinkedList<NoveltySearchGenome> nearestNeighbors=new LinkedList<NoveltySearchGenome>();
+		
+		for(NoveltySearchGenome genome:allGenomes){
+			if(genome==n_genome)continue;
+			
+//			double relativeDistance=Math.abs(genome.getBehavior()-n_genome.getBehavior());
+			double relDist=genome.getRating().calculateRelativDistance(n_genome.getRating());
+//			System.out.println("Relativ distance: "+relDist);
+			genome.setRelativeDistance(relDist);
+			
+			
+			if(nearestNeighbors.isEmpty()){
+				nearestNeighbors.add(genome);
+				continue;
+			}
+			
+//			The current relative distance is lower than the lowest one of the current neighbors
+			if(nearestNeighbors.size()==nbOfNearestNeighbor &&
+					nearestNeighbors.getLast().getRelativeDistance() < genome.getRelativeDistance()){
+				continue;
+			}
+			
+			int i=0;
+			boolean isInserted=false;
+			for(NoveltySearchGenome neighbor:nearestNeighbors){
+				if(genome.getRelativeDistance() < neighbor.getRelativeDistance()){
+					nearestNeighbors.add(i, genome);
+					isInserted=true;
+					break;
+				}
+				i++;
+			}
+			
+			if(!isInserted)
+				nearestNeighbors.add(genome);
+			
+			if(nearestNeighbors.size()>nbOfNearestNeighbor)
+				nearestNeighbors.removeLast();
+			
+		}
+		
+		return nearestNeighbors;
+		
+	}
+	
+	
+	
+	
 
 	@Override
-	public double calculateBehavior(MLMethod method) {
+	public NeuralNetworkRating calculateBehavior(MLMethod method) {
 		// TODO Auto-generated method stub
-		return calculateScore(method);
+		NeuralNetworkRating profitAndRiskTotal=calculateProfitAndRiskOfBlocks(
+				neuralConfiguration.getTrainingBlocks(), method);
+		return profitAndRiskTotal;
+
 	}
 	
 	
