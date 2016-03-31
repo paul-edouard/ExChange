@@ -1,11 +1,15 @@
 package com.munch.exchange.model.core.encog;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.encog.ml.ea.genome.Genome;
 import org.encog.ml.ea.train.basic.BasicEA;
 import org.encog.neural.neat.training.species.OriginalNEATSpeciation;
+
+import com.munch.exchange.model.core.ib.neural.NeuralNetworkRating;
 
 public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 	
@@ -55,14 +59,57 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 		allGenomes.addAll(population.getArchive());
 		
 		
+
+		
+//		Calculate the novelty of the genomes		
+//		Recalculate the novelty of the current population
+		List<NoveltySearchGenome> genomesToCalculate=new LinkedList<NoveltySearchGenome>();
+		genomesToCalculate.addAll(newGenomes);
+		genomesToCalculate.addAll(popGenomes);
+		ParallelNovelty parallelNovelty=new ParallelNovelty(genomesToCalculate,
+				calculateNovelty, noveltySearchEA, allGenomes);
+		parallelNovelty.process();
+		
+//		Update the archive		
+		List<Genome> validGenomes= updateArchive(newGenomes);
+		
+		System.out.println("Population before neat speciation: "+population.size());
+		System.out.println("Size of the Archive: "+population.getArchive().size());
+		
+		printBestGenomes("Old population", popGenomes);
+		printBestGenomes("Valid genomes", convertToNoveltySearchGenome(validGenomes));
+		
+//		Perform the normal speciation the score is now replace with the novelty
+		super.performSpeciation(validGenomes);
+		
+		System.out.println("Population after neat speciation: "+population.size());
+		printBestGenomes("New population", convertToNoveltySearchGenome(population.flatten()));
+		
+//		Clean the relDist Maps of the genomes
+		List<NoveltySearchGenome> newPopGenomes=convertToNoveltySearchGenome(population.flatten());
+		List<NoveltySearchGenome> toDeleteGenomes=new LinkedList<NoveltySearchGenome>();
+		toDeleteGenomes.addAll(popGenomes);
+		toDeleteGenomes.removeAll(newPopGenomes);
+		Set<NeuralNetworkRating> toDelRatings=new HashSet<NeuralNetworkRating>();
+		for(NoveltySearchGenome genome:toDeleteGenomes)
+			toDelRatings.add(genome.getRating());
+		
+		
+		for(NoveltySearchGenome genome:newPopGenomes){
+			genome.getRating().cleanRelDistMap(toDelRatings);
+		}
+		for(NoveltySearchGenome genome:population.getArchive()){
+			genome.getRating().cleanRelDistMap(toDelRatings);
+		}
+		
+		
+	}
+
+	private List<Genome> updateArchive(List<NoveltySearchGenome> newGenomes){
 		List<Genome> validGenomes= new LinkedList<Genome>();
 		
-//		Calculate the novelty of the new genomes
-		for(NoveltySearchGenome genome:newGenomes){
-			calculateNovelty.calculateNovelty(genome, allGenomes, noveltySearchEA.getNbOfNearestNeighbor());
+		for(NoveltySearchGenome genome:newGenomes){	
 			
-			
-//			calculateNovelty(genome, allGenomes);
 //			Save the first novelty in order to be able to add the genome to the archive
 			genome.setBirthNovelty(genome.getNovelty());
 			
@@ -103,27 +150,7 @@ public class NoveltySearchSpeciation extends OriginalNEATSpeciation {
 			
 		}
 		
-		
-//		Recalculate the novelty of the current population
-		for(NoveltySearchGenome genome:popGenomes){
-			calculateNovelty.calculateNovelty(genome, allGenomes, noveltySearchEA.getNbOfNearestNeighbor());
-			
-		}
-		
-//		Reduce the list to new genome with the one that 
-		
-		
-		System.out.println("Population before neat speciation: "+population.size());
-		System.out.println("Size of the Archive: "+population.getArchive().size());
-		
-		printBestGenomes("Old population", popGenomes);
-		printBestGenomes("Valid genomes", convertToNoveltySearchGenome(validGenomes));
-		
-//		Perform the normal speciation the score is now replace with the novelty
-		super.performSpeciation(validGenomes);
-		
-		System.out.println("Population after neat speciation: "+population.size());
-		printBestGenomes("New population", convertToNoveltySearchGenome(population.flatten()));
+		return validGenomes;
 	}
 	
 	private void printBestGenomes(String message, List<NoveltySearchGenome> genomes){

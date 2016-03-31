@@ -45,6 +45,8 @@ public class NeuralNetworkRating implements Serializable{
 	private HashMap<Long, Position> positionTracking=new HashMap<Long, Position>();
 	private HashMap<Long, Double> profitTracking=new HashMap<Long, Double>();
 	
+	private HashMap<NeuralNetworkRating, Double> relDistMap=new HashMap<NeuralNetworkRating, Double>();
+	
 	
 	public NeuralNetworkRating() {
 		super();
@@ -268,6 +270,12 @@ public class NeuralNetworkRating implements Serializable{
 	
 	
 	public double calculateRelativDistance(NeuralNetworkRating other){
+		if(other.containsRelDist(this))
+			return other.getRelDist(this);
+		if(this.containsRelDist(other))
+			return this.getRelDist(other);
+		
+		
 		Set<Long> otherTimes=other.getAllPositionTracking().keySet();
 		Set<Long> times=this.getAllPositionTracking().keySet();
 		
@@ -291,9 +299,33 @@ public class NeuralNetworkRating implements Serializable{
 			lastKey=key;
 		}
 		
+//		other.addRelDist(this, relDist);
+		this.addRelDist(other, relDist);
+		
+		
 		return relDist;
 		
 	}
+	
+	public synchronized void addRelDist(NeuralNetworkRating other, double relDist){
+		this.relDistMap.put(other, relDist);
+	}
+	
+	public synchronized boolean containsRelDist(NeuralNetworkRating other){
+		return this.relDistMap.containsKey(other);
+	}
+	
+	public synchronized double getRelDist(NeuralNetworkRating other){
+		return this.relDistMap.get(other);
+	}
+	
+	public synchronized void cleanRelDistMap(Set<NeuralNetworkRating> toDeleteSet){
+		for(NeuralNetworkRating key:toDeleteSet){
+			this.relDistMap.remove(key);
+		}
+	}
+	
+	
 	
 	
 	
