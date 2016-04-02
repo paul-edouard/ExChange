@@ -105,7 +105,10 @@ public class NeuralConfiguationArchitectureContentProvider implements
 					ratings[0]=genome;
 					ratings[1]=neuralNetwork.getTrainingRatingMap().get(genome);
 					ratings[2]=neuralNetwork.getBackTestingRatingMap().get(genome);
+					ratings[3]=neuralNetwork;
+					ratings[4]=pop;
 					
+								
 					objects.add(ratings);
 				}
 				

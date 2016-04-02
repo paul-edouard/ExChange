@@ -105,8 +105,16 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	
 //	Architectures
 	
+	/**
+	 * This are the architectures that create and use for training, once trained some will be copied and passed to the isolated ones
+	 */
+	
 	@OneToMany(mappedBy="neuralConfiguration",cascade=CascadeType.ALL)
 	private List<NeuralArchitecture> neuralArchitectures=new LinkedList<NeuralArchitecture>();
+	
+	@OneToMany(mappedBy="neuralConfiguration",cascade=CascadeType.ALL)
+	private List<NeuralArchitecture> isolatedArchitectures=new LinkedList<NeuralArchitecture>();
+	
 	
  	public NeuralConfiguration() {
 		super();
@@ -422,6 +430,9 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 
 	public void setNeuralInputs(List<NeuralInput> neuralInputs) {
 		this.neuralInputs = neuralInputs;
+		for(NeuralInput neuralInput:this.neuralInputs){
+			neuralInput.setNeuralConfiguration(this);
+		}
 	}
 
 	public String getName() {
@@ -471,6 +482,9 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	public void setNeuralTrainingElements(
 			List<NeuralTrainingElement> neuralTrainingElements) {
 		this.neuralTrainingElements = neuralTrainingElements;
+		for(NeuralTrainingElement elt:this.neuralTrainingElements){
+			elt.setNeuralConfiguration(this);
+		}
 	}
 	
 	public List<IbBar> getAllMidPointBars() {
@@ -566,6 +580,9 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 
 	public void setNeuralArchitectures(List<NeuralArchitecture> neuralArchitectures) {
 		this.neuralArchitectures = neuralArchitectures;
+		for(NeuralArchitecture archi:this.neuralArchitectures){
+			archi.setNeuralConfiguration(this);
+		}
 	}
 
 

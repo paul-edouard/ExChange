@@ -752,6 +752,9 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	public void setNeuralConfigurations(
 			List<NeuralConfiguration> neuralConfigurations) {
 		this.neuralConfigurations = neuralConfigurations;
+		for(NeuralConfiguration config:this.neuralConfigurations){
+			config.setContract(this);
+		}
 	}
 
 	public IbCommission getCommission() {

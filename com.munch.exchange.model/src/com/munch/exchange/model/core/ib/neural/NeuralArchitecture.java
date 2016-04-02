@@ -184,6 +184,12 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	
 	private double tradeProfitLimit=500.0;
 	
+	/**
+	 * this is the account to set for the isolated architecture
+	 * once set then buy and sell order will be automatically send to the server
+	 */
+	private String account;
+	
 	
 	@Enumerated(EnumType.STRING)
 	private Activation activation=Activation.TANH;
@@ -898,6 +904,15 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 
 	public void setTradeProfitLimit(double traideProfitLimit) {
 		this.tradeProfitLimit = traideProfitLimit;
+	}
+	
+
+	public String getAccount() {
+		return account;
+	}
+
+	public void setAccount(String account) {
+		this.account = account;
 	}
 
 	public static void main(String args[])

@@ -183,6 +183,7 @@ public class NeuralConfigurationEditorPart {
 	private static int dataSetCounter=-1;
 	private MenuItem mntmEvaluateArchitecture;
 	private MenuItem mntmTrainAll;
+	private MenuItem mntmIsolate;
 	
 	
 	@Inject
@@ -642,11 +643,12 @@ public class NeuralConfigurationEditorPart {
 				AddNeuralArchitectureDialog dialog=new AddNeuralArchitectureDialog(shell);
 				if (dialog.open() == Window.OK) {
 //					logger.info("Architecture Name: "+dialog.getNeuralArchitecture().getName());
-					neuralConfiguration.getNeuralArchitectures().add(dialog.getNeuralArchitecture());
-					dialog.getNeuralArchitecture().setNeuralConfiguration(neuralConfiguration);
-					neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+//					neuralConfiguration.getNeuralArchitectures().add(dialog.getNeuralArchitecture());
+//					dialog.getNeuralArchitecture().setNeuralConfiguration(neuralConfiguration);
+//					neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+					neuralProvider.addNeuralArchitecture(neuralConfiguration, dialog.getNeuralArchitecture());
 					
-					logger.info("Nb of Architectures: "+neuralConfiguration.getNeuralArchitectures().size());
+//					logger.info("Nb of Architectures: "+neuralConfiguration.getNeuralArchitectures().size());
 					
 					treeViewerArchitecture.refresh();
 				}
@@ -717,6 +719,22 @@ public class NeuralConfigurationEditorPart {
 		});
 		mntmEvaluateArchitecture.setText("Evaluate");
 		
+		mntmIsolate = new MenuItem(menuArchitecture, SWT.NONE);
+		mntmIsolate.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				TreeItem item=treeArchitecture.getSelection()[0];
+				System.out.println(item.getData());
+				if(item.getData() instanceof NeuralArchitecture){
+//					Train the selected Architecture
+//					trainAllNeuralNetworks((NeuralArchitecture) item.getData());
+					
+				}
+				
+			}
+		});
+		mntmIsolate.setText("Isolate");
+		
 		new MenuItem(menuArchitecture, SWT.SEPARATOR);
 		
 		mntmDeleteArchitecture = new MenuItem(menuArchitecture, SWT.NONE);
@@ -728,10 +746,9 @@ public class NeuralConfigurationEditorPart {
 					TreeItem item=treeArchitecture.getSelection()[0];
 					if(item.getData() instanceof NeuralArchitecture){
 						NeuralArchitecture architecture=(NeuralArchitecture) item.getData();
-						neuralConfiguration.getNeuralArchitectures().remove(architecture);
-						neuralProvider.updateNeuralArchitecture(neuralConfiguration);
+						neuralProvider.removeNeuralArchitecture(neuralConfiguration, architecture);
 						treeViewerArchitecture.refresh();
-						treeViewerArchitecture.expandAll();
+//						treeViewerArchitecture.expandAll();
 					}
 					else if(item.getData() instanceof NeuralNetwork){
 						NeuralNetwork network=(NeuralNetwork) item.getData();
@@ -2125,7 +2142,8 @@ public class NeuralConfigurationEditorPart {
 			printMemoryUsage("Compute the adapted Data of each components");
 			
 //			save the configuration
-			neuralProvider.updateTrainingData(neuralConfiguration);
+			neuralProvider.updateTrainingData(neuralConfiguration.getId(),
+					neuralConfiguration.getNeuralTrainingElements());
 			updateProgressBarDataSet();
 			
 			printMemoryUsage("End distribute");
@@ -2398,7 +2416,7 @@ public class NeuralConfigurationEditorPart {
 //					System.out.println("Name: "+pop.getName());
 					return pop.getName();
 				}
-				else if(objects.length==3 && objects[0] instanceof Genome){
+				else if(objects.length==5 && objects[0] instanceof Genome){
 					Genome genome=(Genome) objects[0];
 					return "Genome: "+String.valueOf(genome.getBirthGeneration());
 					
@@ -2436,6 +2454,17 @@ public class NeuralConfigurationEditorPart {
 				NeuralNetworkRating rating=(NeuralNetworkRating)element;
 				return String.format ("%.2f",rating.getScore());
 				
+			}
+			else if(element instanceof Object[]){
+				Object[] objects =(Object[]) element;
+				if(objects.length==5 && objects[0] instanceof Genome){
+					Genome genome=(Genome) objects[0];
+					NeuralNetworkRating training=(NeuralNetworkRating) objects[1];
+					NeuralNetworkRating b_testing=(NeuralNetworkRating) objects[2];
+					return  String.format ("%.2f",training.getScore())+"/"+
+					String.format ("%.2f",b_testing.getScore());
+					
+				}
 			}
 			
 			return "";
@@ -2710,8 +2739,4 @@ public class NeuralConfigurationEditorPart {
 		}
 		
 	}
-	
-	
-	
-	
 }
