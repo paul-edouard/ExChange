@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -61,6 +62,7 @@ import com.munch.exchange.model.core.ib.bar.IbBar;
 
 
 @Entity
+@DiscriminatorColumn(name="ARCHI_TYPE")
 public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitecture>, CalculateNovelty{
 
 	/**
@@ -162,49 +164,44 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
- 	private int id;
+ 	protected int id;
 	
-	private String name;
+	protected String name;
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="CONFIGURATION_ID")
-	private NeuralConfiguration neuralConfiguration;
+	protected NeuralConfiguration neuralConfiguration;
 
 	@OneToMany(mappedBy="neuralArchitecture",cascade=CascadeType.ALL)
-	private List<NeuralNetwork> neuralNetworks=new LinkedList<NeuralNetwork>();
+	protected List<NeuralNetwork> neuralNetworks=new LinkedList<NeuralNetwork>();
 	
 	@Enumerated(EnumType.STRING)
-	private ArchitectureType type=ArchitectureType.FeedFoward;
+	protected ArchitectureType type=ArchitectureType.FeedFoward;
 	
-	private String hiddenLayerDescription="";
+	protected String hiddenLayerDescription="";
 	
-	private long volume=10;
+	protected long volume=10;
 	
-	private double blockProfitLimit=10000.0;
+	protected double blockProfitLimit=10000.0;
 	
-	private double tradeProfitLimit=500.0;
+	protected double tradeProfitLimit=500.0;
 	
-	/**
-	 * this is the account to set for the isolated architecture
-	 * once set then buy and sell order will be automatically send to the server
-	 */
-	private String account;
 	
 	
 	@Enumerated(EnumType.STRING)
-	private Activation activation=Activation.TANH;
+	protected Activation activation=Activation.TANH;
 	
 	@Transient
-	private Equilateral equilateralOutput;
+	protected Equilateral equilateralOutput;
 	
 	@Transient
-	private NormalizedField normalizedTotalProfitLimit;
+	protected NormalizedField normalizedTotalProfitLimit;
 	
 	@Transient
-	private NormalizedField normalizedTradeProfitLimit;
+	protected NormalizedField normalizedTradeProfitLimit;
 	
 	@Transient
-	private NeuralInputComponent[] components;
+	protected NeuralInputComponent[] components;
 	
 	
 	
@@ -907,13 +904,6 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	}
 	
 
-	public String getAccount() {
-		return account;
-	}
-
-	public void setAccount(String account) {
-		this.account = account;
-	}
 
 	public static void main(String args[])
 	{

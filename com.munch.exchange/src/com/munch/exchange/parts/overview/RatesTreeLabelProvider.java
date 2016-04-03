@@ -15,6 +15,7 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.IbTopMktData;
+import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.ExContractContainer;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
@@ -139,6 +140,7 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 		setCellLabelForContract(cell);
 		//Set cell image for contracts
 		setCellImageForContract(cell);
+	
 		
 		super.update(cell);
 	}
@@ -245,6 +247,10 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 		else if(element instanceof NeuralConfiguration){
 			NeuralConfiguration config=(NeuralConfiguration) element;
 			cell.setText(config.getName());
+		}
+		else if(element instanceof NeuralArchitecture){
+			NeuralArchitecture archi=(NeuralArchitecture) element;
+			cell.setText(archi.getName());
 		}
 		
 	}

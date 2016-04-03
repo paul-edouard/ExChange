@@ -26,6 +26,7 @@ import com.munch.exchange.model.core.Fund;
 import com.munch.exchange.model.core.Indice;
 import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.services.IExchangeRateProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBNeuralProvider;
@@ -95,6 +96,10 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			IbContract contract=(IbContract) parentElement;
 			return contract.getNeuralConfigurations().toArray();
 		}
+		else if(parentElement instanceof NeuralConfiguration){
+			NeuralConfiguration config=(NeuralConfiguration) parentElement;
+			return config.getIsolatedArchitectures().toArray();
+		}
 		
 		return null;
 	}
@@ -121,6 +126,10 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 		else if(element instanceof IbContract){
 			IbContract contract=(IbContract) element;
 			return !contract.getNeuralConfigurations().isEmpty();
+		}
+		else if(element instanceof NeuralConfiguration){
+			NeuralConfiguration config=(NeuralConfiguration) element;
+			return !config.getIsolatedArchitectures().isEmpty();
 		}
 		
 		
@@ -266,7 +275,11 @@ public class RatesTreeContentProvider implements IStructuredContentProvider,
 			for(IbContract contract:contracts){
 				//System.out.println("Add new contract: "+contract.getId());
 				exContractRoot.addExContract(contract);
-				neuralProvider.getNeuralConfigurations(contract);
+				neuralProvider.loadNeuralConfigurations(contract);
+				for(NeuralConfiguration config:contract.getNeuralConfigurations()){
+					neuralProvider.loadIsolatedNeuralArchitecture(config);
+				}
+				
 			}
 		}
 		

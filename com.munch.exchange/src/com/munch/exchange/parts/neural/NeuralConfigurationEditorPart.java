@@ -97,6 +97,7 @@ import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.neural.BestGenomes;
 import com.munch.exchange.model.core.ib.neural.GenomeEvaluation;
+import com.munch.exchange.model.core.ib.neural.IsolatedNeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture.ArchitectureType;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture.TrainingMethod;
@@ -600,6 +601,7 @@ public class NeuralConfigurationEditorPart {
 				mntmDeleteArchitecture.setEnabled(false);
 				mntmTrainArchitecture.setEnabled(false);
 				mntmTrainAll.setEnabled(false);
+				mntmIsolate.setEnabled(false);
 				
 				if(e.button==3 && treeArchitecture.getSelection().length==1){
 					
@@ -611,8 +613,21 @@ public class NeuralConfigurationEditorPart {
 						mntmTrainAll.setEnabled(epoch<0 && archi.getNeuralNetworks().size()>0);
 					}
 					else if(item.getData() instanceof NeuralNetwork){
+						
 						mntmDeleteArchitecture.setEnabled(true);
 						mntmTrainArchitecture.setEnabled(epoch<0);
+						
+						NeuralNetwork network=(NeuralNetwork) item.getData();
+						if(!network.isNEAT()){
+							mntmIsolate.setEnabled(true);
+						}
+						
+					}
+					else if(item.getData() instanceof Object[]){
+						Object[] genome_data=(Object[]) item.getData();
+						if(genome_data.length==5 && genome_data[0]  instanceof Genome){
+							mntmIsolate.setEnabled(true);
+						}
 					}
 					
 				}
@@ -724,12 +739,7 @@ public class NeuralConfigurationEditorPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				TreeItem item=treeArchitecture.getSelection()[0];
-				System.out.println(item.getData());
-				if(item.getData() instanceof NeuralArchitecture){
-//					Train the selected Architecture
-//					trainAllNeuralNetworks((NeuralArchitecture) item.getData());
-					
-				}
+				isolateNeuralNetwork(item.getData());
 				
 			}
 		});
@@ -1227,6 +1237,38 @@ public class NeuralConfigurationEditorPart {
 					dialog.getNbOfBackTestingEvaluation());
 			trainer.schedule();
 		}
+	}
+	
+	
+	/**
+	 * 5. Isolate a network  
+	 */
+	
+	private void isolateNeuralNetwork(Object network){
+		System.out.println(network);
+		if(network instanceof NeuralNetwork){
+			NeuralNetwork neuralNetwork=(NeuralNetwork) network;
+			NeuralArchitecture neuralArchitecture=(NeuralArchitecture) neuralNetwork.getNeuralArchitecture();
+			
+//			Copy and clean the isolated architecture
+			IsolatedNeuralArchitecture isolatedNeuralArchitecture=new IsolatedNeuralArchitecture(neuralArchitecture);
+			isolatedNeuralArchitecture.setId(0);
+			isolatedNeuralArchitecture.getNeuralNetworks().clear();
+			isolatedNeuralArchitecture.setNeuralConfiguration(null);
+			
+			NeuralNetwork isolatedNetwork=neuralNetwork.copy();
+			isolatedNetwork.setId(0);
+			isolatedNetwork.setNeuralArchitecture(isolatedNeuralArchitecture);
+			isolatedNeuralArchitecture.getNeuralNetworks().add(isolatedNetwork);
+			
+			
+//			Save the new isolated network
+//			TODO
+			neuralProvider.addIsolatedNeuralArchitecture(neuralConfiguration, isolatedNeuralArchitecture);
+			
+			
+		}
+		
 	}
 	
 	

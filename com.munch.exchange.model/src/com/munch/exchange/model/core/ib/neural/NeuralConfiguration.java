@@ -112,8 +112,8 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	@OneToMany(mappedBy="neuralConfiguration",cascade=CascadeType.ALL)
 	private List<NeuralArchitecture> neuralArchitectures=new LinkedList<NeuralArchitecture>();
 	
-	@OneToMany(mappedBy="neuralConfiguration",cascade=CascadeType.ALL)
-	private List<NeuralArchitecture> isolatedArchitectures=new LinkedList<NeuralArchitecture>();
+	@OneToMany(mappedBy="parent",cascade=CascadeType.ALL)
+	private List<IsolatedNeuralArchitecture> isolatedArchitectures=new LinkedList<IsolatedNeuralArchitecture>();
 	
 	
  	public NeuralConfiguration() {
@@ -575,6 +575,22 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		return neuralArchitectures;
 	}
 	
+
+
+
+	public List<IsolatedNeuralArchitecture> getIsolatedArchitectures() {
+		return isolatedArchitectures;
+	}
+
+
+
+	public void setIsolatedArchitectures(
+			List<IsolatedNeuralArchitecture> isolatedArchitectures) {
+		this.isolatedArchitectures = isolatedArchitectures;
+		for(IsolatedNeuralArchitecture archi:this.isolatedArchitectures){
+			archi.setParent(this);
+		}
+	}
 
 
 

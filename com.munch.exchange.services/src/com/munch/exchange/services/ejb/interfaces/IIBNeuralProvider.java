@@ -3,6 +3,7 @@ package com.munch.exchange.services.ejb.interfaces;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.neural.IsolatedNeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 
@@ -16,7 +17,7 @@ public interface IIBNeuralProvider extends NeuralBeanRemote {
 	void close();
 	
 	//Neural Configuration
-	public List<NeuralConfiguration> getNeuralConfigurations(IbContract contract);
+	public List<NeuralConfiguration> loadNeuralConfigurations(IbContract contract);
 	public NeuralConfiguration addNeuralConfiguration(IbContract contract,String configurationName);
 	public void removeNeuralConfiguration(IbContract contract,NeuralConfiguration configuration);
 	
@@ -34,6 +35,11 @@ public interface IIBNeuralProvider extends NeuralBeanRemote {
 	public void addNeuralArchitecture(NeuralConfiguration configuration, NeuralArchitecture architecture);
 	public void removeNeuralArchitecture(NeuralConfiguration configuration, NeuralArchitecture architecture);
 	public void updateNeuralArchitecture(NeuralConfiguration configuration);
+	
+	//Isolated Neural Architectures
+	public void loadIsolatedNeuralArchitecture(NeuralConfiguration configuration);
+	public void addIsolatedNeuralArchitecture(NeuralConfiguration configuration, IsolatedNeuralArchitecture architecture);
+	public void removeIsolatedNeuralArchitecture(NeuralConfiguration configuration, IsolatedNeuralArchitecture architecture);
 	
 	
 	

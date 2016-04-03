@@ -101,7 +101,7 @@ public class NeuralConfiguationArchitectureContentProvider implements
 					if(!neuralNetwork.getTrainingRatingMap().containsKey(genome))
 						continue;
 					
-					Object[] ratings=new Object[3];
+					Object[] ratings=new Object[5];
 					ratings[0]=genome;
 					ratings[1]=neuralNetwork.getTrainingRatingMap().get(genome);
 					ratings[2]=neuralNetwork.getBackTestingRatingMap().get(genome);
@@ -117,7 +117,7 @@ public class NeuralConfiguationArchitectureContentProvider implements
 				
 				return objects.toArray();
 			}
-			else if(parentObjects.length==3 && 
+			else if(parentObjects.length==5 && 
 					parentObjects[0] instanceof Genome){
 				Object[] ratings=new Object[2];
 				ratings[0]=parentObjects[1];
@@ -190,7 +190,7 @@ public class NeuralConfiguationArchitectureContentProvider implements
 				}
 				
 			}
-			else if(objects.length==3 && objects[0] instanceof Genome){
+			else if(objects.length==5 && objects[0] instanceof Genome){
 				return true;
 			}
 			

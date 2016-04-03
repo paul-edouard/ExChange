@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.neural.IsolatedNeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
@@ -38,19 +39,19 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 	
 	
 	@Override
-	public List<NeuralConfiguration> getNeuralConfigurations(IbContract contract) {
+	public List<NeuralConfiguration> loadNeuralConfigurations(IbContract contract) {
 		
-		List<NeuralConfiguration> configurations=this.getNeuralConfigurations(contract.getId());
+		List<NeuralConfiguration> configurations=this.loadNeuralConfigurations(contract.getId());
 		contract.setNeuralConfigurations(configurations);
 		
 		return configurations;
 	}
 	
 	@Override
-	public List<NeuralConfiguration> getNeuralConfigurations(int contractId) {
+	public List<NeuralConfiguration> loadNeuralConfigurations(int contractId) {
 		if(beanRemote==null)init();
 		
-		List<NeuralConfiguration> configurations=beanRemote.getService().getNeuralConfigurations(contractId);
+		List<NeuralConfiguration> configurations=beanRemote.getService().loadNeuralConfigurations(contractId);
 		Collections.sort(configurations);
 		
 		return configurations;
@@ -180,8 +181,6 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 	
 	//Neural Architectures
 	
-	
-
 	@Override
 	public void loadNeuralArchitecture(
 			NeuralConfiguration configuration) {
@@ -255,8 +254,59 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 	}
 	
 	
+	//Isolated Neural Architectures
+	
+	@Override
+	public void loadIsolatedNeuralArchitecture(
+			NeuralConfiguration configuration) {
+
+		List<IsolatedNeuralArchitecture> neuralArchitectures=loadIsolatedNeuralArchitecture(configuration.getId());
+		configuration.setIsolatedArchitectures(neuralArchitectures);
+		
+	}
+	
+	@Override
+	public List<IsolatedNeuralArchitecture> loadIsolatedNeuralArchitecture(
+			int configurationId) {
+		if(beanRemote==null)init();
+		
+		return beanRemote.getService().loadIsolatedNeuralArchitecture(configurationId);
+		
+	}
 	
 	
+	@Override
+	public void addIsolatedNeuralArchitecture(NeuralConfiguration configuration, IsolatedNeuralArchitecture architecture){
+		IsolatedNeuralArchitecture added=addIsolatedNeuralArchitecture(configuration.getId(), architecture);
+//		System.out.println("Added Archi:"+added);
+		
+		if(added==null)return;
+		
+//		System.out.println("Added Archi:"+added.getId());
+		
+		configuration.getIsolatedArchitectures().add(added);
+		added.setParent(configuration);
+		
+	}
+	
+	@Override
+	public IsolatedNeuralArchitecture addIsolatedNeuralArchitecture(int configurationId,IsolatedNeuralArchitecture architecture){
+		if(beanRemote==null)init();
+		return beanRemote.getService().addIsolatedNeuralArchitecture(configurationId,architecture);
+	}
+	
+	
+	@Override
+	public void removeIsolatedNeuralArchitecture(NeuralConfiguration configuration, IsolatedNeuralArchitecture architecture){
+		removeIsolatedNeuralArchitecture(configuration.getId(), architecture.getId());
+		configuration.getIsolatedArchitectures().remove(architecture);
+	}
+	
+	@Override
+	public void removeIsolatedNeuralArchitecture(int configurationId,int architectureId){
+		if(beanRemote==null)init();
+		beanRemote.getService().removeIsolatedNeuralArchitecture(configurationId,architectureId);
+	}
 	
 	
 

@@ -12,6 +12,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.neural.IsolatedNeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralInput;
@@ -40,9 +41,11 @@ public class NeuralBean implements NeuralBeanRemote{
     public NeuralBean() {
     }
 
-
+    
+  //Neural Configuration
+    
 	@Override
-	public List<NeuralConfiguration> getNeuralConfigurations(int contractId) {
+	public List<NeuralConfiguration> loadNeuralConfigurations(int contractId) {
 		IbContract savedContract=em.find(IbContract.class, contractId);
 		List<NeuralConfiguration> savedConfs =savedContract.getNeuralConfigurations();
 		List<NeuralConfiguration> cpConfs=new LinkedList<NeuralConfiguration>();
@@ -86,7 +89,9 @@ public class NeuralBean implements NeuralBeanRemote{
 		em.flush();
 	}
 
-
+	
+	//Neural Inputs
+	
 	@Override
 	public List<NeuralInput> updateNeuralInputs(int configurationId, List<NeuralInput> neuralInputs) {
 		
@@ -114,13 +119,31 @@ public class NeuralBean implements NeuralBeanRemote{
 		em.flush();
 		
 //		Clean the parent before return
-		for(NeuralInput ni_saved:savedConfig.getNeuralInputs()){
-			ni_saved.setNeuralConfiguration(null);
-		}
+//		Not clean but copy the neural inputs
+//		for(NeuralInput ni_saved:savedConfig.getNeuralInputs()){
+//			ni_saved.setNeuralConfiguration(null);
+//		}
 		
-		return savedConfig.getNeuralInputs();
+		return copyNeuralInputs(savedConfig.getNeuralInputs());
 		
 	}
+	
+	private List<NeuralInput> copyNeuralInputs(List<NeuralInput> inputs){
+		List<NeuralInput> neuralInputs=new LinkedList<NeuralInput>();
+		
+		for(NeuralInput n_input:inputs){
+			NeuralInput cp=n_input.copy();
+			cp.setNeuralConfiguration(null);
+			neuralInputs.add(cp);
+			
+		}
+		
+		
+		return neuralInputs;
+		
+	}
+	
+	
 	
 	private void deleteUnusedNeuralInputComponent(NeuralInput ni_saved, NeuralInput ni_new){
 		for(NeuralInputComponent nic_saved:ni_saved.getComponents()){
@@ -171,7 +194,10 @@ public class NeuralBean implements NeuralBeanRemote{
 //		return null;
 	}
 
-
+	
+	
+	//Training Data
+	
 	@Override
 	public List<NeuralTrainingElement> loadTrainingData(
 			int configurationId) {
@@ -223,7 +249,7 @@ public class NeuralBean implements NeuralBeanRemote{
 	
 	
 	
-
+	//Neural Architectures
 
 	@Override
 	public List<NeuralArchitecture> loadNeuralArchitecture(
@@ -315,9 +341,7 @@ public class NeuralBean implements NeuralBeanRemote{
 		
 		
 	}
-	
-	
-	
+
 	
 	private void findNeuralNetworkToRemove(NeuralArchitecture saved_architecture,NeuralArchitecture new_architecture){
 		for(NeuralNetwork saved_network:saved_architecture.getNeuralNetworks()){
@@ -344,5 +368,73 @@ public class NeuralBean implements NeuralBeanRemote{
 		
 		return architectures;
 	}
+	
+	
+	
+	//Isolated Neural Architectures
+	
+	public List<IsolatedNeuralArchitecture> loadIsolatedNeuralArchitecture(int configurationId){
+		NeuralConfiguration savedConfig=em.find(NeuralConfiguration.class, configurationId);
+		savedConfig.getIsolatedArchitectures().size();
+		
+		em.flush();
+		
+		return copyIsolatedArchitectures(savedConfig.getIsolatedArchitectures());
+	}
+	
+	public IsolatedNeuralArchitecture addIsolatedNeuralArchitecture(int configurationId,IsolatedNeuralArchitecture architecture){
+		NeuralConfiguration savedConfig = em.find(NeuralConfiguration.class,
+				configurationId);
+		
+//		save the ids of the configurations
+		HashSet<Integer> ids=new HashSet<Integer>();
+		for (IsolatedNeuralArchitecture saved_architecture : savedConfig
+				.getIsolatedArchitectures()) {
+			ids.add(saved_architecture.getId());
+		}
+		
+		savedConfig.getIsolatedArchitectures().add(architecture);
+		architecture.setParent(savedConfig);
+		
+		savedConfig = em.merge(savedConfig);
+		em.flush();
+		
+		
+		for (IsolatedNeuralArchitecture saved_architecture : savedConfig
+				.getIsolatedArchitectures()) {
+			if(!ids.contains(saved_architecture.getId())){
+				return saved_architecture.copy();
+			}
+		}
+		
+		return null;
+	}
+	
+	public void removeIsolatedNeuralArchitecture(int configurationId,int architectureId){
+		NeuralConfiguration savedConfig = em.find(NeuralConfiguration.class,
+				configurationId);
+		for (NeuralArchitecture saved_architecture : savedConfig
+				.getIsolatedArchitectures()) {
+			if(saved_architecture.getId()==architectureId){
+				savedConfig.getNeuralArchitectures().remove(saved_architecture);
+				em.remove(saved_architecture);
+				break;
+			}
+		}
+		
+		savedConfig = em.merge(savedConfig);
+		em.flush();
+	}
+	
+	private List<IsolatedNeuralArchitecture> copyIsolatedArchitectures(List<IsolatedNeuralArchitecture> input){
+		List<IsolatedNeuralArchitecture> architectures=new LinkedList<IsolatedNeuralArchitecture>();
+		for(IsolatedNeuralArchitecture architecture:input){
+			architecture.getNeuralNetworks().size();
+			architectures.add(architecture.copy());
+		}
+		
+		return architectures;
+	}
+	
 
 }
