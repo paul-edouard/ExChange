@@ -138,16 +138,28 @@ public class NeuralNetwork implements Serializable, Copyable<NeuralNetwork>{
 	}
 	
 	public void setNEATPopulation(Population population){
+		if(population==null){
+			network=null;
+			return;
+		}
+		
+		
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		EncogDirectoryPersistence.saveObject(bos,population);
 		network = bos.toByteArray();
 	}
 	
 	public void setParetoPopulation(Population population){
+		if(population==null){
+			pareto=null;
+			return;
+		}
+		
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		EncogDirectoryPersistence.saveObject(bos,population);
 		pareto = bos.toByteArray();
 	}
+	
 	
 	
 	public boolean isNEAT(){

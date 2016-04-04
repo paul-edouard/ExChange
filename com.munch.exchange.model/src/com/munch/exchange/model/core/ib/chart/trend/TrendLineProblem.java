@@ -109,6 +109,20 @@ public class TrendLineProblem extends AbstractProblem{
 			double abs=(prices[i]-y)*sign;
 			double abs_quad=abs*abs;
 			
+			//TODO change this with a smooth transition from abs_quad to powFactor abs_quad
+//			F(a,b)=abs_quad(tanh(sign*k*abs_quad)+1+powFactor)
+//			F(a,b)=abs_quad(tanh(sign*k*(prices[i]-y)^2)+1+powFactor)
+//			F(a,b)=abs_quad(tanh(sign*k*(prices[i]+b - a*(times[i]-times[0]))^2)+1+powFactor)
+//			d tanh(u)/dx=1/(1+u²)*du/dx
+			
+//			d F(a,b)/da	= d abs_quad(tanh(sign*k*(prices[i]+b - a*(times[i]-times[0]))^2)+1+powFactor) / da
+//						= abs_quad( d tanh(sign*k*(prices[i]+b - a*(times[i]-times[0]))^2) / da )
+//						= abs_quad( -2*sign*k*a*(times[i]-times[0]) / (1 + sign²*k²*(prices[i]+b - a*(times[i]-times[0]))^4) )
+
+//			d F(a,b)/db	= d abs_quad(tanh(sign*k*(prices[i]+b - a*(times[i]-times[0]))^2)+1+powFactor) / db
+//						= abs_quad( -2*sign*k*b / (1 + sign²*k²*(prices[i]+b - a*(times[i]-times[0]))^4) )
+
+			
 			if(abs>0){
 				F+=abs_quad;
 			}
@@ -127,6 +141,7 @@ public class TrendLineProblem extends AbstractProblem{
 
 	@Override
 	public Solution newSolution() {
+		
 		Solution solution = new Solution(getNumberOfVariables(), 
 				getNumberOfObjectives());
 		

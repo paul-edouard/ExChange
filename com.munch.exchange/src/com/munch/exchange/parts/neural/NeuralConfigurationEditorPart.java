@@ -1243,30 +1243,81 @@ public class NeuralConfigurationEditorPart {
 	/**
 	 * 5. Isolate a network  
 	 */
-	
 	private void isolateNeuralNetwork(Object network){
 		System.out.println(network);
 		if(network instanceof NeuralNetwork){
 			NeuralNetwork neuralNetwork=(NeuralNetwork) network;
 			NeuralArchitecture neuralArchitecture=(NeuralArchitecture) neuralNetwork.getNeuralArchitecture();
 			
-//			Copy and clean the isolated architecture
+//			Creation and clean the isolated architecture
 			IsolatedNeuralArchitecture isolatedNeuralArchitecture=new IsolatedNeuralArchitecture(neuralArchitecture);
 			isolatedNeuralArchitecture.setId(0);
 			isolatedNeuralArchitecture.getNeuralNetworks().clear();
 			isolatedNeuralArchitecture.setNeuralConfiguration(null);
 			
+//			Creation of the isolated Network
 			NeuralNetwork isolatedNetwork=neuralNetwork.copy();
 			isolatedNetwork.setId(0);
 			isolatedNetwork.setNeuralArchitecture(isolatedNeuralArchitecture);
 			isolatedNeuralArchitecture.getNeuralNetworks().add(isolatedNetwork);
 			
-			
-//			Save the new isolated network
-//			TODO
+//			Save the new isolated architecture
 			neuralProvider.addIsolatedNeuralArchitecture(neuralConfiguration, isolatedNeuralArchitecture);
 			
+			eventBroker.post(IEventConstant.CONTRACT_NEURAL_CONFIGURATION_CHANGED, neuralConfiguration.getContract());
 			
+		}
+		else if(network instanceof Object[]){
+			Object[] genome_data=(Object[]) network;
+			if(genome_data.length==5 && genome_data[0]  instanceof Genome){
+				
+//				Listing of the input data
+				Genome genome=(Genome) genome_data[0];
+				NeuralNetwork neuralNetwork=(NeuralNetwork) genome_data[3];
+				NEATPopulation pop=(NEATPopulation)genome_data[4];
+				NeuralArchitecture neuralArchitecture=(NeuralArchitecture) neuralNetwork.getNeuralArchitecture();
+				
+//				Creation and clean the isolated architecture
+				IsolatedNeuralArchitecture isolatedNeuralArchitecture=new IsolatedNeuralArchitecture(neuralArchitecture);
+				isolatedNeuralArchitecture.setId(0);
+				isolatedNeuralArchitecture.getNeuralNetworks().clear();
+				isolatedNeuralArchitecture.setNeuralConfiguration(null);
+				
+//				Creation of the isolated Network
+				NeuralNetwork isolatedNetwork=neuralNetwork.copy();
+				isolatedNetwork.setId(0);
+				isolatedNetwork.setParetoPopulation(null);
+				isolatedNetwork.setNeuralArchitecture(isolatedNeuralArchitecture);
+				isolatedNeuralArchitecture.getNeuralNetworks().add(isolatedNetwork);
+				
+				
+//				Creation of the isolated Population
+				NEATPopulation isolatedPopulation=new NEATPopulation(pop.getInputCount(),
+						pop.getOutputCount(), 1);
+				if(pop instanceof NoveltySearchPopulation){
+					isolatedPopulation=new NoveltySearchPopulation(pop.getInputCount(),
+						pop.getOutputCount(), 1);
+				}
+				isolatedPopulation.reset();
+				Species species=isolatedPopulation.getSpecies().get(0);
+				species.getMembers().clear();
+				if(pop instanceof NoveltySearchPopulation){
+					species.add(new NoveltySearchGenome((NoveltySearchGenome) genome ));
+				}
+				else{
+					species.add(pop.getGenomeFactory().factor(genome));
+				}
+				species.setLeader(species.getMembers().get(0));
+				
+				isolatedNetwork.setNEATPopulation(isolatedPopulation);
+				
+				
+//				Save the new isolated architecture
+				neuralProvider.addIsolatedNeuralArchitecture(neuralConfiguration, isolatedNeuralArchitecture);
+				
+				eventBroker.post(IEventConstant.CONTRACT_NEURAL_CONFIGURATION_CHANGED, neuralConfiguration.getContract());
+				
+			}
 		}
 		
 	}
@@ -1288,13 +1339,11 @@ public class NeuralConfigurationEditorPart {
 	
 	@PreDestroy
 	public void preDestroy() {
-		//TODO Your code here
 	}
 	
 	
 	@Focus
 	public void onFocus() {
-		//TODO Your code here
 	}
 	
 	
