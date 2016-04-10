@@ -2,19 +2,23 @@ package com.munch.exchange.model.core.ib.chart.trend;
 
 public class TrendLineFunction extends DerivableFunction{
 	
+	
 	private double[] prices;
 	private long[] times;
-	private double powFac;
+	private double fac;
 	private double sign=1;
 	
 
-	public TrendLineFunction(double[] variables,long[] times,double[] prices,double factor) {
-		super(variables);
+	public TrendLineFunction(long[] times,double[] prices,double factor) {
+		super(new double[2]);
 		
 		this.times=times;
 		this.prices=prices;
 		//this.factor=factor;
-		powFac=Math.pow(10, factor);
+		this.fac=factor;
+		
+		
+		setStartValues();
 	}
 	
 	public void setUpwardTrend(){
@@ -30,25 +34,18 @@ public class TrendLineFunction extends DerivableFunction{
 		double a=this.getVariables()[0];
 		double b=this.getVariables()[1];
 		
-		//double powFac=Math.pow(10, factor);
-		
-		double F = 0;
+		double U = 0;
 		for(int i=0;i<prices.length;i++){
-			double y=a*(times[i]-times[0])+b;
-			
-			double abs=(prices[i]-y)*sign;
-			double abs_quad=abs*abs;
-			
-			if(abs>0){
-				F+=abs_quad;
-			}
-			else{
-				//F+=powFac*abs_quad;
-				F+=abs_quad;
-			}
+			double diff=times[i]-times[0];
+			double x=a*diff+b-prices[i];
+//			U +=0.5*x*x+Math.exp(fac*x)*(x-1/fac)/fac;
+//			U +=x*x/2*((fac-1)*Math.tanh(x)+fac+1);
+			U +=x*x/2*((fac-1)*Math.tanh(x)+fac+1);
 		}
 		
-		return F;
+		U*=sign;
+		
+		return U;
 	}
 
 	@Override
@@ -60,23 +57,44 @@ public class TrendLineFunction extends DerivableFunction{
 		gradients[0]=0;gradients[1]=0;
 		
 		for(int i=0;i<prices.length;i++){
-			long diffTime=times[i]-times[0];
-			double y=a*diffTime+b;	
-			double abs=(prices[i]-y)*sign;
+			double diff=times[i]-times[0];
+			double x=a*diff+b-prices[i];
+//			double xx=x*x;
 			
-			if(abs>0){
-				gradients[0]+=2*sign*diffTime*abs;
-				gradients[1]+=2*sign*abs;
-			}
-			else{
-				//gradients[0]+=2*sign*diffTime*abs*powFac;
-				//gradients[1]+=2*sign*abs*powFac;
-				gradients[0]+=2*sign*diffTime*abs;
-				gradients[1]+=2*sign*abs;
-			}
+//			double F=x*(Math.exp(fac*x)+1);
+//			double F=x*((fac-1)*Math.tanh(x)+fac+1)+xx/2*(fac-1)/(1+xx);
+			
+			double F=x;
+			gradients[0]+=F;
+			gradients[1]+=F;
+			
 		}
 		
+		gradients[0]*=sign;
+		gradients[1]*=sign;
+		
 		return gradients;
+	}
+	
+	
+	private void setStartValues(){
+		
+		
+		if(prices.length<2)return ;
+		
+		double startValue=prices[0];
+		double endValue=prices[prices.length-1];
+		
+		long startTime=times[0];
+		long endTime=times[times.length-1];
+		
+		double[] values=new double[2];
+		values[0]=(startValue-endValue)/(startTime-endTime);
+		values[1]=startValue;
+		
+		this.setVariables(values);
+		
+		
 	}
 	
 	

@@ -27,8 +27,9 @@ import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.minute.MinuteContainer;
+import com.munch.exchange.model.core.ib.bar.seconde.SecondeContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
-import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
 
 
 @Entity
@@ -54,13 +55,15 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	@OneToOne(mappedBy="contract",cascade=CascadeType.ALL)
 	private IbCommission commission;
 	
-	/*
-	@OneToOne(mappedBy="contract",cascade=CascadeType.ALL)
-	private NeuralIndicatorInput neuralIndicatorInput;
-	*/
-	
 	@OneToMany(mappedBy="contract",cascade=CascadeType.ALL)
 	private List<NeuralConfiguration> neuralConfigurations=new LinkedList<NeuralConfiguration>();
+	
+	@OneToOne(mappedBy="contract",cascade=CascadeType.ALL)
+	private MinuteContainer minuteContainer;
+	
+	@OneToOne(mappedBy="contract",cascade=CascadeType.ALL)
+	private SecondeContainer secondeContainer;
+	
 	
 	private long startTradeTimeInMs=0;
 	private long endTradeTimeInMs=0;

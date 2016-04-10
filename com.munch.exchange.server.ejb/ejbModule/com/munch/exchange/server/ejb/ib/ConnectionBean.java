@@ -18,6 +18,7 @@ import javax.persistence.PersistenceContext;
 import com.ib.controller.ApiConnection.ILogger;
 import com.ib.controller.ApiController;
 import com.ib.controller.ApiController.IConnectionHandler;
+import com.munch.exchange.server.ejb.ib.account.AccountManager;
 import com.munch.exchange.server.ejb.ib.realtimebar.RealTimeBarCollector;
 import com.munch.exchange.server.ejb.ib.topmktdata.TopMktDataMsgSenderCollector;
 
@@ -48,9 +49,8 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 
 	@Resource(lookup = Constants.JMS_TOPIC_REAL_TIME_BAR)
 	private Topic realTimeBardestination;
-
-	private final ArrayList<String> m_acctList = new ArrayList<String>();
-
+	
+	
 	/**
 	 * Default constructor.
 	 */
@@ -107,11 +107,8 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 	@Override
 	public void accountList(ArrayList<String> list) {
 		show("Received account list");
-		m_acctList.clear();
-		m_acctList.addAll(list);
-		for (String account : m_acctList) {
-			show("Account: " + account);
-		}
+		
+		AccountManager.INSTANCE.createAccountListeners(list);
 	}
 
 	@Override

@@ -76,6 +76,7 @@ public class GradientOptimizer {
 	public double updateVariables(final double[] gradients, final int index) {
 		final double delta = (gradients[index] * this.learningRate)
 				+ (this.lastDelta[index] * this.momentum);
+//		System.out.println("Delta: "+delta);
 		this.lastDelta[index] = delta;
 		return delta;
 	}
@@ -90,18 +91,18 @@ public class GradientOptimizer {
 			double[] variables=func.getVariables();
 			double[] copy=Arrays.copyOf(variables, variables.length);
 			double[] gradients=func.calculateGradients();
-			//System.out.println("Gradient: "+Arrays.toString(gradients));
+			System.out.println("Gradient: "+Arrays.toString(gradients));
 			for(int j=0;j<variables.length;j++){
-				variables[j]+=updateVariables(gradients, j);
+				variables[j]-=updateVariables(gradients, j);
 			}
 			
 			func.setVariables(variables);
 			double newValue=func.calculate();
 			
-			//System.out.println("New Value: "+newValue);
-			//System.out.println("Old Variables: "+Arrays.toString(copy));
-			//System.out.println("New Variables: "+Arrays.toString(variables));
-			//System.out.println("Old Value: "+oldValue);
+			System.out.println("New Value: "+newValue);
+			System.out.println("Old Variables: "+Arrays.toString(copy));
+			System.out.println("New Variables: "+Arrays.toString(variables));
+			System.out.println("Old Value: "+oldValue);
 			
 			if(newValue>=oldValue){
 				this.learningRate=learningRate/10;
@@ -116,7 +117,7 @@ public class GradientOptimizer {
 			
 					
 			
-			double changes=(newValue-oldValue)/oldValue;
+//			double changes=(newValue-oldValue)/oldValue;
 			oldValue=newValue;
 			
 			/*
@@ -133,7 +134,46 @@ public class GradientOptimizer {
 	
 	
 	
-	
+	public int getMaxIterartions() {
+		return maxIterartions;
+	}
+
+	public void setMaxIterartions(int maxIterartions) {
+		this.maxIterartions = maxIterartions;
+	}
+
+	public static void main(String[] args){		
+		double[] values=new double[1];
+		values[0]=10;
+//		values[1]=5;
+		DerivableFunction func=new DerivableFunction(values) {
+			
+			@Override
+			public double[] calculateGradients() {
+				double[] gradients=new double[1];
+				gradients[0]=getVariables()[0]*(Math.exp(getVariables()[0])+1);
+//				gradients[1]=2*(getVariables()[1]+2);
+				
+				return gradients;
+			}
+			
+			@Override
+			public double calculate() {
+				double a=getVariables()[0];
+				
+				
+//				double b=getVariables()[1]+2;
+				
+				return a*a/2+Math.exp(a)*(a-1);
+			}
+		};
+		
+		
+		GradientOptimizer optimizer=new GradientOptimizer(1, 0.2, func);
+		optimizer.setMaxIterartions(100);
+		optimizer.optimize();
+		
+	}
 	
 
 }

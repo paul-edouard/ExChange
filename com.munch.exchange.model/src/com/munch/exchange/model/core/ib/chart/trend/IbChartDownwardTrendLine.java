@@ -140,6 +140,12 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		ab[0]=((RealVariable)result.get(0).getVariable(0)).getValue();
 		ab[1]=((RealVariable)result.get(0).getVariable(1)).getValue();
 		
+//		TrendLineFunction function=new TrendLineFunction( times, prices, factor);
+//		GradientOptimizer optimizer=new GradientOptimizer(1, 0.2, function);
+//		optimizer.setMaxIterartions(100);
+//		optimizer.optimize();
+//		double[] ab=function.getVariables();
+		
 		//System.out.println("Opt values: "+Arrays.toString(ab));
 		double[] YValues=calculateYValues(times, prices, ab);
 		

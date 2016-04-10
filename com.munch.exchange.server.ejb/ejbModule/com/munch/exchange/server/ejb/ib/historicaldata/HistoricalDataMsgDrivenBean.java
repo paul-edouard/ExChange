@@ -1,6 +1,5 @@
 package com.munch.exchange.server.ejb.ib.historicaldata;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -10,10 +9,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
-import javax.ejb.Asynchronous;
 import javax.ejb.MessageDriven;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.jms.JMSException;
@@ -24,11 +20,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
@@ -38,15 +29,12 @@ import javax.transaction.UserTransaction;
 
 import com.ib.controller.Bar;
 import com.ib.controller.Types.BarSize;
-import com.ib.controller.Types.SecType;
-import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.bar.IbDayBar;
 import com.munch.exchange.model.core.ib.bar.IbHourBar;
 import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
-import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
 import com.munch.exchange.server.ejb.ib.Constants;
 import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataLoaders.BarLoader;
 
@@ -236,7 +224,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     	
     	//Set the last bar found date
     	long lastBar=searchLastSavedBar(loader.getBars(), clazz);
-    	//log.info("Last hour found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastBar)));
+    	log.info("Last hour found in DB: "+HistoricalDataLoaders.FORMAT.format( new Date(lastBar)));
     	if(lastBar==0){
     		long first=searchFirstSavedBar(loader.getBars(), parentClazz);
     		if(first==0)return null;
@@ -258,15 +246,23 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     			List<Bar> bars=loader.loadBarsFromTo(intervalls.get(i), intervalls.get(i+1), barSize);
         		log.info("Number1 of "+clazz.getSimpleName() +" found: "+bars.size()
         				+" in the intervall ["+Bar.format(intervalls.get(i))+", "+Bar.format(intervalls.get(i+1))+"]");
-        		
+
         		if(isWorking && bars.size()==0)
         			break;
         		
-        		if(bars.size()>0)
+        		
+        	
+        		if(bars.size()>0){
         			isWorking=true;
+        		
+        			log.info("Number1 of "+clazz.getSimpleName() +" found: "+bars.size()
+        				+" bar are in the intervall ["+Bar.format(bars.get(0).time()*1000)+", "+Bar.format(bars.get(bars.size()-1).time()*1000)+"]");
+        			log.info("Last of price: "+bars.get(bars.size()-1).close());
+        		}
         		
         		
     			for(Bar bar : bars){
+//    				log.info("Bar time: "+bar.time()+", last bar in db: "+lastBar);
     				if(bar.time()>lastBar/1000){
 						try {
 							IbBar exBar = clazz.newInstance();
@@ -492,7 +488,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     private void saveBars(List<IbBar> bars,boolean withTransation){
     	
     	
-    	log.info("Save the bars! "+bars.size()+" bars: ");
+    	log.info("Save the following bars in the database:  "+bars.size());
     	
     	if(withTransation){
     	try {
@@ -519,10 +515,11 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 			for(IbBar bar : bars){
 				em.persist(bar);
 				if ((i % 500) == 0) {
-			          ut.commit();
-			          em.clear();          
-			          ut.begin();
-			      }
+					em.flush();
+			        ut.commit();
+			        em.clear();          
+			        ut.begin();
+			    }
 				i++;
 				//em.persist(arg0);
 			}

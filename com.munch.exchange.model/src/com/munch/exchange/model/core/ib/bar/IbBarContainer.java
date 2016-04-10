@@ -14,6 +14,7 @@ import javax.persistence.OneToOne;
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.minute.MinuteAskBar;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorFactory;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
@@ -40,6 +41,13 @@ public class IbBarContainer extends IbBar implements Copyable<IbBarContainer>{
 	
 	@OneToOne(mappedBy="container",cascade=CascadeType.ALL)
 	private IbChartIndicatorGroup indicatorGroup;
+	
+	
+//	@OneToMany(mappedBy="container",cascade=CascadeType.ALL)
+//	private List<MinuteAskBar> minuteAskBars;
+	
+	
+	
 	
 	public IbBarContainer(IbContract contract, WhatToShow whatToShow) {
 		super();

@@ -7,7 +7,7 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-01-08T16:28:52.283+0100")
+@Generated(value="Dali", date="2016-04-10T21:13:09.548+0200")
 @StaticMetamodel(IbBarContainer.class)
 public class IbBarContainer_ extends IbBar_ {
 	public static volatile SingularAttribute<IbBarContainer, IbContract> contract;

@@ -39,6 +39,16 @@
 	<class>com.munch.exchange.model.core.ib.IbContract</class>
 	<class>com.munch.exchange.model.core.ib.neural.NeuralNetwork</class>
 	<class>com.munch.exchange.model.core.ib.neural.IsolatedNeuralArchitecture</class>
+	<class>com.munch.exchange.model.core.ib.bar.minute.MinuteContainer</class>
+	<class>com.munch.exchange.model.core.ib.bar.minute.MinuteAskBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.minute.MinuteBidBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.minute.MinuteMidPointBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.minute.MinuteTradesBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.seconde.SecondeContainer</class>
+	<class>com.munch.exchange.model.core.ib.bar.seconde.SecondeAskBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.seconde.SecondeBidBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.seconde.SecondeMidPointBar</class>
+	<class>com.munch.exchange.model.core.ib.bar.seconde.SecondeTradesBar</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

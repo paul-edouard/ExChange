@@ -4,13 +4,15 @@ import com.ib.controller.Types.Right;
 import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.minute.MinuteContainer;
+import com.munch.exchange.model.core.ib.bar.seconde.SecondeContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import javax.annotation.Generated;
 import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-02-07T10:21:49.978+0100")
+@Generated(value="Dali", date="2016-04-10T21:34:58.092+0200")
 @StaticMetamodel(IbContract.class)
 public class IbContract_ {
 	public static volatile SingularAttribute<IbContract, Integer> id;
@@ -65,4 +67,6 @@ public class IbContract_ {
 	public static volatile SingularAttribute<IbContract, String> nextOptionType;
 	public static volatile SingularAttribute<IbContract, Boolean> nextOptionPartial;
 	public static volatile SingularAttribute<IbContract, String> notes;
+	public static volatile SingularAttribute<IbContract, MinuteContainer> minuteContainer;
+	public static volatile SingularAttribute<IbContract, SecondeContainer> secondeContainer;
 }

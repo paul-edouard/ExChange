@@ -250,7 +250,8 @@ public class RatesTreeLabelProvider extends StyledCellLabelProvider {
 		}
 		else if(element instanceof NeuralArchitecture){
 			NeuralArchitecture archi=(NeuralArchitecture) element;
-			cell.setText(archi.getName());
+			
+			cell.setText(archi.getName()+", "+archi.getNeuralNetworks().get(0).getNetworkName());
 		}
 		
 	}

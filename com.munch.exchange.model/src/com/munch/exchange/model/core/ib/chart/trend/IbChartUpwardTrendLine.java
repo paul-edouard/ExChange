@@ -138,6 +138,12 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 		.distributeOnAllCores()
 		.run();
 		
+//		TrendLineFunction function=new TrendLineFunction( times, prices, factor);
+//		GradientOptimizer optimizer=new GradientOptimizer(1, 0.2, function);
+//		optimizer.setMaxIterartions(100);
+//		optimizer.optimize();
+//		double[] ab=function.getVariables();
+		
 		double[] ab=new double[2];
 		ab[0]=((RealVariable)result.get(0).getVariable(0)).getValue();
 		ab[1]=((RealVariable)result.get(0).getVariable(1)).getValue();

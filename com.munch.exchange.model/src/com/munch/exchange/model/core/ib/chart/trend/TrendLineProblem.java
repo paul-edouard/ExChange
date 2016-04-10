@@ -22,6 +22,7 @@ public class TrendLineProblem extends AbstractProblem{
 	private long[] times;
 	
 	private double powFactor;
+	private double fac;
 	private double sign=1;
 	
 
@@ -30,6 +31,7 @@ public class TrendLineProblem extends AbstractProblem{
 		this.prices=prices;
 		this.times=times;
 		this.powFactor=Math.pow(10, factor);
+		this.fac=factor;
 		
 		calculateABMinMaxValues();
 		
@@ -104,11 +106,15 @@ public class TrendLineProblem extends AbstractProblem{
 		a=ab[0];b=ab[1];
 		
 		for(int i=0;i<prices.length;i++){
-			double y=a*(times[i]-times[0])+b;
 			
-			double abs=(prices[i]-y)*sign;
-			double abs_quad=abs*abs;
 			
+//			double diff=times[i]-times[0];
+//			double x=a*diff+b-prices[i];
+//			F +=0.5*x*x+Math.exp(fac*x)*(x-1/fac)/fac;
+//			F +=x*x/2*((fac-1)*Math.tanh(x)+fac+1);
+//			F +=x*x/2*((fac-1)*Math.tanh(x)+fac+1);
+			
+
 			//TODO change this with a smooth transition from abs_quad to powFactor abs_quad
 //			F(a,b)=abs_quad(tanh(sign*k*abs_quad)+1+powFactor)
 //			F(a,b)=abs_quad(tanh(sign*k*(prices[i]-y)^2)+1+powFactor)
@@ -122,6 +128,15 @@ public class TrendLineProblem extends AbstractProblem{
 //			d F(a,b)/db	= d abs_quad(tanh(sign*k*(prices[i]+b - a*(times[i]-times[0]))^2)+1+powFactor) / db
 //						= abs_quad( -2*sign*k*b / (1 + sign²*k²*(prices[i]+b - a*(times[i]-times[0]))^4) )
 
+//			F(x)=-k(x)*x=-e^(x)*x
+//			U(x)=-int(F(x))=e^(x)*(x-1)
+			
+
+			
+//			Old Version	
+			double y=a*(times[i]-times[0])+b;
+			double abs=(prices[i]-y)*sign;
+			double abs_quad=abs*abs;
 			
 			if(abs>0){
 				F+=abs_quad;
@@ -129,7 +144,11 @@ public class TrendLineProblem extends AbstractProblem{
 			else{
 				F+=powFactor*abs_quad;
 			}
+			
+//			Old Version	
 		}
+		
+//		F*=sign;
 		
 		//System.out.println("F="+F);
 		
