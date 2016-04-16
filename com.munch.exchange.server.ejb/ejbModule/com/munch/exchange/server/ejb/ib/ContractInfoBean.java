@@ -186,19 +186,8 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 		//Remove a message sender
 		TopMktDataMsgSenderCollector.INSTANCE.removeSender(getContract(id));
 		
-//		TODO try to remove the bar first and then the rest
-		IbContract contract=getContract(id);
-		for(IbBarContainer container:contract.getBars()){
-			log.info("Try to remove the container: "+container.getType().toString()+" of contract "+contract.getSymbol());
-			em.remove(container);
-			em.flush();
-			em.getTransaction().commit();
-			log.info("The container: "+container.getType().toString()+" of contract "+contract.getSymbol()+ " is deleted!");
-		}
 		
-		
-		
-		log.info("Try to delete the contract: " + contract.getSymbol() + " itself");
+//		log.info("Try to delete the contract: " + contract.getSymbol() + " itself");
 		em.remove(getContract(id));
 	}
 

@@ -291,60 +291,28 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	}
 	
 	
-	/*
-	private int getCompressRate(BarSize size){
-		switch (size) {
-		
-		case _1_secs:
-			return 1;
-		case _5_secs:
-			return 5;
-		case _10_secs:
-			return 10;
-		case _15_secs:
-			return 15;
-		case _30_secs:
-			return 30;
-			
-		case _1_min:
-			return 1;
-		case _2_mins:
-			return 2;
-		case _3_mins:
-			return 3;
-		case _5_mins:
-			return 5;
-		case _10_mins:
-			return 10;
-		case _15_mins:
-			return 15;
-		case _20_mins:
-			return 20;
-		case _30_mins:
-			return 30;
-		
-		case _1_hour:
-			return 1;
-		case _4_hours:
-			return 4;
-		
-		case _1_day:
-			return 1;
-		case _1_week:
-			return 7;
-		
-		default:
-			return 1;
-		}
-		
-	}
-	*/
-
-
 	@Override
 	public void removeBar(long id) {
 		em.remove(getBar(id));
 	}
+	
+	
+	@Override
+	public void removeBarsFromTo(IbBarContainer exContractBars,
+			BarSize size, long from, long to) {
+		Class<? extends IbBar> ibBarClass=IbBar.searchCorrespondingBarClass(size);
+		
+		Query query=em.createQuery("DELETE " +
+				"FROM "+ibBarClass.getSimpleName()+" b "+
+    			"WHERE b.root="+exContractBars.getId()+" "+
+				"AND b.time>="+from+ " "+
+    			"AND b.time<="+to);
+    	
+		query.executeUpdate();
+		
+	}
+	
+	
 
 
 	@Override

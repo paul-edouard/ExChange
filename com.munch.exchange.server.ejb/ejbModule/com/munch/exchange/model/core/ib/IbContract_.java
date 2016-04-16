@@ -12,13 +12,15 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-04-10T21:34:58.092+0200")
+@Generated(value="Dali", date="2016-04-12T21:12:09.693+0200")
 @StaticMetamodel(IbContract.class)
 public class IbContract_ {
 	public static volatile SingularAttribute<IbContract, Integer> id;
 	public static volatile ListAttribute<IbContract, IbBarContainer> bars;
 	public static volatile SingularAttribute<IbContract, IbCommission> commission;
 	public static volatile ListAttribute<IbContract, NeuralConfiguration> neuralConfigurations;
+	public static volatile SingularAttribute<IbContract, MinuteContainer> minuteContainer;
+	public static volatile SingularAttribute<IbContract, SecondeContainer> secondeContainer;
 	public static volatile SingularAttribute<IbContract, Long> startTradeTimeInMs;
 	public static volatile SingularAttribute<IbContract, Long> endTradeTimeInMs;
 	public static volatile SingularAttribute<IbContract, Integer> conId;
@@ -67,6 +69,4 @@ public class IbContract_ {
 	public static volatile SingularAttribute<IbContract, String> nextOptionType;
 	public static volatile SingularAttribute<IbContract, Boolean> nextOptionPartial;
 	public static volatile SingularAttribute<IbContract, String> notes;
-	public static volatile SingularAttribute<IbContract, MinuteContainer> minuteContainer;
-	public static volatile SingularAttribute<IbContract, SecondeContainer> secondeContainer;
 }

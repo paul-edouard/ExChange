@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Api
+Bundle-SymbolicName: com.ib.api
+Bundle-Version: 1.0.0.qualifier
+Export-Package: com.ib.client,
+ com.ib.contracts,
+ com.ib.controller

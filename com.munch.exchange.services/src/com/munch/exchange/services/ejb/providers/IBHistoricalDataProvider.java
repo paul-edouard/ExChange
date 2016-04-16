@@ -107,6 +107,14 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 			beanRemote.CloseContext();
 	}
 
+	@Override
+	public void removeBarsFromTo(IbBarContainer exContractBars, BarSize size,
+			long from, long to) {
+		if(beanRemote==null)init();
+		beanRemote.getService().removeBarsFromTo(exContractBars,size,from,to);
+		
+	}
+
 	
 
 	

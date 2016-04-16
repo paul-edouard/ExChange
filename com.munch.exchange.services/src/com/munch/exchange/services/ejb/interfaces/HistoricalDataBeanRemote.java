@@ -8,7 +8,6 @@ import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
-import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 
 @Remote
 public interface HistoricalDataBeanRemote {
@@ -34,6 +33,8 @@ public interface HistoricalDataBeanRemote {
 	
 	
 	void removeBar(long id);
+	public void removeBarsFromTo(IbBarContainer exContractBars,BarSize size,long from, long to);
+	
 	public IbBar getBar(long id);
 	
 	
