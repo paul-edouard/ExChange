@@ -4,8 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>com.munch.exchange.services</project>
-		<project>ServerTestEJB</project>
-		<project>ServerTestWeb</project>
 		<project>com.munch.exchange.model</project>
 		<project>com.ib.api</project>
 		<project>com.munch.exchange.server.ejb</project>
