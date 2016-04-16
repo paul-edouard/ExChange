@@ -17,8 +17,6 @@ import com.munch.exchange.model.core.historical.HistoricalPoint;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Xml;
 import com.munch.exchange.services.IHistoricalDataProvider;
-import com.munch.exchange.services.internal.fred.FredObservations;
-import com.munch.exchange.services.internal.fred.FredSeriesVintageDate;
 import com.munch.exchange.services.internal.onvista.OnVistaTable;
 import com.munch.exchange.services.internal.yql.YQLHistoricalData;
 
@@ -187,6 +185,7 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 		}
 		
 		//System.out.println(">>>>> #####  Setting Vintage Date:1");
+		/*
 		if(rate instanceof EconomicData){
 			EconomicData ed = (EconomicData) rate;
 			//Set the vintage date
@@ -203,22 +202,25 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 			
 			
 		}
+		*/
 	
 		return save(rate,hisDatas);
 	}
 	
+	
 	public boolean loadVintageDates(HistoricalData hisDatas,EconomicData ecoData){
-		FredSeriesVintageDate v=new FredSeriesVintageDate(ecoData.getId());
-		LinkedList<Calendar> vintageDates=v.getVintageList();
-		for(int i=1;i<=vintageDates.size();i++){
-			Calendar vintageDate=vintageDates.get(vintageDates.size()-i);
-			if(hisDatas.size()-i>0){
-				hisDatas.get(hisDatas.size()-i).setVintageDate(vintageDate);
-				//System.out.println("#####Vintage Date:"+DateTool.dateToString(vintageDate));
-			}
-		}
+//		FredSeriesVintageDate v=new FredSeriesVintageDate(ecoData.getId());
+//		LinkedList<Calendar> vintageDates=v.getVintageList();
+//		for(int i=1;i<=vintageDates.size();i++){
+//			Calendar vintageDate=vintageDates.get(vintageDates.size()-i);
+//			if(hisDatas.size()-i>0){
+//				hisDatas.get(hisDatas.size()-i).setVintageDate(vintageDate);
+//				//System.out.println("#####Vintage Date:"+DateTool.dateToString(vintageDate));
+//			}
+//		}
 		return true;
 	}
+	
 	
 	
 	@Override
@@ -247,9 +249,9 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 			OnVistaTable table = new OnVistaTable(id, start, "Y1");
 			points = table.getHisPointList();
 		} else if (rate instanceof EconomicData) {
-			EconomicData ed = (EconomicData) rate;
-			FredObservations obs = new FredObservations(ed.getId(), start, end);
-			points = obs.getObservations();
+//			EconomicData ed = (EconomicData) rate;
+//			FredObservations obs = new FredObservations(ed.getId(), start, end);
+//			points = obs.getObservations();
 			//Set the vintage date
 			/*
 			FredSeriesVintageDate v=new FredSeriesVintageDate(ed.getId());
@@ -299,17 +301,17 @@ public class HistoricalDataProviderLocalImpl implements IHistoricalDataProvider 
 			points =table.getHisPointList();
 		}
 		else if(rate instanceof EconomicData){
-			EconomicData ed=(EconomicData)rate;
-			FredObservations obs=new FredObservations(ed.getId(),rate.getHistoricalData().getLast().getDate(), rate.getEnd());
-			points=obs.getObservations();
-			
-			FredSeriesVintageDate v=new FredSeriesVintageDate(ed.getId());
-			LinkedList<Calendar> vintageDates=v.getVintageList();
-			for(int i=1;i<=vintageDates.size();i++){
-				Calendar vintageDate=vintageDates.get(vintageDates.size()-i);
-				if(points.size()-i>0)
-					points.get(points.size()-i).setVintageDate(vintageDate);
-			}
+//			EconomicData ed=(EconomicData)rate;
+//			FredObservations obs=new FredObservations(ed.getId(),rate.getHistoricalData().getLast().getDate(), rate.getEnd());
+//			points=obs.getObservations();
+//			
+//			FredSeriesVintageDate v=new FredSeriesVintageDate(ed.getId());
+//			LinkedList<Calendar> vintageDates=v.getVintageList();
+//			for(int i=1;i<=vintageDates.size();i++){
+//				Calendar vintageDate=vintageDates.get(vintageDates.size()-i);
+//				if(points.size()-i>0)
+//					points.get(points.size()-i).setVintageDate(vintageDate);
+//			}
 			
 			
 		}

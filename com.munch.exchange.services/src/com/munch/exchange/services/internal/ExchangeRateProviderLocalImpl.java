@@ -18,7 +18,6 @@ import com.munch.exchange.model.core.Stock;
 import com.munch.exchange.model.tool.DateTool;
 import com.munch.exchange.model.xml.Xml;
 import com.munch.exchange.services.IExchangeRateProvider;
-import com.munch.exchange.services.internal.fred.FredSeries;
 import com.munch.exchange.services.internal.yql.YQLIsin;
 import com.munch.exchange.services.internal.yql.YQLQuotes;
 import com.munch.exchange.services.internal.yql.YQLStocks;
@@ -212,10 +211,12 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			return xchangeRate;
 		}
 		
+		return null;
 		
 		//Test if the string contains ";". In this case the first loading of a commodity will be assumed
 		//Name;YqlId;OnVistaId
 		//For Gold "Gold;GCJ14.CMX;24877915"
+		/*
 		ExchangeRate rate=loadExchangeRateOrCommodity(symbol);
 		if(rate!=null)return rate;
 		
@@ -260,9 +261,11 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		}
 		else
 			return null;
+			*/
 		
 	}
 	
+/*
 	private ExchangeRate loadEconomicData(String symbol){
 		if(!symbol.startsWith(EconomicData.FRED_SYMBOL_PREFIX))return null;
 		
@@ -286,6 +289,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 		return ec_data;
 		
 	}
+	*/
 	
 	
 	/**
@@ -451,6 +455,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			com.setEnd(Calendar.getInstance());
 			isUpdated=true;
 		}
+		/*
 		else if(rate instanceof EconomicData){
 			EconomicData com=(EconomicData) rate;
 			
@@ -461,6 +466,7 @@ public class ExchangeRateProviderLocalImpl implements IExchangeRateProvider {
 			
 			isUpdated=true;
 		}
+		*/
 		
 		
 		

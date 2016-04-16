@@ -3,6 +3,7 @@
 
 <product name="ExChange" uid="exchange" id="com.munch.exchange.exchangeProduct" application="org.eclipse.e4.ui.workbench.swt.E4Application" version="1.0.0.qualifier" useFeatures="true" includeLaunchers="true">
 
+
    <configIni use="default">
    </configIni>
 
@@ -10,8 +11,10 @@
       <programArgs>-clearPersistedState
 -vmargs
 -Xms1024m
--Xmx2048m</programArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+-Xmx2048m
+      </programArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
    </launcherArgs>
 
    <windowImages i16="/com.munch.exchange/icons/16/stock-market-icon.png" i32="/com.munch.exchange/icons/32/stock-market-icon.png" i48="/com.munch.exchange/icons/48/stock-market-icon.png" i64="/com.munch.exchange/icons/64/stock-market-icon.png" i128="/com.munch.exchange/icons/128/stock-market-icon.png"/>
@@ -28,6 +31,7 @@
       </win>
    </launcher>
 
+
    <vm>
    </vm>
 
@@ -36,7 +40,6 @@
 
    <features>
       <feature id="com.munch.exchange.feature" version="1.0.0.qualifier"/>
-      <feature id="org.eclipse.e4.rcp" version="1.2.1.v20130910-2014"/>
       <feature id="org.eclipse.emf.ecore"/>
       <feature id="org.eclipse.emf.common"/>
    </features>
@@ -45,5 +48,12 @@
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="1" />
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
    </configurations>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
 
 </product>
