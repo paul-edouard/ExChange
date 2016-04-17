@@ -36,3 +36,9 @@ Require-Bundle: javax.inject;bundle-version="1.0.0",
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: javax.annotation;version="1.0.0"
 Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: bin/,
+ css/,
+ icons/,
+ META-INF/,
+ src/,
+ .

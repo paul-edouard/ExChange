@@ -58,5 +58,6 @@ Bundle-ClassPath: resources/,
  src/,
  jboss-cli-client.jar,
  jboss-client.jar,
- hibernate-core-4.3.10.Final.jar
+ hibernate-core-4.3.10.Final.jar,
+ bin/
 Bundle-ActivationPolicy: lazy

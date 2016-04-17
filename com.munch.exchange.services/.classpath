@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry exported="true" kind="lib" path="hibernate-core-4.3.10.Final.jar"/>
 	<classpathentry exported="true" kind="lib" path="jboss-cli-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="jboss-client.jar"/>
