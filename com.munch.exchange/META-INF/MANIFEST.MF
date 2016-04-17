@@ -35,7 +35,11 @@ Require-Bundle: javax.inject;bundle-version="1.0.0",
  encog-core;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: javax.annotation;version="1.0.0"
+<<<<<<< HEAD
 Bundle-ClassPath: bin/,
  css/,
  icons/,
  src/
+=======
+Bundle-ActivationPolicy: lazy
+>>>>>>> branch 'master' of https://github.com/paul-edouard/ExChange.git
