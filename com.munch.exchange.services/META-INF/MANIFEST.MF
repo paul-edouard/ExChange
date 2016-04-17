@@ -34,8 +34,9 @@ Export-Package: com.munch.exchange.services;uses:="org.eclipse.jface.resource,or
  com.munch.exchange.services.ejb.interfaces,
  com.munch.exchange.services.ejb.messages,
  com.munch.exchange.services.ejb.providers
-Bundle-ClassPath: resources/,
+Bundle-ClassPath: bin/,
  src/,
  jboss-cli-client.jar,
  jboss-client.jar,
- hibernate-core-4.3.10.Final.jar
+ hibernate-core-4.3.10.Final.jar,
+ resources/
