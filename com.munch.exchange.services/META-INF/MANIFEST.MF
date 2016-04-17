@@ -1,11 +1,10 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Services
-Bundle-SymbolicName: com.munch.exchange.services
+Bundle-SymbolicName: com.munch.exchange.services;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: MUNCH
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Bundle-ActivationPolicy: lazy
 Require-Bundle: com.munch.exchange.model;bundle-version="1.0.0",
  org.eclipse.jface;bundle-version="3.9.1",
  org.eclipse.core.runtime;bundle-version="3.9.0",
@@ -29,13 +28,35 @@ Service-Component: Component/ExchangeRateProvider.xml,
  Component/IBRealTimeBarProvider.xml,
  Component/IBChartIndicatorProvider.xml,
  Component/IBNeuralProvider.xml
-Export-Package: com.munch.exchange.services;uses:="org.eclipse.jface.resource,org.eclipse.swt.graphics,com.munch.exchange.model.core",
- com.munch.exchange.services.ejb.beans,
- com.munch.exchange.services.ejb.interfaces,
- com.munch.exchange.services.ejb.messages,
- com.munch.exchange.services.ejb.providers
+Export-Package: com.munch.exchange.services;
+  uses:="org.eclipse.swt.graphics,
+   org.eclipse.jface.resource,
+   com.munch.exchange.model.core.neuralnetwork,
+   com.munch.exchange.model.core.historical,
+   com.munch.exchange.model.core.watchlist,
+   com.munch.exchange.model.core",
+ com.munch.exchange.services.ejb.beans;uses:="javax.naming",
+ com.munch.exchange.services.ejb.interfaces;
+  uses:="com.munch.exchange.model.core.ib.chart,
+   com.munch.exchange.model.core.ib.chart.signals,
+   com.munch.exchange.model.core.ib.bar,
+   com.munch.exchange.model.core.ib.neural,
+   com.munch.exchange.model.core.ib,
+   com.ib.controller",
+ com.munch.exchange.services.ejb.messages;uses:="javax.jms",
+ com.munch.exchange.services.ejb.providers;
+  uses:="com.munch.exchange.model.core.ib.chart,
+   com.munch.exchange.model.core.ib.chart.signals,
+   com.munch.exchange.services.ejb.interfaces,
+   com.munch.exchange.model.core.ib.bar,
+   com.munch.exchange.model.core.ib.neural,
+   javax.jms,
+   com.munch.exchange.model.core.ib,
+   com.ib.controller,
+   com.munch.exchange.services.ejb.beans"
 Bundle-ClassPath: resources/,
  src/,
  jboss-cli-client.jar,
  jboss-client.jar,
  hibernate-core-4.3.10.Final.jar
+Bundle-ActivationPolicy: lazy
