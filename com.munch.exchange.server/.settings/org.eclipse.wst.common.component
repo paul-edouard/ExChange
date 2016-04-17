@@ -4,6 +4,14 @@
         <dependent-module archiveName="com.munch.exchange.services.jar" deploy-path="/lib" handle="module:/resource/com.munch.exchange.services/com.munch.exchange.services">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="ServerTestEJB.jar" deploy-path="/" handle="module:/resource/ServerTestEJB/ServerTestEJB">
+            <dependent-object/>
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="ServerTestWeb.war" deploy-path="/" handle="module:/resource/ServerTestWeb/ServerTestWeb">
+            <dependent-object/>
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <dependent-module archiveName="com.munch.exchange.model.jar" deploy-path="/lib" handle="module:/resource/com.munch.exchange.model/com.munch.exchange.model">
             <dependency-type>uses</dependency-type>
         </dependent-module>

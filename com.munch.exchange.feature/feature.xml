@@ -213,6 +213,13 @@
          unpack="false"/>
 
    <plugin
+         id="org.eclipse.swt"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
          id="org.eclipse.equinox.event"
          download-size="0"
          install-size="0"
@@ -640,6 +647,7 @@
 
    <plugin
          id="org.apache.commons.jxpath"
+<<<<<<< master
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -647,6 +655,8 @@
 
    <plugin
          id="org.eclipse.swt"
+=======
+>>>>>>> c085ef3 Installation on Workstation
          download-size="0"
          install-size="0"
          version="0.0.0"
