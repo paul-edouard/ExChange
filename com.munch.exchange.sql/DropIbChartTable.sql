@@ -10,3 +10,4 @@ DROP TABLE ibchartindicator;
 DROP TABLE ibchartindicatorgroup;
 
 
+

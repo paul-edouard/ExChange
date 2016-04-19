@@ -23,7 +23,7 @@ public class TestStartBean {
      */
     public TestStartBean() {
         // TODO Auto-generated constructor stub
-    	log.info("Hallo ich bin started");
+    	log.info("Hallo ich bin started coucou Paul endlich was neues!!!!  222222222222");
     }
 
 }

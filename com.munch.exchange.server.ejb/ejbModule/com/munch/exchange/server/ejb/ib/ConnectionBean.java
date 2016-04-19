@@ -37,7 +37,10 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 
 	private final ApiController m_controller = new ApiController(this, this,
 			this);
-
+	
+	private boolean connected=false;
+	
+	
 	@PersistenceContext
 	private EntityManager em;
 
@@ -89,6 +92,10 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 	@Override
 	public void connected() {
 		log.info("Connected!");
+		
+		connected=true;
+		
+		
 		// Start the Message sender collector
 		TopMktDataMsgSenderCollector.INSTANCE.init(em, connectionFactory,
 				destination);
@@ -100,6 +107,10 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 	@Override
 	public void disconnected() {
 		log.info("Disconnected!");
+		
+		connected=false;
+		
+		
 		TopMktDataMsgSenderCollector.INSTANCE.clearAll();
 		// RealTimeBarsSenderCollector.INSTANCE.clearAll();
 	}
@@ -128,6 +139,14 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 		log.info(string);
 
 	}
+	
+	
+	
+
+	public synchronized boolean isConnected() {
+		return connected;
+	}
+
 
 	private String logStr = "";
 

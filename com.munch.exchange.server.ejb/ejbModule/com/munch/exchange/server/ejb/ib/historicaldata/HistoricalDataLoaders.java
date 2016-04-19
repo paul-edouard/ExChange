@@ -31,6 +31,7 @@ public enum HistoricalDataLoaders {
 	INSTANCE;
 	
 	private static final Logger log = Logger.getLogger(HistoricalDataLoaders.class.getName());
+	
 	public static final SimpleDateFormat FORMAT = new SimpleDateFormat( "yyyyMMdd HH:mm:ss"); // format for historical query
 
 	
@@ -178,8 +179,6 @@ public enum HistoricalDataLoaders {
 		public void setTime( long time){
 			this.time=time;
 		}
-		
-		
 		
 		
 		/*

@@ -1,0 +1,17 @@
+
+Start and Stop the server manually
+
+
+
+Start the server:
+with the "wildfly-8.2.0.Final\standalone\configuration\standalone.xml" file
+
+-> wildfly-8.2.0.Final\bin\standalone.bat
+
+
+Start the server:
+
+-> wildfly-8.2.0.Final\bin\jboss-cli.bat
+-> connect
+-> shutdown
+

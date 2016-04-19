@@ -1,2 +1,2 @@
-alter table neuralinput drop constraint fk_4m660rxy0axgu42y2xp18ecwv;
+alter table neuralinput drop FOREIGN KEY FK_7quxqk4d0ew7al0nnmmgjvher;
 

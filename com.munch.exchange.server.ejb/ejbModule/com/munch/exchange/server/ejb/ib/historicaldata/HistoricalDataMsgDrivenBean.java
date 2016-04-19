@@ -74,6 +74,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
      */
     public void onMessage(Message message) {
     	TextMessage msg = null;
+    	/*
 		try {
 			if (message instanceof TextMessage) {
 				msg = (TextMessage) message;
@@ -83,6 +84,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 				//		+ message.getClass().getName());
 				return;
 			}
+			
 			
 			ut.begin();
 			
@@ -118,6 +120,8 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 			}
 			
 			//HistoricalDataLoaders.INSTANCE.setLoading(false);
+			 
+			 
 			
 			
 		} catch (JMSException | NotSupportedException | SystemException | SecurityException | 
@@ -135,6 +139,7 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
 			
 			throw new RuntimeException(e);
 		}
+		*/
          
     }
     
@@ -587,11 +592,6 @@ public class HistoricalDataMsgDrivenBean implements MessageListener {
     		exContract.setBars(Allbars);
     		
     	}
-    	
-    	
-    	
-    	//List<IbBarContainer> Allbars
-    	//for(IbBarContainer container:)
     	
     	return Allbars;
     }

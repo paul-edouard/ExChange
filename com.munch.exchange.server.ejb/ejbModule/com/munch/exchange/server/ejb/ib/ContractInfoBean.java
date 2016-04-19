@@ -18,6 +18,7 @@ import com.ib.controller.NewContractDetails;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalBarLoader;
 import com.munch.exchange.server.ejb.ib.topmktdata.TopMktDataMsgSenderCollector;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
 
@@ -186,8 +187,12 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 		//Remove a message sender
 		TopMktDataMsgSenderCollector.INSTANCE.removeSender(getContract(id));
 		
+		//Stop the loading of Historcal Bar
+		HistoricalBarLoader.INSTANCE.removeContract(id);
+		//TODO Cancel the laoding
 		
-//		log.info("Try to delete the contract: " + contract.getSymbol() + " itself");
+		IbContract contract=getContract(id);
+		log.info("Try to delete the contract: " + contract.getSymbol() + " itself");
 		em.remove(getContract(id));
 	}
 

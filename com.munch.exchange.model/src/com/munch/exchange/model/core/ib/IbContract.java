@@ -858,8 +858,8 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 		else if(contract.getSecType()==SecType.CASH || 
 				contract.getSecType()==SecType.CMDTY){
 			Allbars.add(new IbBarContainer(contract,WhatToShow.MIDPOINT));
-			//Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
-			//Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
+			Allbars.add(new IbBarContainer(contract,WhatToShow.ASK));
+			Allbars.add(new IbBarContainer(contract,WhatToShow.BID));
 		}
 		else if(contract.getSecType()==SecType.OPT ||
 				contract.getSecType()==SecType.FUT){
