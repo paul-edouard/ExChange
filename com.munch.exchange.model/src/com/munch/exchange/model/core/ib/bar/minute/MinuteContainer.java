@@ -48,6 +48,22 @@ public class MinuteContainer implements Serializable{
 		super();
 		// TODO Auto-generated constructor stub
 	}
+	
+	public MinuteContainer(IbContract contract) {
+		super();
+		this.contract=contract;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+	
+	
+	
 
 	
 	

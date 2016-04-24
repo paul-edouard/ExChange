@@ -45,7 +45,19 @@ public class SecondeContainer implements Serializable {
 
 	public SecondeContainer() {
 		super();
-		// TODO Auto-generated constructor stub
+	}
+	
+	public SecondeContainer(IbContract contract) {
+		super();
+		this.contract=contract;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 	
 	

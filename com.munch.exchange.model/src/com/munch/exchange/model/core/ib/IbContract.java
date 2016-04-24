@@ -772,6 +772,20 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	
 	
 	
+	
+	
+
+	public MinuteContainer getMinuteContainer() {
+		if(minuteContainer==null)
+			minuteContainer=new MinuteContainer(this);
+		return minuteContainer;
+	}
+
+	public SecondeContainer getSecondeContainer() {
+		if(secondeContainer==null)
+			secondeContainer=new SecondeContainer(this);
+		return secondeContainer;
+	}
 
 	public long getStartTradeTimeInMs() {
 		return startTradeTimeInMs;

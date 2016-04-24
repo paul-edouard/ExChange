@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -26,15 +24,15 @@ public class SecondeMidPointBar implements Serializable,Comparable<SecondeMidPoi
 	 */
 	private static final long serialVersionUID = 3293591978632718703L;
 
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	private long id;
+//	@Id
+//	@GeneratedValue(strategy=GenerationType.AUTO)
+//	private long id;
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="CONTAINER_ID")
 	private SecondeContainer container;
 	
-	
+	@Id
 	private  long time;
 	private  double high;
 	private  double low;

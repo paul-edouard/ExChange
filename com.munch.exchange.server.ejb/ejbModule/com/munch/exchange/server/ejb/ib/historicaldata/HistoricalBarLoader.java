@@ -15,6 +15,7 @@ import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.DurationUnit;
 import com.ib.controller.Bar;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.BarType;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
 
@@ -59,11 +60,7 @@ public enum HistoricalBarLoader implements IHistoricalDataHandler{
 		while(searchLongTermBar()){
 			
 //			Switch to the short term modus if new fresh data are required
-			boolean shortTermModus=false;
-			if(lastShortTermTrigger > currentShortTermTrigger){
-				shortTermModus=true;
-				currentShortTermTrigger=lastShortTermTrigger;
-			}
+			boolean shortTermModus=areShortTermBarRequired();
 			
 			
 			for(IbBarContainer container:containers){
@@ -90,28 +87,40 @@ public enum HistoricalBarLoader implements IHistoricalDataHandler{
 		isRunning=false;
 	}
 	
+	private synchronized boolean areShortTermBarRequired(){
+		boolean shortTermModus=false;
+		if(lastShortTermTrigger > currentShortTermTrigger){
+			shortTermModus=true;
+			currentShortTermTrigger=lastShortTermTrigger;
+		}
+		return shortTermModus;
+	}
+	
 	
 	private void loadShortTermBar(IbBarContainer container){
 		log.info("Load short term bar: "+container.getType().toString());
 		long from=Calendar.getInstance().getTimeInMillis();
-		int duration=30*60;
-		DurationUnit durationUnit=DurationUnit.SECOND;
-		BarSize barSize=BarSize._1_min;
-		loadBars(container, from, duration, durationUnit, barSize);
+		List<Bar> secondeBars = loadSecondeBar(container, from);
+//		List<Bar> minuteBars = loadMinuteBar(container, from);
+		HistoricalBarPersistance.saveBars(em, container, BarType.SECONDE, secondeBars);
+		
+		
+//		em.
+		
 	}
-	
 	
 	private void loadLongTermBar(IbBarContainer container){
 		log.info("Load long term bar: "+container.getType().toString());
 		long from=Calendar.getInstance().getTimeInMillis();
-		int duration=30*60;
-		DurationUnit durationUnit=DurationUnit.SECOND;
-		BarSize barSize=BarSize._1_min;
-		loadBars(container, from, duration, durationUnit, barSize);
+//		List<Bar> secondeBars = loadSecondeBar(container, from);
+//		List<Bar> minuteBars = loadMinuteBar(container, from);
 		
 		longTermIdAttemptMap.put(container.getId(), longTermIdAttemptMap.get(container.getId())+1);
 		
 	}
+	
+	
+	
 	
 	
 	
@@ -192,8 +201,24 @@ public enum HistoricalBarLoader implements IHistoricalDataHandler{
 	
 	private boolean requestFinished=false;
 	
+	private List<Bar> loadSecondeBar(IbBarContainer container, long from){
+		int duration=1800;
+		DurationUnit durationUnit=DurationUnit.SECOND;
+		BarSize barSize=BarSize._1_secs;
+		
+		return loadBars(container, from, duration, durationUnit, barSize);
+	}
 	
-	public List<Bar> loadBars(IbBarContainer container, long from, int duration, DurationUnit durationUnit, BarSize barSize ){
+	private List<Bar> loadMinuteBar(IbBarContainer container, long from){
+		int duration=1;
+		DurationUnit durationUnit=DurationUnit.DAY;
+		BarSize barSize=BarSize._1_min;
+		
+		return loadBars(container, from, duration, durationUnit, barSize);
+	}
+	
+	
+	private List<Bar> loadBars(IbBarContainer container, long from, int duration, DurationUnit durationUnit, BarSize barSize ){
 		requestFinished=false;
 		recievedBars.clear();
 		
