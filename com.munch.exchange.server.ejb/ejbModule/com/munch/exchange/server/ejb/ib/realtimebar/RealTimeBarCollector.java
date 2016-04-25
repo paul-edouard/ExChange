@@ -100,6 +100,8 @@ public enum RealTimeBarCollector {
 	public IbBar updateBar(int contractId,WhatToShow whatToShow,Calendar recievedDate,double value){
 		IbBar bar=getBar(contractId, whatToShow);
 		
+		if(bar==null)return null;
+		
 		//log.info("Recieved Time: "+recievedDate.getTimeInMillis());
 		//log.info("Intervall Time: "+bar.getIntervallInMs());
 		//log.info("Modulo: "+recievedDate.getTimeInMillis()%bar.getIntervallInMs());

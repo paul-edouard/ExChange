@@ -4,11 +4,12 @@ import javax.annotation.Generated;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-04-21T20:12:08.552+0200")
+@Generated(value="Dali", date="2016-04-25T21:11:33.995+0200")
 @StaticMetamodel(MinuteAskBar.class)
 public class MinuteAskBar_ {
 	public static volatile SingularAttribute<MinuteAskBar, MinuteContainer> container;
 	public static volatile SingularAttribute<MinuteAskBar, Long> time;
+	public static volatile SingularAttribute<MinuteAskBar, Long> containerId;
 	public static volatile SingularAttribute<MinuteAskBar, Double> high;
 	public static volatile SingularAttribute<MinuteAskBar, Double> low;
 	public static volatile SingularAttribute<MinuteAskBar, Double> open;

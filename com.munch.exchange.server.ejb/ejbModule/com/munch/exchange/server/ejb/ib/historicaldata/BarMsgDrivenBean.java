@@ -61,12 +61,18 @@ public class BarMsgDrivenBean implements MessageListener {
 			
 			long time = msg
 					.getLongProperty(HistoricalDataTimerBean.TIME_STRING);
-			List<IbContract> allContracts = em.createNamedQuery(
-					"IbContract.getAll", IbContract.class).getResultList();
 			
-			HistoricalBarLoader.INSTANCE.setEntityManager(em);
-			HistoricalBarLoader.INSTANCE.setContracts(allContracts);
-			HistoricalBarLoader.INSTANCE.setLastShortTermTrigger(time);
+			
+			if(HistoricalBarLoader.getINSTANCE()==null || !HistoricalBarLoader.getINSTANCE().isRunning()){
+				HistoricalBarLoader loader=new HistoricalBarLoader();
+				loader.setEntityManager(em);
+				loader.setLastShortTermTrigger(time);
+				loader.run();
+			}
+			else{
+				HistoricalBarLoader.getINSTANCE().setEntityManager(em);
+				HistoricalBarLoader.getINSTANCE().setLastShortTermTrigger(time);
+			}
 						
 
 		} catch (JMSException e) {
@@ -81,25 +87,27 @@ public class BarMsgDrivenBean implements MessageListener {
 	 * Search all the bar of the contract
 	 * 
 	 */
-	 public static List<IbBarContainer> getBarContainersOf(IbContract exContract,EntityManager em){
-	    	List<IbBarContainer> containersInDB=exContract.getBars();
-	    	List<IbBarContainer> AllAvailableContainers=IbContract.getAllAvailableIbBarContainers(exContract);
-	    	for(IbBarContainer container: AllAvailableContainers){
-	    		boolean containerIsSaved=false;
-	    		for(IbBarContainer containerInDB : containersInDB){
-	    			if(containerInDB.getType()==container.getType()){
-	    				containerIsSaved=true;
-	    			}
-	    		}
-	    		if(containerIsSaved)continue;
-	    		
-	    		em.persist(container);
-	    		containersInDB.add(container);
-	    	}
-	    	
-	    	return containersInDB;
-	    }
-	
+	public static List<IbBarContainer> getBarContainersOf(IbContract exContract, EntityManager em) {
+		IbContract contract = em.find(IbContract.class, exContract.getId());
+
+		List<IbBarContainer> containersInDB = contract.getBars();
+		List<IbBarContainer> AllAvailableContainers = IbContract.getAllAvailableIbBarContainers(contract);
+		for (IbBarContainer container : AllAvailableContainers) {
+			boolean containerIsSaved = false;
+			for (IbBarContainer containerInDB : containersInDB) {
+				if (containerInDB.getType() == container.getType()) {
+					containerIsSaved = true;
+				}
+			}
+			if (containerIsSaved)
+				continue;
+
+			em.persist(container);
+			containersInDB.add(container);
+		}
+
+		return containersInDB;
+	}
 	
 
 }

@@ -188,7 +188,8 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 		TopMktDataMsgSenderCollector.INSTANCE.removeSender(getContract(id));
 		
 		//Stop the loading of Historcal Bar
-		HistoricalBarLoader.INSTANCE.removeContract(id);
+		if(HistoricalBarLoader.getINSTANCE()!=null)
+			HistoricalBarLoader.getINSTANCE().removeContract(id);
 		//TODO Cancel the laoding
 		
 		IbContract contract=getContract(id);

@@ -101,6 +101,7 @@ public class RealTimeBarConverterMsgDrivenBean implements MessageListener {
 					WhatToShow.ASK,
 					recievedDate,
 					value);
+			if(barAsk==null)return;
 			IbBar barBid=RealTimeBarCollector.INSTANCE.getBar(contractId, WhatToShow.BID);
 			double midValue=value;
 			if(barBid.getClose()>0)
@@ -124,6 +125,7 @@ public class RealTimeBarConverterMsgDrivenBean implements MessageListener {
 					WhatToShow.BID,
 					recievedDate,
 					value);
+			if(barBid==null)return;
 			IbBar barAsk=RealTimeBarCollector.INSTANCE.getBar(contractId, WhatToShow.ASK);
 			double midValue=value;
 			if(barAsk.getClose()>0)
@@ -150,6 +152,7 @@ public class RealTimeBarConverterMsgDrivenBean implements MessageListener {
 					recievedDate,
 					value);
 			bars.add(bar);
+			if(bar==null)return;
 			RealTimeBarCollector.INSTANCE.sendUpdatedBars(bars, contractId);
 			//log.info("Contract: "+contractId+", Tade: "+bar);
 			

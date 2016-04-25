@@ -13,9 +13,10 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.BarContainerInterface;
 
 @Entity
-public class MinuteContainer implements Serializable{
+public class MinuteContainer implements Serializable, BarContainerInterface{
 	
 
 	/**
@@ -34,15 +35,23 @@ public class MinuteContainer implements Serializable{
 	
 	@OneToMany(mappedBy="container",cascade=CascadeType.ALL)
 	private List<MinuteAskBar> minuteAskBars;
+	
+	private long lastShortTermAskBarTime=0;
 
 	@OneToMany(mappedBy="container",cascade=CascadeType.ALL)
 	private List<MinuteBidBar> minuteBidBars;
 	
+	private long lastShortTermBidBarTime=0;
+	
 	@OneToMany(mappedBy="container",cascade=CascadeType.ALL)
 	private List<MinuteMidPointBar> minuteMidPointBars;
+	
+	private long lastShortTermMidPointBarTime=0;
 
 	@OneToMany(mappedBy="container",cascade=CascadeType.ALL)
 	private List<MinuteTradesBar> minuteTradesBars;
+	
+	private long lastShortTermTradesBarTime=0;
 
 	public MinuteContainer() {
 		super();
@@ -60,6 +69,38 @@ public class MinuteContainer implements Serializable{
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public long getLastShortTermAskBarTime() {
+		return lastShortTermAskBarTime;
+	}
+
+	public void setLastShortTermAskBarTime(long lastShortTermAskBarTime) {
+		this.lastShortTermAskBarTime = lastShortTermAskBarTime;
+	}
+
+	public long getLastShortTermBidBarTime() {
+		return lastShortTermBidBarTime;
+	}
+
+	public void setLastShortTermBidBarTime(long lastShortTermBidBarTime) {
+		this.lastShortTermBidBarTime = lastShortTermBidBarTime;
+	}
+
+	public long getLastShortTermMidPointBarTime() {
+		return lastShortTermMidPointBarTime;
+	}
+
+	public void setLastShortTermMidPointBarTime(long lastShortTermMidPointBarTime) {
+		this.lastShortTermMidPointBarTime = lastShortTermMidPointBarTime;
+	}
+
+	public long getLastShortTermTradesBarTime() {
+		return lastShortTermTradesBarTime;
+	}
+
+	public void setLastShortTermTradesBarTime(long lastShortTermTradesBarTime) {
+		this.lastShortTermTradesBarTime = lastShortTermTradesBarTime;
 	}
 	
 	

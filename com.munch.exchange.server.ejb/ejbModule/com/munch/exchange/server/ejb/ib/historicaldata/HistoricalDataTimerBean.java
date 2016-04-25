@@ -37,7 +37,7 @@ public class HistoricalDataTimerBean {
 	private static final String TIMER_STRING	=	"Historical Data timout";
 	public static final String TIME_STRING		=	"TIME";
 	
-	private static final long TIMER_INTERVALL	=	1*60*1000;
+	private static final long TIMER_INTERVALL	=	5*60*1000;
 	private static final long TIMER_OFFSET		=	5*1000;
 	
 	
