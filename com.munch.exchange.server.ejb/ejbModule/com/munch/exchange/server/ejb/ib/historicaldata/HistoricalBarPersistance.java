@@ -99,6 +99,9 @@ public class HistoricalBarPersistance {
 					);
 
     	Object singleResult=query.getSingleResult();
+    	em.flush();
+    	em.clear();
+    	
     	if(singleResult==null)return 0;
     	
     	long time=(long) singleResult;
@@ -114,6 +117,9 @@ public class HistoricalBarPersistance {
 					);
 
     	Object singleResult=query.getSingleResult();
+    	em.flush();
+    	em.clear();
+    	
     	if(singleResult==null)return 0;
     	
     	long time=(long) singleResult;
@@ -219,6 +225,9 @@ public class HistoricalBarPersistance {
 		for(BarConversionInterface bar:bars){
 			ibBars.add(bar.toIbBar());
 		}
+		
+		em.flush();
+    	em.clear();
 		
 		return ibBars;
 		

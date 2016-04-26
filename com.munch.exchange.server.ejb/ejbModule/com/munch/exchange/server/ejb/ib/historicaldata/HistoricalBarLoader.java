@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 import com.ib.controller.ApiController.IHistoricalDataHandler;
 import com.ib.controller.Bar;
@@ -33,6 +39,8 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	}
 	
 	private EntityManager em;
+	
+	private UserTransaction ut;
 	
 	private List<IbContract> contracts;
 	
@@ -136,6 +144,9 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	
 	private boolean loadShortTermTypedBars(IbBarContainer container, BarType barType){
 		
+		try {
+		ut.begin();
+		
 
 //		Load the short term seconde bars
 		long lastBarTimeInSeconde=HistoricalBarPersistance.getLastBarTime(em, container, barType);
@@ -152,34 +163,71 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		
 		
 //		Load the last bars
+		Calendar start=Calendar.getInstance();
 		List<Bar> loadedBars = loadTypeBar(container, barType, from*1000, true);
-		if(loadedBars==null)return false;
+		if(loadedBars==null){
+			ut.commit();
+			return false;
+		}
 	
 		while(!loadedBars.isEmpty()){
 			
-			Bar firstLoadedBar=loadedBars.get(0);
-			Bar lastLoadedBar=loadedBars.get(loadedBars.size()-1);
-			
-			log.info("Fist bar time loaded: "+FORMAT.format(firstLoadedBar.time()*1000)+
-					", last bar time loaded: "+FORMAT.format(lastLoadedBar.time()*1000));
-			
-			log.info("lastBarTimeInSeconde: "+FORMAT.format(from*1000));
 			
 //			save the bar in the db
 			HistoricalBarPersistance.saveBars(em, container, barType, loadedBars);
+			
+			
 			
 //			Save the last short time bar position in order to restart from save
 			from=loadedBars.get(0).time();
 			HistoricalBarPersistance.setLastShortTermBarTime(em, container, barType, from);
 			
+			
+			Calendar end=Calendar.getInstance();
+			long time_s=(end.getTimeInMillis()-start.getTimeInMillis());
+			log.info("Persist short term bar: "+container.getContract().getSymbol()+", "+
+					container.getType().toString()+" "+loadedBars.size()+" "+
+					barType.toString()+" bars from "+
+					FORMAT.format( new Date(from*1000) )+" in "+time_s+ " ms");
+			
+			ut.commit();
+			ut.begin();
+			
 //			Load the new bars from the new start
+			start=Calendar.getInstance();
 			loadedBars = loadTypeBar(container, barType, from*1000, true);
-			if(loadedBars==null)return false;
+			if(loadedBars==null){
+				ut.commit();
+				return false;
+			}
 			
 		}
 		
 //		Set the last short term bar to zero in order to restart from the current time
 		HistoricalBarPersistance.setLastShortTermBarTime(em, container, barType,0);
+		
+		
+		ut.commit();
+		} catch (NotSupportedException | SecurityException | IllegalStateException | RollbackException
+				| HeuristicMixedException | HeuristicRollbackException | SystemException e) {
+			
+			e.printStackTrace();
+			log.warning(e.toString());
+			
+			try {
+				ut.rollback();
+			} catch (IllegalStateException | SecurityException
+					| SystemException e1) {
+				
+				e1.printStackTrace();
+				log.warning(e.toString());
+			}
+			
+			
+		}
+		
+		
+		
 		return true;
 		
 	}
@@ -192,61 +240,15 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 //		#########################################
 //		##   Load the long term second bars   ##
 //		#########################################
-		
-		Calendar start=Calendar.getInstance();
-		long firstSecondBarTime=HistoricalBarPersistance.getFirstBarTime(em, container, BarType.SECOND);
-//		log.info("First Seconde bar time: "+firstSecondeBarTime);
-		firstSecondBarTime*=1000;
-		if(firstSecondBarTime==0){
-			firstSecondBarTime=Calendar.getInstance().getTimeInMillis();
-		}
-		
-		List<Bar> secondeBars = loadTypeBar(container, BarType.SECOND, firstSecondBarTime, false);
-//		TODO Please this could be null!!
-		
-		if(!secondeBars.isEmpty()){
-			HistoricalBarPersistance.saveBars(em, container, BarType.SECOND, secondeBars);
-			
-			Calendar end=Calendar.getInstance();
-			long time_s=(end.getTimeInMillis()-start.getTimeInMillis());
-			log.info("Persist: "+container.getContract().getSymbol()+", "+
-					container.getType().toString()+" "+secondeBars.size()+" "+
-					BarType.SECOND.toString()+" bars from "+
-					FORMAT.format( new Date(firstSecondBarTime) )+" in "+time_s+ " ms");
-			
-		}
-		
-		
-
+		List<Bar> secondBars=loadLongTermTypeBar(container, BarType.SECOND);
 		
 //		#########################################
 //		##   Load the long term minute bars   ##
 //		#########################################
-		
-//		Load the long term minute bars
-		start=Calendar.getInstance();
-		long firstMinuteBarTime=HistoricalBarPersistance.getFirstBarTime(em, container, BarType.MINUTE);
-		firstMinuteBarTime*=1000;
-		if(firstMinuteBarTime==0){
-			firstMinuteBarTime=Calendar.getInstance().getTimeInMillis();
-		}
-		
-		List<Bar> minuteBars = loadTypeBar(container, BarType.MINUTE, firstMinuteBarTime, false);
-		if(!minuteBars.isEmpty()){
-			HistoricalBarPersistance.saveBars(em, container, BarType.MINUTE, minuteBars);
-			
-			Calendar end=Calendar.getInstance();
-			long time_s=(end.getTimeInMillis()-start.getTimeInMillis());
-			log.info("Persist: "+container.getContract().getSymbol()+", "+
-					container.getType().toString()+" "+minuteBars.size()+" "+
-					BarType.MINUTE.toString()+" bars from "+
-					FORMAT.format( new Date(firstMinuteBarTime) )+" in "+time_s+ " ms");
-			
-		}
-		
+		List<Bar> minuteBars = loadLongTermTypeBar(container, BarType.MINUTE);
 		
 //		
-		if(secondeBars.isEmpty() && minuteBars.isEmpty()){
+		if(secondBars==null && minuteBars==null){
 			longTermIdAttemptMap.put(container.getId(), longTermIdAttemptMap.get(container.getId())+1);
 		}
 		
@@ -254,23 +256,100 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	}
 	
 	
+	private List<Bar> loadLongTermTypeBar(IbBarContainer container, BarType bartype){
+		
+		List<Bar> typedBars=null;
+		
+		try {
+			ut.begin();
+		
+		
+		Calendar start=Calendar.getInstance();
+
+//		Search the first bar
+		long firstSecondBarTime=HistoricalBarPersistance.getFirstBarTime(em, container, bartype);
+		firstSecondBarTime*=1000;
+		if(firstSecondBarTime==0){
+			firstSecondBarTime=Calendar.getInstance().getTimeInMillis();
+		}
+		
+		typedBars = loadTypeBar(container, bartype, firstSecondBarTime, false);
+//		Error the request was wrong
+		if(typedBars==null){
+			ut.commit();
+			return null;
+		}
+		
+//		Error nor bar found!
+		if(typedBars.isEmpty()){
+			ut.commit();
+			return null;
+		}
+		
+//		Save the bar in the DB
+		HistoricalBarPersistance.saveBars(em, container,bartype, typedBars);
+			
+		Calendar end=Calendar.getInstance();
+		long time_s=(end.getTimeInMillis()-start.getTimeInMillis());
+		log.info("Persist long term bar: "+container.getContract().getSymbol()+", "+
+				container.getType().toString()+" "+typedBars.size()+" "+
+				bartype.toString()+" bars from "+
+				FORMAT.format( new Date(firstSecondBarTime) )+" in "+time_s+ " ms");
+			
+		
+		ut.commit();
+		} catch (NotSupportedException | SecurityException | IllegalStateException | RollbackException
+				| HeuristicMixedException | HeuristicRollbackException | SystemException e) {
+			
+			e.printStackTrace();
+			log.warning(e.toString());
+			
+			try {
+				ut.rollback();
+			} catch (IllegalStateException | SecurityException
+					| SystemException e1) {
+				
+				e1.printStackTrace();
+				log.warning(e.toString());
+			}
+			
+			
+		}
+		
+		
+		return typedBars;
+		
+		
+	}
+	
 	
 	private List<IbBarContainer> searchAllContainers(){
 		
-		List<IbBarContainer> allContainers=new LinkedList<IbBarContainer>();
-		for (IbContract exContract : contracts) {
-			List<IbBarContainer> containers=BarMsgDrivenBean.getBarContainersOf(exContract, em);
-			allContainers.addAll(containers);
+		List<IbBarContainer> allContainers = new LinkedList<IbBarContainer>();
+
+		try {
+			ut.begin();
+
+			for (IbContract exContract : contracts) {
+				List<IbBarContainer> containers = BarMsgDrivenBean.getBarContainersOf(exContract, em);
+				allContainers.addAll(containers);
+			}
+
+			for (IbBarContainer container : allContainers) {
+
+				if (longTermIdAttemptMap.containsKey(container.getId()))
+					continue;
+
+				longTermIdAttemptMap.put(container.getId(), 0);
+			}
+
+			ut.commit();
+		} catch (NotSupportedException | SecurityException | IllegalStateException | RollbackException
+				| HeuristicMixedException | HeuristicRollbackException | SystemException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		
-		for(IbBarContainer container:allContainers){
-			
-			if(longTermIdAttemptMap.containsKey(container.getId()))
-				continue;
-			
-			longTermIdAttemptMap.put(container.getId(), 0);
-		}
-		
+
 		return allContainers;
 	}
 	
@@ -295,16 +374,23 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		}
 	}
 
-	public synchronized void setEntityManager(EntityManager em) {
-		if(this.em!=null){
-			this.em.flush();
-			this.em.clear();
-		}
-		
-		List<IbContract> allContracts = em.createNamedQuery(
-				"IbContract.getAll", IbContract.class).getResultList();
-		this.setContracts(allContracts);
+	public synchronized void setEMandUT(EntityManager em, UserTransaction ut) {
 		this.em = em;
+		this.ut = ut;
+
+		try {
+			ut.begin();
+
+			List<IbContract> allContracts = em.createNamedQuery("IbContract.getAll", IbContract.class).getResultList();
+			this.setContracts(allContracts);
+
+			ut.commit();
+		} catch (NotSupportedException | SecurityException | IllegalStateException | RollbackException
+				| HeuristicMixedException | HeuristicRollbackException | SystemException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			
 	}
 
 

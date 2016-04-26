@@ -4,14 +4,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.transaction.UserTransaction;
 
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
@@ -27,7 +31,7 @@ import com.munch.exchange.server.ejb.ib.Constants;
 				@ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
 		}, 
 		mappedName = Constants.JMS_TOPIC_HISTORICAL_DATA)
-//@TransactionManagement(TransactionManagementType.BEAN)
+@TransactionManagement(TransactionManagementType.BEAN)
 public class BarMsgDrivenBean implements MessageListener {
 	
 	
@@ -35,6 +39,9 @@ public class BarMsgDrivenBean implements MessageListener {
 	
 	@PersistenceContext
 	private EntityManager em;
+	
+	@Resource
+	private UserTransaction ut;
 
     /**
      * Default constructor. 
@@ -65,12 +72,12 @@ public class BarMsgDrivenBean implements MessageListener {
 			
 			if(HistoricalBarLoader.getINSTANCE()==null || !HistoricalBarLoader.getINSTANCE().isRunning()){
 				HistoricalBarLoader loader=new HistoricalBarLoader();
-				loader.setEntityManager(em);
+				loader.setEMandUT(em,ut);
 				loader.setLastShortTermTrigger(time);
 				loader.run();
 			}
 			else{
-				HistoricalBarLoader.getINSTANCE().setEntityManager(em);
+				HistoricalBarLoader.getINSTANCE().setEMandUT(em,ut);
 				HistoricalBarLoader.getINSTANCE().setLastShortTermTrigger(time);
 			}
 						
