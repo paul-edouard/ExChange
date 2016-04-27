@@ -163,6 +163,25 @@ public class HistoricalBarPersistance {
 	}
 	
 	
+	public static boolean isLongTermBarLoadingFinished(EntityManager em, IbBarContainer container, BarType barType){
+		BarContainerInterface containerIt=getContainer(em, container, barType);
+		if(containerIt==null)return true;
+		
+		switch (container.getType()) {
+		case ASK:
+			return containerIt.isLongTermAskBarLoadingFinished();
+		case MIDPOINT:
+			return containerIt.isLongTermMidPointBarLoadingFinished();
+		case TRADES:
+			return containerIt.isLongTermTradesBarLoadingFinished();
+		case BID:
+			return containerIt.isLongTermBidBarLoadingFinished();
+		default:
+			return true;
+		}
+		
+	}
+	
 	
 	public static long getLastShortTermBarTime(EntityManager em, IbBarContainer container, BarType barType){
 		BarContainerInterface containerIt=getContainer(em, container, barType);
@@ -182,6 +201,37 @@ public class HistoricalBarPersistance {
 		}
 		
 	}
+	
+	
+	public static void setLongTermBarLoadingFinished(EntityManager em, IbBarContainer container, BarType barType, boolean longTermBarLoadingFinished){
+		BarContainerInterface containerIt=getContainer(em, container, barType);
+		if(containerIt==null)return ;
+		
+		BarContainerInterface foundContainer=em.find(containerIt.getClass(), containerIt.getId());
+		
+		switch (container.getType()) {
+		case ASK:
+			foundContainer.setLongTermAskBarLoadingFinished(longTermBarLoadingFinished);
+			break;
+		case MIDPOINT:
+			foundContainer.setLongTermMidPointBarLoadingFinished(longTermBarLoadingFinished);
+			break;
+		case TRADES:
+			foundContainer.setLongTermTradesBarLoadingFinished(longTermBarLoadingFinished);;
+			break;
+		case BID:
+			foundContainer.setLongTermBidBarLoadingFinished(longTermBarLoadingFinished);;
+			break;
+		default:
+			break ;
+		}
+		
+		em.persist(foundContainer);
+		em.flush();
+		
+		
+	}
+	
 	
 	public static void setLastShortTermBarTime(EntityManager em, IbBarContainer container, BarType barType, long time){
 		BarContainerInterface containerIt=getContainer(em, container, barType);

@@ -37,22 +37,28 @@ public class MinuteContainer implements Serializable, BarContainerInterface{
 	private List<MinuteAskBar> minuteAskBars;
 	
 	private long lastShortTermAskBarTime=0;
+	private boolean longTermAskBarLoadingFinished=false;
 
 	@OneToMany(mappedBy="container",cascade=CascadeType.ALL)
 	private List<MinuteBidBar> minuteBidBars;
 	
 	private long lastShortTermBidBarTime=0;
+	private boolean longTermBidBarLoadingFinished=false;
 	
 	@OneToMany(mappedBy="container",cascade=CascadeType.ALL)
 	private List<MinuteMidPointBar> minuteMidPointBars;
 	
 	private long lastShortTermMidPointBarTime=0;
+	private boolean longTermMidPointBarLoadingFinished=false;
 
+	
 	@OneToMany(mappedBy="container",cascade=CascadeType.ALL)
 	private List<MinuteTradesBar> minuteTradesBars;
 	
 	private long lastShortTermTradesBarTime=0;
+	private boolean longTermTradesBarLoadingFinished=false;
 
+	
 	public MinuteContainer() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -101,6 +107,38 @@ public class MinuteContainer implements Serializable, BarContainerInterface{
 
 	public void setLastShortTermTradesBarTime(long lastShortTermTradesBarTime) {
 		this.lastShortTermTradesBarTime = lastShortTermTradesBarTime;
+	}
+
+	public boolean isLongTermAskBarLoadingFinished() {
+		return longTermAskBarLoadingFinished;
+	}
+
+	public void setLongTermAskBarLoadingFinished(boolean longTermAskBarLoadingFinished) {
+		this.longTermAskBarLoadingFinished = longTermAskBarLoadingFinished;
+	}
+
+	public boolean isLongTermBidBarLoadingFinished() {
+		return longTermBidBarLoadingFinished;
+	}
+
+	public void setLongTermBidBarLoadingFinished(boolean longTermBidBarLoadingFinished) {
+		this.longTermBidBarLoadingFinished = longTermBidBarLoadingFinished;
+	}
+
+	public boolean isLongTermMidPointBarLoadingFinished() {
+		return longTermMidPointBarLoadingFinished;
+	}
+
+	public void setLongTermMidPointBarLoadingFinished(boolean longTermMidPointBarLoadingFinished) {
+		this.longTermMidPointBarLoadingFinished = longTermMidPointBarLoadingFinished;
+	}
+
+	public boolean isLongTermTradesBarLoadingFinished() {
+		return longTermTradesBarLoadingFinished;
+	}
+
+	public void setLongTermTradesBarLoadingFinished(boolean longTermTradesBarLoadingFinished) {
+		this.longTermTradesBarLoadingFinished = longTermTradesBarLoadingFinished;
 	}
 	
 	

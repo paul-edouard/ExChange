@@ -17,5 +17,19 @@ public interface BarContainerInterface {
 	
 	public long getLastShortTermTradesBarTime();
 	public void setLastShortTermTradesBarTime(long lastShortTermTradesBarTime);
+	
+	public boolean isLongTermAskBarLoadingFinished();
+	public void setLongTermAskBarLoadingFinished(boolean longTermAskBarLoadingFinished);
 
+	public boolean isLongTermBidBarLoadingFinished();
+	public void setLongTermBidBarLoadingFinished(boolean longTermBidBarLoadingFinished);
+
+	public boolean isLongTermMidPointBarLoadingFinished() ;
+	public void setLongTermMidPointBarLoadingFinished(boolean longTermMidPointBarLoadingFinished);
+
+	public boolean isLongTermTradesBarLoadingFinished();
+	public void setLongTermTradesBarLoadingFinished(boolean longTermTradesBarLoadingFinished);
+	
+	
+	
 }
