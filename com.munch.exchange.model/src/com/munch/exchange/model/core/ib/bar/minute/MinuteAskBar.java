@@ -80,20 +80,8 @@ public class MinuteAskBar implements Serializable,Comparable<MinuteAskBar>,BarCo
 	}
 	
 	@Override
-	public IbBar toIbBar() {
-		IbMinuteBar ibBar=new IbMinuteBar();
-		ibBar.setTime(time);
-		ibBar.setHigh(high);
-		ibBar.setLow(low);
-		ibBar.setOpen(open);
-		ibBar.setClose(close);
-		ibBar.setWap(wap);
-		ibBar.setVolume(volume);
-		ibBar.setCount(count);
-		
-		ibBar.setType(WhatToShow.ASK);
-		
-		return ibBar;
+	public Bar toBar() {
+		return new Bar(time, high, low, open, close, wap, volume, count);
 	}
 
 

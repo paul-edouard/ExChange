@@ -81,20 +81,8 @@ public class SecondeBidBar implements Serializable,Comparable<SecondeBidBar>,Bar
 	}
 	
 	@Override
-	public IbBar toIbBar() {
-		IbSecondeBar ibBar=new IbSecondeBar();
-		ibBar.setTime(time);
-		ibBar.setHigh(high);
-		ibBar.setLow(low);
-		ibBar.setOpen(open);
-		ibBar.setClose(close);
-		ibBar.setWap(wap);
-		ibBar.setVolume(volume);
-		ibBar.setCount(count);
-		
-		ibBar.setType(WhatToShow.BID);
-		
-		return ibBar;
+	public Bar toBar() {
+		return new Bar(time, high, low, open, close, wap, volume, count);
 	}
 
 

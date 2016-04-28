@@ -52,26 +52,26 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 		return bars;
 	}
 
-	@Override
-	public IbBar searchBarOfTime(IbBarContainer exContractBars,
-			Class<? extends IbBar> exBarClass, long time) {
-		if(beanRemote==null)init();
-		return beanRemote.getService().searchBarOfTime(exContractBars,exBarClass,time);
-	}
-
-	@Override
-	public long getFirstBarTime(IbBarContainer exContractBars,
-			Class<? extends IbBar> exBarClass) {
-		if(beanRemote==null)init();
-		return beanRemote.getService().getFirstBarTime(exContractBars,exBarClass);
-	}
-
-	@Override
-	public long getLastBarTime(IbBarContainer exContractBars,
-			Class<? extends IbBar> exBarClass) {
-		if(beanRemote==null)init();
-		return beanRemote.getService().getLastBarTime(exContractBars,exBarClass);
-	}
+//	@Override
+//	public IbBar searchBarOfTime(IbBarContainer exContractBars,
+//			Class<? extends IbBar> exBarClass, long time) {
+//		if(beanRemote==null)init();
+//		return beanRemote.getService().searchBarOfTime(exContractBars,exBarClass,time);
+//	}
+//
+//	@Override
+//	public long getFirstBarTime(IbBarContainer exContractBars,
+//			Class<? extends IbBar> exBarClass) {
+//		if(beanRemote==null)init();
+//		return beanRemote.getService().getFirstBarTime(exContractBars,exBarClass);
+//	}
+//
+//	@Override
+//	public long getLastBarTime(IbBarContainer exContractBars,
+//			Class<? extends IbBar> exBarClass) {
+//		if(beanRemote==null)init();
+//		return beanRemote.getService().getLastBarTime(exContractBars,exBarClass);
+//	}
 
 	@Override
 	public List<IbBar> getBarsFromTo(IbBarContainer exContractBars,
@@ -82,24 +82,24 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 		return bars;
 	}
 
-	@Override
-	public void removeBar(long id) {
-		if(beanRemote==null)init();
-		beanRemote.getService().removeBar(id);
-	}
-
-	@Override
-	public IbBar getBar(long id) {
-		if(beanRemote==null)init();
-		return beanRemote.getService().getBar(id);
-	}
-
-	@Override
-	public List<IbBar> downloadLastBars(IbBarContainer exContractBars,
-			BarSize size) {
-		if(beanRemote==null)init();
-		return beanRemote.getService().downloadLastBars(exContractBars, size);
-	}
+//	@Override
+//	public void removeBar(long id) {
+//		if(beanRemote==null)init();
+//		beanRemote.getService().removeBar(id);
+//	}
+//
+//	@Override
+//	public IbBar getBar(long id) {
+//		if(beanRemote==null)init();
+//		return beanRemote.getService().getBar(id);
+//	}
+//
+//	@Override
+//	public List<IbBar> downloadLastBars(IbBarContainer exContractBars,
+//			BarSize size) {
+//		if(beanRemote==null)init();
+//		return beanRemote.getService().downloadLastBars(exContractBars, size);
+//	}
 
 	@Override
 	public void close() {

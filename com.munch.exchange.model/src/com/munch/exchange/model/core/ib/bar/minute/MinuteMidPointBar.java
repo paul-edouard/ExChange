@@ -81,20 +81,8 @@ public class MinuteMidPointBar implements Serializable,Comparable<MinuteMidPoint
 	}
 	
 	@Override
-	public IbBar toIbBar() {
-		IbMinuteBar ibBar=new IbMinuteBar();
-		ibBar.setTime(time);
-		ibBar.setHigh(high);
-		ibBar.setLow(low);
-		ibBar.setOpen(open);
-		ibBar.setClose(close);
-		ibBar.setWap(wap);
-		ibBar.setVolume(volume);
-		ibBar.setCount(count);
-		
-		ibBar.setType(WhatToShow.MIDPOINT);
-		
-		return ibBar;
+	public Bar toBar() {
+		return new Bar(time, high, low, open, close, wap, volume, count);
 	}
 
 

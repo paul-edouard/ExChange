@@ -81,20 +81,8 @@ public class SecondeMidPointBar implements Serializable,Comparable<SecondeMidPoi
 	}
 	
 	@Override
-	public IbBar toIbBar() {
-		IbSecondeBar ibBar=new IbSecondeBar();
-		ibBar.setTime(time);
-		ibBar.setHigh(high);
-		ibBar.setLow(low);
-		ibBar.setOpen(open);
-		ibBar.setClose(close);
-		ibBar.setWap(wap);
-		ibBar.setVolume(volume);
-		ibBar.setCount(count);
-		
-		ibBar.setType(WhatToShow.MIDPOINT);
-		
-		return ibBar;
+	public Bar toBar() {
+		return new Bar(time, high, low, open, close, wap, volume, count);
 	}
 
 

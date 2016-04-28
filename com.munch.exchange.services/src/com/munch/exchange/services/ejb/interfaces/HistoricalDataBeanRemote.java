@@ -17,25 +17,25 @@ public interface HistoricalDataBeanRemote {
 	public List<IbBarContainer> getAllExContractBars(IbContract exContract);
 	
 	
-	public IbBar searchBarOfTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass,long time);
+//	public IbBar searchBarOfTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass,long time);
 	
 	public IbBar getFirstBar(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
-	public long getFirstBarTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
+//	public long getFirstBarTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
 	
 	public IbBar getLastBar(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
-	public long getLastBarTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
+//	public long getLastBarTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
 	
 	
 	public List<IbBar> getAllBars(IbBarContainer exContractBars,BarSize size);
 	public List<IbBar> getBarsFromTo(IbBarContainer exContractBars,BarSize size,long from, long to);
-	public List<IbBar> downloadLastBars(IbBarContainer exContractBars,BarSize size);
+//	public List<IbBar> downloadLastBars(IbBarContainer exContractBars,BarSize size);
 	
 	
 	
-	void removeBar(long id);
+//	void removeBar(long id);
 	public void removeBarsFromTo(IbBarContainer exContractBars,BarSize size,long from, long to);
 	
-	public IbBar getBar(long id);
+//	public IbBar getBar(long id);
 	
 	
 	

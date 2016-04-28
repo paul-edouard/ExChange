@@ -23,7 +23,7 @@ import com.ib.controller.Bar;
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.DurationUnit;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.BarType;
+import com.munch.exchange.model.core.ib.bar.TimeBarSize;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
 
@@ -52,10 +52,6 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 
 	private boolean running=false;
 	
-	private static final int maxNumberOfParsingViolationAttempt=10;
-	
-	private int numberOfParsingViolationAttempt=0;
-	
 	private boolean isCurrentBarListReduced=false;
 	
 //	private HashMap<Long, Integer> longTermIdAttemptMap=new HashMap<>();
@@ -67,14 +63,6 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	}
 	
 	
-
-	
-
-
-
-
-
-
 	/**
 	 * Start the loading of the short time bars and
 	 *  also the long term bar in order to fill the database
@@ -96,6 +84,9 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 			
 			
 			for(IbBarContainer container:containers){
+				if(numberOfParsingViolationAttempt>=MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT)
+					break;
+				
 //				Break if the connection to TWS was broken
 				if(!ConnectionBean.INSTANCE.isConnected())break;
 				
@@ -105,12 +96,13 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 				else{
 					loadLongTermBar(container);
 				}
-			
+				
+				
 			}
 			
 //			Break if the number of pasing attempt was reached
-			if(numberOfParsingViolationAttempt>maxNumberOfParsingViolationAttempt)break;
-			
+			if(numberOfParsingViolationAttempt>=MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT)
+				break;
 			
 //			Break if the connection to TWS was broken
 			if(!ConnectionBean.INSTANCE.isConnected())break;
@@ -144,19 +136,19 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		log.info("Load short term bar: "+container.getType().toString());
 		
 		log.info("Start the loading of the second short term bar!");
-		if(!loadShortTermTypedBars(container, BarType.SECOND)){
+		if(!loadShortTermTypedBars(container, TimeBarSize.SECOND)){
 			return;
 		}
 		
 		log.info("Start the loading of the minute short term bar!");
-		if(!loadShortTermTypedBars(container, BarType.MINUTE)){
+		if(!loadShortTermTypedBars(container, TimeBarSize.MINUTE)){
 			return;
 		}
 		
 		
 	}
 	
-	private boolean loadShortTermTypedBars(IbBarContainer container, BarType barType){
+	private boolean loadShortTermTypedBars(IbBarContainer container, TimeBarSize barType){
 		
 		try {
 		ut.begin();
@@ -181,6 +173,8 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		Calendar start=Calendar.getInstance();
 		List<Bar> loadedBars = loadTypeBar(container, barType, from*1000, true);
 		if(loadedBars==null){
+			numberOfParsingViolationAttempt=MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT;
+			log.warning("Loading error! no bar were found!");
 			ut.commit();
 			return false;
 		}
@@ -191,23 +185,19 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 //			save the bar in the db
 			HistoricalBarPersistance.saveBars(em, container, barType, loadedBars);
 			
+			sendLoadingMessage("Persist short term bar: ", container, barType, start, from*1000, loadedBars);
+			
 //			If some of the bar were reduced then break the loop, the gab is closed
-			if(isCurrentBarListReduced)
+			if(isCurrentBarListReduced || loadedBars.isEmpty()){
 				break;
+			}
 			
 //			Save the last short time bar position in order to restart from save
 			from=loadedBars.get(0).time();
 			HistoricalBarPersistance.setLastShortTermBarTime(em, container, barType, from);
 			
-			
-			Calendar end=Calendar.getInstance();
-			long time_s=(end.getTimeInMillis()-start.getTimeInMillis());
-			log.info("Persist short term bar: "+container.getContract().getSymbol()+", "+
-					container.getType().toString()+" "+loadedBars.size()+" "+
-					barType.toString()+" bars from "+
-					FORMAT.format( new Date(from*1000) )+" in "+time_s+ " ms");
-			
 			ut.commit();
+			
 			ut.begin();
 			
 //			Load the new bars from the new start
@@ -249,6 +239,15 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		
 	}
 	
+	private void sendLoadingMessage(String message, IbBarContainer container, TimeBarSize barType,Calendar start, long from, List<Bar> loadedBars){
+		Calendar end=Calendar.getInstance();
+		long time_s=(end.getTimeInMillis()-start.getTimeInMillis());
+		log.info(message+container.getContract().getSymbol()+", "+
+				container.getType().toString()+" "+loadedBars.size()+" "+
+				barType.toString()+" bars from "+
+				FORMAT.format( new Date(from) )+" in "+time_s+ " ms");
+	}
+	
 	
 	
 	private void loadLongTermBar(IbBarContainer container){
@@ -257,18 +256,18 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 //		#########################################
 //		##   Load the long term second bars   ##
 //		#########################################
-		loadLongTermTypeBar(container, BarType.SECOND);
+		loadLongTermTypeBar(container, TimeBarSize.SECOND);
 		
 //		#########################################
 //		##   Load the long term minute bars   ##
 //		#########################################
-		loadLongTermTypeBar(container, BarType.MINUTE);
+		loadLongTermTypeBar(container, TimeBarSize.MINUTE);
 		
 		
 	}
 	
 	
-	private void loadLongTermTypeBar(IbBarContainer container, BarType bartype){
+	private void loadLongTermTypeBar(IbBarContainer container, TimeBarSize bartype){
 		
 		List<Bar> typedBars=null;
 		
@@ -305,13 +304,8 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		
 //		Save the bar in the DB
 		HistoricalBarPersistance.saveBars(em, container,bartype, typedBars);
-			
-		Calendar end=Calendar.getInstance();
-		long time_s=(end.getTimeInMillis()-start.getTimeInMillis());
-		log.info("Persist long term bar: "+container.getContract().getSymbol()+", "+
-				container.getType().toString()+" "+typedBars.size()+" "+
-				bartype.toString()+" bars from "+
-				FORMAT.format( new Date(firstSecondBarTime) )+" in "+time_s+ " ms");
+		
+		sendLoadingMessage("Persist long term bar: ", container, bartype, start, firstSecondBarTime, typedBars);
 			
 		
 		ut.commit();
@@ -368,12 +362,12 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 			ut.begin();
 			
 			for(IbBarContainer container:containers){
-				if(!HistoricalBarPersistance.isLongTermBarLoadingFinished(em, container, BarType.SECOND)){
+				if(!HistoricalBarPersistance.isLongTermBarLoadingFinished(em, container, TimeBarSize.SECOND)){
 					searchActivated=true;
 					break;
 				}
 				
-				if(!HistoricalBarPersistance.isLongTermBarLoadingFinished(em, container, BarType.MINUTE)){
+				if(!HistoricalBarPersistance.isLongTermBarLoadingFinished(em, container, TimeBarSize.MINUTE)){
 					searchActivated=true;
 					break;
 				}
@@ -461,9 +455,17 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	
 	private static final long REQUEST_TIMOUT=30000;
 	
-	private static final int MAX_SECONDE_DURATION_IN_SECONDE=1800;
+	private static final long PARSING_VIOLATION_SLEEP=3000;
+	
+	private static final int MAX_SECONDE_DURATION_IN_SECOND=1800;
 	
 	private static final int MAX_MINUTE_DURATION_IN_DAY=1;
+	
+	private static final int MAX_MINUTE_DURATION_IN_SECOND=86400;
+	
+	private static final int MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT=15;
+	
+	private int numberOfParsingViolationAttempt=0;
 	
 	private static LinkedList<Long> lastRequests=new LinkedList<>();
 
@@ -474,7 +476,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	
 	private boolean requestFinished=false;
 	
-	private List<Bar> loadTypeBar(IbBarContainer container,BarType barType, long from, boolean removeDuplicated){
+	private List<Bar> loadTypeBar(IbBarContainer container,TimeBarSize barType, long from, boolean removeDuplicated){
 //		int duration=MAX_SECONDE_DURATION_IN_SECONDE;
 		
 		em.flush();
@@ -484,18 +486,20 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		
 		DurationUnit durationUnit=DurationUnit.SECOND;
 		BarSize barSize=BarSize._1_secs;
-		int max_duration=MAX_SECONDE_DURATION_IN_SECONDE;
+		int max_duration=MAX_SECONDE_DURATION_IN_SECOND;
 		
 		switch (barType) {
 		case SECOND:
 			durationUnit=DurationUnit.SECOND;
 			barSize=BarSize._1_secs;
-			max_duration=MAX_SECONDE_DURATION_IN_SECONDE;
+			max_duration=MAX_SECONDE_DURATION_IN_SECOND;
 			break;
 		case MINUTE:
 			durationUnit=DurationUnit.DAY;
+//			durationUnit=DurationUnit.SECOND;
 			barSize=BarSize._1_min;
 			max_duration=MAX_MINUTE_DURATION_IN_DAY;
+//			max_duration=MAX_MINUTE_DURATION_IN_SECOND;
 			break;
 			
 		default:
@@ -506,19 +510,38 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		List<Bar> bars=loadBars(container, from, max_duration, durationUnit, barSize);
 		if(bars==null)return null;
 		
+		
 		if(removeDuplicated){
-			while(true){
-				if(bars.isEmpty())break;
-				
-				long time=bars.get(0).time();
-				if(HistoricalBarPersistance.containsBar(em, container, BarType.SECOND, time)){
-					isCurrentBarListReduced=true;
-					bars.remove(0);
-					continue;
+			LinkedList<Bar> barToDelete=new LinkedList<>();
+			
+			for(Bar bar:bars){
+				long time=bar.time();
+				if(HistoricalBarPersistance.containsBar(em, container, barType, time)){
+//					log.info("Bar to remove: "+bar.toString());
+					barToDelete.add(bar);
 				}
-				
-				break;
 			}
+			
+			if(barToDelete.size() > 0){
+				log.info("Nb of bar to delete: "+barToDelete.size());
+				isCurrentBarListReduced=true;
+				bars.removeAll(barToDelete);
+			}
+			
+//			while(true){
+//				if(bars.isEmpty())break;
+//				
+//				long time=bars.get(0).time();
+//				if(HistoricalBarPersistance.containsBar(em, container, barType, time)){
+//					isCurrentBarListReduced=true;
+//					bars.remove(0);
+//					continue;
+//				}
+//				
+//				break;
+//			}
+			
+			
 		}
 		
 		return bars;
@@ -584,10 +607,10 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 //			log.info("New request denied! Please wait a little bit");
 			
 			if(!ConnectionBean.INSTANCE.isConnected())return false;
-			if(numberOfParsingViolationAttempt>maxNumberOfParsingViolationAttempt)return false;
+			if(numberOfParsingViolationAttempt>MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT)return false;
 			
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(PARSING_VIOLATION_SLEEP);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 				break;

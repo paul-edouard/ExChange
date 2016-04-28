@@ -1,7 +1,9 @@
 package com.munch.exchange.model.core.ib.bar;
 
-public enum BarType {
+public enum TimeBarSize {
 	
-	TIME,RANGE;
+	
+	SECOND,MINUTE;
 
+	
 }

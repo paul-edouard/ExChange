@@ -1593,7 +1593,8 @@ public class ChartEditorPart{
 				from=to-loadingSize*intervall;
 				
 				List<IbBar> bars=hisDataProvider.getBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
-				List<IbBar> newBars=hisDataProvider.downloadLastBars(getBarContainer(),barRecorder.getBarSize());
+//				List<IbBar> newBars=hisDataProvider.downloadLastBars(getBarContainer(),barRecorder.getBarSize());
+				List<IbBar> newBars=new LinkedList<IbBar>();
 				//logger.info("Number of bars: "+bars.size());
 				//logger.info("Number of new bars: "+newBars.size());
 					

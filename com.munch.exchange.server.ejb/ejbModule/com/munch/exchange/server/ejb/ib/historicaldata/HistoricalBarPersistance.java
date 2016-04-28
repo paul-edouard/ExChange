@@ -13,7 +13,7 @@ import javax.persistence.TypedQuery;
 import com.ib.controller.Bar;
 import com.munch.exchange.model.core.ib.bar.BarContainerInterface;
 import com.munch.exchange.model.core.ib.bar.BarConversionInterface;
-import com.munch.exchange.model.core.ib.bar.BarType;
+import com.munch.exchange.model.core.ib.bar.TimeBarSize;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.bar.minute.MinuteAskBar;
@@ -32,9 +32,9 @@ public class HistoricalBarPersistance {
 	public static final SimpleDateFormat FORMAT = new SimpleDateFormat( "yyyyMMdd HH:mm:ss"); // format for historical query
 
 	
-	public static void saveBars(EntityManager em, IbBarContainer container, BarType barType, List<Bar> bars){
+	public static void saveBars(EntityManager em, IbBarContainer container, TimeBarSize barType, List<Bar> bars){
 //		log.info("Start the persistance of "+barType.toString()+ " "+bars.size()+" bars");
-		Calendar start=Calendar.getInstance();
+//		Calendar start=Calendar.getInstance();
 		
 		Class<?> tableClass=getTableClass(container,barType);
 		try {
@@ -72,9 +72,8 @@ public class HistoricalBarPersistance {
 		
 	}
 	
-	
 	public static void removeBarsFromTo(EntityManager em, IbBarContainer container,
-			BarType barType , long from, long to) {
+			TimeBarSize barType , long from, long to) {
 		
 		Query query=em.createQuery("DELETE " +
 				"FROM "+getTableName(container,barType)+" b "+
@@ -87,7 +86,7 @@ public class HistoricalBarPersistance {
 	}
 	
 	public static long getFirstBarTime(EntityManager em,
-			IbBarContainer container, BarType barType ){
+			IbBarContainer container, TimeBarSize barType ){
 		
 //		log.info("SELECT MIN(b.time)" +
 //					"FROM "+getTableName(container,barType)+
@@ -110,7 +109,7 @@ public class HistoricalBarPersistance {
 	}
 		
 	public static long getLastBarTime(EntityManager em,
-			IbBarContainer container, BarType barType ){
+			IbBarContainer container, TimeBarSize barType ){
 		Query query=em.createQuery("SELECT MAX(b.time)" +
 					"FROM "+getTableName(container,barType)+
 					" b WHERE b.containerId="+getContainerId(em, container, barType)
@@ -127,18 +126,18 @@ public class HistoricalBarPersistance {
     	return time;
 	}
 	
-	public static List<IbBar> getAllBars(EntityManager em,
-			IbBarContainer container, BarType barType ){
+	public static List<Bar> getAllBars(EntityManager em,
+			IbBarContainer container, TimeBarSize barType ){
 		
 		String queryString="SELECT b " +
 				"FROM "+getTableName(container,barType)+" b "+
     			"WHERE b.containerId="+getContainerId(em, container, barType);
 		
-		return getIbBarListFromQuery(em, queryString);
+		return getBarListFromQuery(em, queryString);
 	}
 	
-	public static List<IbBar> getBarsFromTo(EntityManager em,
-			IbBarContainer container, BarType barType , long from, long to){
+	public static List<Bar> getBarsFromTo(EntityManager em,
+			IbBarContainer container, TimeBarSize barType , long from, long to){
 		
 		String queryString="SELECT b " +
 				"FROM "+getTableName(container,barType)+" b "+
@@ -146,24 +145,26 @@ public class HistoricalBarPersistance {
 				"AND b.time>="+from+ " "+
 				"AND b.time<="+to;
 		
-		return getIbBarListFromQuery(em, queryString);
+		return getBarListFromQuery(em, queryString);
 	}
 	
 	public static boolean containsBar(EntityManager em,
-			IbBarContainer container, BarType barType , long time){
+			IbBarContainer container, TimeBarSize barType , long time){
 		
 		String queryString="SELECT b " +
 				"FROM "+getTableName(container,barType)+" b "+
 				"WHERE b.containerId="+getContainerId(em, container, barType)+" "+
 				"AND b.time="+time;
+		List<Bar> bars=getBarListFromQuery(em, queryString);
 		
-		List<IbBar> bars=getIbBarListFromQuery(em, queryString);
+//		log.info(queryString+", bars: "+bars.size());
+		
 		
 		return bars.size()==1;
 	}
 	
 	
-	public static boolean isLongTermBarLoadingFinished(EntityManager em, IbBarContainer container, BarType barType){
+	public static boolean isLongTermBarLoadingFinished(EntityManager em, IbBarContainer container, TimeBarSize barType){
 		BarContainerInterface containerIt=getContainer(em, container, barType);
 		if(containerIt==null)return true;
 		
@@ -183,7 +184,7 @@ public class HistoricalBarPersistance {
 	}
 	
 	
-	public static long getLastShortTermBarTime(EntityManager em, IbBarContainer container, BarType barType){
+	public static long getLastShortTermBarTime(EntityManager em, IbBarContainer container, TimeBarSize barType){
 		BarContainerInterface containerIt=getContainer(em, container, barType);
 		if(containerIt==null)return 0;
 		
@@ -203,7 +204,7 @@ public class HistoricalBarPersistance {
 	}
 	
 	
-	public static void setLongTermBarLoadingFinished(EntityManager em, IbBarContainer container, BarType barType, boolean longTermBarLoadingFinished){
+	public static void setLongTermBarLoadingFinished(EntityManager em, IbBarContainer container, TimeBarSize barType, boolean longTermBarLoadingFinished){
 		BarContainerInterface containerIt=getContainer(em, container, barType);
 		if(containerIt==null)return ;
 		
@@ -233,7 +234,7 @@ public class HistoricalBarPersistance {
 	}
 	
 	
-	public static void setLastShortTermBarTime(EntityManager em, IbBarContainer container, BarType barType, long time){
+	public static void setLastShortTermBarTime(EntityManager em, IbBarContainer container, TimeBarSize barType, long time){
 		BarContainerInterface containerIt=getContainer(em, container, barType);
 		if(containerIt==null)return ;
 		
@@ -265,33 +266,33 @@ public class HistoricalBarPersistance {
 	
 	
 	
-	private static List<IbBar> getIbBarListFromQuery(EntityManager em, String queryString){
+	private static List<Bar> getBarListFromQuery(EntityManager em, String queryString){
 		
 		TypedQuery<BarConversionInterface> query=em.createQuery(queryString,BarConversionInterface.class);
 		List<BarConversionInterface> bars=query.getResultList();
 		
 //		Convert the bar to IbBars
-		List<IbBar> ibBars=new LinkedList<IbBar>();
+		List<Bar> Bars=new LinkedList<Bar>();
 		for(BarConversionInterface bar:bars){
-			ibBars.add(bar.toIbBar());
+			Bars.add(bar.toBar());
 		}
 		
 		em.flush();
     	em.clear();
 		
-		return ibBars;
+		return Bars;
 		
 	}
 	
 	
-	private static long getContainerId(EntityManager em, IbBarContainer container, BarType barType){
+	private static long getContainerId(EntityManager em, IbBarContainer container, TimeBarSize barType){
 		BarContainerInterface containerIt=getContainer(em, container, barType);
 		if(containerIt!=null)return containerIt.getId();
 		
 		return 0;
 	}
 	
-	private static BarContainerInterface getContainer(EntityManager em, IbBarContainer container, BarType barType){
+	private static BarContainerInterface getContainer(EntityManager em, IbBarContainer container, TimeBarSize barType){
 		switch (barType) {
 		case SECOND:
 			if(container.getContract().getSecondeContainer().getId()==0){
@@ -303,27 +304,23 @@ public class HistoricalBarPersistance {
 				em.persist(container.getContract().getMinuteContainer());
 			}
 			return container.getContract().getMinuteContainer();
-		case DAY:
-			return null;
 		default:
 			return null;
 		}
 		
 	}
 	
-	private static String getTableName(IbBarContainer container, BarType barType){
+	private static String getTableName(IbBarContainer container, TimeBarSize barType){
 		Class<?> tableClass=getTableClass(container,barType);
 		if(tableClass==null)return "";
 		return tableClass.getSimpleName();
 	}
 	
-	private static Class<?> getTableClass(IbBarContainer container, BarType barType){
+	private static Class<?> getTableClass(IbBarContainer container, TimeBarSize barType){
 		switch (barType) {
 		case SECOND:
 			return getSecondeTableClass(container);
 		case MINUTE:
-			return getMinuteTableClass(container);
-		case DAY:
 			return getMinuteTableClass(container);
 		default:
 			return null;
