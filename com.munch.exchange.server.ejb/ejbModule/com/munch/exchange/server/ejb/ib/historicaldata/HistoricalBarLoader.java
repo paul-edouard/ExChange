@@ -24,6 +24,7 @@ import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.DurationUnit;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.TimeBarSize;
+import com.munch.exchange.model.core.ib.bar.BarComparator;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
 
@@ -292,6 +293,16 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		typedBars = loadTypeBar(container, bartype, firstSecondBarTime, false);
 //		Error the request was wrong
 		if(typedBars==null){
+			if(isRequestTimoutReached){
+				log.info("Warning ba loading: "+container.getContract().getSymbol()+", "+
+						container.getType().toString()+", "+
+						bartype.toString()+" no bar found before: "+
+						FORMAT.format( new Date(firstSecondBarTime) ));
+				
+				
+				log.warning("No bar found before ");
+				HistoricalBarPersistance.setLongTermBarLoadingFinished(em, container, bartype, true);
+			}
 			ut.commit();return;
 		}
 		
@@ -469,12 +480,13 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	
 	private static LinkedList<Long> lastRequests=new LinkedList<>();
 
-	
 	private long requestStartTime=0;
 	
 	private List<Bar> recievedBars=new LinkedList<>();
 	
 	private boolean requestFinished=false;
+	
+	private boolean isRequestTimoutReached=false;
 	
 	private List<Bar> loadTypeBar(IbBarContainer container,TimeBarSize barType, long from, boolean removeDuplicated){
 //		int duration=MAX_SECONDE_DURATION_IN_SECONDE;
@@ -551,6 +563,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	
 	private List<Bar> loadBars(IbBarContainer container, long from, int duration, DurationUnit durationUnit, BarSize barSize ){
 		requestFinished=false;
+		isRequestTimoutReached=false;
 		recievedBars.clear();
 		
 //		Wait until the new request can be accepted id return null the process have to be closed
@@ -578,20 +591,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		}
 		
 //		Sort the recieved bars
-		Collections.sort(recievedBars, new Comparator<Bar>() {
-
-			@Override
-			public int compare(Bar arg0, Bar arg1) {
-				if(arg0.time() > arg1.time())
-					return 1;
-				else if(arg0.time() < arg1.time()){
-					return -1;
-				}
-				
-				return 0;
-			}
-			
-		});
+		Collections.sort(recievedBars, new BarComparator());
 		
 		
 		if(!recievedBars.isEmpty())
@@ -667,6 +667,8 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 				return true;
 			}
 			if(isTimeOut() && recievedBars.isEmpty()){
+				log.info("Request Time out is reached!");
+				isRequestTimoutReached=true;
 				return false;
 			}
 			

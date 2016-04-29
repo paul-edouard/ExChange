@@ -71,8 +71,8 @@ public class DeleteRateHandler {
 				
 //			Tries to delete the bar week after week
 			long weekInSeconde=7*24*60*60;
-			for(IbBarContainer container:historicalDataProvider.getAllExContractBars(selectedContract)){
-				IbBar lastBar=historicalDataProvider.getFirstBar(container, IbMinuteBar.class);
+			for(IbBarContainer container:historicalDataProvider.getAllBarContainers(selectedContract)){
+				IbBar lastBar=historicalDataProvider.getFirstTimeBar(container, IbMinuteBar.class);
 				while(lastBar!=null){
 					
 					System.out.println("Last Bar: "+IbBar.format(lastBar.getTimeInMs()));
@@ -81,7 +81,7 @@ public class DeleteRateHandler {
 					
 					historicalDataProvider.removeBarsFromTo(container, BarSize._1_min, lastBar.getTime(), lastBar.getTime()+weekInSeconde);
 	
-					lastBar=historicalDataProvider.getFirstBar(container, IbMinuteBar.class);
+					lastBar=historicalDataProvider.getFirstTimeBar(container, IbMinuteBar.class);
 				}
 				
 			}

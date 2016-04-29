@@ -67,7 +67,7 @@ public class NeuralConfigurationInputTreeDropAdapter extends ViewerDropAdapter {
 			IbContract contract=contractProvider.getContract(Integer.valueOf(contractId));
 
 //			Search the Container
-			List<IbBarContainer> containers=historicalDataProvider.getAllExContractBars(contract);
+			List<IbBarContainer> containers=historicalDataProvider.getAllBarContainers(contract);
 			IbBarContainer barContainer=null;
 			for(IbBarContainer container:containers){
 				if(container.getId()==Long.valueOf(containerId)){

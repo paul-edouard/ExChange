@@ -6,7 +6,7 @@ public interface BarConversionInterface {
 	
 	public void init(Bar bar);
 	public void attachToContainer(Object container);
-	public Bar toBar();
+	public ExBar toExBar();
 	
 
 }

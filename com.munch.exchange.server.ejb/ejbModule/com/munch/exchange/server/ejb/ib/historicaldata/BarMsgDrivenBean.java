@@ -19,6 +19,7 @@ import javax.transaction.UserTransaction;
 
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.server.ejb.ib.ConnectionBean;
 import com.munch.exchange.server.ejb.ib.Constants;
 
 /**
@@ -68,6 +69,8 @@ public class BarMsgDrivenBean implements MessageListener {
 			
 			long time = msg
 					.getLongProperty(HistoricalDataTimerBean.TIME_STRING);
+			
+			if(!ConnectionBean.INSTANCE.isConnected())return;
 			
 			
 			if(HistoricalBarLoader.getINSTANCE()==null || !HistoricalBarLoader.getINSTANCE().isRunning()){

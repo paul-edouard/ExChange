@@ -1402,7 +1402,7 @@ IbChartSignalOptimizationControllerListener{
 			//Collect the Data
 			logger.info("Collect the data");
 			if(allCollectedBars==null || allCollectedBars.isEmpty()){
-				allCollectedBars=hisDataProvider.getAllBars(getBarContainer(),
+				allCollectedBars=hisDataProvider.getAllTimeBars(getBarContainer(),
 						IbBar.getBarSizeFromString(bazSize));
 				Collections.sort(allCollectedBars);
 				//TODO Remove this!
@@ -1505,7 +1505,7 @@ IbChartSignalOptimizationControllerListener{
 			
 			logger.info("Collect the data");
 			if(allCollectedBars==null || allCollectedBars.isEmpty()){
-				allCollectedBars=hisDataProvider.getAllBars(getBarContainer(),
+				allCollectedBars=hisDataProvider.getAllTimeBars(getBarContainer(),
 						IbBar.getBarSizeFromString(bazSize));
 				Collections.sort(allCollectedBars);
 			}

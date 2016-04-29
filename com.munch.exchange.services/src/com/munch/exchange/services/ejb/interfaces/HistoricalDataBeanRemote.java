@@ -6,7 +6,7 @@ import javax.ejb.Remote;
 
 import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 
 @Remote
@@ -14,29 +14,25 @@ public interface HistoricalDataBeanRemote {
 	
 	
 	//JPA Methodes
-	public List<IbBarContainer> getAllExContractBars(IbContract exContract);
+	public List<IbBarContainer> getAllBarContainers(IbContract exContract);
 	
 	
-//	public IbBar searchBarOfTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass,long time);
+//	Time Bars
+	public ExBar getFirstTimeBar(IbBarContainer container,BarSize size);
+	public ExBar getLastTimeBar(IbBarContainer container,BarSize size);
 	
-	public IbBar getFirstBar(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
-//	public long getFirstBarTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
-	
-	public IbBar getLastBar(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
-//	public long getLastBarTime(IbBarContainer exContractBars,Class<? extends IbBar> exBarClass);
-	
-	
-	public List<IbBar> getAllBars(IbBarContainer exContractBars,BarSize size);
-	public List<IbBar> getBarsFromTo(IbBarContainer exContractBars,BarSize size,long from, long to);
-//	public List<IbBar> downloadLastBars(IbBarContainer exContractBars,BarSize size);
+	public List<ExBar> getAllTimeBars(IbBarContainer container,BarSize size);
+	public List<ExBar> getTimeBarsFromTo(IbBarContainer container,BarSize size,long from, long to);
 	
 	
+	public void removeBarsFromTo(IbBarContainer container,BarSize size,long from, long to);
+		
+//	Range Bars
+	public ExBar getFirstRangeBar(IbBarContainer container, double range);
+	public ExBar getLastRangeBar(IbBarContainer container, double range);
 	
-//	void removeBar(long id);
-	public void removeBarsFromTo(IbBarContainer exContractBars,BarSize size,long from, long to);
-	
-//	public IbBar getBar(long id);
-	
+	public List<ExBar> getAllRangeBars(IbBarContainer container,double range);
+	public List<ExBar> getRangeBarsFromTo(IbBarContainer container,double range,long from, long to);
 	
 	
 }

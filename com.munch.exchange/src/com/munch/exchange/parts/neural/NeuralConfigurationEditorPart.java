@@ -988,7 +988,7 @@ public class NeuralConfigurationEditorPart {
 				if(neuralConfiguration.getNeuralInputsBarsCollector().containsKey(key))
 					continue;
 				
-				List<IbBar> bars=historicalDataProvider.getAllBars(nii.getBarContainer(), nii.getSize());
+				List<IbBar> bars=historicalDataProvider.getAllTimeBars(nii.getBarContainer(), nii.getSize());
 					
 				neuralConfiguration.getNeuralInputsBarsCollector().put(key, bars);
 
@@ -2164,14 +2164,14 @@ public class NeuralConfigurationEditorPart {
 			updateProgressBarDataSet();
 			
 			List<IbBarContainer> containers = historicalDataProvider
-					.getAllExContractBars(neuralConfiguration.getContract());
+					.getAllBarContainers(neuralConfiguration.getContract());
 			
 			for (IbBarContainer container : containers) {
 
 				// Collect the mid point data
 				if (neuralConfiguration.getReferenceData() == ReferenceData.MID_POINT
 						&& container.getType() == WhatToShow.MIDPOINT) {
-					List<IbBar> allBars = historicalDataProvider.getAllBars(
+					List<IbBar> allBars = historicalDataProvider.getAllTimeBars(
 							container, neuralConfiguration.getSize());
 					neuralConfiguration.setAllMidPointBars(allBars);
 				}
@@ -2179,7 +2179,7 @@ public class NeuralConfigurationEditorPart {
 				// Collect the Ask Data
 				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
 						&& container.getType() == WhatToShow.ASK) {
-					List<IbBar> allBars = historicalDataProvider.getAllBars(
+					List<IbBar> allBars = historicalDataProvider.getAllTimeBars(
 							container, neuralConfiguration.getSize());
 					neuralConfiguration.setAllAskBars(allBars);
 				}
@@ -2187,7 +2187,7 @@ public class NeuralConfigurationEditorPart {
 				// Collect the Bid Data
 				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
 						&& container.getType() == WhatToShow.BID) {
-					List<IbBar> allBars = historicalDataProvider.getAllBars(
+					List<IbBar> allBars = historicalDataProvider.getAllTimeBars(
 							container, neuralConfiguration.getSize());
 					neuralConfiguration.setAllBidBars(allBars);
 				}

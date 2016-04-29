@@ -10,11 +10,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.ib.controller.Bar;
-import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.bar.BarConversionInterface;
 import com.munch.exchange.model.core.ib.bar.BarPK;
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 
 @Entity
 @IdClass(BarPK.class)
@@ -80,8 +78,8 @@ public class SecondeTradesBar implements Serializable,Comparable<SecondeTradesBa
 	}
 	
 	@Override
-	public Bar toBar() {
-		return new Bar(time, high, low, open, close, wap, volume, count);
+	public ExBar toExBar() {
+		return new ExBar(time, high, low, open, close, wap, volume, count);
 	}
 
 

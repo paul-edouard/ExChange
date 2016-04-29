@@ -316,7 +316,7 @@ public class ChartEditorPart{
 	
 	
 	private void initBarContainers(){
-		barContainers=hisDataProvider.getAllExContractBars(contract);
+		barContainers=hisDataProvider.getAllBarContainers(contract);
 		if(barContainers==null || barContainers.size()==0)return;
 		
 		/*
@@ -1592,7 +1592,7 @@ public class ChartEditorPart{
 				to=new Date().getTime()/1000;
 				from=to-loadingSize*intervall;
 				
-				List<IbBar> bars=hisDataProvider.getBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
+				List<IbBar> bars=hisDataProvider.getTimeBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
 //				List<IbBar> newBars=hisDataProvider.downloadLastBars(getBarContainer(),barRecorder.getBarSize());
 				List<IbBar> newBars=new LinkedList<IbBar>();
 				//logger.info("Number of bars: "+bars.size());
@@ -1616,7 +1616,7 @@ public class ChartEditorPart{
 				from=to-loadingSize*intervall;
 				//logger.info("Ask historical data: ");
 				//hisDataProvider.init();
-				List<IbBar> bars=hisDataProvider.getBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
+				List<IbBar> bars=hisDataProvider.getTimeBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
 				
 				if(bars.size()==0){
 					pastValueAvailable=false;

@@ -13,6 +13,7 @@ import javax.persistence.TypedQuery;
 import com.ib.controller.Bar;
 import com.munch.exchange.model.core.ib.bar.BarContainerInterface;
 import com.munch.exchange.model.core.ib.bar.BarConversionInterface;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.TimeBarSize;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
@@ -33,8 +34,7 @@ public class HistoricalBarPersistance {
 
 	
 	public static void saveBars(EntityManager em, IbBarContainer container, TimeBarSize barType, List<Bar> bars){
-//		log.info("Start the persistance of "+barType.toString()+ " "+bars.size()+" bars");
-//		Calendar start=Calendar.getInstance();
+
 		
 		Class<?> tableClass=getTableClass(container,barType);
 		try {
@@ -66,9 +66,6 @@ public class HistoricalBarPersistance {
 			e.printStackTrace();
 		}
 		
-//		Calendar end=Calendar.getInstance();
-//		long time_s=(end.getTimeInMillis()-start.getTimeInMillis());
-//		log.info("Time needed to persit "+bars.size()+" bars: "+time_s+ " ms");
 		
 	}
 	
@@ -126,17 +123,17 @@ public class HistoricalBarPersistance {
     	return time;
 	}
 	
-	public static List<Bar> getAllBars(EntityManager em,
-			IbBarContainer container, TimeBarSize barType ){
+	public static List<ExBar> getAllBars(EntityManager em,
+			IbBarContainer container, TimeBarSize timeBarSize ){
 		
 		String queryString="SELECT b " +
-				"FROM "+getTableName(container,barType)+" b "+
-    			"WHERE b.containerId="+getContainerId(em, container, barType);
+				"FROM "+getTableName(container,timeBarSize)+" b "+
+    			"WHERE b.containerId="+getContainerId(em, container, timeBarSize);
 		
 		return getBarListFromQuery(em, queryString);
 	}
 	
-	public static List<Bar> getBarsFromTo(EntityManager em,
+	public static List<ExBar> getBarsFromTo(EntityManager em,
 			IbBarContainer container, TimeBarSize barType , long from, long to){
 		
 		String queryString="SELECT b " +
@@ -149,13 +146,13 @@ public class HistoricalBarPersistance {
 	}
 	
 	public static boolean containsBar(EntityManager em,
-			IbBarContainer container, TimeBarSize barType , long time){
+			IbBarContainer container, TimeBarSize timeBarType , long time){
 		
 		String queryString="SELECT b " +
-				"FROM "+getTableName(container,barType)+" b "+
-				"WHERE b.containerId="+getContainerId(em, container, barType)+" "+
+				"FROM "+getTableName(container,timeBarType)+" b "+
+				"WHERE b.containerId="+getContainerId(em, container, timeBarType)+" "+
 				"AND b.time="+time;
-		List<Bar> bars=getBarListFromQuery(em, queryString);
+		List<ExBar> bars=getBarListFromQuery(em, queryString);
 		
 //		log.info(queryString+", bars: "+bars.size());
 		
@@ -163,8 +160,20 @@ public class HistoricalBarPersistance {
 		return bars.size()==1;
 	}
 	
+	public static ExBar getBar(EntityManager em,
+			IbBarContainer container, TimeBarSize timeBarType , long time){
+		String queryString="SELECT b " +
+				"FROM "+getTableName(container,timeBarType)+" b "+
+				"WHERE b.containerId="+getContainerId(em, container, timeBarType)+" "+
+				"AND b.time="+time;
+		List<ExBar> bars=getBarListFromQuery(em, queryString);
+		if(bars==null || bars.isEmpty() || bars.size()!=1)return null;
+		
+		return bars.get(0);
+	}
 	
-	public static boolean isLongTermBarLoadingFinished(EntityManager em, IbBarContainer container, TimeBarSize barType){
+	
+ 	public static boolean isLongTermBarLoadingFinished(EntityManager em, IbBarContainer container, TimeBarSize barType){
 		BarContainerInterface containerIt=getContainer(em, container, barType);
 		if(containerIt==null)return true;
 		
@@ -266,15 +275,15 @@ public class HistoricalBarPersistance {
 	
 	
 	
-	private static List<Bar> getBarListFromQuery(EntityManager em, String queryString){
+	private static List<ExBar> getBarListFromQuery(EntityManager em, String queryString){
 		
 		TypedQuery<BarConversionInterface> query=em.createQuery(queryString,BarConversionInterface.class);
 		List<BarConversionInterface> bars=query.getResultList();
 		
 //		Convert the bar to IbBars
-		List<Bar> Bars=new LinkedList<Bar>();
+		List<ExBar> Bars=new LinkedList<ExBar>();
 		for(BarConversionInterface bar:bars){
-			Bars.add(bar.toBar());
+			Bars.add(bar.toExBar());
 		}
 		
 		em.flush();
