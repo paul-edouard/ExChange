@@ -32,7 +32,8 @@ Require-Bundle: javax.inject;bundle-version="1.0.0",
  com.munch.exchange.wildflylibs;bundle-version="1.0.0",
  com.ib.api;bundle-version="1.0.0",
  MOEAFramework-2.6;bundle-version="1.0.0",
- encog-core;bundle-version="1.0.0"
+ encog-core;bundle-version="1.0.0",
+ org.eclipse.e4.ui.progress;bundle-version="0.1.100"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: javax.annotation;version="1.0.0"
 Bundle-ActivationPolicy: lazy

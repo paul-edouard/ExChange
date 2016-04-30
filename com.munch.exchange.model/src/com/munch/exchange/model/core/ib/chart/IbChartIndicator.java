@@ -20,6 +20,7 @@ import javax.persistence.Transient;
 
 import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
 import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
@@ -318,7 +319,7 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	
 	public abstract void createParameters();
 	
-	public void compute(List<IbBar> bars){
+	public void compute(List<ExBar> bars){
 		
 		
 		
@@ -335,7 +336,7 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 		}
 		else{
 			if(isolateLastNeededBars){
-				List<IbBar> lastBars=isolateLastNeededBars(bars);
+				List<ExBar> lastBars=isolateLastNeededBars(bars);
 				computeSeriesPointValues(lastBars, false);
 			}
 			else{
@@ -345,21 +346,21 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 		}
 	}
 	
-	protected abstract void computeSeriesPointValues(List<IbBar> bars, boolean reset);
+	protected abstract void computeSeriesPointValues(List<ExBar> bars, boolean reset);
 	
 	//public abstract void computeLast(List<IbBar> bars);
 	
 	
-	protected List<IbBar> isolateLastNeededBars(List<IbBar> bars){
+	protected List<ExBar> isolateLastNeededBars(List<ExBar> bars){
 		
-		LinkedList<IbBar> neededBars=new LinkedList<IbBar>();
+		LinkedList<ExBar> neededBars=new LinkedList<ExBar>();
 		List<IbChartPoint> points=this.getMainChartSerie().getPoints();
 		IbChartPoint lastCalculatedPoint=points.get(points.size()-1);
 		int nbOfRequiredValues=this.getMainChartSerie().getValidAtPosition();
 		
 		int currentNbOfReValues=0;
 		for(int i=bars.size()-1;i>=0;i--){
-			IbBar bar=bars.get(i);
+			ExBar bar=bars.get(i);
 			if(bar.getTimeInMs() > lastCalculatedPoint.getTime()){
 				neededBars.addFirst(bar);
 				continue;

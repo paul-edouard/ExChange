@@ -74,7 +74,8 @@ import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.ExchangeChartComposite;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.ExBar;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.bar.IbBarRecorder;
 import com.munch.exchange.model.core.ib.bar.IbBarRecorderListener;
@@ -174,7 +175,7 @@ public class ChartEditorPart{
 	private List<IbBarContainer> barContainers;
 	private IbBarRecorder barRecorder=new IbBarRecorder();
 	
-	private HashMap<WhatToShow, LinkedList<IbBar>> liveBarMap=new HashMap<WhatToShow, LinkedList<IbBar>>();
+	private HashMap<WhatToShow, LinkedList<ExBar>> liveBarMap=new HashMap<WhatToShow, LinkedList<ExBar>>();
 	private DataUpdater dataUpdater=new DataUpdater();
 	
 	
@@ -229,12 +230,12 @@ public class ChartEditorPart{
 		if(comboWhatToShow.getItems().length>0){
 			comboWhatToShow.setText(comboWhatToShow.getItem(0));
 		}
-		barRecorder.setWhatToShow(IbBar.getWhatToShowFromString(comboWhatToShow.getText()));
+		barRecorder.setWhatToShow(BarUtils.getWhatToShowFromString(comboWhatToShow.getText()));
 		//whatToShow=IbBar.getWhatToShowFromString(comboWhatToShow.getText());
 		comboWhatToShow.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				logger.info(comboWhatToShow.getText());
-				WhatToShow newWhatToShow=IbBar.getWhatToShowFromString(comboWhatToShow.getText());
+				WhatToShow newWhatToShow=BarUtils.getWhatToShowFromString(comboWhatToShow.getText());
 				if(newWhatToShow==barRecorder.getWhatToShow())return;
 				
 				chartGroupSelected();
@@ -250,13 +251,13 @@ public class ChartEditorPart{
 		
 		comboBarSize = new Combo(composite, SWT.NONE);
 		comboBarSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		for(String bSize:IbBar.getAllBarSizesAsString())
+		for(String bSize:BarUtils.getAllBarSizesAsString())
 			comboBarSize.add(bSize);
 		comboBarSize.setText(comboBarSize.getItem(0));
 		comboBarSize.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				logger.info(comboBarSize.getText());
-				BarSize newBarSize=IbBar.getBarSizeFromString(comboBarSize.getText());
+				BarSize newBarSize=BarUtils.getBarSizeFromString(comboBarSize.getText());
 				if(newBarSize==barRecorder.getBarSize())return;
 				
 				barRecorder.setBarSize(newBarSize);
@@ -285,7 +286,7 @@ public class ChartEditorPart{
 			//if(selectedGroup!=null)
 			//	selectedGroup.removeAllListeners();
 			selectedGroup=container.getIndicatorGroup().copy();
-			selectedGroup.setBarSize(IbBar.getBarSizeFromString(comboBarSize.getText()));
+			selectedGroup.setBarSize(BarUtils.getBarSizeFromString(comboBarSize.getText()));
 			eventBroker.post(IEventConstant.IB_CHART_INDICATOR_GROUP_SELECTED, selectedGroup);
 		}
 	}
@@ -299,7 +300,7 @@ public class ChartEditorPart{
 	}
 	
 	private IbBarContainer getCurrentContainer(){
-		WhatToShow newWhatToShow=IbBar.getWhatToShowFromString(comboWhatToShow.getText());
+		WhatToShow newWhatToShow=BarUtils.getWhatToShowFromString(comboWhatToShow.getText());
 		for(IbBarContainer container:barContainers){
 			if(container.getType()==newWhatToShow)
 				return container;
@@ -343,7 +344,7 @@ public class ChartEditorPart{
 		double upper=dateAxis.getRange().getUpperBound();
 		
 		
-		upper=Math.min(barRecorder.getLastReceivedBar().getTimeInMs()+IbBar.getIntervallInMs(barRecorder.getBarSize())/2,
+		upper=Math.min(barRecorder.getLastReceivedBar().getTimeInMs()+BarUtils.getIntervallInMs(barRecorder.getBarSize())/2,
 						upper+ (double)( fac*(1-posFac)));
 		lower=Math.max(barRecorder.getFirstReceivedBar().getTimeInMs(),
 						lower- (double)( fac*posFac));
@@ -358,26 +359,6 @@ public class ChartEditorPart{
     	dataUpdater.schedule();
     }
 	
-	/*
-	private void updateSeries(){
-		
-		
-		
-		if(bars==null)return ;
-		candleStickSeries.clear();
-		double lower=dateAxis.getRange().getLowerBound();
-		double upper=dateAxis.getRange().getUpperBound();
-		
-		
-		for(IbBar bar:bars){
-			//logger.info(bar);
-			if(bar.getTimeInMs()>=upper && bar.getTime()<=lower){
-			candleStickSeries.add(new Second(new Date(bar.getTimeInMs())),bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
-			
-			}
-		}
-	}
-	*/
 	
 	private void setPeriod(double start, double end){
 		
@@ -387,7 +368,7 @@ public class ChartEditorPart{
 		//if(end>lastBarTime)return;
 		if(barRecorder.getLastReceivedBar()==null)return;
 		
-		upper=Math.min(barRecorder.getLastReceivedBar().getTimeInMs()+IbBar.getIntervallInMs(barRecorder.getBarSize())/2,
+		upper=Math.min(barRecorder.getLastReceivedBar().getTimeInMs()+BarUtils.getIntervallInMs(barRecorder.getBarSize())/2,
 						end);
 		lower=Math.max(barRecorder.getFirstReceivedBar().getTimeInMs(),
 						start);
@@ -465,7 +446,7 @@ public class ChartEditorPart{
 		//dateAxis.setAutoTickUnitSelection(true);
 		Date upper=new Date();
 		Date lower=new Date();
-		lower.setTime(upper.getTime()-IbBar.getIntervallInMs(barRecorder.getBarSize())*200);
+		lower.setTime(upper.getTime()-BarUtils.getIntervallInMs(barRecorder.getBarSize())*200);
 		
 		dateAxis.setRange(lower,upper);
         
@@ -1388,12 +1369,12 @@ public class ChartEditorPart{
 		realTimeBarListener=new IIBRealTimeBarListener() {
 			
 			@Override
-			public void realTimeBarChanged(IbBar bar) {
+			public void realTimeBarChanged(ExBar bar) {
 				//Register the new Bar and save it back into the map
 				if(!liveBarMap.containsKey(bar.getType()))
-					liveBarMap.put(bar.getType(), new LinkedList<IbBar>());
+					liveBarMap.put(bar.getType(), new LinkedList<ExBar>());
 				
-				LinkedList<IbBar> bars=liveBarMap.get(bar.getType());
+				LinkedList<ExBar> bars=liveBarMap.get(bar.getType());
 				if(bars.isEmpty() || bars.getLast().getTime()!=bar.getTime()){
 					bars.add(bar);
 				}
@@ -1404,7 +1385,7 @@ public class ChartEditorPart{
 				//Call the Real Time Bar Updater
 				if(bar.getType()==getBarContainer().getType()){
 					//logger.info("New Bar: "+bar);
-					LinkedList<IbBar> realTimeBars=IbBar.convertIbBars(bars, barRecorder.getBarSize());
+					LinkedList<ExBar> realTimeBars=BarUtils.convertTimeBars(bars, barRecorder.getBarSize());
 					if(realTimeBars==null ||realTimeBars.isEmpty())return;
 					
 					//Add the Bar to the bar recorder only if some historical data were already loaded
@@ -1429,12 +1410,12 @@ public class ChartEditorPart{
 	private void addBarRecorderListener(){
 		barRecorder.addListener(new IbBarRecorderListener() {
 			
-			private IbBar lastBar=null;
-			private List<IbBar> addedBars=null;
-			private List<IbBar> replacedBars=null;
+			private ExBar lastBar=null;
+			private List<ExBar> addedBars=null;
+			private List<ExBar> replacedBars=null;
 			
 			@Override
-			public void newCompletedBar(IbBar bar) {
+			public void newCompletedBar(ExBar bar) {
 				Display.getDefault().asyncExec(new Runnable() {
 					
 					@Override
@@ -1445,7 +1426,7 @@ public class ChartEditorPart{
 			}
 			
 			@Override
-			public void barReplaced(List<IbBar> bars) {
+			public void barReplaced(List<ExBar> bars) {
 				
 				
 				//logger.info("Bar Replaced!");
@@ -1456,7 +1437,7 @@ public class ChartEditorPart{
 					@Override
 					public void run() {
 						//candleStickSeries.clear();
-						for(IbBar bar:replacedBars){
+						for(ExBar bar:replacedBars){
 							Second sec=new Second(new Date(bar.getTimeInMs() - bar.getIntervallInMs()/2));
 							int index=candleStickSeries.indexOf(sec);
 							//logger.info("Index of: "+index);
@@ -1474,7 +1455,7 @@ public class ChartEditorPart{
 			}
 			
 			@Override
-			public void barAdded(List<IbBar> bars) {
+			public void barAdded(List<ExBar> bars) {
 				addedBars=bars;
 				
 				//logger.info("Bar Added!");
@@ -1492,7 +1473,7 @@ public class ChartEditorPart{
 						}
 						*/
 						
-						for(IbBar bar:addedBars){
+						for(ExBar bar:addedBars){
 							Second sec=new Second(new Date(bar.getTimeInMs() - bar.getIntervallInMs()/2));
 							if(candleStickSecondes.contains(sec.getFirstMillisecond()))continue;
 							//if(LastSec!=null && LastSec.equals(sec))continue;
@@ -1540,7 +1521,7 @@ public class ChartEditorPart{
 			}
 
 			@Override
-			public void lastBarUpdated(IbBar bar) {
+			public void lastBarUpdated(ExBar bar) {
 				lastBar=bar;
 				Display.getDefault().asyncExec(new Runnable() {
 					
@@ -1588,19 +1569,18 @@ public class ChartEditorPart{
 			//selectedGroup.removeAllListeners();
 			
 			if(barRecorder.isEmpty() || numberOfStarts==1){
-				long intervall=IbBar.getIntervallInSec(barRecorder.getBarSize());
+				long intervall=BarUtils.getIntervallInSec(barRecorder.getBarSize());
 				to=new Date().getTime()/1000;
 				from=to-loadingSize*intervall;
 				
-				List<IbBar> bars=hisDataProvider.getTimeBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
-//				List<IbBar> newBars=hisDataProvider.downloadLastBars(getBarContainer(),barRecorder.getBarSize());
-				List<IbBar> newBars=new LinkedList<IbBar>();
+				List<ExBar> bars=hisDataProvider.getTimeBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
+				List<ExBar> newBars=new LinkedList<ExBar>();
 				//logger.info("Number of bars: "+bars.size());
 				//logger.info("Number of new bars: "+newBars.size());
 					
-				List<IbBar> toAdd=new LinkedList<IbBar>();
+				List<ExBar> toAdd=new LinkedList<ExBar>();
 				if(!bars.isEmpty() && !newBars.isEmpty()){
-					for(IbBar bar:newBars){
+					for(ExBar bar:newBars){
 						if(bars.get(bars.size()-1).getTime()<bar.getTime()){
 							toAdd.add(bar);
 						}
@@ -1611,12 +1591,12 @@ public class ChartEditorPart{
 				barRecorder.addBars(bars);
 			}
 			else if(loadPastValues && pastValueAvailable){
-				long intervall=IbBar.getIntervallInSec(barRecorder.getBarSize());
+				long intervall=BarUtils.getIntervallInSec(barRecorder.getBarSize());
 				to=barRecorder.getFirstReceivedBar().getTime();
 				from=to-loadingSize*intervall;
 				//logger.info("Ask historical data: ");
 				//hisDataProvider.init();
-				List<IbBar> bars=hisDataProvider.getTimeBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
+				List<ExBar> bars=hisDataProvider.getTimeBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
 				
 				if(bars.size()==0){
 					pastValueAvailable=false;

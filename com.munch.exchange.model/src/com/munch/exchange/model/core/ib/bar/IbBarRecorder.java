@@ -12,10 +12,10 @@ public class IbBarRecorder {
 	
 	
 	
-	private LinkedList<IbBar> barList=new LinkedList<IbBar>();
-	private HashMap<Long, IbBar> barMap=new HashMap<Long, IbBar>();
-	private IbBar lastReceivedBar=null;
-	private IbBar firstReceivedBar=null;
+	private LinkedList<ExBar> barList=new LinkedList<ExBar>();
+	private HashMap<Long, ExBar> barMap=new HashMap<Long, ExBar>();
+	private ExBar lastReceivedBar=null;
+	private ExBar firstReceivedBar=null;
 	
 	private BarSize barSize=BarSize._1_min;
 	private WhatToShow whatToShow=WhatToShow.MIDPOINT;
@@ -24,23 +24,23 @@ public class IbBarRecorder {
 	private List<IbBarRecorderListener> listeners=new LinkedList<IbBarRecorderListener>();
 	
 	
-	public void addBar(IbBar bar){
-		LinkedList<IbBar> bars=new LinkedList<IbBar>();
+	public void addBar(ExBar bar){
+		LinkedList<ExBar> bars=new LinkedList<ExBar>();
 		bars.add(bar);
 		addBars(bars);
 	}
 	
-	public void addBars(List<IbBar> newBars){
+	public void addBars(List<ExBar> newBars){
 		if(newBars==null || newBars.isEmpty())
 			return;
 		
-		LinkedList<IbBar> addedBars=new LinkedList<IbBar>();
-		LinkedList<IbBar> replacedBars=new LinkedList<IbBar>();
-		IbBar localLastReceivedBar=null;
+		LinkedList<ExBar> addedBars=new LinkedList<ExBar>();
+		LinkedList<ExBar> replacedBars=new LinkedList<ExBar>();
+		ExBar localLastReceivedBar=null;
 		
 		
 		//The Map is empty
-		for(IbBar bar:newBars){
+		for(ExBar bar:newBars){
 		if(barMap.isEmpty() || !barMap.containsKey(bar.getTime())){
 				barMap.put(bar.getTime(), bar);
 				addedBars.add(bar);
@@ -55,7 +55,7 @@ public class IbBarRecorder {
 		//The map will be updated
 		else{
 			//System.out.println("Replace bar!!");
-			IbBar oldBar=barMap.get(bar.getTime());
+			ExBar oldBar=barMap.get(bar.getTime());
 			if(oldBar.isRealTime()){
 				
 				//System.out.println("is real time!!");
@@ -87,11 +87,11 @@ public class IbBarRecorder {
 		
 		
 		if(!addedBars.isEmpty()){
-			Collections.sort(addedBars);
+			Collections.sort(addedBars, new ExBarComparator());
 			fireBarAdded(addedBars);
 		}
 		if(!replacedBars.isEmpty()){
-			Collections.sort(replacedBars);
+			Collections.sort(replacedBars, new ExBarComparator());
 			fireBarReplaced(replacedBars);
 		}
 		
@@ -129,16 +129,16 @@ public class IbBarRecorder {
 	}
 	
 	
-	public List<IbBar> getAllBars(){
+	public List<ExBar> getAllBars(){
 		updateBarList();
 		return barList;
 	}
 	
 	
-	public List<IbBar> getAllCompletedBars(){
+	public List<ExBar> getAllCompletedBars(){
 		barList.clear();
 		barList.addAll(barMap.values());
-		Collections.sort(barList);
+		Collections.sort(barList, new ExBarComparator());
 		if(!barList.isEmpty() && !barList.getLast().isCompleted()){
 			barList.removeLast();
 		}
@@ -152,17 +152,17 @@ public class IbBarRecorder {
 	private void updateBarList(){
 		barList.clear();
 		barList.addAll(barMap.values());
-		Collections.sort(barList);
+		Collections.sort(barList, new ExBarComparator());
 	}
 
 	
 	//Listener
 	
-	public IbBar getLastReceivedBar() {
+	public ExBar getLastReceivedBar() {
 		return lastReceivedBar;
 	}
 
-	public IbBar getFirstReceivedBar() {
+	public ExBar getFirstReceivedBar() {
 		return firstReceivedBar;
 	}
 
@@ -195,22 +195,22 @@ public class IbBarRecorder {
 		listeners.remove(listener);
 	}
 	
-	private void fireBarAdded(LinkedList<IbBar> addedBars){
+	private void fireBarAdded(LinkedList<ExBar> addedBars){
 		for(IbBarRecorderListener listener:listeners){
 			listener.barAdded(addedBars);
 		}
 	}
-	private void fireBarReplaced(LinkedList<IbBar> replacedBars){
+	private void fireBarReplaced(LinkedList<ExBar> replacedBars){
 		for(IbBarRecorderListener listener:listeners){
 			listener.barReplaced(replacedBars);
 		}
 	}
-	private void fireNewCompletedBar(IbBar bar){
+	private void fireNewCompletedBar(ExBar bar){
 		for(IbBarRecorderListener listener:listeners){
 			listener.newCompletedBar(bar);
 		}
 	}
-	private void fireLastBarUpdated(IbBar bar){
+	private void fireLastBarUpdated(ExBar bar){
 		for(IbBarRecorderListener listener:listeners){
 			listener.lastBarUpdated(bar);
 		}

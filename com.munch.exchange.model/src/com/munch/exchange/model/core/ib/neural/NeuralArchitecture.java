@@ -1,10 +1,8 @@
 package com.munch.exchange.model.core.ib.neural;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,7 +26,6 @@ import org.encog.engine.network.activation.ActivationLinear;
 import org.encog.engine.network.activation.ActivationRamp;
 import org.encog.engine.network.activation.ActivationTANH;
 import org.encog.mathutil.Equilateral;
-import org.encog.ml.CalculateScore;
 import org.encog.ml.MLContext;
 import org.encog.ml.MLInput;
 import org.encog.ml.MLMethod;
@@ -36,15 +33,9 @@ import org.encog.ml.MLRegression;
 import org.encog.ml.data.MLData;
 import org.encog.ml.data.basic.BasicMLData;
 import org.encog.ml.ea.population.Population;
-import org.encog.ml.train.MLTrain;
-import org.encog.neural.hyperneat.HyperNEATCODEC;
 import org.encog.neural.hyperneat.substrate.Substrate;
 import org.encog.neural.hyperneat.substrate.SubstrateNode;
-import org.encog.neural.neat.NEATCODEC;
-import org.encog.neural.neat.NEATNetwork;
-import org.encog.neural.neat.NEATPopulation;
 import org.encog.neural.networks.BasicNetwork;
-import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing;
 import org.encog.neural.pattern.ElmanPattern;
 import org.encog.neural.pattern.FeedForwardPattern;
 import org.encog.neural.pattern.JordanPattern;
@@ -54,10 +45,9 @@ import org.encog.util.arrayutil.NormalizedField;
 
 import com.munch.exchange.model.core.encog.CalculateNovelty;
 import com.munch.exchange.model.core.encog.NoveltySearchGenome;
-import com.munch.exchange.model.core.encog.NoveltySearchPopulation;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbCommission;
-import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 
 
@@ -535,7 +525,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	 * @param nbOfInput
 	 * @return
 	 */
-	private NeuralNetworkRating calculateProfitAndRiskOfBlock(LinkedList<IbBar> block,MLMethod method, int nbOfInput){
+	private NeuralNetworkRating calculateProfitAndRiskOfBlock(LinkedList<ExBar> block,MLMethod method, int nbOfInput){
 		
 		
 //		System.out.println("New Block: "+block.size());
@@ -549,8 +539,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		}
 		
 		Position lastPosition=Position.NEUTRAL;
-		IbBar previewBar=block.getFirst();
-		IbBar lastBar=block.getLast();
+		ExBar previewBar=block.getFirst();
+		ExBar lastBar=block.getLast();
 		profitAndRisk.newPosition(previewBar.getTimeInMs(),lastPosition);
 		
 		long[] relTraindingPeriod=neuralConfiguration.getContract().
@@ -558,7 +548,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 				
 		int i=0;
 //		int nbOfPosition=0;
-		for(IbBar bar:block){
+		for(ExBar bar:block){
 			
 //			#####################################################				
 //			####  1. Check if the bar should be calculated   ####
@@ -676,7 +666,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		
 	}
 	
-	public NeuralNetworkRating calculateProfitAndRiskOfBlocks(LinkedList<LinkedList<IbBar>> blocks,MLMethod method){
+	public NeuralNetworkRating calculateProfitAndRiskOfBlocks(LinkedList<LinkedList<ExBar>> blocks,MLMethod method){
 		
 		
 		int nbOfInputs=((MLInput) method).getInputCount();
@@ -684,14 +674,14 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		NeuralNetworkRating profitAndRiskTotal=new NeuralNetworkRating();
 		profitAndRiskTotal.setMethod(method);
 		
-		for(LinkedList<IbBar> block:blocks){
+		for(LinkedList<ExBar> block:blocks){
 			
 //			System.out.println("Calculate block!");
 			
 			NeuralNetworkRating profitAndRiskOfBlock=calculateProfitAndRiskOfBlock(block, method, nbOfInputs);
 			
 //			Calculate the block Id
-			IbBar bar=(IbBar)block.get(0);
+			ExBar bar=(ExBar)block.get(0);
 
 			switch (neuralConfiguration.getSplitStrategy()) {
 			case WEEK:

@@ -19,7 +19,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 
 import com.munch.exchange.model.core.ib.IbTopMktData;
-import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarListener;
 import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataListener;
@@ -46,7 +46,7 @@ public class IBRealTimeBarProvider implements IIBRealTimeBarProvider,
 			ObjectMessage msg=(ObjectMessage) arg0;
 			
 			int contractId=msg.getIntProperty(IbTopMktData.CONTRACT_ID);
-			IbBar bar=(IbBar) msg.getObject();
+			ExBar bar=(ExBar) msg.getObject();
 			bar.setRealTime(true);
 			
 			for(IIBRealTimeBarListener listener:listeners){

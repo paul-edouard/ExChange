@@ -5,8 +5,9 @@ import java.util.List;
 import javax.persistence.Entity;
 
 import com.munch.exchange.model.analytic.indicator.trend.SuperTrend;
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.model.core.ib.bar.ExBar;
+import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
@@ -83,9 +84,9 @@ public class SuperTrendSignal extends IbChartSignal {
 	}
 
 	@Override
-	public void computeSignalPointFromBarBlock(List<IbBar> bars, boolean reset) {
+	public void computeSignalPointFromBarBlock(List<ExBar> bars, boolean reset) {
 		
-		long[] times=IbBar.getTimeArray(bars);
+		long[] times=BarUtils.getTimeArray(bars);
 		
 		//Set all signal point to -1
 		//System.out.println("Bar Size: "+bars.size()+", Valid at position: "+this.getValidAtPosition());
@@ -100,9 +101,9 @@ public class SuperTrendSignal extends IbChartSignal {
 		}
 		
 		
-		double[] close=IbBar.barsToDoubleArray(bars, DataType.CLOSE);
-		double[] high=IbBar.barsToDoubleArray(bars, DataType.HIGH);
-		double[] low=IbBar.barsToDoubleArray(bars, DataType.LOW);
+		double[] close=BarUtils.barsToDoubleArray(bars, DataType.CLOSE);
+		double[] high=BarUtils.barsToDoubleArray(bars, DataType.HIGH);
+		double[] low=BarUtils.barsToDoubleArray(bars, DataType.LOW);
 		
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
 		double factor=this.getChartParameter(FACTOR).getValue();

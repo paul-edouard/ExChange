@@ -23,7 +23,8 @@ import javax.persistence.Transient;
 import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 
 @Entity
 public class NeuralConfiguration implements Serializable, Copyable<NeuralConfiguration>,Comparable<NeuralConfiguration>{
@@ -63,7 +64,7 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	 * Map used in order to save the collected bars
 	 */
 	@Transient
-	private HashMap<String ,List<IbBar>> neuralInputsBarsCollector=new HashMap<String ,List<IbBar>>();
+	private HashMap<String ,List<ExBar>> neuralInputsBarsCollector=new HashMap<String ,List<ExBar>>();
 	
 //	Training Data
 	
@@ -82,22 +83,22 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	private List<NeuralTrainingElement> neuralTrainingElements=new LinkedList<NeuralTrainingElement>();
 	
 	@Transient
-	private List<IbBar> allMidPointBars=new LinkedList<IbBar>();
+	private List<ExBar> allMidPointBars=new LinkedList<ExBar>();
 	
 	@Transient
-	private List<IbBar> allAskBars=new LinkedList<IbBar>();
+	private List<ExBar> allAskBars=new LinkedList<ExBar>();
 	
 	@Transient
-	private List<IbBar> allBidBars=new LinkedList<IbBar>();
+	private List<ExBar> allBidBars=new LinkedList<ExBar>();
 	
 	@Transient
-	private LinkedList<LinkedList<IbBar>> allBlocks=new LinkedList<LinkedList<IbBar>>();
+	private LinkedList<LinkedList<ExBar>> allBlocks=new LinkedList<LinkedList<ExBar>>();
 	
 	@Transient
-	private LinkedList<LinkedList<IbBar>> trainingBlocks=new LinkedList<LinkedList<IbBar>>();
+	private LinkedList<LinkedList<ExBar>> trainingBlocks=new LinkedList<LinkedList<ExBar>>();
 	
 	@Transient
-	private LinkedList<LinkedList<IbBar>> backTestingBlocks=new LinkedList<LinkedList<IbBar>>();
+	private LinkedList<LinkedList<ExBar>> backTestingBlocks=new LinkedList<LinkedList<ExBar>>();
 	
 	@Transient
 	private HashMap<Long, Integer> adpatedTimesMap=new HashMap<Long, Integer>();
@@ -186,7 +187,7 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 
 			// Compute the neural indicator values and reset the ranges of the
 			// components
-			List<IbBar> bars = this.getNeuralInputsBarsCollector().get(
+			List<ExBar> bars = this.getNeuralInputsBarsCollector().get(
 					nii.getCollectedBarKey());
 
 			nii.computeValues(bars, resetComponentRanges);
@@ -205,7 +206,7 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		allBidBars.clear();
 	}
 	
-	private List<IbBar> getReferenceBars(){
+	private List<ExBar> getReferenceBars(){
 		switch (referenceData) {
 		case MID_POINT:
 			return allMidPointBars;
@@ -223,30 +224,30 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		trainingBlocks.clear();
 		backTestingBlocks.clear();
 		
-		allBlocks=new LinkedList<LinkedList<IbBar>>();
+		allBlocks=new LinkedList<LinkedList<ExBar>>();
 		
 		
-		LinkedList<LinkedList<IbBar>> allBlocksTemp=null;
+		LinkedList<LinkedList<ExBar>> allBlocksTemp=BarUtils.splitBarListInDayBlocks(this.getReferenceBars());
 		
-		switch (this.getSplitStrategy()) {
-		case WEEK:
-			allBlocksTemp=IbBar.splitBarListInWeekBlocks(this.getReferenceBars());
-			break;
-		case DAY:
-			allBlocksTemp=IbBar.splitBarListInDayBlocks(this.getReferenceBars());
-			break;
-		}
+//		switch (this.getSplitStrategy()) {
+//		case WEEK:
+//			allBlocksTemp=IbBar.splitBarListInWeekBlocks(this.getReferenceBars());
+//			break;
+//		case DAY:
+//			allBlocksTemp=IbBar.splitBarListInDayBlocks(this.getReferenceBars());
+//			break;
+//		}
 		
 		//Search the block with the maximum of values
 		int maxSize=Integer.MIN_VALUE;
-		for(LinkedList<IbBar> block:allBlocksTemp){
+		for(LinkedList<ExBar> block:allBlocksTemp){
 			if(block.size()>maxSize)
 				maxSize=block.size();
 		}
 //		System.out.println("Maximum block size: "+maxSize);
 		
 		//Remove the blocks that contains only the half of the data
-		for(LinkedList<IbBar> block:allBlocksTemp){
+		for(LinkedList<ExBar> block:allBlocksTemp){
 			if(block.size()<maxSize/2){
 				System.out.println("NeuralConfiguration-> Block with size: "+block.size() +" will be ignored!");
 				continue;
@@ -257,32 +258,35 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		
 		
 		if (neuralTrainingElements.isEmpty()) {
-			for(LinkedList<IbBar> block:allBlocks){
+			for(LinkedList<ExBar> block:allBlocks){
 				backTestingBlocks.add(block);
 			}
 			
 			// Creation of the training blocks
-			trainingBlocks = IbBar.collectPercentageOfBlocks(backTestingBlocks,
+			trainingBlocks = BarUtils.collectPercentageOfBlocks(backTestingBlocks,
 					this.getPercentOfTrainingData());
 			// neuralTrainingElements.clear();
 
-			for (LinkedList<IbBar> block : trainingBlocks) {
-				
-				String key=null;
-				
-				switch (this.getSplitStrategy()) {
-				case WEEK:
-					Calendar sunday = IbBar.getLastSundayOfDate(block.get(0)
+			for (LinkedList<ExBar> block : trainingBlocks) {
+				Calendar day =BarUtils.getCurrentDayOf(block.get(0)
 							.getTimeInMs());
-					key = String.valueOf(sunday.getTimeInMillis());
-					break;
-					
-				case DAY:
-					Calendar day = IbBar.getCurrentDayOf(block.get(0)
-							.getTimeInMs());
-					key = String.valueOf(day.getTimeInMillis());
-					break;
-				}
+				day=BarUtils.addOneDayTo(day);
+				
+				String key = String.valueOf(day.getTimeInMillis());
+				
+//				switch (this.getSplitStrategy()) {
+//				case WEEK:
+//					Calendar sunday = IbBar.getLastSundayOfDate(block.get(0)
+//							.getTimeInMs());
+//					key = String.valueOf(sunday.getTimeInMillis());
+//					break;
+//					
+//				case DAY:
+//					Calendar day = IbBar.getCurrentDayOf(block.get(0)
+//							.getTimeInMs());
+//					key = String.valueOf(day.getTimeInMillis());
+//					break;
+//				}
 				
 				if(key!=null){
 					NeuralTrainingElement element=new NeuralTrainingElement(key);
@@ -293,22 +297,27 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 				
 			}
 		} else {
-			for(LinkedList<IbBar> block:allBlocks){
-				
-				String key=null;
-				
-				switch (this.getSplitStrategy()) {
-				case WEEK:
-					Calendar sunday = IbBar.getLastSundayOfDate(block.get(0)
-							.getTimeInMs());
-					key = String.valueOf(sunday.getTimeInMillis());
-					break;
-				case DAY:
-					Calendar day = IbBar.getCurrentDayOf(block.get(0)
-							.getTimeInMs());
-					key = String.valueOf(day.getTimeInMillis());
-					break;
-				}
+			for(LinkedList<ExBar> block:allBlocks){
+				Calendar day =BarUtils.getCurrentDayOf(block.get(0)
+						.getTimeInMs());
+				day=BarUtils.addOneDayTo(day);
+			
+				String key = String.valueOf(day.getTimeInMillis());
+			
+//				String key=null;
+//				
+//				switch (this.getSplitStrategy()) {
+//				case WEEK:
+//					Calendar sunday = IbBar.getLastSundayOfDate(block.get(0)
+//							.getTimeInMs());
+//					key = String.valueOf(sunday.getTimeInMillis());
+//					break;
+//				case DAY:
+//					Calendar day = IbBar.getCurrentDayOf(block.get(0)
+//							.getTimeInMs());
+//					key = String.valueOf(day.getTimeInMillis());
+//					break;
+//				}
 				
 				if(key==null)continue;
 				
@@ -336,7 +345,7 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	
 	public void computeAdaptedDataOfEachComponents(){
 		
-		long[] referencedLongTimes=IbBar.getTimeArray(this.getReferenceBars());
+		long[] referencedLongTimes=BarUtils.getTimeArray(this.getReferenceBars());
 		double[] referencedTimes=new double[referencedLongTimes.length];
 		for(int i=0;i<referencedLongTimes.length;i++){
 			referencedTimes[i]=referencedLongTimes[i];
@@ -487,27 +496,27 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		}
 	}
 	
-	public List<IbBar> getAllMidPointBars() {
+	public List<ExBar> getAllMidPointBars() {
 		return allMidPointBars;
 	}
 	
-	public void setAllMidPointBars(List<IbBar> allMidPointBars) {
+	public void setAllMidPointBars(List<ExBar> allMidPointBars) {
 		this.allMidPointBars = allMidPointBars;
 	}
 	
-	public List<IbBar> getAllAskBars() {
+	public List<ExBar> getAllAskBars() {
 		return allAskBars;
 	}
 	
-	public void setAllAskBars(List<IbBar> allAskBars) {
+	public void setAllAskBars(List<ExBar> allAskBars) {
 		this.allAskBars = allAskBars;
 	}
 
-	public List<IbBar> getAllBidBars() {
+	public List<ExBar> getAllBidBars() {
 		return allBidBars;
 	}
 	
-	public void setAllBidBars(List<IbBar> allBidBars) {
+	public void setAllBidBars(List<ExBar> allBidBars) {
 		this.allBidBars = allBidBars;
 	}
 
@@ -519,7 +528,7 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		this.size = size;
 	}
 	
-	public HashMap<String, List<IbBar>> getNeuralInputsBarsCollector() {
+	public HashMap<String, List<ExBar>> getNeuralInputsBarsCollector() {
 		return neuralInputsBarsCollector;
 	}
 	
@@ -533,34 +542,34 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	
 
 	public void setNeuralInputsBarsCollector(
-			HashMap<String, List<IbBar>> neuralInputsBarsCollector) {
+			HashMap<String, List<ExBar>> neuralInputsBarsCollector) {
 		this.neuralInputsBarsCollector = neuralInputsBarsCollector;
 	}
 
-	public LinkedList<LinkedList<IbBar>> getTrainingBlocks() {
+	public LinkedList<LinkedList<ExBar>> getTrainingBlocks() {
 		return trainingBlocks;
 	}
 
-	public void setTrainingBlocks(LinkedList<LinkedList<IbBar>> trainingBlocks) {
+	public void setTrainingBlocks(LinkedList<LinkedList<ExBar>> trainingBlocks) {
 		this.trainingBlocks = trainingBlocks;
 	}
 
-	public LinkedList<LinkedList<IbBar>> getBackTestingBlocks() {
+	public LinkedList<LinkedList<ExBar>> getBackTestingBlocks() {
 		return backTestingBlocks;
 	}
 
-	public void setBackTestingBlocks(LinkedList<LinkedList<IbBar>> backTestingBlocks) {
+	public void setBackTestingBlocks(LinkedList<LinkedList<ExBar>> backTestingBlocks) {
 		this.backTestingBlocks = backTestingBlocks;
 	}
 	
-	public LinkedList<LinkedList<IbBar>> getAllBlocks() {
+	public LinkedList<LinkedList<ExBar>> getAllBlocks() {
 		if(allBlocks==null){
-			allBlocks=new LinkedList<LinkedList<IbBar>>();
+			allBlocks=new LinkedList<LinkedList<ExBar>>();
 		}
 		return allBlocks;
 	}
 
-	public void setAllBlocks(LinkedList<LinkedList<IbBar>> allBlocks) {
+	public void setAllBlocks(LinkedList<LinkedList<ExBar>> allBlocks) {
 		this.allBlocks = allBlocks;
 	}
 

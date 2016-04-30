@@ -15,7 +15,8 @@ import com.ib.controller.Types.SecType;
 import com.ibm.icu.util.Calendar;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
@@ -44,10 +45,10 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	//Optimization variables
 	
 	@Transient
-	private LinkedList<IbBar> optimizationBars;
+	private LinkedList<ExBar> optimizationBars;
 	
 	@Transient
-	private LinkedList<LinkedList<IbBar>> optimizationBlocks;
+	private LinkedList<LinkedList<ExBar>> optimizationBlocks;
 	
 	@Transient
 	private boolean batch=false;
@@ -142,12 +143,12 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	
 	
-	public List<IbBar> getOptimizationBars() {
+	public List<ExBar> getOptimizationBars() {
 		return optimizationBars;
 	}
 
 
-	public void setOptimizationBars(LinkedList<IbBar> optimizationBars) {
+	public void setOptimizationBars(LinkedList<ExBar> optimizationBars) {
 		this.optimizationBars = optimizationBars;
 	}
 
@@ -195,10 +196,10 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 	}
 	
-	public abstract void computeSignalPointFromBarBlock(List<IbBar> bars, boolean reset);
+	public abstract void computeSignalPointFromBarBlock(List<ExBar> bars, boolean reset);
 	
 	
-	public  LinkedList<LinkedList<IbBar>> createBlocks(List<IbBar> bars){
+	public  LinkedList<LinkedList<ExBar>> createBlocks(List<ExBar> bars){
 		if(!batch){
 			if(optimizationBlocks!=null)
 				optimizationBlocks.clear();
@@ -211,7 +212,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		}
 		
 		
-		LinkedList<LinkedList<IbBar>> blocks=IbBar.splitBarListInWeekBlocks(bars);
+		LinkedList<LinkedList<ExBar>> blocks=BarUtils.splitBarListInDayBlocks(bars);
 		
 		//Save the blocks in the batch modus only
 		if(batch)
@@ -221,7 +222,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	}
 	
 	@Override
-	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
+	protected void computeSeriesPointValues(List<ExBar> bars, boolean reset) {
 		//If reset clear all series
 		if(reset){
 			for(IbChartSerie serie:this.series){
@@ -234,12 +235,12 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 //		Split the received bars in blocks
 //		startTimeCounter();
-		LinkedList<LinkedList<IbBar>> blocks=createBlocks(bars);
+		LinkedList<LinkedList<ExBar>> blocks=createBlocks(bars);
 //		stopTimeCounter("Split the received bars in blocks");
 		
 //		startTimeCounter();
 		int i=0;
-		for(List<IbBar> block:blocks){
+		for(List<ExBar> block:blocks){
 //			System.out.println("Compute Block: "+(i++)+", Size: "+block.size());
 			
 			//Calculate the signal of the isolated block
@@ -287,12 +288,12 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 	}
 	
-	private void createProfitAndRiskSeries(List<IbBar> bars, boolean reset, HashMap<Long, IbChartPoint> signalMap, long volume){
+	private void createProfitAndRiskSeries(List<ExBar> bars, boolean reset, HashMap<Long, IbChartPoint> signalMap, long volume){
 		
 //		System.out.println("Nb. Of bars: "+bars.size());
 		
 		//Creation & Initialization of the variables
-		IbBar previewBar=bars.get(0);
+		ExBar previewBar=bars.get(0);
 		//System.out.println("Bar: "+previewBar.getTime());
 		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
 		double profit=0.0;
@@ -320,7 +321,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		}
 		
 		int i=0;
-		for(IbBar bar:bars){
+		for(ExBar bar:bars){
 			if(i==0){i++;continue;}
 			
 			long time=bar.getTimeInMs();
@@ -602,7 +603,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 	
 	public synchronized void setOptimizationBlocks(
-			LinkedList<LinkedList<IbBar>> optimizationBlocks) {
+			LinkedList<LinkedList<ExBar>> optimizationBlocks) {
 		this.optimizationBlocks = optimizationBlocks;
 		setDirty(true);
 	}
@@ -629,7 +630,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	}
 	
 	public List<IbChartSignalOptimizedParameters> getOptimizedSet(String barSize){
-		return getOptimizedSet(IbBar.getBarSizeFromString(barSize));
+		return getOptimizedSet(BarUtils.getBarSizeFromString(barSize));
 		
 	}
 	

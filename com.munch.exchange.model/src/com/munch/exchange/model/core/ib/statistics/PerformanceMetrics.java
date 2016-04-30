@@ -13,7 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 import com.munch.exchange.model.core.ib.IbCommission;
-import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 
@@ -71,7 +71,7 @@ public class PerformanceMetrics implements Serializable{
 	}
 	
 	
-	public void calculateMetricsForSignal(List<IbBar> bars,
+	public void calculateMetricsForSignal(List<ExBar> bars,
 				HashMap<Long, IbChartPoint> signalMap, IbCommission commission,
 				long volume){
 		this.getTradeStatistics().calculate(bars, signalMap, commission, volume);

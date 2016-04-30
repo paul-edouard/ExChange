@@ -18,9 +18,9 @@ import com.ib.controller.Types.BarSize;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
-import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.ExContractContainer;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -70,19 +70,11 @@ public class DeleteRateHandler {
 			if(!res)return;
 				
 //			Tries to delete the bar week after week
-			long weekInSeconde=7*24*60*60;
 			for(IbBarContainer container:historicalDataProvider.getAllBarContainers(selectedContract)){
-				IbBar lastBar=historicalDataProvider.getFirstTimeBar(container, IbMinuteBar.class);
-				while(lastBar!=null){
-					
-					System.out.println("Last Bar: "+IbBar.format(lastBar.getTimeInMs()));
-					
-//					eventBroker.post(IEventConstant.TEXT_INFO,text);
-					
-					historicalDataProvider.removeBarsFromTo(container, BarSize._1_min, lastBar.getTime(), lastBar.getTime()+weekInSeconde);
-	
-					lastBar=historicalDataProvider.getFirstTimeBar(container, IbMinuteBar.class);
-				}
+				
+				removeAllBars(historicalDataProvider, container, BarSize._1_secs);
+				removeAllBars(historicalDataProvider, container, BarSize._1_min);
+				
 				
 			}
 			
@@ -102,6 +94,26 @@ public class DeleteRateHandler {
 		
 		
 	}
+	
+	
+	private void removeAllBars(IIBHistoricalDataProvider historicalDataProvider, IbBarContainer container, BarSize barSize){
+		
+		long weekInSeconde=7L*24L*60L*60L;
+		
+		ExBar lastBar=historicalDataProvider.getFirstTimeBar(container, barSize);
+		
+		while(lastBar!=null){
+			
+			System.out.println("Last Bar: "+BarUtils.format(lastBar.getTimeInMs()));
+			
+//			eventBroker.post(IEventConstant.TEXT_INFO,text);
+			
+			historicalDataProvider.removeBarsFromTo(container, barSize, lastBar.getTime(), lastBar.getTime()+weekInSeconde);
+
+			lastBar=historicalDataProvider.getFirstTimeBar(container, barSize);
+		}
+	}
+	
 	
 	
 	@CanExecute

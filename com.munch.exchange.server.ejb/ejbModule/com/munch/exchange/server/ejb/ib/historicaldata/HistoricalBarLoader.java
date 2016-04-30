@@ -123,6 +123,10 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		
 	}
 	
+//	###############################################
+//	###             SHORT TERM BAR              ###
+//	###############################################
+	
 	private synchronized boolean areShortTermBarRequired(){
 		boolean shortTermModus=false;
 		if(lastShortTermTrigger > currentShortTermTrigger){
@@ -134,14 +138,15 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	
 	
 	private void loadShortTermBar(IbBarContainer container){
-		log.info("Load short term bar: "+container.getType().toString());
+		log.info("Load short term bar: "+container.getContract().getSymbol()+
+				", "+container.getType().toString());
 		
-		log.info("Start the loading of the second short term bar!");
+//		log.info("Start the loading of the second short term bar!");
 		if(!loadShortTermTypedBars(container, TimeBarSize.SECOND)){
 			return;
 		}
 		
-		log.info("Start the loading of the minute short term bar!");
+//		log.info("Start the loading of the minute short term bar!");
 		if(!loadShortTermTypedBars(container, TimeBarSize.MINUTE)){
 			return;
 		}
@@ -163,12 +168,21 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 			return true;
 		}
 		
+//		log.info("Last bar found: "+FORMAT.format( new Date(lastBarTimeInSeconde*1000) ));
+//		
+		
 //		Search the last recorded short bar time
 		long from=HistoricalBarPersistance.getLastShortTermBarTime(em, container, barType);
 		if(from==0){
 			from=Calendar.getInstance().getTimeInMillis()/1000;
 		}
 		
+//		Test if we are in the week end
+		if(isWeekEndBreak(lastBarTimeInSeconde, from, barType)){
+			log.info("This is the week end break! Please wait until sunday evening for new data!");
+			ut.commit();
+			return true;
+		}
 		
 //		Load the last bars
 		Calendar start=Calendar.getInstance();
@@ -240,6 +254,39 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		
 	}
 	
+	private boolean isWeekEndBreak(long lastBarTimeInSeconde, long from, TimeBarSize barType){
+		Calendar lastBarDate=Calendar.getInstance();
+		lastBarDate.setTimeInMillis(lastBarTimeInSeconde*1000);
+		
+//		log.info("Day of week: "+lastBarDate.get(Calendar.DAY_OF_WEEK));
+//		log.info("Hours of day: "+lastBarDate.get(Calendar.HOUR_OF_DAY));
+//		log.info("minute: "+lastBarDate.get(Calendar.MINUTE));
+//		log.info("second: "+lastBarDate.get(Calendar.SECOND));
+		
+		if(lastBarDate.get(Calendar.DAY_OF_WEEK)!=6)return false;
+		if(lastBarDate.get(Calendar.HOUR_OF_DAY)!=22)return false;
+		if(lastBarDate.get(Calendar.MINUTE)!=59)return false;
+		if(barType==TimeBarSize.MINUTE){
+			if(lastBarDate.get(Calendar.SECOND)!=0)return false;
+		}
+		else{
+			if(lastBarDate.get(Calendar.SECOND)!=59)return false;
+		}
+
+		
+		long SecondeDiff=from-lastBarTimeInSeconde;
+		long TwoDaysSecond=172800;
+		
+//		log.info("SecondeDiff: "+SecondeDiff);
+		
+		
+		if(SecondeDiff < TwoDaysSecond)return true;
+		
+		
+		return false;
+	}
+	
+	
 	private void sendLoadingMessage(String message, IbBarContainer container, TimeBarSize barType,Calendar start, long from, List<Bar> loadedBars){
 		Calendar end=Calendar.getInstance();
 		long time_s=(end.getTimeInMillis()-start.getTimeInMillis());
@@ -249,7 +296,9 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 				FORMAT.format( new Date(from) )+" in "+time_s+ " ms");
 	}
 	
-	
+//	###############################################
+//	###             LONG TERM BAR               ###
+//	###############################################
 	
 	private void loadLongTermBar(IbBarContainer container){
 //		log.info("Load long term bar: "+container.getType().toString());
@@ -270,72 +319,96 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	
 	private void loadLongTermTypeBar(IbBarContainer container, TimeBarSize bartype){
 		
-		List<Bar> typedBars=null;
+		if(!ConnectionBean.INSTANCE.isConnected())
+			return;
+		if(numberOfParsingViolationAttempt>=MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT)
+			return;
+		
 		
 		try {
 			ut.begin();
-		
-		
-		if(HistoricalBarPersistance.isLongTermBarLoadingFinished(em, container, bartype)){
-			ut.commit();return;
-		}
 			
-			
-		Calendar start=Calendar.getInstance();
-		
-//		Search the first bar
-		long firstSecondBarTime=HistoricalBarPersistance.getFirstBarTime(em, container, bartype);
-		firstSecondBarTime*=1000;
-		if(firstSecondBarTime==0){
-			firstSecondBarTime=Calendar.getInstance().getTimeInMillis();
-		}
-		
-		typedBars = loadTypeBar(container, bartype, firstSecondBarTime, false);
-//		Error the request was wrong
-		if(typedBars==null){
-			if(isRequestTimoutReached){
-				log.info("Warning ba loading: "+container.getContract().getSymbol()+", "+
-						container.getType().toString()+", "+
-						bartype.toString()+" no bar found before: "+
-						FORMAT.format( new Date(firstSecondBarTime) ));
-				
-				
-				log.warning("No bar found before ");
-				HistoricalBarPersistance.setLongTermBarLoadingFinished(em, container, bartype, true);
+//			Test at first is the loading is finished
+			if (HistoricalBarPersistance.isLongTermBarLoadingFinished(em, container, bartype)) {
+				ut.commit();
+				return;
 			}
-			ut.commit();return;
-		}
-		
-//		The last long term bar was reached!
-		if(typedBars.isEmpty()){
-			HistoricalBarPersistance.setLongTermBarLoadingFinished(em, container, bartype, true);
-			ut.commit();
-			return;
-		}
-		
-//		Save the bar in the DB
-		HistoricalBarPersistance.saveBars(em, container,bartype, typedBars);
-		
-		sendLoadingMessage("Persist long term bar: ", container, bartype, start, firstSecondBarTime, typedBars);
 			
-		
-		ut.commit();
+			// Search the first bar
+			long firstSecondBarTime = HistoricalBarPersistance.getFirstBarTime(em, container, bartype);
+			firstSecondBarTime *= 1000;
+			if (firstSecondBarTime == 0) {
+				firstSecondBarTime = Calendar.getInstance().getTimeInMillis();
+			}
+			
+			List<Bar> typedBars = null;
+			int nbOfAttempt = 0;
+			while (nbOfAttempt < MAX_NUMBER_OF_LONG_TERM_ATTEMPT) {
+				nbOfAttempt++;
+				
+				Calendar start = Calendar.getInstance();
+				
+				typedBars = loadTypeBar(container, bartype, firstSecondBarTime, false);
+				
+//				Return if one of the criterion is met
+				if(!ConnectionBean.INSTANCE.isConnected()){
+					ut.commit();
+					return;
+				}
+				if(numberOfParsingViolationAttempt>=MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT){
+					ut.commit();
+					return;
+				}
+				
+				
+				// Error the request was wrong
+				if (typedBars == null || typedBars.isEmpty() || isRequestTimoutReached) {
+					
+//					Remove one day from the first bar time and try again!
+					firstSecondBarTime-=24L*60L*60L*1000L;
+					
+					log.warning("Retry loading bar from: " + container.getContract().getSymbol() + ", "
+							+ container.getType().toString() + ", " + bartype.toString() + " from date: "
+							+ FORMAT.format(new Date(firstSecondBarTime)));
+					
+					continue;
+				}
+
+
+				// Save the bar in the DB and return
+				HistoricalBarPersistance.saveBars(em, container, bartype, typedBars);
+
+				sendLoadingMessage("Persist long term bar: ", container, bartype, start, firstSecondBarTime, typedBars);
+
+				ut.commit();
+				
+				return;
+			}
+			
+//			Close the loading of Long term bar after the attempts
+			log.warning("Warning by loading: " + container.getContract().getSymbol() + ", "
+					+ container.getType().toString() + ", " + bartype.toString() + " no bar found before: "
+					+ FORMAT.format(new Date(firstSecondBarTime)));
+			
+			HistoricalBarPersistance.setLongTermBarLoadingFinished(em, container, bartype, true);
+			
+			ut.commit();
+			
+			
 		} catch (NotSupportedException | SecurityException | IllegalStateException | RollbackException
 				| HeuristicMixedException | HeuristicRollbackException | SystemException e) {
-			
+
 			e.printStackTrace();
 			log.warning(e.toString());
-			
+
 			try {
 				ut.rollback();
-			} catch (IllegalStateException | SecurityException
-					| SystemException e1) {
-				
+			} catch (IllegalStateException | SecurityException | SystemException e1) {
+
 				e1.printStackTrace();
 				log.warning(e.toString());
 			}
-			
-			
+
 		}
 		
 		
@@ -464,7 +537,9 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	
 	private static final long MIN_REQUEST_INTERVALL=10*60*1000;
 	
-	private static final long REQUEST_TIMOUT=30000;
+	private static final long MAX_NUMBER_OF_LONG_TERM_ATTEMPT=5;
+	
+	private static final long REQUEST_TIMOUT=10000;
 	
 	private static final long PARSING_VIOLATION_SLEEP=3000;
 	
@@ -507,11 +582,11 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 			max_duration=MAX_SECONDE_DURATION_IN_SECOND;
 			break;
 		case MINUTE:
-			durationUnit=DurationUnit.DAY;
-//			durationUnit=DurationUnit.SECOND;
+//			durationUnit=DurationUnit.DAY;
+			durationUnit=DurationUnit.SECOND;
 			barSize=BarSize._1_min;
-			max_duration=MAX_MINUTE_DURATION_IN_DAY;
-//			max_duration=MAX_MINUTE_DURATION_IN_SECOND;
+//			max_duration=MAX_MINUTE_DURATION_IN_DAY;
+			max_duration=MAX_MINUTE_DURATION_IN_SECOND;
 			break;
 			
 		default:

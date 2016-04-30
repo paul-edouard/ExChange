@@ -4,12 +4,12 @@ import java.util.List;
 
 public interface IbBarRecorderListener {
 	
-	public void barAdded(List<IbBar> bars);
-	public void barReplaced(List<IbBar> bars);
-	public void lastBarUpdated(IbBar bar);
+	public void barAdded(List<ExBar> bars);
+	public void barReplaced(List<ExBar> bars);
+	public void lastBarUpdated(ExBar bar);
 	
 	public void allBarsCleared();
 	
-	public void newCompletedBar(IbBar bar);
+	public void newCompletedBar(ExBar bar);
 
 }

@@ -13,6 +13,7 @@ import javax.persistence.OneToOne;
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
@@ -77,7 +78,7 @@ public class NeuralIndicatorInput extends NeuralInput{
 		
 	}
 	
-	public void computeValues(List<IbBar> bars, boolean resetComponentRanges){
+	public void computeValues(List<ExBar> bars, boolean resetComponentRanges){
 		
 		if (values == null || times == null || values.length == 0
 				|| times.length == 0) {

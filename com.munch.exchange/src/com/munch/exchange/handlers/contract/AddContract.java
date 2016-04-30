@@ -1,23 +1,16 @@
  
 package com.munch.exchange.handlers.contract;
 
-import java.util.List;
-
 import javax.inject.Inject;
 
-import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.CanExecute;
+import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.dialog.AddContractDialog;
-import com.munch.exchange.dialog.AddRateDialog;
-import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
-import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 

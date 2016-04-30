@@ -13,7 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 import com.munch.exchange.model.core.ib.IbCommission;
-import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 
 
@@ -309,7 +309,7 @@ public class StabilityStatistics implements Serializable{
 	}
 	
 	
-	public void calculate(List<IbBar> bars, HashMap<Long, IbChartPoint> signalMap, 
+	public void calculate(List<ExBar> bars, HashMap<Long, IbChartPoint> signalMap, 
 			IbCommission commission, long volume){
 		
 		
@@ -324,13 +324,13 @@ public class StabilityStatistics implements Serializable{
 		
 		LinkedList<Double> allProfits=new LinkedList<Double>();
 		
-		IbBar previewBar=bars.get(0);
+		ExBar previewBar=bars.get(0);
 		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
 		
 		int openPosition=0;
 		
 		int i=0;
-		for(IbBar bar:bars){
+		for(ExBar bar:bars){
 			if(i==0){
 				i++;continue;
 			}

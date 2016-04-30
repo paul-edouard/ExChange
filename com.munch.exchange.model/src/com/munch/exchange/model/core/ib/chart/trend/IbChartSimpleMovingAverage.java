@@ -5,8 +5,10 @@ import java.util.List;
 import javax.persistence.Entity;
 
 import com.munch.exchange.model.analytic.indicator.trend.MovingAverage;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.model.core.ib.bar.ExBar;
+import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
 import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
@@ -72,9 +74,9 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 
 
 	@Override
-	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
-		double[] prices=IbBar.barsToDoubleArray(bars, DataType.CLOSE);
-		long[] times=IbBar.getTimeArray(bars);
+	protected void computeSeriesPointValues(List<ExBar> bars, boolean reset) {
+		double[] prices=BarUtils.barsToDoubleArray(bars, DataType.CLOSE);
+		long[] times=BarUtils.getTimeArray(bars);
 		double[] sma=MovingAverage.SMA(prices,
 			this.getChartParameter(PERIOD).getIntegerValue());
 		if(reset){

@@ -13,7 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 import com.munch.exchange.model.core.ib.IbCommission;
-import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 
 
@@ -181,7 +181,7 @@ public class TradeStatistics implements Serializable{
 	}
 	
 	
-	public void calculate(List<IbBar> bars, 
+	public void calculate(List<ExBar> bars, 
 			HashMap<Long, IbChartPoint> signalMap, 
 			IbCommission commission, long volume){
 		if(bars.isEmpty())return;
@@ -209,13 +209,13 @@ public class TradeStatistics implements Serializable{
 		
 		double previewProfit=0;
 		
-		IbBar previewBar=bars.get(0);
+		ExBar previewBar=bars.get(0);
 		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
 		
 		int openPosition=0;
 		
 		int i=0;
-		for(IbBar bar:bars){
+		for(ExBar bar:bars){
 			if(i==0){
 				i++;continue;
 			}

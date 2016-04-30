@@ -14,7 +14,7 @@ import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.RealVariable;
 import org.moeaframework.problem.AbstractProblem;
 
-import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 
@@ -31,7 +31,7 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 	public static int numberOfEval=0;
 	
 	private IbChartSignal chartSignal;
-	private List<IbBar> bars;
+	private List<ExBar> bars;
 	
 
 	public IbChartSignalProblem(IbChartSignal chartSignal) {
@@ -249,7 +249,7 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 		
 	}
 	
- 	public void setBars(List<IbBar> bars) {
+ 	public void setBars(List<ExBar> bars) {
 		this.bars = bars;
 	}
 	

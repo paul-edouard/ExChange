@@ -62,8 +62,10 @@ import org.moeaframework.core.Settings;
 import org.moeaframework.core.Solution;
 
 import com.munch.exchange.IEventConstant;
-import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.model.core.ib.bar.ExBar;
+import com.munch.exchange.model.core.ib.bar.ExBarComparator;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizationController;
@@ -217,7 +219,7 @@ IbChartSignalOptimizationControllerListener{
 					newParameters.setSatus(com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters.Status.NEW);
 					newParameters.setParameters(parameters);
 					newParameters.setAlgorithm(key.split("#")[1]);
-					newParameters.setSize(IbBar.getBarSizeFromString(signal.getBarSize()));
+					newParameters.setSize(BarUtils.getBarSizeFromString(signal.getBarSize()));
 					
 					//IbChartParameter.areAllValuesEqual(list1, list2)
 					boolean newInList=true;
@@ -328,11 +330,11 @@ IbChartSignalOptimizationControllerListener{
 	IIBChartIndicatorProvider chartIndicatorProvider;
 	
 	
-	private List<IbBar> allCollectedBars;
+	private List<ExBar> allCollectedBars;
 	
 	
-	private HashMap<String,LinkedList<IbBar>> backTestingBarsMap=new HashMap<>();
-	private HashMap<String,LinkedList<IbBar>> optimizationBarsMap=new HashMap<>();
+	private HashMap<String,LinkedList<ExBar>> backTestingBarsMap=new HashMap<>();
+	private HashMap<String,LinkedList<ExBar>> optimizationBarsMap=new HashMap<>();
 	
 	LinkedList<String> sortedAlgorithmNames;
 	
@@ -460,7 +462,7 @@ IbChartSignalOptimizationControllerListener{
 		
 		comboBarSize = new Combo(groupControls, SWT.NONE);
 		comboBarSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		for(String bSize:IbBar.getAllBarSizesAsString())
+		for(String bSize:BarUtils.getAllBarSizesAsString())
 			comboBarSize.add(bSize);
 		comboBarSize.setText(comboBarSize.getItem(0));
 		
@@ -1365,46 +1367,14 @@ IbChartSignalOptimizationControllerListener{
 		
 
 		
-		/*
-		private LinkedList<LinkedList<IbBar>> splitCollectedBarsInBlocks(){
-			LinkedList<LinkedList<IbBar>> blocks=new LinkedList<>();
-			
-			IbBar lastBar=allCollectedBars.get(0);
-			long interval=lastBar.getIntervallInSec();
-			LinkedList<IbBar> block=new LinkedList<IbBar>();
-			block.add(lastBar);
-			
-			for(int i=1;i<allCollectedBars.size();i++){
-				IbBar currentBar=allCollectedBars.get(i);
-				long timeDiff=currentBar.getTime()-lastBar.getTime();
-				if(timeDiff > interval ){
-					//Add the block to the list
-					blocks.add(block);
-				
-					//Reset the block
-					block=new LinkedList<IbBar>();
-				}
-				block.add(currentBar);
-				lastBar=currentBar;
-			}
-			if(block.size()>0){
-				blocks.add(block);
-			}
-		
-			
-			
-			return blocks;
-		}
-		*/
-
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			//Collect the Data
 			logger.info("Collect the data");
 			if(allCollectedBars==null || allCollectedBars.isEmpty()){
 				allCollectedBars=hisDataProvider.getAllTimeBars(getBarContainer(),
-						IbBar.getBarSizeFromString(bazSize));
-				Collections.sort(allCollectedBars);
+						BarUtils.getBarSizeFromString(bazSize));
+				Collections.sort(allCollectedBars, new ExBarComparator());
 				//TODO Remove this!
 //				while (allCollectedBars.size()>1000) {
 //					allCollectedBars.remove(0);
@@ -1449,27 +1419,27 @@ IbChartSignalOptimizationControllerListener{
 	private void createTheDataSet(String bazSize, int percentOfDataRequired){
 		if(!optimizationBarsMap.containsKey(bazSize+percentOfDataRequired)){
 			
-			LinkedList<LinkedList<IbBar>> allBlocks=IbBar.splitBarListInWeekBlocks(allCollectedBars);
-			LinkedList<LinkedList<IbBar>> optBlocks=IbBar.collectPercentageOfBlocks(allBlocks,percentOfDataRequired);
+			LinkedList<LinkedList<ExBar>> allBlocks=BarUtils.splitBarListInDayBlocks(allCollectedBars);
+			LinkedList<LinkedList<ExBar>> optBlocks=BarUtils.collectPercentageOfBlocks(allBlocks,percentOfDataRequired);
 		
-			LinkedList<IbBar> optimizationBars=new LinkedList<IbBar>();
+			LinkedList<ExBar> optimizationBars=new LinkedList<ExBar>();
 			HashSet<Long> timeSet=new HashSet<>();
-			for(LinkedList<IbBar> bars:optBlocks){
+			for(LinkedList<ExBar> bars:optBlocks){
 				optimizationBars.addAll(bars);
-				for(IbBar bar:bars)
+				for(ExBar bar:bars)
 					timeSet.add(bar.getTime());
 			}
-			Collections.sort(optimizationBars);
+			Collections.sort(optimizationBars, new ExBarComparator());
 			optimizationBarsMap.put(bazSize+percentOfDataRequired, optimizationBars);
 			
 			
-			LinkedList<IbBar> backTestingBars=new LinkedList<IbBar>();
+			LinkedList<ExBar> backTestingBars=new LinkedList<ExBar>();
 			logger.info("Total Nb. of  data: "+allCollectedBars.size());
-			for(IbBar bar:allCollectedBars){
+			for(ExBar bar:allCollectedBars){
 				if(timeSet.contains(bar.getTime()))continue;
 				backTestingBars.add(bar);
 			}
-			Collections.sort(backTestingBars);
+			Collections.sort(backTestingBars, new ExBarComparator());
 			logger.info("Nb. of back testing data: "+backTestingBars.size());
 			
 			
@@ -1506,8 +1476,8 @@ IbChartSignalOptimizationControllerListener{
 			logger.info("Collect the data");
 			if(allCollectedBars==null || allCollectedBars.isEmpty()){
 				allCollectedBars=hisDataProvider.getAllTimeBars(getBarContainer(),
-						IbBar.getBarSizeFromString(bazSize));
-				Collections.sort(allCollectedBars);
+						BarUtils.getBarSizeFromString(bazSize));
+				Collections.sort(allCollectedBars, new ExBarComparator());
 			}
 			
 			//Create the Data Set

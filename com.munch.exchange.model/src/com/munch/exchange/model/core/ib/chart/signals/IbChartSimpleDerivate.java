@@ -5,8 +5,9 @@ import java.util.List;
 import javax.persistence.Entity;
 
 import com.munch.exchange.model.analytic.indicator.signals.SimpleDerivate;
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.model.core.ib.bar.ExBar;
+import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
@@ -50,9 +51,9 @@ public class IbChartSimpleDerivate extends IbChartIndicator {
 
 
 	@Override
-	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
-		double[] prices=IbBar.barsToDoubleArray(bars, DataType.CLOSE);
-		long[] times=IbBar.getTimeArray(bars);
+	protected void computeSeriesPointValues(List<ExBar> bars, boolean reset) {
+		double[] prices=BarUtils.barsToDoubleArray(bars, DataType.CLOSE);
+		long[] times=BarUtils.getTimeArray(bars);
 //		System.out.println("Compute simple derivate");
 		double[] ama=SimpleDerivate.compute(prices);
 		

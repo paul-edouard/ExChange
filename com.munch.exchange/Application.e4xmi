@@ -84,6 +84,7 @@
               <children xsi:type="basic:Part" xmi:id="_rGWQEI6mEeSBTbBmTuUumA" elementId="com.munch.exchange.part.resultschart" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.neuralnetwork.results.NeuralNetworkResultsChartPart" label="Results Chart" iconURI="platform:/plugin/com.munch.exchange/icons/chart_curve.png"/>
               <children xsi:type="basic:Part" xmi:id="_4m99QLpoEeS1apWxmHY8yw" elementId="com.munch.exchange.part.chart.parameter.editor" accessibilityPhrase="Edit the paramters of the selected chart indicator" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.chart.parameter.ChartParameterEditorPart" label="Chart Parameters" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/configs.gif"/>
               <children xsi:type="basic:Part" xmi:id="_zRAVQJYOEeW1QJwgfRc0Gw" elementId="com.munch.exchange.part.chart.signal.performance" contributionURI="bundleclass://com.munch.exchange/com.munch.exchange.parts.chart.signal.SignalPerformancePart" label="Signal Performance" iconURI="platform:/plugin/com.munch.exchange/icons/eclipse/history_list.gif" tooltip="Signal Performance"/>
+              <children xsi:type="basic:Part" xmi:id="_eOVt4A7aEeasruuzkDTVKQ" elementId="com.munch.exchange.part.progressView" contributionURI="bundleclass://org.eclipse.e4.ui.progress/org.eclipse.e4.ui.progress.ProgressView" label=""/>
             </children>
           </children>
         </children>
@@ -172,4 +173,5 @@
   <addons xmi:id="_hCM1JmTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ui.workbench.handler.model" contributionURI="bundleclass://org.eclipse.e4.ui.workbench/org.eclipse.e4.ui.internal.workbench.addons.HandlerProcessingAddon"/>
   <addons xmi:id="_hCM1J2TNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ui.workbench.contexts.model" contributionURI="bundleclass://org.eclipse.e4.ui.workbench/org.eclipse.e4.ui.internal.workbench.addons.ContextProcessingAddon"/>
   <addons xmi:id="_hCM1KGTNEeOTfZ5LPzv9Rg" elementId="org.eclipse.e4.ui.workbench.bindings.model" contributionURI="bundleclass://org.eclipse.e4.ui.workbench.swt/org.eclipse.e4.ui.workbench.swt.util.BindingProcessingAddon"/>
+  <addons xmi:id="_GZ8EkA7aEeasruuzkDTVKQ" elementId="org.eclipse.e4.ui.progress.ProgressViewAddon" contributionURI="bundleclass://org.eclipse.e4.ui.progress/org.eclipse.e4.ui.progress.ProgressViewAddon"/>
 </application:Application>

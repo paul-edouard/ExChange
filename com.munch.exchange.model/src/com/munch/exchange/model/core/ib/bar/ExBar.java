@@ -2,6 +2,8 @@ package com.munch.exchange.model.core.ib.bar;
 
 import java.io.Serializable;
 
+import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
+
 public class ExBar implements Serializable {
 
 	/**
@@ -9,6 +11,12 @@ public class ExBar implements Serializable {
 	 */
 	private static final long serialVersionUID = 5840961632782416913L;
 	
+	public static enum DataType {
+		HIGH, LOW, OPEN, CLOSE, WAP, VOLUME, TIME;
+	}
+	
+	private boolean isRealTime=false;
+
 	private boolean isCompleted=true;
 	
 	private  long time;
@@ -76,7 +84,20 @@ public class ExBar implements Serializable {
 		this.count += bar.count;
 		
 	}
-
+	
+	public double getData(DataType dataType){
+		switch (dataType) {
+			case HIGH:return high;
+			case LOW:return low;
+			case OPEN:return open;
+			case CLOSE:return close;
+			case WAP:return wap;
+			case VOLUME:return (double)volume;
+			case TIME:return (double)time;
+			default:return 0;
+		}
+		
+	}
 
 
 	public long getTime() {
@@ -164,6 +185,14 @@ public class ExBar implements Serializable {
 
 	public void setCompleted(boolean isCompleted) {
 		this.isCompleted = isCompleted;
+	}
+
+	public boolean isRealTime() {
+		return isRealTime;
+	}
+
+	public void setRealTime(boolean isRealTime) {
+		this.isRealTime = isRealTime;
 	}
 
 

@@ -93,6 +93,7 @@ import com.munch.exchange.model.core.encog.NoveltySearchPopulation;
 import com.munch.exchange.model.core.encog.NoveltySearchUtil;
 import com.munch.exchange.model.core.encog.PersistNoveltySearchPopulation;
 import com.munch.exchange.model.core.ib.IbContract.TradingPeriod;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.bar.IbBarContainer;
 import com.munch.exchange.model.core.ib.neural.BestGenomes;
@@ -988,7 +989,7 @@ public class NeuralConfigurationEditorPart {
 				if(neuralConfiguration.getNeuralInputsBarsCollector().containsKey(key))
 					continue;
 				
-				List<IbBar> bars=historicalDataProvider.getAllTimeBars(nii.getBarContainer(), nii.getSize());
+				List<ExBar> bars=historicalDataProvider.getAllTimeBars(nii.getBarContainer(), nii.getSize());
 					
 				neuralConfiguration.getNeuralInputsBarsCollector().put(key, bars);
 
@@ -2171,7 +2172,7 @@ public class NeuralConfigurationEditorPart {
 				// Collect the mid point data
 				if (neuralConfiguration.getReferenceData() == ReferenceData.MID_POINT
 						&& container.getType() == WhatToShow.MIDPOINT) {
-					List<IbBar> allBars = historicalDataProvider.getAllTimeBars(
+					List<ExBar> allBars = historicalDataProvider.getAllTimeBars(
 							container, neuralConfiguration.getSize());
 					neuralConfiguration.setAllMidPointBars(allBars);
 				}
@@ -2179,7 +2180,7 @@ public class NeuralConfigurationEditorPart {
 				// Collect the Ask Data
 				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
 						&& container.getType() == WhatToShow.ASK) {
-					List<IbBar> allBars = historicalDataProvider.getAllTimeBars(
+					List<ExBar> allBars = historicalDataProvider.getAllTimeBars(
 							container, neuralConfiguration.getSize());
 					neuralConfiguration.setAllAskBars(allBars);
 				}
@@ -2187,7 +2188,7 @@ public class NeuralConfigurationEditorPart {
 				// Collect the Bid Data
 				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
 						&& container.getType() == WhatToShow.BID) {
-					List<IbBar> allBars = historicalDataProvider.getAllTimeBars(
+					List<ExBar> allBars = historicalDataProvider.getAllTimeBars(
 							container, neuralConfiguration.getSize());
 					neuralConfiguration.setAllBidBars(allBars);
 				}

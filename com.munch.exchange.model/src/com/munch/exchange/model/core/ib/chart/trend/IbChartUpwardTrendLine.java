@@ -14,8 +14,9 @@ import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.RealVariable;
 import org.moeaframework.problem.AbstractProblem;
 
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.model.core.ib.bar.ExBar;
+import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
@@ -103,14 +104,14 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 	}
 
 	@Override
-	protected void computeSeriesPointValues(List<IbBar> bars, boolean reset) {
+	protected void computeSeriesPointValues(List<ExBar> bars, boolean reset) {
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
 		int numberOfValues=period+
 				this.getChartParameter(OFFSET).getIntegerValue();
 		double factor=this.getChartParameter(FACTOR).getValue();
 		
-		double[] Eprices=IbBar.barsToDoubleArray(bars, DataType.LOW,numberOfValues);
-		long[] Etimes=IbBar.getTimeArray(bars,numberOfValues);
+		double[] Eprices=BarUtils.barsToDoubleArray(bars, DataType.LOW,numberOfValues);
+		long[] Etimes=BarUtils.getTimeArray(bars,numberOfValues);
 		
 		if(period>Eprices.length){
 			logger.info("Period is too lang, the max value is: "+Eprices.length);
