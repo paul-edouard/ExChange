@@ -20,10 +20,13 @@ import org.apache.log4j.Logger;
 
 import com.munch.exchange.model.core.ib.IbTopMktData;
 import com.munch.exchange.model.core.ib.bar.ExBar;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarListener;
 import com.munch.exchange.services.ejb.interfaces.IIBRealTimeBarProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBTopMktDataListener;
 import com.munch.exchange.services.ejb.messages.Constants;
+
+import javafx.scene.layout.BackgroundRepeat;
 
 public class IBRealTimeBarProvider implements IIBRealTimeBarProvider,
 		MessageListener {
@@ -46,12 +49,13 @@ public class IBRealTimeBarProvider implements IIBRealTimeBarProvider,
 			ObjectMessage msg=(ObjectMessage) arg0;
 			
 			int contractId=msg.getIntProperty(IbTopMktData.CONTRACT_ID);
+			String whatToShowString=msg.getStringProperty(IbTopMktData.WHAT_TO_SHOW);
 			ExBar bar=(ExBar) msg.getObject();
 			bar.setRealTime(true);
 			
 			for(IIBRealTimeBarListener listener:listeners){
 				if(listener.getContractId()!=contractId)continue;
-				listener.realTimeBarChanged(bar);
+				listener.realTimeBarChanged(bar, BarUtils.getWhatToShowFromString(whatToShowString));
 			}
 			
 			

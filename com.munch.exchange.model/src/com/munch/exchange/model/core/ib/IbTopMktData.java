@@ -18,6 +18,7 @@ public class IbTopMktData implements Serializable{
 
 	
 	public static final String CONTRACT_ID="CONTRACT_ID";
+	public static final String WHAT_TO_SHOW="WHAT_TO_SHOW";
 	
 	public static final String BID="BID";
 	public static final String ASK="ASK";

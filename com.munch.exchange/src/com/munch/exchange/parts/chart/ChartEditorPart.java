@@ -1369,12 +1369,12 @@ public class ChartEditorPart{
 		realTimeBarListener=new IIBRealTimeBarListener() {
 			
 			@Override
-			public void realTimeBarChanged(ExBar bar) {
+			public void realTimeBarChanged(ExBar bar, WhatToShow whatToShow) {
 				//Register the new Bar and save it back into the map
-				if(!liveBarMap.containsKey(bar.getType()))
-					liveBarMap.put(bar.getType(), new LinkedList<ExBar>());
+				if(!liveBarMap.containsKey(whatToShow))
+					liveBarMap.put(whatToShow, new LinkedList<ExBar>());
 				
-				LinkedList<ExBar> bars=liveBarMap.get(bar.getType());
+				LinkedList<ExBar> bars=liveBarMap.get(whatToShow);
 				if(bars.isEmpty() || bars.getLast().getTime()!=bar.getTime()){
 					bars.add(bar);
 				}
@@ -1383,9 +1383,9 @@ public class ChartEditorPart{
 				}
 				
 				//Call the Real Time Bar Updater
-				if(bar.getType()==getBarContainer().getType()){
+				if(whatToShow==getBarContainer().getType()){
 					//logger.info("New Bar: "+bar);
-					LinkedList<ExBar> realTimeBars=BarUtils.convertTimeBars(bars, barRecorder.getBarSize());
+					LinkedList<ExBar> realTimeBars=BarUtils.convertTimeBars(bars,BarSize._5_secs,  barRecorder.getBarSize());
 					if(realTimeBars==null ||realTimeBars.isEmpty())return;
 					
 					//Add the Bar to the bar recorder only if some historical data were already loaded
@@ -1438,7 +1438,8 @@ public class ChartEditorPart{
 					public void run() {
 						//candleStickSeries.clear();
 						for(ExBar bar:replacedBars){
-							Second sec=new Second(new Date(bar.getTimeInMs() - bar.getIntervallInMs()/2));
+							long interval=BarUtils.getIntervallInMs(barRecorder.getBarSize());
+							Second sec=new Second(new Date(bar.getTimeInMs() - interval/2));
 							int index=candleStickSeries.indexOf(sec);
 							//logger.info("Index of: "+index);
 							if(index>=0){
@@ -1474,7 +1475,8 @@ public class ChartEditorPart{
 						*/
 						
 						for(ExBar bar:addedBars){
-							Second sec=new Second(new Date(bar.getTimeInMs() - bar.getIntervallInMs()/2));
+							long interval=BarUtils.getIntervallInMs(barRecorder.getBarSize());
+							Second sec=new Second(new Date(bar.getTimeInMs() - interval/2));
 							if(candleStickSecondes.contains(sec.getFirstMillisecond()))continue;
 							//if(LastSec!=null && LastSec.equals(sec))continue;
 							candleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
@@ -1484,9 +1486,10 @@ public class ChartEditorPart{
 						
 						double diff=barRecorder.getLastReceivedBar().getTimeInMs()-dateAxis.getRange().getUpperBound();
 						//logger.info("Diff: "+diff);
-						if(diff>=0 && diff<=barRecorder.getLastReceivedBar().getIntervallInMs()){
+						long interval=BarUtils.getIntervallInMs(barRecorder.getBarSize());
+						if(diff>=0 && diff<=interval){
 							dateAxis.setRange(dateAxis.getRange().getLowerBound(),
-									barRecorder.getLastReceivedBar().getTimeInMs()+barRecorder.getLastReceivedBar().getIntervallInMs()/2);
+									barRecorder.getLastReceivedBar().getTimeInMs()+interval/2);
 						}
 						
 						candleStickSeries.fireSeriesChanged();

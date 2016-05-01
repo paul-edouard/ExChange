@@ -15,8 +15,9 @@ import javax.jms.Connection;
 
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.IbTopMktData;
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
+//import com.munch.exchange.model.core.ib.bar.IbBar;
+//import com.munch.exchange.model.core.ib.bar.IbMinuteBar;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 
 public enum RealTimeBarCollector {
 	
@@ -25,7 +26,7 @@ public enum RealTimeBarCollector {
 	private static final Logger log = Logger.getLogger(RealTimeBarsSenderCollector.class.getName());
 	
 	
-	private HashMap<Integer, HashMap<WhatToShow, IbBar>> barMap=new HashMap<>();
+	private HashMap<Integer, HashMap<WhatToShow, ExBar>> barMap=new HashMap<>();
 	
 	
 	//private ConnectionFactory connectionFactory;
@@ -35,9 +36,9 @@ public enum RealTimeBarCollector {
 	private Session session;
 	private MessageProducer msgProducer;
 	
-	private HashMap<WhatToShow, IbBar> getBarFromContract(int contractId){
+	private HashMap<WhatToShow, ExBar> getBarFromContract(int contractId){
 		if(!barMap.containsKey(contractId)){
-			barMap.put(contractId, new HashMap<WhatToShow, IbBar>());
+			barMap.put(contractId, new HashMap<WhatToShow, ExBar>());
 		}
     	return barMap.get(contractId);
     }
@@ -58,7 +59,7 @@ public enum RealTimeBarCollector {
 		
 	}
 	
-	public synchronized void sendUpdatedBars(List<IbBar> bars, int contractId){
+	public synchronized void sendUpdatedBar(ExBar bar, int contractId, WhatToShow whatToShow){
 		
 		if(session==null || msgProducer==null ){
     		return;
@@ -67,15 +68,15 @@ public enum RealTimeBarCollector {
 		
 		try {
     		//TextMessage msg=session.createTextMessage();
-    		for(IbBar bar:bars){
     			bar.setRealTime(true);
     			bar.setCompleted(false);
     			ObjectMessage objMsg=session.createObjectMessage();
     			objMsg.setObject(bar);
     			objMsg.setIntProperty(IbTopMktData.CONTRACT_ID, contractId);
+    			objMsg.setStringProperty(IbTopMktData.WHAT_TO_SHOW, whatToShow.toString());
     			msgProducer.send(objMsg);
     			//log.info("Send new Msg: "+bar);
-    		}
+    		
     	
     	} catch (JMSException e) {
     		log.warning(e.toString());
@@ -84,11 +85,11 @@ public enum RealTimeBarCollector {
 	}
 	
 	
-	public IbBar getBar(int contractId,WhatToShow whatToShow){
-		HashMap<WhatToShow, IbBar> contractBars=getBarFromContract(contractId);
+	public ExBar getBar(int contractId,WhatToShow whatToShow){
+		HashMap<WhatToShow, ExBar> contractBars=getBarFromContract(contractId);
 		if(!contractBars.containsKey(whatToShow)){
-			IbBar bar=new IbMinuteBar();
-			bar.setType(whatToShow);
+			ExBar bar=new ExBar();
+//			bar.setType(whatToShow);
 			//bar.setRealTime(true);
 			contractBars.put(whatToShow, bar);
 		}
@@ -97,8 +98,8 @@ public enum RealTimeBarCollector {
 	}
 	
 	
-	public IbBar updateBar(int contractId,WhatToShow whatToShow,Calendar recievedDate,double value){
-		IbBar bar=getBar(contractId, whatToShow);
+	public ExBar updateBar(int contractId,WhatToShow whatToShow,Calendar recievedDate,double value){
+		ExBar bar=getBar(contractId, whatToShow);
 		
 		if(bar==null)return null;
 		
@@ -106,7 +107,9 @@ public enum RealTimeBarCollector {
 		//log.info("Intervall Time: "+bar.getIntervallInMs());
 		//log.info("Modulo: "+recievedDate.getTimeInMillis()%bar.getIntervallInMs());
 		
-		long time=(recievedDate.getTimeInMillis()/bar.getIntervallInMs())*bar.getIntervallInSec();
+//		long time=(recievedDate.getTimeInMillis()/bar.getIntervallInMs())*bar.getIntervallInSec();
+		
+		long time=1000;
 		
 		//log.info("Time: "+time);
 		
