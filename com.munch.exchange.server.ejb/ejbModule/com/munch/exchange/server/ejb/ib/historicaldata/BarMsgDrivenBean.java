@@ -18,7 +18,7 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.UserTransaction;
 
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
 import com.munch.exchange.server.ejb.ib.Constants;
 
@@ -97,14 +97,14 @@ public class BarMsgDrivenBean implements MessageListener {
 	 * Search all the bar of the contract
 	 * 
 	 */
-	public static List<IbBarContainer> getBarContainersOf(IbContract exContract, EntityManager em) {
+	public static List<BarContainer> getBarContainersOf(IbContract exContract, EntityManager em) {
 		IbContract contract = em.find(IbContract.class, exContract.getId());
 
-		List<IbBarContainer> containersInDB = contract.getBars();
-		List<IbBarContainer> AllAvailableContainers = IbContract.getAllAvailableIbBarContainers(contract);
-		for (IbBarContainer container : AllAvailableContainers) {
+		List<BarContainer> containersInDB = contract.getBars();
+		List<BarContainer> AllAvailableContainers = IbContract.getAllAvailableIbBarContainers(contract);
+		for (BarContainer container : AllAvailableContainers) {
 			boolean containerIsSaved = false;
-			for (IbBarContainer containerInDB : containersInDB) {
+			for (BarContainer containerInDB : containersInDB) {
 				if (containerInDB.getType() == container.getType()) {
 					containerIsSaved = true;
 				}

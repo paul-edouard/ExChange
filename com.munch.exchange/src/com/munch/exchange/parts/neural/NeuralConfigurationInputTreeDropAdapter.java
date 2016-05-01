@@ -12,15 +12,13 @@ import org.eclipse.swt.dnd.TransferData;
 
 import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import com.munch.exchange.model.core.ib.neural.NeuralIndicatorInput;
-import com.munch.exchange.model.core.ib.neural.NeuralInputComponent;
-import com.munch.exchange.model.core.ib.neural.NeuralInputComponent.ComponentType;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 
@@ -67,9 +65,9 @@ public class NeuralConfigurationInputTreeDropAdapter extends ViewerDropAdapter {
 			IbContract contract=contractProvider.getContract(Integer.valueOf(contractId));
 
 //			Search the Container
-			List<IbBarContainer> containers=historicalDataProvider.getAllBarContainers(contract);
-			IbBarContainer barContainer=null;
-			for(IbBarContainer container:containers){
+			List<BarContainer> containers=historicalDataProvider.getAllBarContainers(contract);
+			BarContainer barContainer=null;
+			for(BarContainer container:containers){
 				if(container.getId()==Long.valueOf(containerId)){
 					barContainer=container;
 				}
@@ -77,7 +75,7 @@ public class NeuralConfigurationInputTreeDropAdapter extends ViewerDropAdapter {
 			if(barContainer==null)continue;
 			
 //			Search the bar size
-			BarSize batSize=IbBar.getBarSizeFromString(barSizeStr);
+			BarSize batSize=BarUtils.getBarSizeFromString(barSizeStr);
 			logger.info("bar Size:"+batSize.toString());
 			
 //			Search the indicator

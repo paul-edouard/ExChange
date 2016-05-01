@@ -47,8 +47,8 @@ import com.munch.exchange.model.core.encog.CalculateNovelty;
 import com.munch.exchange.model.core.encog.NoveltySearchGenome;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbCommission;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
-import com.munch.exchange.model.core.ib.bar.IbBar;
 
 
 @Entity
@@ -682,16 +682,18 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			
 //			Calculate the block Id
 			ExBar bar=(ExBar)block.get(0);
-
-			switch (neuralConfiguration.getSplitStrategy()) {
-			case WEEK:
-				Calendar sunday=IbBar.getLastSundayOfDate(bar.getTimeInMs());
-				profitAndRiskOfBlock.setId(sunday.getTimeInMillis());
-				
-			case DAY:
-				Calendar day=IbBar.getCurrentDayOf(bar.getTimeInMs());
-				profitAndRiskOfBlock.setId(day.getTimeInMillis());
-			}
+			Calendar day=BarUtils.getCurrentDayOf(bar.getTimeInMs());
+			profitAndRiskOfBlock.setId(day.getTimeInMillis());
+			
+//			switch (neuralConfiguration.getSplitStrategy()) {
+//			case WEEK:
+//				Calendar sunday=IbBar.getLastSundayOfDate(bar.getTimeInMs());
+//				profitAndRiskOfBlock.setId(sunday.getTimeInMillis());
+//				
+//			case DAY:
+//				Calendar day=IbBar.getCurrentDayOf(bar.getTimeInMs());
+//				profitAndRiskOfBlock.setId(day.getTimeInMillis());
+//			}
 			
 //			Save the block rating
 			profitAndRiskTotal.addChildren(profitAndRiskOfBlock);

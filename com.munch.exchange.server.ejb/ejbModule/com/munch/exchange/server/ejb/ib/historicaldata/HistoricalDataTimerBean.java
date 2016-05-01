@@ -101,8 +101,8 @@ public class HistoricalDataTimerBean {
     		}
     	}
     	
-    	while(HistoricalDataLoaders.INSTANCE.isLoading()){
-    		log.info("Wait of the ");
+    	while(HistoricalDataLoaders.INSTANCE!=null && HistoricalDataLoaders.INSTANCE.isLoading()){
+//    		log.info("Wait of the ");
     		try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {

@@ -76,9 +76,9 @@ import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
-import com.munch.exchange.model.core.ib.bar.IbBarRecorder;
-import com.munch.exchange.model.core.ib.bar.IbBarRecorderListener;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.bar.BarRecorder;
+import com.munch.exchange.model.core.ib.bar.BarRecorderListener;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
@@ -172,8 +172,8 @@ public class ChartEditorPart{
 	private HashSet<Long> candleStickSecondes=new HashSet<Long>();
 	
 	
-	private List<IbBarContainer> barContainers;
-	private IbBarRecorder barRecorder=new IbBarRecorder();
+	private List<BarContainer> barContainers;
+	private BarRecorder barRecorder=new BarRecorder();
 	
 	private HashMap<WhatToShow, LinkedList<ExBar>> liveBarMap=new HashMap<WhatToShow, LinkedList<ExBar>>();
 	private DataUpdater dataUpdater=new DataUpdater();
@@ -225,7 +225,7 @@ public class ChartEditorPart{
 				
 		comboWhatToShow = new Combo(composite, SWT.NONE);
 		comboWhatToShow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		for(IbBarContainer container:barContainers)
+		for(BarContainer container:barContainers)
 			comboWhatToShow.add(container.getType().toString());
 		if(comboWhatToShow.getItems().length>0){
 			comboWhatToShow.setText(comboWhatToShow.getItem(0));
@@ -280,7 +280,7 @@ public class ChartEditorPart{
 	}
 	
 	private void chartGroupSelected(){
-		IbBarContainer container=getCurrentContainer();
+		BarContainer container=getCurrentContainer();
 		if(container!=null &&
 				(selectedGroup==null || selectedGroup.getId()!= container.getIndicatorGroup().getId())){
 			//if(selectedGroup!=null)
@@ -299,9 +299,9 @@ public class ChartEditorPart{
 		}
 	}
 	
-	private IbBarContainer getCurrentContainer(){
+	private BarContainer getCurrentContainer(){
 		WhatToShow newWhatToShow=BarUtils.getWhatToShowFromString(comboWhatToShow.getText());
-		for(IbBarContainer container:barContainers){
+		for(BarContainer container:barContainers){
 			if(container.getType()==newWhatToShow)
 				return container;
 		}
@@ -330,8 +330,8 @@ public class ChartEditorPart{
 		
 	}
 	
-	private IbBarContainer getBarContainer(){
-		for(IbBarContainer container: barContainers){
+	private BarContainer getBarContainer(){
+		for(BarContainer container: barContainers){
 			if(container.getType()==barRecorder.getWhatToShow())
 				return container;
 		}
@@ -1408,7 +1408,7 @@ public class ChartEditorPart{
 	
 	
 	private void addBarRecorderListener(){
-		barRecorder.addListener(new IbBarRecorderListener() {
+		barRecorder.addListener(new BarRecorderListener() {
 			
 			private ExBar lastBar=null;
 			private List<ExBar> addedBars=null;

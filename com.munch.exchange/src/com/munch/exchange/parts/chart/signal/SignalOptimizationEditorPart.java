@@ -62,7 +62,7 @@ import org.moeaframework.core.Settings;
 import org.moeaframework.core.Solution;
 
 import com.munch.exchange.IEventConstant;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.ExBarComparator;
@@ -1157,7 +1157,7 @@ IbChartSignalOptimizationControllerListener{
 	
 	
 	
-	private IbBarContainer getBarContainer(){
+	private BarContainer getBarContainer(){
 		return signal.getGroup().getRoot().getContainer();
 	}
 	

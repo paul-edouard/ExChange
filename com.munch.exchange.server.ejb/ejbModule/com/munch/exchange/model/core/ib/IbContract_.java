@@ -3,7 +3,7 @@ package com.munch.exchange.model.core.ib;
 import com.ib.controller.Types.Right;
 import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.bar.minute.MinuteContainer;
 import com.munch.exchange.model.core.ib.bar.seconde.SecondeContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
@@ -16,7 +16,7 @@ import javax.persistence.metamodel.StaticMetamodel;
 @StaticMetamodel(IbContract.class)
 public class IbContract_ {
 	public static volatile SingularAttribute<IbContract, Integer> id;
-	public static volatile ListAttribute<IbContract, IbBarContainer> bars;
+	public static volatile ListAttribute<IbContract, BarContainer> bars;
 	public static volatile SingularAttribute<IbContract, IbCommission> commission;
 	public static volatile ListAttribute<IbContract, NeuralConfiguration> neuralConfigurations;
 	public static volatile SingularAttribute<IbContract, MinuteContainer> minuteContainer;

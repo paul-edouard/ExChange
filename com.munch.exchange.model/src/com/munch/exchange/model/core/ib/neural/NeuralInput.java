@@ -18,7 +18,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 import com.munch.exchange.model.core.ib.Copyable;
-import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.neural.NeuralInputComponent.ComponentType;
 
 @Entity

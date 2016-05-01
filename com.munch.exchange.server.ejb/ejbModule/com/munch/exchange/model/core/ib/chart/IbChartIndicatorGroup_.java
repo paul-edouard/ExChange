@@ -1,6 +1,6 @@
 package com.munch.exchange.model.core.ib.chart;
 
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import javax.annotation.Generated;
 import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
@@ -14,5 +14,5 @@ public class IbChartIndicatorGroup_ {
 	public static volatile ListAttribute<IbChartIndicatorGroup, IbChartIndicator> indicators;
 	public static volatile ListAttribute<IbChartIndicatorGroup, IbChartIndicatorGroup> children;
 	public static volatile SingularAttribute<IbChartIndicatorGroup, IbChartIndicatorGroup> parent;
-	public static volatile SingularAttribute<IbChartIndicatorGroup, IbBarContainer> container;
+	public static volatile SingularAttribute<IbChartIndicatorGroup, BarContainer> container;
 }

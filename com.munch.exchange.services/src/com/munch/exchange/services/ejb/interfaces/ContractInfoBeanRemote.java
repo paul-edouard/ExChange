@@ -7,7 +7,7 @@ import javax.ejb.Remote;
 import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 
 @Remote
@@ -24,7 +24,7 @@ public interface ContractInfoBeanRemote {
 	public List<IbContract> getAllContracts();
 	
 	//IbBarContainer
-	public IbBarContainer getBarContainer(IbContract contract,long id);
+	public BarContainer getBarContainer(IbContract contract,long id);
 	
 	
 	//Commission

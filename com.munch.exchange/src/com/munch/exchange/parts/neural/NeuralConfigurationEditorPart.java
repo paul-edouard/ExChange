@@ -93,9 +93,9 @@ import com.munch.exchange.model.core.encog.NoveltySearchPopulation;
 import com.munch.exchange.model.core.encog.NoveltySearchUtil;
 import com.munch.exchange.model.core.encog.PersistNoveltySearchPopulation;
 import com.munch.exchange.model.core.ib.IbContract.TradingPeriod;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.neural.BestGenomes;
 import com.munch.exchange.model.core.ib.neural.GenomeEvaluation;
 import com.munch.exchange.model.core.ib.neural.IsolatedNeuralArchitecture;
@@ -483,7 +483,7 @@ public class NeuralConfigurationEditorPart {
 		
 		comboBarSize = new Combo(compositeDataSetCommandItems, SWT.NONE);
 		comboBarSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		for(String bSize:IbBar.getAllBarSizesAsString())
+		for(String bSize:BarUtils.getAllBarSizesAsString())
 			comboBarSize.add(bSize);
 		
 		Label lblReferenceData = new Label(compositeDataSetCommandItems, SWT.NONE);
@@ -2114,7 +2114,7 @@ public class NeuralConfigurationEditorPart {
 		
 		private void readGuiData(){
 //			Save the bar Size
-			neuralConfiguration.setSize(IbBar.getBarSizeFromString(comboBarSize
+			neuralConfiguration.setSize(BarUtils.getBarSizeFromString(comboBarSize
 					.getText()));
 			
 //			Save the reference data
@@ -2164,10 +2164,10 @@ public class NeuralConfigurationEditorPart {
 			neuralConfiguration.clearAllCollectedBars();
 			updateProgressBarDataSet();
 			
-			List<IbBarContainer> containers = historicalDataProvider
+			List<BarContainer> containers = historicalDataProvider
 					.getAllBarContainers(neuralConfiguration.getContract());
 			
-			for (IbBarContainer container : containers) {
+			for (BarContainer container : containers) {
 
 				// Collect the mid point data
 				if (neuralConfiguration.getReferenceData() == ReferenceData.MID_POINT
@@ -2425,9 +2425,9 @@ public class NeuralConfigurationEditorPart {
 		@Override
 		public String getText(Object element) {
 			
-			if(element instanceof IbBar){
-				IbBar bar=(IbBar) element;
-				return IbBar.format(bar.getTimeInMs());
+			if(element instanceof ExBar){
+				ExBar bar=(ExBar) element;
+				return BarUtils.format(bar.getTimeInMs());
 			}
 			else if(element instanceof List<?>){
 				List<?> list=(List<?>) element;
@@ -2436,17 +2436,19 @@ public class NeuralConfigurationEditorPart {
 				if(neuralConfiguration.getTrainingBlocks().contains(list))
 					suffix=" [*]";
 				
-				IbBar bar=(IbBar)list.get(0);
+				ExBar bar=(ExBar)list.get(0);
+				Calendar day=BarUtils.getCurrentDayOf(bar.getTimeInMs());
+				return BarUtils.format(day.getTimeInMillis())+suffix;
 
-				switch (neuralConfiguration.getSplitStrategy()) {
-				case WEEK:
-					Calendar sunday=IbBar.getLastSundayOfDate(bar.getTimeInMs());
-					return IbBar.format(sunday.getTimeInMillis())+suffix;
-					
-				case DAY:
-					Calendar day=IbBar.getCurrentDayOf(bar.getTimeInMs());
-					return IbBar.format(day.getTimeInMillis())+suffix;
-				}
+//				switch (neuralConfiguration.getSplitStrategy()) {
+//				case WEEK:
+//					Calendar sunday=IbBar.getLastSundayOfDate(bar.getTimeInMs());
+//					return IbBar.format(sunday.getTimeInMillis())+suffix;
+//					
+//				case DAY:
+//					Calendar day=IbBar.getCurrentDayOf(bar.getTimeInMs());
+//					return IbBar.format(day.getTimeInMillis())+suffix;
+//				}
 			}
 			
 			
@@ -2467,8 +2469,8 @@ public class NeuralConfigurationEditorPart {
 		public String getText(Object element) {
 			if(neuralConfiguration.getAdpatedTimesMap().isEmpty())return "";
 			
-			if(element instanceof IbBar){
-				IbBar bar=(IbBar) element;
+			if(element instanceof ExBar){
+				ExBar bar=(ExBar) element;
 				long time=bar.getTimeInMs();
 				if(neuralConfiguration.getAdpatedTimesMap()==null)
 					return "";
@@ -2517,7 +2519,7 @@ public class NeuralConfigurationEditorPart {
 			else if(element instanceof NeuralNetworkRating){
 				NeuralNetworkRating rating=(NeuralNetworkRating)element;
 				if(rating.getChildren().isEmpty()){
-					return IbBar.format(rating.getId());
+					return BarUtils.format(rating.getId());
 				}
 				else{
 					return rating.getName();

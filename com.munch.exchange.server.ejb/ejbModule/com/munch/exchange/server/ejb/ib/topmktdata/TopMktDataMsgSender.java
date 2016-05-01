@@ -2,27 +2,21 @@ package com.munch.exchange.server.ejb.ib.topmktdata;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Calendar;
 import java.util.logging.Logger;
 
-import javax.annotation.Resource;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.JMSContext;
 import javax.jms.JMSException;
-import javax.jms.JMSProducer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.jms.TopicConnectionFactory;
 
-import com.ib.controller.NewTickType;
 import com.ib.controller.ApiController.TopMktDataAdapter;
+import com.ib.controller.NewTickType;
 import com.ib.controller.Types.MktDataType;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.IbTopMktData;
-import com.munch.exchange.model.core.ib.bar.IbBar;
 
 public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyChangeListener{
 	

@@ -11,9 +11,8 @@ import javax.persistence.EntityManager;
 
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
-import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataMsgDrivenBean;
 
 
 public enum RealTimeBarsSenderCollector {
@@ -44,9 +43,9 @@ public enum RealTimeBarsSenderCollector {
 	}
 	
 	
-	public void addSender(IbContract contract,List<IbBarContainer> Allbars){
+	public void addSender(IbContract contract,List<BarContainer> Allbars){
 		List<RealTimeBarsSender> l=new LinkedList<RealTimeBarsSender>();
-		for(IbBarContainer barcontainer:Allbars){
+		for(BarContainer barcontainer:Allbars){
 			WhatToShow whatToShow=barcontainer.getType();
 			RealTimeBarsSender sender=new RealTimeBarsSender(contract, whatToShow, connectionFactory, destination);
 			log.info("Try to request real time bar for: ");

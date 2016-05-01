@@ -25,7 +25,7 @@ import com.ib.controller.Types.DurationUnit;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.TimeBarSize;
 import com.munch.exchange.model.core.ib.bar.BarComparator;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
 
 public class HistoricalBarLoader implements IHistoricalDataHandler{
@@ -75,7 +75,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		
 //		Clear the map search for the containers
 		numberOfParsingViolationAttempt=0;
-		List<IbBarContainer> containers=searchAllContainers();
+		List<BarContainer> containers=searchAllContainers();
 
 //		Switch to the short term modus if new fresh data are required
 		boolean shortTermModus=areShortTermBarRequired();
@@ -84,7 +84,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		while( searchLongTermBar(containers) || shortTermModus){
 			
 			
-			for(IbBarContainer container:containers){
+			for(BarContainer container:containers){
 				if(numberOfParsingViolationAttempt>=MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT)
 					break;
 				
@@ -137,7 +137,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	}
 	
 	
-	private void loadShortTermBar(IbBarContainer container){
+	private void loadShortTermBar(BarContainer container){
 		log.info("Load short term bar: "+container.getContract().getSymbol()+
 				", "+container.getType().toString());
 		
@@ -154,7 +154,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		
 	}
 	
-	private boolean loadShortTermTypedBars(IbBarContainer container, TimeBarSize barType){
+	private boolean loadShortTermTypedBars(BarContainer container, TimeBarSize barType){
 		
 		try {
 		ut.begin();
@@ -287,7 +287,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	}
 	
 	
-	private void sendLoadingMessage(String message, IbBarContainer container, TimeBarSize barType,Calendar start, long from, List<Bar> loadedBars){
+	private void sendLoadingMessage(String message, BarContainer container, TimeBarSize barType,Calendar start, long from, List<Bar> loadedBars){
 		Calendar end=Calendar.getInstance();
 		long time_s=(end.getTimeInMillis()-start.getTimeInMillis());
 		log.info(message+container.getContract().getSymbol()+", "+
@@ -300,7 +300,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 //	###             LONG TERM BAR               ###
 //	###############################################
 	
-	private void loadLongTermBar(IbBarContainer container){
+	private void loadLongTermBar(BarContainer container){
 //		log.info("Load long term bar: "+container.getType().toString());
 //		
 //		#########################################
@@ -317,7 +317,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	}
 	
 	
-	private void loadLongTermTypeBar(IbBarContainer container, TimeBarSize bartype){
+	private void loadLongTermTypeBar(BarContainer container, TimeBarSize bartype){
 		
 		if(!ConnectionBean.INSTANCE.isConnected())
 			return;
@@ -415,15 +415,15 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	}
 	
 	
-	private List<IbBarContainer> searchAllContainers(){
+	private List<BarContainer> searchAllContainers(){
 		
-		List<IbBarContainer> allContainers = new LinkedList<IbBarContainer>();
+		List<BarContainer> allContainers = new LinkedList<BarContainer>();
 
 		try {
 			ut.begin();
 
 			for (IbContract exContract : contracts) {
-				List<IbBarContainer> containers = BarMsgDrivenBean.getBarContainersOf(exContract, em);
+				List<BarContainer> containers = BarMsgDrivenBean.getBarContainersOf(exContract, em);
 				allContainers.addAll(containers);
 			}			
 
@@ -437,7 +437,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		return allContainers;
 	}
 	
-	private boolean searchLongTermBar(List<IbBarContainer> containers){
+	private boolean searchLongTermBar(List<BarContainer> containers){
 		
 
 		boolean searchActivated=false;
@@ -445,7 +445,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		try {
 			ut.begin();
 			
-			for(IbBarContainer container:containers){
+			for(BarContainer container:containers){
 				if(!HistoricalBarPersistance.isLongTermBarLoadingFinished(em, container, TimeBarSize.SECOND)){
 					searchActivated=true;
 					break;
@@ -563,7 +563,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	
 	private boolean isRequestTimoutReached=false;
 	
-	private List<Bar> loadTypeBar(IbBarContainer container,TimeBarSize barType, long from, boolean removeDuplicated){
+	private List<Bar> loadTypeBar(BarContainer container,TimeBarSize barType, long from, boolean removeDuplicated){
 //		int duration=MAX_SECONDE_DURATION_IN_SECONDE;
 		
 		em.flush();
@@ -636,7 +636,7 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 	
 	
 	
-	private List<Bar> loadBars(IbBarContainer container, long from, int duration, DurationUnit durationUnit, BarSize barSize ){
+	private List<Bar> loadBars(BarContainer container, long from, int duration, DurationUnit durationUnit, BarSize barSize ){
 		requestFinished=false;
 		isRequestTimoutReached=false;
 		recievedBars.clear();

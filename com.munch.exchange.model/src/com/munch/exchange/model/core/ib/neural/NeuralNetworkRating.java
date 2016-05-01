@@ -11,7 +11,7 @@ import org.encog.ml.MLMethod;
 import sun.swing.plaf.synth.Paint9Painter.PaintType;
 
 import com.munch.exchange.model.core.encog.NoveltySearchGenome;
-import com.munch.exchange.model.core.ib.bar.IbBar;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.neural.NeuralArchitecture.Position;
 
 public class NeuralNetworkRating implements Serializable{
@@ -136,7 +136,7 @@ public class NeuralNetworkRating implements Serializable{
 		Collections.sort(times);
 		
 		for(long time:times){
-			text+=IbBar.format(time)+": "+positionTracking.get(time).toString()+", "+ String.format ("%.2f",profitTracking.get(time))+"\n";
+			text+=BarUtils.format(time)+": "+positionTracking.get(time).toString()+", "+ String.format ("%.2f",profitTracking.get(time))+"\n";
 		}
 		
 		

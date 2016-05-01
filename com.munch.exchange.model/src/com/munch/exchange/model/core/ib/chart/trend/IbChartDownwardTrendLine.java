@@ -1,7 +1,6 @@
 package com.munch.exchange.model.core.ib.chart.trend;
 
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -12,16 +11,14 @@ import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.spi.AlgorithmFactory;
 import org.moeaframework.core.variable.RealVariable;
 
-import com.munch.exchange.model.core.historical.HistoricalData;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
-import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
-import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter.ParameterType;
+import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
 import com.munch.exchange.model.core.moea.InjectedSolutionsAlgorithmFactory;
 

@@ -14,8 +14,7 @@ import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.ExBar;
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
@@ -41,7 +40,7 @@ public class NeuralIndicatorInput extends NeuralInput{
 	
 	@OneToOne
 	@JoinColumn(name="BAR_CONTAINER_ID")
-	private IbBarContainer barContainer;
+	private BarContainer barContainer;
 	
 	@OneToOne(mappedBy="neuralIndicatorInput",cascade=CascadeType.ALL)
 	private IbChartIndicator indicator;	
@@ -183,11 +182,11 @@ public class NeuralIndicatorInput extends NeuralInput{
 		this.indicator = indicator;
 	}
 	
-	public IbBarContainer getBarContainer() {
+	public BarContainer getBarContainer() {
 		return barContainer;
 	}
 
-	public void setBarContainer(IbBarContainer barContainer) {
+	public void setBarContainer(BarContainer barContainer) {
 		this.barContainer = barContainer;
 	}
 

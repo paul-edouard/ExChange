@@ -20,7 +20,7 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.ExContractContainer;
 import com.munch.exchange.parts.overview.RatesTreeContentProvider.RateContainer;
 import com.munch.exchange.services.IExchangeRateProvider;
@@ -70,7 +70,7 @@ public class DeleteRateHandler {
 			if(!res)return;
 				
 //			Tries to delete the bar week after week
-			for(IbBarContainer container:historicalDataProvider.getAllBarContainers(selectedContract)){
+			for(BarContainer container:historicalDataProvider.getAllBarContainers(selectedContract)){
 				
 				removeAllBars(historicalDataProvider, container, BarSize._1_secs);
 				removeAllBars(historicalDataProvider, container, BarSize._1_min);
@@ -96,7 +96,7 @@ public class DeleteRateHandler {
 	}
 	
 	
-	private void removeAllBars(IIBHistoricalDataProvider historicalDataProvider, IbBarContainer container, BarSize barSize){
+	private void removeAllBars(IIBHistoricalDataProvider historicalDataProvider, BarContainer container, BarSize barSize){
 		
 		long weekInSeconde=7L*24L*60L*60L;
 		

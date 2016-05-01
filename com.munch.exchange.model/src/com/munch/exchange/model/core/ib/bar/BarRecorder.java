@@ -8,7 +8,7 @@ import java.util.List;
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.WhatToShow;
 
-public class IbBarRecorder {
+public class BarRecorder {
 	
 	
 	
@@ -21,7 +21,7 @@ public class IbBarRecorder {
 	private WhatToShow whatToShow=WhatToShow.MIDPOINT;
 	
 	
-	private List<IbBarRecorderListener> listeners=new LinkedList<IbBarRecorderListener>();
+	private List<BarRecorderListener> listeners=new LinkedList<BarRecorderListener>();
 	
 	
 	public void addBar(ExBar bar){
@@ -188,36 +188,36 @@ public class IbBarRecorder {
 		}
 	}
 
-	public void addListener(IbBarRecorderListener listener){
+	public void addListener(BarRecorderListener listener){
 		listeners.add(listener);
 	}
-	public void removeListener(IbBarRecorderListener listener){
+	public void removeListener(BarRecorderListener listener){
 		listeners.remove(listener);
 	}
 	
 	private void fireBarAdded(LinkedList<ExBar> addedBars){
-		for(IbBarRecorderListener listener:listeners){
+		for(BarRecorderListener listener:listeners){
 			listener.barAdded(addedBars);
 		}
 	}
 	private void fireBarReplaced(LinkedList<ExBar> replacedBars){
-		for(IbBarRecorderListener listener:listeners){
+		for(BarRecorderListener listener:listeners){
 			listener.barReplaced(replacedBars);
 		}
 	}
 	private void fireNewCompletedBar(ExBar bar){
-		for(IbBarRecorderListener listener:listeners){
+		for(BarRecorderListener listener:listeners){
 			listener.newCompletedBar(bar);
 		}
 	}
 	private void fireLastBarUpdated(ExBar bar){
-		for(IbBarRecorderListener listener:listeners){
+		for(BarRecorderListener listener:listeners){
 			listener.lastBarUpdated(bar);
 		}
 	}
 	
 	private void fireAllBarsCleared(){
-		for(IbBarRecorderListener listener:listeners){
+		for(BarRecorderListener listener:listeners){
 			listener.allBarsCleared();
 		}
 	}

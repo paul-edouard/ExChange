@@ -10,7 +10,7 @@ import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 
@@ -63,7 +63,7 @@ public class ChartTreeDragSourceListener implements DragSourceListener  {
 	    		IbChartSerie serie=(IbChartSerie) array[j];
 	    		IbChartIndicator indicator=serie.getIndicator();
 	    		BarSize barSize=indicator.getGroup().getRoot().getBarSize();
-	    		IbBarContainer container=indicator.getGroup().getRoot().getContainer();
+	    		BarContainer container=indicator.getGroup().getRoot().getContainer();
 	    		IbContract contract=container.getContract();
 	    		
 	    		if (TextTransfer.getInstance().isSupportedType(event.dataType)) {

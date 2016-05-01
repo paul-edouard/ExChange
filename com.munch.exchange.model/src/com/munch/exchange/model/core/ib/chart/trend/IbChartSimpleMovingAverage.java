@@ -8,7 +8,6 @@ import com.munch.exchange.model.analytic.indicator.trend.MovingAverage;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
-import com.munch.exchange.model.core.ib.bar.IbBar;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;

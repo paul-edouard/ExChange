@@ -19,7 +19,7 @@ import javax.persistence.Transient;
 import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 
 @Entity
 public class IbChartIndicatorGroup implements Serializable, Copyable<IbChartIndicatorGroup>,
@@ -58,7 +58,7 @@ ComparableAttributes<IbChartIndicatorGroup>{
 	
 	@OneToOne
 	@JoinColumn(name="CONTAINER_ID")
-	private IbBarContainer container;
+	private BarContainer container;
 	
 	public IbChartIndicatorGroup(){
 		
@@ -290,11 +290,11 @@ ComparableAttributes<IbChartIndicatorGroup>{
 	}
 
 
-	public IbBarContainer getContainer() {
+	public BarContainer getContainer() {
 		return container;
 	}
 
-	public void setContainer(IbBarContainer container) {
+	public void setContainer(BarContainer container) {
 		this.container = container;
 	}
 

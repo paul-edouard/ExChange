@@ -5,25 +5,16 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import javax.persistence.EntityManager;
-
-import org.hibernate.Hibernate;
-
-import com.ib.controller.Bar;
 import com.ib.controller.ApiController.IHistoricalDataHandler;
+import com.ib.controller.Bar;
 import com.ib.controller.Types.BarSize;
 import com.ib.controller.Types.DurationUnit;
-import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBar;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
-import com.munch.exchange.model.core.ib.bar.IbSecondeBar;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
 
 public enum HistoricalDataLoaders {
@@ -72,10 +63,10 @@ public enum HistoricalDataLoaders {
 	}
 	
 	
-	public void init(List<IbBarContainer> allBars, long time){
+	public void init(List<BarContainer> allBars, long time){
 		
 		//Add new Contracts
-		for(IbBarContainer c : allBars){			
+		for(BarContainer c : allBars){			
 			if(!loaderMap.containsKey(c.getId())){
 				log.info("Create a new Bar Loader");
 				loaderMap.put(c.getId(), new BarLoader(c));
@@ -86,7 +77,7 @@ public enum HistoricalDataLoaders {
 		List<Long> toDeleteList=new LinkedList<>();
 		for(Long i:loaderMap.keySet()){
 			boolean isValid=false;
-			for(IbBarContainer c : allBars){
+			for(BarContainer c : allBars){
 				if(i==c.getId()){
 					isValid=true;
 					break;
@@ -121,7 +112,7 @@ public enum HistoricalDataLoaders {
 		return loaderMap.values();
 	}
 	
-	public BarLoader getLoaderFrom(IbBarContainer c){
+	public BarLoader getLoaderFrom(BarContainer c){
 		if(loaderMap.containsKey(c.getId())){
 			return loaderMap.get(c.getId());
 		}
@@ -134,14 +125,14 @@ public enum HistoricalDataLoaders {
 		private static final long TIMOUT=2000;
 		
 		private boolean isLoading=false;
-		private IbBarContainer bars;
+		private BarContainer bars;
 		private long time;
 		
 		private long requestStartTime=0;
 		private List<Bar> recievedBars=new LinkedList<>();
 		private boolean finished=false;
 		
-		public BarLoader(IbBarContainer bars ){
+		public BarLoader(BarContainer bars ){
 			
 			//try{
 			this.bars=bars;
@@ -216,7 +207,7 @@ public enum HistoricalDataLoaders {
 			return time;
 		}
 
-		public IbBarContainer getBars() {
+		public BarContainer getBars() {
 			return bars;
 		}
 
@@ -384,7 +375,7 @@ public enum HistoricalDataLoaders {
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
+					
 					e.printStackTrace();
 					break;
 				}

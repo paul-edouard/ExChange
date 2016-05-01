@@ -26,7 +26,7 @@ import com.ib.controller.Types.Right;
 import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
 import com.ib.controller.Types.WhatToShow;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.bar.minute.MinuteContainer;
 import com.munch.exchange.model.core.ib.bar.seconde.SecondeContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
@@ -50,7 +50,7 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	private int id;
 	
 	@OneToMany(mappedBy="contract",cascade=CascadeType.ALL)
-	private List<IbBarContainer> bars;
+	private List<BarContainer> bars;
 	
 	@OneToOne(mappedBy="contract",cascade=CascadeType.ALL)
 	private IbCommission commission;
@@ -387,10 +387,10 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	public void setId(int id) {
 	this.id = id;}
 	
-	public List<IbBarContainer> getBars() {
+	public List<BarContainer> getBars() {
 		return bars;
 	}
-	public void setBars(List<IbBarContainer> bars) {
+	public void setBars(List<BarContainer> bars) {
 		this.bars = bars;
 	}
 
@@ -857,34 +857,34 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	//######################################
   	//##              STATIC              ##
   	//######################################
-	public static List<IbBarContainer> getAllAvailableIbBarContainers(IbContract contract){
-		List<IbBarContainer> Allbars=new LinkedList<IbBarContainer>();
+	public static List<BarContainer> getAllAvailableIbBarContainers(IbContract contract){
+		List<BarContainer> Allbars=new LinkedList<BarContainer>();
 		//STOCK
 		if(contract.getSecType()==SecType.STK ){
-			Allbars.add(new IbBarContainer(contract,WhatToShow.MIDPOINT));
-			Allbars.add(new IbBarContainer(contract,WhatToShow.ASK));
-			Allbars.add(new IbBarContainer(contract,WhatToShow.BID));
-			Allbars.add(new IbBarContainer(contract,WhatToShow.TRADES));
+			Allbars.add(new BarContainer(contract,WhatToShow.MIDPOINT));
+			Allbars.add(new BarContainer(contract,WhatToShow.ASK));
+			Allbars.add(new BarContainer(contract,WhatToShow.BID));
+			Allbars.add(new BarContainer(contract,WhatToShow.TRADES));
 			
 			//Allbars.add(new IbBarContainer(exContract,WhatToShow.HISTORICAL_VOLATILITY));
 			//Allbars.add(new IbBarContainer(exContract,WhatToShow.OPTION_IMPLIED_VOLATILITY));
 		}
 		else if(contract.getSecType()==SecType.CASH || 
 				contract.getSecType()==SecType.CMDTY){
-			Allbars.add(new IbBarContainer(contract,WhatToShow.MIDPOINT));
-			Allbars.add(new IbBarContainer(contract,WhatToShow.ASK));
-			Allbars.add(new IbBarContainer(contract,WhatToShow.BID));
+			Allbars.add(new BarContainer(contract,WhatToShow.MIDPOINT));
+			Allbars.add(new BarContainer(contract,WhatToShow.ASK));
+			Allbars.add(new BarContainer(contract,WhatToShow.BID));
 		}
 		else if(contract.getSecType()==SecType.OPT ||
 				contract.getSecType()==SecType.FUT){
-			Allbars.add(new IbBarContainer(contract,WhatToShow.MIDPOINT));
+			Allbars.add(new BarContainer(contract,WhatToShow.MIDPOINT));
 			//Allbars.add(new IbBarContainer(exContract,WhatToShow.ASK));
 			//Allbars.add(new IbBarContainer(exContract,WhatToShow.BID));
 			//Allbars.add(new IbBarContainer(exContract,WhatToShow.TRADES));
 		}
 		//INDICE
 		else if(contract.getSecType()==SecType.IND){
-			Allbars.add(new IbBarContainer(contract,WhatToShow.TRADES));
+			Allbars.add(new BarContainer(contract,WhatToShow.TRADES));
 			
 			//Allbars.add(new IbBarContainer(exContract,WhatToShow.HISTORICAL_VOLATILITY));
 			//Allbars.add(new IbBarContainer(exContract,WhatToShow.OPTION_IMPLIED_VOLATILITY));

@@ -17,7 +17,7 @@ import com.ib.controller.NewContract;
 import com.ib.controller.NewContractDetails;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalBarLoader;
 import com.munch.exchange.server.ejb.ib.topmktdata.TopMktDataMsgSenderCollector;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
@@ -222,9 +222,9 @@ public class ContractInfoBean implements ContractInfoBeanRemote, IContractDetail
 	}
 
 	@Override
-	public IbBarContainer getBarContainer(IbContract contract,long id) {
+	public BarContainer getBarContainer(IbContract contract,long id) {
 		IbContract c=getContract(contract.getId());
-		for(IbBarContainer container:c.getBars()){
+		for(BarContainer container:c.getBars()){
 			if(container.getId()==id)return container;
 		}
 		return null;

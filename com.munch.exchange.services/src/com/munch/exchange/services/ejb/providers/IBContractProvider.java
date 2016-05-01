@@ -7,7 +7,7 @@ import org.jboss.security.authorization.resources.EJBResource;
 import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.services.ejb.beans.BeanRemote;
 import com.munch.exchange.services.ejb.interfaces.ContractInfoBeanRemote;
 import com.munch.exchange.services.ejb.interfaces.IIBContractProvider;
@@ -81,7 +81,7 @@ public class IBContractProvider implements IIBContractProvider {
 	}
 
 	@Override
-	public IbBarContainer getBarContainer(IbContract contract,long id) {
+	public BarContainer getBarContainer(IbContract contract,long id) {
 		if(beanRemote==null)init();
 		return beanRemote.getService().getBarContainer(contract, id);
 	}

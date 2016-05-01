@@ -2,7 +2,6 @@ package com.munch.exchange.model.core.ib.bar;
 
 import java.io.Serializable;
 
-import com.munch.exchange.model.core.ib.bar.IbBar.DataType;
 
 public class ExBar implements Serializable {
 

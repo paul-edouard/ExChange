@@ -15,7 +15,7 @@ import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.ExBarComparator;
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.bar.TimeBarSize;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorFactory;
@@ -46,17 +46,17 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
     }
 
 	@Override
-	public List<IbBarContainer> getAllBarContainers(IbContract exContract) {
+	public List<BarContainer> getAllBarContainers(IbContract exContract) {
 		
 		//log.info("getAllExContractBars server called!");
 		
 		IbContract ex_contract=em.find(IbContract.class, exContract.getId());
 		ex_contract.getBars().size();
-		List<IbBarContainer> contractBars= ex_contract.getBars();
+		List<BarContainer> contractBars= ex_contract.getBars();
 		
 		//Load and update the Chart indicators
 		
-		for(IbBarContainer container:contractBars){
+		for(BarContainer container:contractBars){
 			IbChartIndicatorGroup rootGroup=container.getIndicatorGroup();
 			
 //			log.info("1. Group is Dirty: "+rootGroup.isDirty());
@@ -105,7 +105,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	
 
 	@Override
-	public ExBar getFirstTimeBar(IbBarContainer container
+	public ExBar getFirstTimeBar(BarContainer container
 			,BarSize size) {
 		
 		TimeBarSize timeBarSize=BarUtils.convert(size);
@@ -115,7 +115,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	}
 		
 	@Override
-	public ExBar getLastTimeBar(IbBarContainer container,
+	public ExBar getLastTimeBar(BarContainer container,
 			BarSize size) {
 		
 		TimeBarSize timeBarSize=BarUtils.convert(size);
@@ -126,7 +126,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	}
 	
 	@Override
-	public List<ExBar> getAllTimeBars(IbBarContainer container,BarSize size) {
+	public List<ExBar> getAllTimeBars(BarContainer container,BarSize size) {
 		
 		TimeBarSize timeBarSize=BarUtils.convert(size);
 		List<ExBar> bars=HistoricalBarPersistance.getAllBars(em, container, timeBarSize);
@@ -141,7 +141,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	}
 
 	@Override
-	public List<ExBar> getTimeBarsFromTo(IbBarContainer container,
+	public List<ExBar> getTimeBarsFromTo(BarContainer container,
 			BarSize size, long from, long to) {
 		
 		TimeBarSize timeBarSize=BarUtils.convert(size);
@@ -158,7 +158,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	}
 	
 	@Override
-	public void removeBarsFromTo(IbBarContainer container,
+	public void removeBarsFromTo(BarContainer container,
 			BarSize size, long from, long to) {
 		
 		TimeBarSize timeBarSize=BarUtils.convert(size);
@@ -168,7 +168,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	
 	
 	@Override
-	public List<ExBar> getAllRangeBars(IbBarContainer container, double range) {
+	public List<ExBar> getAllRangeBars(BarContainer container, double range) {
 		List<ExBar> bars=HistoricalBarPersistance.getAllBars(em, container, TimeBarSize.SECOND);
 		
 		LinkedList<LinkedList<ExBar>> barBlocks=BarUtils.splitBarListInDayBlocks(bars);
@@ -177,7 +177,7 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	}
 
 	@Override
-	public ExBar getFirstRangeBar(IbBarContainer container, double range) {
+	public ExBar getFirstRangeBar(BarContainer container, double range) {
 		long firstBarTime=HistoricalBarPersistance.getFirstBarTime(em, container, TimeBarSize.SECOND);
 
 		return HistoricalBarPersistance.getBar(em, container, TimeBarSize.SECOND, firstBarTime);
@@ -185,14 +185,14 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	}
 
 	@Override
-	public ExBar getLastRangeBar(IbBarContainer container, double range) {
+	public ExBar getLastRangeBar(BarContainer container, double range) {
 		long lastBarTime=HistoricalBarPersistance.getLastBarTime(em, container, TimeBarSize.SECOND);
 
 		return HistoricalBarPersistance.getBar(em, container, TimeBarSize.SECOND, lastBarTime);
 	}
 
 	@Override
-	public List<ExBar> getRangeBarsFromTo(IbBarContainer container, double range, long from, long to) {
+	public List<ExBar> getRangeBarsFromTo(BarContainer container, double range, long from, long to) {
 		List<ExBar> bars=HistoricalBarPersistance.getBarsFromTo(em, container, TimeBarSize.SECOND, from, to);
 		
 		LinkedList<LinkedList<ExBar>> barBlocks=BarUtils.splitBarListInDayBlocks(bars);

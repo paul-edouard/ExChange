@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.munch.exchange.model.core.ib.bar.IbBarContainer;
+import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
@@ -24,7 +24,7 @@ public class IbChartIndicatorFactory {
 		return new IbChartIndicatorGroup(null, IbChartIndicatorGroup.ROOT);
 	}
 	
-	public static boolean updateRoot(IbChartIndicatorGroup root, IbBarContainer container){
+	public static boolean updateRoot(IbChartIndicatorGroup root, BarContainer container){
 		if(!root.getName().equals(IbChartIndicatorGroup.ROOT))return false;
 		
 		parentChildrenMap.clear();
