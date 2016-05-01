@@ -1,7 +1,6 @@
 package com.munch.exchange.server.ejb.ib.historicaldata;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -140,7 +139,7 @@ public class HistoricalBarPersistance {
 				"WHERE b.containerId="+getContainerId(em, container, barType)+" "+
 				"AND b.time>="+from+ " "+
 				"AND b.time<="+to;
-		
+//		log.info("Query: "+queryString);
 		return getBarListFromQuery(em, queryString);
 	}
 	

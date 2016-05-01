@@ -445,6 +445,9 @@ public class ChartEditorPart{
 		dateAxis.setUpperMargin(0.01);
 		//dateAxis.setAutoTickUnitSelection(true);
 		Date upper=new Date();
+		ExBar lastBar=hisDataProvider.getLastTimeBar(getBarContainer(), barRecorder.getBarSize());
+		upper.setTime(lastBar.getTimeInMs());
+		
 		Date lower=new Date();
 		lower.setTime(upper.getTime()-BarUtils.getIntervallInMs(barRecorder.getBarSize())*200);
 		
@@ -1572,13 +1575,24 @@ public class ChartEditorPart{
 			//selectedGroup.removeAllListeners();
 			
 			if(barRecorder.isEmpty() || numberOfStarts==1){
-				long intervall=BarUtils.getIntervallInSec(barRecorder.getBarSize());
-				to=new Date().getTime()/1000;
-				from=to-loadingSize*intervall;
+//				long intervall=BarUtils.getIntervallInSec(barRecorder.getBarSize());
+				ExBar firstBar=hisDataProvider.getLastTimeBar(getBarContainer(), barRecorder.getBarSize());
+				to=firstBar.getTime();
+				from=to-24*60*60;
+				
+//				from=firstBar.getTime();
+//				to=from-24*60*60;
+				
+				logger.info("From: "+BarUtils.format(from*1000));
+				logger.info("To: "+BarUtils.format(to*1000));
+				
+				
+//				to=new Date().getTime()/1000;
+//				from=to-loadingSize*intervall;
 				
 				List<ExBar> bars=hisDataProvider.getTimeBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
 				List<ExBar> newBars=new LinkedList<ExBar>();
-				//logger.info("Number of bars: "+bars.size());
+//				logger.info("Number of bars: "+bars.size());
 				//logger.info("Number of new bars: "+newBars.size());
 					
 				List<ExBar> toAdd=new LinkedList<ExBar>();

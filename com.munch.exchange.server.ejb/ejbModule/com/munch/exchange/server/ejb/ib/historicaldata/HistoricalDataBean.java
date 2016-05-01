@@ -4,6 +4,7 @@ package com.munch.exchange.server.ejb.ib.historicaldata;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -30,7 +31,7 @@ import com.munch.exchange.services.ejb.interfaces.HistoricalDataBeanRemote;
 //@TransactionManagement(value=TransactionManagementType.BEAN)
 public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	
-//	private static final Logger log = Logger.getLogger(HistoricalDataBean.class.getName());
+	private static final Logger log = Logger.getLogger(HistoricalDataBean.class.getName());
 	
 	@PersistenceContext
 	private EntityManager em;
@@ -146,6 +147,10 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		
 		TimeBarSize timeBarSize=BarUtils.convert(size);
 		List<ExBar> bars=HistoricalBarPersistance.getBarsFromTo(em, container, timeBarSize, from, to);
+		
+//		log.info("Number of bars loaded: "+bars.size());
+		
+		
 		Collections.sort(bars, new ExBarComparator());
 		
 		

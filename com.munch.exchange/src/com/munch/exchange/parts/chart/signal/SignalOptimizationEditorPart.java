@@ -1374,13 +1374,13 @@ IbChartSignalOptimizationControllerListener{
 			if(allCollectedBars==null || allCollectedBars.isEmpty()){
 				allCollectedBars=hisDataProvider.getAllTimeBars(getBarContainer(),
 						BarUtils.getBarSizeFromString(bazSize));
-				Collections.sort(allCollectedBars, new ExBarComparator());
+//				Collections.sort(allCollectedBars, new ExBarComparator());
 				//TODO Remove this!
 //				while (allCollectedBars.size()>1000) {
 //					allCollectedBars.remove(0);
 //					
 //				}
-				
+//				return Status.OK_STATUS;
 			}
 			
 			//Create the Data Set

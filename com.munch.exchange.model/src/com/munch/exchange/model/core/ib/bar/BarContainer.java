@@ -1,5 +1,7 @@
 package com.munch.exchange.model.core.ib.bar;
 
+import java.io.Serializable;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -22,7 +24,7 @@ import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 
 
 @Entity
-public class BarContainer implements Copyable<BarContainer>{
+public class BarContainer implements Copyable<BarContainer>, Serializable{
 	
 	/**
 	 * 
