@@ -16,10 +16,15 @@ import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
 public class BarUtils {
 	
 	private static final SimpleDateFormat FORMAT = new SimpleDateFormat( "yyyyMMdd HH:mm:ss"); // format for historical query
+	private static final SimpleDateFormat MS_FORMAT = new SimpleDateFormat( "yyyyMMdd HH:mm:ss.SSS"); // format for historical query
 	
 	
 	public static String format( long ms) {
 		return FORMAT.format( new Date( ms) );
+	}
+	
+	public static String msFormat( long ms) {
+		return MS_FORMAT.format( new Date( ms) );
 	}
 	
 //	#########################################

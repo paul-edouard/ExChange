@@ -37,7 +37,7 @@ public class HistoricalBarPersistance {
 		Class<?> tableClass=getTableClass(container,barType);
 		try {
 
-			int i = 0;
+			int i = 1;
 
 			for (Bar bar : bars) {
 

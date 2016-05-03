@@ -26,6 +26,7 @@ import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.TimeBarSize;
 import com.munch.exchange.model.core.ib.bar.BarComparator;
 import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
 
 public class HistoricalBarLoader implements IHistoricalDataHandler{
@@ -72,6 +73,17 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		log.info("Historical data loader is ready to run!");
 		
 		running=true;
+		
+//		Test if the request is between 23h00 and 23h15 at this time there is no server response!
+		Calendar currentTime=Calendar.getInstance();
+		if(currentTime.get(Calendar.HOUR_OF_DAY)==23){
+			if(currentTime.get(Calendar.MINUTE)>=0 && currentTime.get(Calendar.MINUTE)<=15){
+				running=false;
+				log.info("Sorry at this time "+BarUtils.format(currentTime.getTimeInMillis())+" there is no server responce!");
+				return;
+			}
+		}
+		
 		
 //		Clear the map search for the containers
 		numberOfParsingViolationAttempt=0;

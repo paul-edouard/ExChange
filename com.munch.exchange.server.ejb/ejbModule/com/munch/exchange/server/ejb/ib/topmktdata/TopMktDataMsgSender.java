@@ -116,7 +116,8 @@ public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyCh
 			default:
 				break;
 		}
-		//sendMessage("Tick Price");
+//		sendMessage("Tick Price");
+//		log.info("Tick Price");
 		//m_model.fireTableDataChanged(); // should use a timer to be more efficient
 	}
 
@@ -134,7 +135,8 @@ public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyCh
 			default:
 				break;
 		}
-		//sendMessage("Tick Size");
+//		log.info("Tick Size");
+//		sendMessage("Tick Size");
 		//m_model.fireTableDataChanged();
 	}
 	
@@ -161,6 +163,8 @@ public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyCh
 	public void propertyChange(PropertyChangeEvent evt) {
 		String field=evt.getPropertyName();
 		String value=String.valueOf(evt.getNewValue());
+		
+//		log.info("field: "+field+", value: "+value);
 		
 		this.sendMessage(field, value);	
 	}
