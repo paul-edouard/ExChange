@@ -132,6 +132,15 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 	@Override
 	public void message(int id, int errorCode, String errorMsg) {
 		log.warning(id + " " + errorCode + " " + errorMsg);
+//		Historical Data
+//		06:03:08,842 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2105 HMDS Data Farm Verbindung ist unterbrochen:cashhmds
+//		06:04:09,064 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2106 HMDS Daten Farm Verbindung ist OK:cashhmds
+		
+//		Historical / Bar
+//		05:32:30,413 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2103 Marktdaten Farm Verbindung ist unterbrochen:cashfarm
+//		05:32:30,426 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2105 HMDS Data Farm Verbindung ist unterbrochen:cashhmds
+//		05:32:31,082 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2104 Marktdaten Farm Verbindung ist OK:cashfarm
+//		05:32:50,272 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2106 HMDS Daten Farm Verbindung ist OK:cashhmds
 	}
 
 	@Override

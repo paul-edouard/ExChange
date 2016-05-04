@@ -36,6 +36,12 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 
 	private static HistoricalBarLoader INSTANCE=null;
 	
+	private static boolean isDataFarmAvailable=true;
+	
+	public static synchronized void setDataFarmAvailibility(boolean isAvailable){
+		isDataFarmAvailable=isAvailable;
+	}
+	
 	public static HistoricalBarLoader getINSTANCE() {
 		return INSTANCE;
 	}
@@ -75,15 +81,9 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		running=true;
 		
 //		Test if the request is between 23h00 and 23h15 at this time there is no server response!
-		Calendar currentTime=Calendar.getInstance();
-		if(currentTime.get(Calendar.HOUR_OF_DAY)==23){
-			if(currentTime.get(Calendar.MINUTE)>=0 && currentTime.get(Calendar.MINUTE)<=15){
-				running=false;
-				log.info("Sorry at this time "+BarUtils.format(currentTime.getTimeInMillis())+" there is no server responce!");
-				return;
-			}
-		}
-		
+//		if(!isIbHDMSServerOnline()){
+//			running=false;return;
+//		}
 		
 //		Clear the map search for the containers
 		numberOfParsingViolationAttempt=0;
@@ -102,6 +102,9 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 				
 //				Break if the connection to TWS was broken
 				if(!ConnectionBean.INSTANCE.isConnected())break;
+				
+//				Break id the HDMS server is not online
+				if(!isIbHDMSServerOnline())break;
 				
 				if(shortTermModus){
 					loadShortTermBar(container);
@@ -134,6 +137,20 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		log.info("Historical data loader is done!");
 		
 	}
+	
+	
+	private synchronized boolean isIbHDMSServerOnline(){
+		Calendar currentTime=Calendar.getInstance();
+		if(currentTime.get(Calendar.HOUR_OF_DAY)==23){
+			if(currentTime.get(Calendar.MINUTE)>=0 && currentTime.get(Calendar.MINUTE)<=15){
+				log.info("Sorry at this time "+BarUtils.format(currentTime.getTimeInMillis())+" there is no server responce!");
+				return false;
+			}
+		}
+		
+		return isDataFarmAvailable;
+	}
+	
 	
 //	###############################################
 //	###             SHORT TERM BAR              ###
@@ -193,13 +210,16 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		if(isWeekEndBreak(lastBarTimeInSeconde, from, barType)){
 			log.info("This is the week end break! Please wait until sunday evening for new data!");
 			ut.commit();
-			return true;
+			return false;
 		}
 		
 //		Load the last bars
 		Calendar start=Calendar.getInstance();
 		List<Bar> loadedBars = loadTypeBar(container, barType, from*1000, true);
-		if(loadedBars==null){
+		if(!ConnectionBean.INSTANCE.isConnected() ||
+				numberOfParsingViolationAttempt>=MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT || 
+				!isIbHDMSServerOnline() ||
+				loadedBars==null){
 			numberOfParsingViolationAttempt=MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT;
 			log.warning("Loading error! no bar were found!");
 			ut.commit();
@@ -230,7 +250,11 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 //			Load the new bars from the new start
 			start=Calendar.getInstance();
 			loadedBars = loadTypeBar(container, barType, from*1000, true);
-			if(loadedBars==null){
+			
+			if(!ConnectionBean.INSTANCE.isConnected() ||
+					numberOfParsingViolationAttempt>=MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT || 
+					!isIbHDMSServerOnline() || 
+					loadedBars==null){
 				ut.commit();
 				return false;
 			}
@@ -368,6 +392,10 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 					return;
 				}
 				if(numberOfParsingViolationAttempt>=MAX_NUMBER_OF_PARSING_VIOLATION_ATTEMPT){
+					ut.commit();
+					return;
+				}
+				if(!isIbHDMSServerOnline()){
 					ut.commit();
 					return;
 				}
