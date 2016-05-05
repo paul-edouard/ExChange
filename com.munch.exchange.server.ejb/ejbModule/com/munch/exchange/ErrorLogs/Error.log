@@ -1,0 +1,74 @@
+05:11:03,849 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 3) New Timer Message: Historical Data timout: 1462417863849 with info: Historical Data timout
+05:22:03,841 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 6) New Timer Message: Historical Data timout: 1462418523841 with info: Historical Data timout
+05:32:24,414 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2103 Marktdaten Farm Verbindung ist unterbrochen:cashfarm
+05:32:24,957 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2104 Marktdaten Farm Verbindung ist OK:cashfarm
+05:33:03,841 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 7) New Timer Message: Historical Data timout: 1462419183841 with info: Historical Data timout
+05:44:03,841 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 8) New Timer Message: Historical Data timout: 1462419843841 with info: Historical Data timout
+05:48:59,557 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+05:49:02,398 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1102 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde wiederhergestellt ? die vorherigen Daten wurden behalten.
+05:55:03,843 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 10) New Timer Message: Historical Data timout: 1462420503843 with info: Historical Data timout
+06:06:03,842 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 2) New Timer Message: Historical Data timout: 1462421163842 with info: Historical Data timout
+06:17:03,845 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 1) New Timer Message: Historical Data timout: 1462421823845 with info: Historical Data timout
+06:28:03,845 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 9) New Timer Message: Historical Data timout: 1462422483845 with info: Historical Data timout
+06:33:09,795 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:33:10,455 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:33:13,773 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:33:22,386 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:33:23,928 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:33:28,660 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:33:38,960 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:33:48,180 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:34:03,601 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:34:23,230 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:34:44,748 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:35:13,225 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:35:44,271 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:36:16,879 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:36:53,774 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:37:31,194 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:38:13,973 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:38:52,211 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:39:03,845 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 4) New Timer Message: Historical Data timout: 1462423143845 with info: Historical Data timout
+06:39:34,020 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:40:14,628 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:40:49,016 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:41:22,460 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1100 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde verloren.
+06:42:04,193 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2103 Marktdaten Farm Verbindung ist unterbrochen:cashfarm
+06:42:04,483 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 1102 Verbindung zwischen %SHORT:COMPNAME% und Trader Workstation wurde wiederhergestellt ? die vorherigen Daten wurden behalten.
+06:42:06,703 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2104 Marktdaten Farm Verbindung ist OK:cashfarm
+06:50:03,839 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 5) New Timer Message: Historical Data timout: 1462423803839 with info: Historical Data timout
+07:01:03,838 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 3) New Timer Message: Historical Data timout: 1462424463838 with info: Historical Data timout
+07:12:03,841 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (EJB default - 6) New Timer Message: Historical Data timout: 1462425123841 with info: Historical Data timout
+07:22:05,356 INFO  [org.jboss.as.connector.deployers.jdbc] (MSC service thread 1-8) JBAS010418: Stopped Driver service with driver-name = mysql-connector-java-5.1.38-bin.jar_com.mysql.fabric.jdbc.FabricMySQLDriver_5_1
+07:22:05,356 INFO  [org.wildfly.extension.undertow] (MSC service thread 1-11) JBAS017532: Host default-host stopping
+07:22:05,357 INFO  [org.jboss.as.messaging] (ServerService Thread Pool -- 66) JBAS011605: Unbound messaging object to jndi name java:/jms/topic/demoTopic
+07:22:05,358 INFO  [org.jboss.as.messaging] (ServerService Thread Pool -- 74) JBAS011605: Unbound messaging object to jndi name java:jboss/exported/jms/RemoteConnectionFactory
+07:22:05,359 INFO  [org.jboss.as.messaging] (ServerService Thread Pool -- 73) JBAS011605: Unbound messaging object to jndi name java:/jms/queue/ExpiryQueue
+07:22:05,360 INFO  [com.munch.exchange.server.ejb.ib.historicaldata.HistoricalDataTimerBean] (ServerService Thread Pool -- 76) Historical Data Timer Bean is shuting down!
+07:22:05,363 INFO  [com.munch.exchange.server.ejb.ib.ConnectionBean] (ServerService Thread Pool -- 73) Startup Bean is shuting down!
+07:22:05,365 INFO  [com.munch.exchange.server.ejb.ib.ConnectionBean] (ServerService Thread Pool -- 73) Disconnected!
+07:22:05,366 INFO  [com.munch.exchange.server.ejb.ib.realtimebar.RealTimeBarSecondBean] (ServerService Thread Pool -- 77) Real Time Bar Second Bean is shuting down!
+07:22:05,379 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (ServerService Thread Pool -- 73) -1 504 Not connected
+07:22:05,732 INFO  [org.jboss.as.messaging] (MSC service thread 1-64) JBAS011605: Unbound messaging object to jndi name java:jboss/DefaultJMSConnectionFactory
+07:22:05,732 INFO  [org.jboss.as.connector.subsystems.datasources] (MSC service thread 1-42) JBAS010409: Unbound data source [java:jboss/datasources/ExampleDS]
+07:22:05,732 INFO  [org.jboss.as.messaging] (ServerService Thread Pool -- 68) JBAS011605: Unbound messaging object to jndi name java:/jms/topic/RealTimeBar
+07:22:05,732 INFO  [org.jboss.as.connector.deployment] (MSC service thread 1-45) JBAS010410: Unbound JCA ConnectionFactory [java:/JmsXA]
+07:22:05,733 INFO  [org.jboss.as.jpa] (ServerService Thread Pool -- 72) JBAS011410: Stopping Persistence Unit (phase 2 of 2) Service 'com.munch.exchange.server.ear/com.munch.exchange.server.ejb.jar#com.munch.exchange.server.ejb'
+07:22:05,738 INFO  [org.jboss.as.connector.deployers.jdbc] (MSC service thread 1-24) JBAS010418: Stopped Driver service with driver-name = h2
+07:22:05,740 WARN  [org.jboss.jca.core.connectionmanager.pool.strategy.PoolByCri] (ServerService Thread Pool -- 69) IJ000615: Destroying active connection in pool: HornetQConnectionDefinition (org.hornetq.ra.HornetQRAManagedConnection@b497def)
+07:22:05,741 WARN  [org.jboss.jca.core.connectionmanager.pool.strategy.PoolByCri] (ServerService Thread Pool -- 69) IJ000615: Destroying active connection in pool: HornetQConnectionDefinition (org.hornetq.ra.HornetQRAManagedConnection@58e82f6)
+07:22:05,743 INFO  [org.jboss.weld.deployer] (MSC service thread 1-20) JBAS016009: Stopping weld service for deployment com.munch.exchange.server.ear
+07:22:05,750 WARN  [org.jboss.jca.core.connectionmanager.pool.strategy.PoolByCri] (ServerService Thread Pool -- 69) IJ000615: Destroying active connection in pool: HornetQConnectionDefinition (org.hornetq.ra.HornetQRAManagedConnection@7c316d29)
+07:22:05,757 INFO  [org.hornetq.ra] (ServerService Thread Pool -- 69) HQ151003: HornetQ resource adaptor stopped
+07:22:05,770 INFO  [org.jboss.as.jpa] (ServerService Thread Pool -- 72) JBAS011410: Stopping Persistence Unit (phase 1 of 2) Service 'com.munch.exchange.server.ear/com.munch.exchange.server.ejb.jar#com.munch.exchange.server.ejb'
+07:22:05,770 INFO  [org.jboss.as.connector.subsystems.datasources] (MSC service thread 1-25) JBAS010409: Unbound data source [java:jboss/datasources/exchange]
+07:22:05,772 INFO  [org.jboss.as.connector.deployers.jdbc] (MSC service thread 1-34) JBAS010418: Stopped Driver service with driver-name = mysql-connector-java-5.1.38-bin.jar_com.mysql.jdbc.Driver_5_1
+07:22:05,779 INFO  [org.jboss.as.server.deployment] (MSC service thread 1-35) JBAS015974: Stopped subdeployment (runtime-name: com.munch.exchange.server.ejb.jar) in 439ms
+07:22:05,780 INFO  [org.jboss.as.server.deployment] (MSC service thread 1-45) JBAS015877: Stopped deployment com.munch.exchange.server.ear (runtime-name: com.munch.exchange.server.ear) in 437ms
+07:22:05,782 INFO  [org.jboss.as.server.deployment] (MSC service thread 1-39) JBAS015877: Stopped deployment mysql-connector-java-5.1.38-bin.jar (runtime-name: mysql-connector-java-5.1.38-bin.jar) in 438ms
+07:22:05,832 INFO  [org.hornetq.core.server] (ServerService Thread Pool -- 69) HQ221002: HornetQ Server version 2.4.5.FINAL (Wild Hornet, 124) [ce8683db-e6fb-11e5-99dd-4597efa0e872] stopped
+07:22:05,835 INFO  [org.wildfly.extension.undertow] (MSC service thread 1-35) JBAS017521: Undertow HTTP listener default suspending
+07:22:05,837 INFO  [org.wildfly.extension.undertow] (MSC service thread 1-35) JBAS017520: Undertow HTTP listener default stopped, was bound to localhost/127.0.0.1:8080
+07:22:05,838 INFO  [org.wildfly.extension.undertow] (MSC service thread 1-28) JBAS017506: Undertow 1.1.0.Final stopping
+07:22:05,845 INFO  [org.jboss.as] (MSC service thread 1-29) JBAS015950: WildFly 8.2.0.Final "Tweek" stopped in 492ms
+Java HotSpot(TM) 64-Bit Server VM warning: ignoring option MaxPermSize=256m; support was removed in 8.0
