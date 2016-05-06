@@ -16,6 +16,7 @@ import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
 import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.server.ejb.ib.topmktdata.TopMktDataMsgSenderCollector;
 
 /**
  * Session Bean implementation class RealTimeBarSecondBean
@@ -72,7 +73,8 @@ public class RealTimeBarSecondBean {
     @Timeout
     public void sendTimerMessage(Timer timer){
     	
-		long time = new Date().getTime();
+		Calendar currentSecond=Calendar.getInstance();
+		currentSecond.set(Calendar.MILLISECOND, 0);
 
 		if (!(timer.getInfo() instanceof String))
 			return;
@@ -80,7 +82,10 @@ public class RealTimeBarSecondBean {
 		String info = (String) timer.getInfo();
 		if (!info.equals(TIMER_STRING))
 			return;
-
+		
+//		Flush all the second bars
+		TopMktDataMsgSenderCollector.INSTANCE.flushSecondBars(currentSecond.getTimeInMillis());
+		
 		// TextMessage textMessage=session.createTextMessage();
 
 //		String msgStr = timer.getInfo().toString() + ": " + BarUtils.msFormat(time);

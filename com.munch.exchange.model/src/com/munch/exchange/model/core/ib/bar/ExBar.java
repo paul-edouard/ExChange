@@ -115,6 +115,10 @@ public class ExBar implements Serializable {
 	public void setTime(long time) {
 		this.time = time;
 	}
+	
+	public void setTimeInMs(long time) {
+		this.time = time/1000;
+	}
 
 
 
@@ -192,6 +196,13 @@ public class ExBar implements Serializable {
 
 	public void setRealTime(boolean isRealTime) {
 		this.isRealTime = isRealTime;
+	}
+
+	@Override
+	public String toString() {
+		return "ExBar [isRealTime=" + isRealTime + ", isCompleted=" + isCompleted + ", time=" + BarUtils.format(getTimeInMs()) + ", high=" + high
+				+ ", low=" + low + ", open=" + open + ", close=" + close + ", wap=" + wap + ", volume=" + volume
+				+ ", count=" + count + ", type=" + type + "]";
 	}
 
 

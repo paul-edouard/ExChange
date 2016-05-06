@@ -28,15 +28,19 @@ public enum TopMktDataMsgSenderCollector {
 	
 	private ConnectionFactory connectionFactory;
 	
-	private Topic destination;
+	private Topic marketDataDestination;
+	
+	private Topic realTimeBarDestination;
 	
 	
 	
-	public void init(EntityManager em,ConnectionFactory connectionFactory,Topic destination){
+	public void init(EntityManager em,ConnectionFactory connectionFactory,Topic marketDatadestination, 
+			Topic realTimeBardestination){
 		this.connectionFactory=connectionFactory;
-		this.destination=destination;
+		this.marketDataDestination=marketDatadestination;
+		this.realTimeBarDestination=realTimeBardestination;
 		
-		log.info("Initialization");
+//		log.info("Initialization");
 		List<IbContract> list=em.createNamedQuery("IbContract.getAll", IbContract.class).getResultList();
 		for(IbContract contract : list){
 			//log.info(contract.toString());
@@ -53,7 +57,8 @@ public enum TopMktDataMsgSenderCollector {
 	}
 	
 	public void addSender(IbContract contract){
-		TopMktDataMsgSender sender=new TopMktDataMsgSender(contract,connectionFactory,destination);
+		TopMktDataMsgSender sender=new TopMktDataMsgSender(contract,connectionFactory,
+				marketDataDestination, realTimeBarDestination);
 		ConnectionBean.INSTANCE.controller().reqTopMktData(contract.getNewContract(), "", false, sender);
 		senders.put(contract.getId(), sender);
 	}
@@ -77,6 +82,12 @@ public enum TopMktDataMsgSenderCollector {
 			ConnectionBean.INSTANCE.controller().cancelTopMktData(sender);
 		}
 		senders.clear();
+	}
+	
+	public void flushSecondBars(long currentSecond){
+		for(TopMktDataMsgSender sender : senders.values()){
+			sender.flushSecondBar(currentSecond);
+		}
 	}
 	
 

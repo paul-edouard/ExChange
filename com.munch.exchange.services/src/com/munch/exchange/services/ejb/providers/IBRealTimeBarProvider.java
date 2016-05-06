@@ -45,11 +45,16 @@ public class IBRealTimeBarProvider implements IIBRealTimeBarProvider,
 
 	@Override
 	public void onMessage(Message arg0) {
-//		try {
-//			ObjectMessage msg=(ObjectMessage) arg0;
-//			
-//			int contractId=msg.getIntProperty(IbTopMktData.CONTRACT_ID);
-//			String whatToShowString=msg.getStringProperty(IbTopMktData.WHAT_TO_SHOW);
+		try {
+			ObjectMessage msg=(ObjectMessage) arg0;
+			
+			int contractId=msg.getIntProperty(IbTopMktData.CONTRACT_ID);
+			String whatToShowString=msg.getStringProperty(IbTopMktData.WHAT_TO_SHOW);
+			
+			log.info("Contract: "+contractId);
+			log.info("whatToShowString: "+whatToShowString);
+			log.info("Bar: "+msg.getObject().getClass().getSimpleName());
+			
 //			ExBar bar=(ExBar) msg.getObject();
 //			bar.setRealTime(true);
 //			
@@ -57,11 +62,11 @@ public class IBRealTimeBarProvider implements IIBRealTimeBarProvider,
 //				if(listener.getContractId()!=contractId)continue;
 //				listener.realTimeBarChanged(bar, BarUtils.getWhatToShowFromString(whatToShowString));
 //			}
-//			
-//			
-//		} catch (JMSException e) {
-//			e.printStackTrace();
-//		}
+			
+			
+		} catch (JMSException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

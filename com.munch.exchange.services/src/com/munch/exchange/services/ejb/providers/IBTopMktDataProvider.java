@@ -99,6 +99,9 @@ public class IBTopMktDataProvider implements IIBTopMktDataProvider, MessageListe
 	@Override
 	public void onMessage(Message arg0) {
 		try {
+			
+			if(!(arg0 instanceof TextMessage))return;
+			
 			TextMessage msg=(TextMessage) arg0;
 			
 			@SuppressWarnings("unchecked")

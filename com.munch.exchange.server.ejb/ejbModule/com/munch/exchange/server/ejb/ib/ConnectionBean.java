@@ -19,6 +19,7 @@ import com.ib.controller.ApiConnection.ILogger;
 import com.ib.controller.ApiController;
 import com.ib.controller.ApiController.IConnectionHandler;
 import com.munch.exchange.server.ejb.ib.account.AccountManager;
+import com.munch.exchange.server.ejb.ib.historicaldata.HistoricalBarLoader;
 import com.munch.exchange.server.ejb.ib.realtimebar.RealTimeBarCollector;
 import com.munch.exchange.server.ejb.ib.topmktdata.TopMktDataMsgSenderCollector;
 
@@ -48,7 +49,7 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 	private ConnectionFactory connectionFactory;
 
 	@Resource(lookup = Constants.JMS_TOPIC_MARKET_DATA)
-	private Topic destination;
+	private Topic marketDatadestination;
 
 	@Resource(lookup = Constants.JMS_TOPIC_REAL_TIME_BAR)
 	private Topic realTimeBardestination;
@@ -70,11 +71,10 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 		m_controller.connect(Constants.IB_CONNECTION_HOST,
 				Constants.IB_CONNECTION_PORT, Constants.IB_CONNECTION_ID);
 
-		// TODO remove
-		log.info("Initialization of bars");
-
-		RealTimeBarCollector.INSTANCE.init(connectionFactory,
-				realTimeBardestination);
+//		log.info("Initialization of bars");
+//
+//		RealTimeBarCollector.INSTANCE.init(connectionFactory,
+//				realTimeBardestination);
 
 	}
 
@@ -98,7 +98,7 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 		
 		// Start the Message sender collector
 		TopMktDataMsgSenderCollector.INSTANCE.init(em, connectionFactory,
-				destination);
+				marketDatadestination, realTimeBardestination);
 		// RealTimeBarsSenderCollector.INSTANCE.init(em, connectionFactory,
 		// destination,allContracts);
 
@@ -132,7 +132,28 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 	@Override
 	public void message(int id, int errorCode, String errorMsg) {
 		log.warning(id + " " + errorCode + " " + errorMsg);
-//		Historical Data
+		if(id==-1){
+			
+//			IB Server Connection broken
+			if(errorCode==1100){
+				this.setConnected(false);
+			}
+//			IB Server Connection is available
+			if(errorCode==1102){
+				this.setConnected(true);
+			}
+
+	
+//			Historical Data: HMDS Data Farm Verbindung ist unterbrochen:cashhmds
+			if(errorCode==2105){
+				HistoricalBarLoader.setDataFarmAvailibility(false);
+			}
+//			Historical Data: HMDS Daten Farm Verbindung ist OK:cashhmds		
+			if(errorCode==2106){
+				HistoricalBarLoader.setDataFarmAvailibility(true);
+			}
+		}
+		
 //		06:03:08,842 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2105 HMDS Data Farm Verbindung ist unterbrochen:cashhmds
 //		06:04:09,064 WARNING [com.munch.exchange.server.ejb.ib.ConnectionBean] (EReader) -1 2106 HMDS Daten Farm Verbindung ist OK:cashhmds
 		
@@ -155,6 +176,15 @@ public class ConnectionBean implements IConnectionHandler, ILogger {
 	public synchronized boolean isConnected() {
 		return connected;
 	}
+	
+	
+
+
+	public synchronized void setConnected(boolean connected) {
+		this.connected = connected;
+	}
+
+
 
 
 	private String logStr = "";
