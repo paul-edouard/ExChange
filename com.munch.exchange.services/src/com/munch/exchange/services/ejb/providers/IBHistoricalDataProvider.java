@@ -132,6 +132,12 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 		return beanRemote.getService().getRangeBarsFromTo(container,range,from,to);
 	}
 
+	@Override
+	public List<ExBar> getAllRealTimeBars(BarContainer arg0, BarSize arg1) {
+		if(beanRemote==null)init();
+		return beanRemote.getService().getAllRealTimeBars(arg0,arg1);
+	}
+
 	
 
 	

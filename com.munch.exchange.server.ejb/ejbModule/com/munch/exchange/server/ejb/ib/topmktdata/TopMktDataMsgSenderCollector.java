@@ -13,7 +13,9 @@ import javax.jms.TopicConnectionFactory;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
 
 public enum TopMktDataMsgSenderCollector {
@@ -89,6 +91,17 @@ public enum TopMktDataMsgSenderCollector {
 			sender.flushSecondBar(currentSecond);
 		}
 	}
+	
+	public List<ExBar> searchLoadedSecondBars(IbContract contract, WhatToShow whatToShow){
+		for(TopMktDataMsgSender sender : senders.values()){
+			if(sender.getContract().getId()!=contract.getId())continue;
+			
+			return sender.getLoadedBars(whatToShow);
+		}
+		
+		return null;
+	}
+	
 	
 
 }

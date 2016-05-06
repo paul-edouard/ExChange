@@ -3,6 +3,7 @@ package com.munch.exchange.server.ejb.ib.topmktdata;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.jms.Connection;
@@ -315,7 +316,24 @@ public class TopMktDataMsgSender extends TopMktDataAdapter implements PropertyCh
 		
 		this.sendMarketData(field, value);	
 	}
+
+
+	public IbContract getContract() {
+		return contract;
+	}
 	
-	
+	public synchronized List<ExBar> getLoadedBars(WhatToShow whatToShow){
+		switch (whatToShow) {
+		case ASK:
+			return lastSecondAskBars;
+		case MIDPOINT:
+			return lastSecondMidPointBars;
+		case BID:
+			return lastSecondBidBars;
+		default:
+			return lastSecondMidPointBars;
+		}
+		
+	}
 	
 }

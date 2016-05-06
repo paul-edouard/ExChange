@@ -1591,12 +1591,12 @@ public class ChartEditorPart{
 //				from=to-loadingSize*intervall;
 				
 				List<ExBar> bars=hisDataProvider.getTimeBarsFromTo(getBarContainer(), barRecorder.getBarSize(), from, to);
-				List<ExBar> newBars=new LinkedList<ExBar>();
+				List<ExBar> newBars=hisDataProvider.getAllRealTimeBars(getBarContainer(), barRecorder.getBarSize());
 //				logger.info("Number of bars: "+bars.size());
 				//logger.info("Number of new bars: "+newBars.size());
 					
 				List<ExBar> toAdd=new LinkedList<ExBar>();
-				if(!bars.isEmpty() && !newBars.isEmpty()){
+				if(newBars!=null && bars!=null && !bars.isEmpty() && !newBars.isEmpty()){
 					for(ExBar bar:newBars){
 						if(bars.get(bars.size()-1).getTime()<bar.getTime()){
 							toAdd.add(bar);

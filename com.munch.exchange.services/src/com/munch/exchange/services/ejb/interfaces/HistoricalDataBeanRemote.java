@@ -24,6 +24,8 @@ public interface HistoricalDataBeanRemote {
 	public List<ExBar> getAllTimeBars(BarContainer container,BarSize size);
 	public List<ExBar> getTimeBarsFromTo(BarContainer container,BarSize size,long from, long to);
 	
+	public List<ExBar> getAllRealTimeBars(BarContainer container,BarSize size);
+	
 	
 	public void removeBarsFromTo(BarContainer container,BarSize size,long from, long to);
 		

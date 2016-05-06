@@ -21,6 +21,7 @@ import com.munch.exchange.model.core.ib.bar.TimeBarSize;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorFactory;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.server.ejb.ib.topmktdata.TopMktDataMsgSenderCollector;
 import com.munch.exchange.services.ejb.interfaces.HistoricalDataBeanRemote;
 
 /**
@@ -45,7 +46,21 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
      */
     public HistoricalDataBean() {
     }
-
+    
+    @Override
+	public List<ExBar> getAllRealTimeBars(BarContainer arg0, BarSize targetSize) {
+		// TODO Auto-generated method stub
+    	
+    	BarContainer container=em.find(BarContainer.class, arg0.getId());
+    	IbContract contract=container.getContract();
+    	
+    	List<ExBar> secondBars=TopMktDataMsgSenderCollector.INSTANCE.searchLoadedSecondBars(contract, container.getType());
+    	return BarUtils.convertTimeBars(secondBars, BarSize._1_secs, targetSize);
+    	
+	}
+    
+    
+    
 	@Override
 	public List<BarContainer> getAllBarContainers(IbContract exContract) {
 		
@@ -206,6 +221,8 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 		
 		
 	}
+
+	
 	
 
 
