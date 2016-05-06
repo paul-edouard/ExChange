@@ -329,6 +329,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			double signal=signalMap.get(time).getValue();
 			double diffSignal=signal-previewSignal;
 			double absDiffSignal=Math.abs(diffSignal);
+			if(absDiffSignal>1)absDiffSignal=1;
 			
 			double previewPrice=previewBar.getClose();
 			double price=bar.getClose();
