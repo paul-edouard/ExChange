@@ -51,17 +51,17 @@ public class IBRealTimeBarProvider implements IIBRealTimeBarProvider,
 			int contractId=msg.getIntProperty(IbTopMktData.CONTRACT_ID);
 			String whatToShowString=msg.getStringProperty(IbTopMktData.WHAT_TO_SHOW);
 			
-			log.info("Contract: "+contractId);
-			log.info("whatToShowString: "+whatToShowString);
-			log.info("Bar: "+msg.getObject().getClass().getSimpleName());
+//			log.info("Contract: "+contractId);
+//			log.info("whatToShowString: "+whatToShowString);
+//			log.info("Bar: "+msg.getObject().getClass().getSimpleName());
 			
-//			ExBar bar=(ExBar) msg.getObject();
-//			bar.setRealTime(true);
-//			
-//			for(IIBRealTimeBarListener listener:listeners){
-//				if(listener.getContractId()!=contractId)continue;
-//				listener.realTimeBarChanged(bar, BarUtils.getWhatToShowFromString(whatToShowString));
-//			}
+			ExBar bar=(ExBar) msg.getObject();
+			bar.setRealTime(true);
+			
+			for(IIBRealTimeBarListener listener:listeners){
+				if(listener.getContractId()!=contractId)continue;
+				listener.realTimeBarChanged(bar, BarUtils.getWhatToShowFromString(whatToShowString));
+			}
 			
 			
 		} catch (JMSException e) {

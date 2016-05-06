@@ -75,7 +75,10 @@ public class ExBar implements Serializable {
 	public void integrateData(ExBar bar){
 		//this.setTime( bar.time);
 		this.high = Math.max(bar.high, this.high);
-		this.low = Math.min(bar.low, this.low);
+		if(this.low > 0)
+			this.low = Math.min(bar.low, this.low);
+		else
+			this.low = bar.low;
 		//this.open = bar.open;
 		this.close = bar.close;
 		this.wap = bar.wap;

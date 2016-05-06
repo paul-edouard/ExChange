@@ -1387,8 +1387,8 @@ public class ChartEditorPart{
 				
 				//Call the Real Time Bar Updater
 				if(whatToShow==getBarContainer().getType()){
-					//logger.info("New Bar: "+bar);
-					LinkedList<ExBar> realTimeBars=BarUtils.convertTimeBars(bars,BarSize._5_secs,  barRecorder.getBarSize());
+//					logger.info("New Bar: "+bar);
+					LinkedList<ExBar> realTimeBars=BarUtils.convertTimeBars(bars,BarSize._1_secs,  barRecorder.getBarSize());
 					if(realTimeBars==null ||realTimeBars.isEmpty())return;
 					
 					//Add the Bar to the bar recorder only if some historical data were already loaded
