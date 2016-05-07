@@ -63,16 +63,23 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 		if(inc==0)
 			inc=1;
 		
+		
+		int cores = Runtime.getRuntime().availableProcessors();
+		
 		List<ExBar> collectedBars=new LinkedList<ExBar>();
 		while(firstBarTime < lastBarTime){
 			long from=firstBarTime;
 			long to=firstBarTime+inc;
 			
-			log.info("From: "+BarUtils.format(from*1000));
-			log.info("To: "+BarUtils.format(to*1000));
+			log.info("From: "+BarUtils.format(from*1000)+ ", "+"To: "+BarUtils.format(to*1000));
+//			log.info("To: "+BarUtils.format(to*1000));
 			
-			collectedBars.addAll(beanRemote.getService().getTimeBarsFromTo(exContractBars,size,from,to));
-			
+			if(cores < 10 && (lastBarTime-to) > 2*inc){
+				log.info("Small power cores: "+cores+" skip the loading");
+			}
+			else{
+				collectedBars.addAll(beanRemote.getService().getTimeBarsFromTo(exContractBars,size,from,to));
+			}
 			
 			firstBarTime+=inc;
 		}

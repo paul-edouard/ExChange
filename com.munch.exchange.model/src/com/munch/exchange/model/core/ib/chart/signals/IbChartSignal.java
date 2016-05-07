@@ -211,8 +211,10 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			}
 		}
 		
+		LinkedList<LinkedList<ExBar>> blocks=new LinkedList<LinkedList<ExBar>>();
+		blocks.add((LinkedList<ExBar>)bars);
 		
-		LinkedList<LinkedList<ExBar>> blocks=BarUtils.splitBarListInDayBlocks(bars);
+//		LinkedList<LinkedList<ExBar>> blocks=BarUtils.splitBarListInDayBlocks(bars);
 		
 		//Save the blocks in the batch modus only
 		if(batch)
@@ -239,7 +241,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 //		stopTimeCounter("Split the received bars in blocks");
 		
 //		startTimeCounter();
-		int i=0;
+//		int i=0;
 		for(List<ExBar> block:blocks){
 //			System.out.println("Compute Block: "+(i++)+", Size: "+block.size());
 			

@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -207,16 +208,69 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	}
 	
 	private List<ExBar> getReferenceBars(){
-		switch (referenceData) {
-		case MID_POINT:
-			return allMidPointBars;
-		case BID_AND_ASK:
-//			TODO here make a combination of the 
-			return allAskBars;
-		default:
-			return allMidPointBars;
-		}
+		
+		return allMidPointBars;
+		
+//		switch (referenceData) {
+//		case MID_POINT:
+//			return allMidPointBars;
+//		case BID_AND_ASK:
+////			TODO here make a combination of the 
+//			return allAskBars;
+//		default:
+//			return allMidPointBars;
+//		}
 	}
+	
+	
+	public void synchronizedReceivedBars(){
+		
+		System.out.println("Nb of mid point bars: "+allMidPointBars.size());
+		System.out.println("Nb of bid bars: "+allBidBars.size());
+		System.out.println("Nb of ask bars: "+allAskBars.size());
+		
+		
+		LinkedList<ExBar> synMidPointBars=new LinkedList<ExBar>();
+		LinkedList<ExBar> synBidBars=new LinkedList<ExBar>();
+		LinkedList<ExBar> synAskBars=new LinkedList<ExBar>();
+		
+//		ListIterator<ExBar> midPointItr = allMidPointBars.listIterator();
+		ListIterator<ExBar> bidItr = allBidBars.listIterator();
+		ListIterator<ExBar> askItr = allAskBars.listIterator();
+		
+//		ExBar mpBar=midPointItr.next();
+		ExBar bBar=bidItr.next();
+		ExBar aBar=askItr.next();
+		
+		for(ExBar bar:allMidPointBars){
+			if(bar.getTime() < bBar.getTime())continue;
+			if(bar.getTime() < aBar.getTime())continue;
+			
+			while(bidItr.hasNext() && bar.getTime() > bBar.getTime()){
+				bBar=bidItr.next();
+			}
+			
+			while(askItr.hasNext() && bar.getTime() > aBar.getTime()){
+				aBar=askItr.next();
+			}
+			
+			if(bar.getTime()==bBar.getTime() && bar.getTime()==aBar.getTime()){
+				synMidPointBars.add(bar);
+				synBidBars.add(bBar);
+				synAskBars.add(aBar);
+			}
+			
+		}
+		
+		allMidPointBars=synMidPointBars;
+		allBidBars=synBidBars;
+		allAskBars=synAskBars;
+		
+		System.out.println("Nb of mid point bars: "+allMidPointBars.size());
+		System.out.println("Nb of bid bars: "+allBidBars.size());
+		System.out.println("Nb of ask bars: "+allAskBars.size());
+	}
+	
 	
 	public void splitReferenceData(){
 		
@@ -225,7 +279,6 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		backTestingBlocks.clear();
 		
 		allBlocks=new LinkedList<LinkedList<ExBar>>();
-		
 		
 		LinkedList<LinkedList<ExBar>> allBlocksTemp=BarUtils.splitBarListInDayBlocks(this.getReferenceBars());
 		
@@ -241,6 +294,11 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		//Search the block with the maximum of values
 		int maxSize=Integer.MIN_VALUE;
 		for(LinkedList<ExBar> block:allBlocksTemp){
+			System.out.println("NeuralConfiguration-> Block with size: "+block.size()+
+					", start: "+BarUtils.format(block.getFirst().getTimeInMs())+
+					", end: "+BarUtils.format(block.getLast().getTimeInMs()));
+			
+			
 			if(block.size()>maxSize)
 				maxSize=block.size();
 		}

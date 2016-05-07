@@ -125,9 +125,10 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 			,BarSize size) {
 		
 		TimeBarSize timeBarSize=BarUtils.convert(size);
-		long firstBarTime=HistoricalBarPersistance.getFirstBarTime(em, container, timeBarSize);
+		BarContainer localContainer=em.find(BarContainer.class, container.getId());
+		long firstBarTime=HistoricalBarPersistance.getFirstBarTime(em, localContainer, timeBarSize);
 
-		return HistoricalBarPersistance.getBar(em, container, timeBarSize, firstBarTime);
+		return HistoricalBarPersistance.getBar(em, localContainer, timeBarSize, firstBarTime);
 	}
 		
 	@Override
@@ -135,9 +136,10 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 			BarSize size) {
 		
 		TimeBarSize timeBarSize=BarUtils.convert(size);
-		long lastBarTime=HistoricalBarPersistance.getLastBarTime(em, container, timeBarSize);
+		BarContainer localContainer=em.find(BarContainer.class, container.getId());
+		long lastBarTime=HistoricalBarPersistance.getLastBarTime(em, localContainer, timeBarSize);
 
-		return HistoricalBarPersistance.getBar(em, container, timeBarSize, lastBarTime);
+		return HistoricalBarPersistance.getBar(em, localContainer, timeBarSize, lastBarTime);
 		
 	}
 	
@@ -145,7 +147,10 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 	public List<ExBar> getAllTimeBars(BarContainer container,BarSize size) {
 		
 		TimeBarSize timeBarSize=BarUtils.convert(size);
-		List<ExBar> bars=HistoricalBarPersistance.getAllBars(em, container, timeBarSize);
+		
+		BarContainer localContainer=em.find(BarContainer.class, container.getId());
+		
+		List<ExBar> bars=HistoricalBarPersistance.getAllBars(em, localContainer, timeBarSize);
 //		Sort the bars
 		Collections.sort(bars, new ExBarComparator());
 		
@@ -161,7 +166,9 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 			BarSize size, long from, long to) {
 		
 		TimeBarSize timeBarSize=BarUtils.convert(size);
-		List<ExBar> bars=HistoricalBarPersistance.getBarsFromTo(em, container, timeBarSize, from, to);
+		BarContainer localContainer=em.find(BarContainer.class, container.getId());
+		
+		List<ExBar> bars=HistoricalBarPersistance.getBarsFromTo(em, localContainer, timeBarSize, from, to);
 		
 //		log.info("Number of bars loaded: "+bars.size());
 		
@@ -182,7 +189,8 @@ public class HistoricalDataBean implements HistoricalDataBeanRemote{
 			BarSize size, long from, long to) {
 		
 		TimeBarSize timeBarSize=BarUtils.convert(size);
-		HistoricalBarPersistance.removeBarsFromTo(em, container, timeBarSize, from, to);
+		BarContainer localContainer=em.find(BarContainer.class, container.getId());
+		HistoricalBarPersistance.removeBarsFromTo(em, localContainer, timeBarSize, from, to);
 	}
 
 	

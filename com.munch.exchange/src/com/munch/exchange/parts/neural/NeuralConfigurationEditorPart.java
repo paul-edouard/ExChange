@@ -989,6 +989,10 @@ public class NeuralConfigurationEditorPart {
 				if(neuralConfiguration.getNeuralInputsBarsCollector().containsKey(key))
 					continue;
 				
+//				logger.info("Bar Container: "+nii.getBarContainer().getId()+", size: "+nii.getSize().toString());
+//				logger.info("Bar Container: "+nii.getBarContainer().getType()+", size: "+nii.getSize().toString());
+//				
+				
 				List<ExBar> bars=historicalDataProvider.getAllTimeBars(nii.getBarContainer(), nii.getSize());
 					
 				neuralConfiguration.getNeuralInputsBarsCollector().put(key, bars);
@@ -2170,24 +2174,24 @@ public class NeuralConfigurationEditorPart {
 			for (BarContainer container : containers) {
 
 				// Collect the mid point data
-				if (neuralConfiguration.getReferenceData() == ReferenceData.MID_POINT
-						&& container.getType() == WhatToShow.MIDPOINT) {
+				if (/*neuralConfiguration.getReferenceData() == ReferenceData.MID_POINT
+						&& */container.getType() == WhatToShow.MIDPOINT) {
 					List<ExBar> allBars = historicalDataProvider.getAllTimeBars(
 							container, neuralConfiguration.getSize());
 					neuralConfiguration.setAllMidPointBars(allBars);
 				}
 
 				// Collect the Ask Data
-				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
-						&& container.getType() == WhatToShow.ASK) {
+				if (/*neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
+						&& */container.getType() == WhatToShow.ASK) {
 					List<ExBar> allBars = historicalDataProvider.getAllTimeBars(
 							container, neuralConfiguration.getSize());
 					neuralConfiguration.setAllAskBars(allBars);
 				}
 
 				// Collect the Bid Data
-				if (neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
-						&& container.getType() == WhatToShow.BID) {
+				if (/*neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
+						&& */container.getType() == WhatToShow.BID) {
 					List<ExBar> allBars = historicalDataProvider.getAllTimeBars(
 							container, neuralConfiguration.getSize());
 					neuralConfiguration.setAllBidBars(allBars);
@@ -2206,6 +2210,10 @@ public class NeuralConfigurationEditorPart {
 		 */
 		private void distributeDataFunc(){
 			printMemoryUsage("Start distribute");
+			
+//			Synchronize the received Data
+			neuralConfiguration.synchronizedReceivedBars();
+			printMemoryUsage("Synchronized the received data!");
 			
 //			Split the data
 			neuralConfiguration.splitReferenceData();
@@ -2262,17 +2270,22 @@ public class NeuralConfigurationEditorPart {
 			
 			@Override
 			public void run() {
-				switch (neuralConfiguration.getReferenceData()) {
-				case MID_POINT:
-					textNbOfData.setText(String.valueOf(neuralConfiguration
-							.getAllMidPointBars().size()));
-					break;
-				case BID_AND_ASK:
-					textNbOfData.setText(String.valueOf((neuralConfiguration
-							.getAllAskBars().size() + neuralConfiguration
-							.getAllBidBars().size()) / 2));
-					break;
-				}
+				
+				textNbOfData.setText(String.valueOf((neuralConfiguration
+						.getAllAskBars().size() + neuralConfiguration
+						.getAllBidBars().size()+ neuralConfiguration.getAllMidPointBars().size()) / 3));
+				
+//				switch (neuralConfiguration.getReferenceData()) {
+//				case MID_POINT:
+//					textNbOfData.setText(String.valueOf(neuralConfiguration
+//							.getAllMidPointBars().size()));
+//					break;
+//				case BID_AND_ASK:
+//					textNbOfData.setText(String.valueOf((neuralConfiguration
+//							.getAllAskBars().size() + neuralConfiguration
+//							.getAllBidBars().size()) / 2));
+//					break;
+//				}
 			}
 		}
 		);
