@@ -71,10 +71,10 @@ public class HistoricalBarPersistance {
 			TimeBarSize barType , long from, long to) {
 		
 		Query query=em.createQuery("DELETE " +
-				"FROM "+getTableName(container,barType)+" b "+
-    			"WHERE b.container="+getContainerId(em, container, barType)+" "+
-				"AND b.time>="+from+ " "+
-    			"AND b.time<="+to);
+				"FROM "+getTableName(container,barType)+
+    			"WHERE containerId="+getContainerId(em, container, barType)+" "+
+				"AND time>="+from+ " "+
+    			"AND time<="+to);
     	
 		query.executeUpdate();
 		
