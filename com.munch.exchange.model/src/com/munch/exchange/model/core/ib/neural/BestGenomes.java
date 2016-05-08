@@ -21,7 +21,7 @@ public class BestGenomes extends LinkedList<GenomeEvaluation>{
 		super();
 	}
 	
-	public void addGenomeEvaluation(GenomeEvaluation g_eval){
+	public synchronized void addGenomeEvaluation(GenomeEvaluation g_eval){
 		
 		if(this.contains(g_eval))return;
 		

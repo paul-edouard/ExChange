@@ -4,6 +4,9 @@ package com.munch.exchange.parts.neural;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -68,6 +71,7 @@ import org.encog.ml.ea.species.Species;
 import org.encog.ml.ea.train.EvolutionaryAlgorithm;
 import org.encog.ml.ea.train.basic.BasicEA;
 import org.encog.ml.factory.method.NEATFactory;
+import org.encog.ml.genetic.GeneticError;
 import org.encog.ml.genetic.MLMethodGeneticAlgorithm;
 import org.encog.ml.train.MLTrain;
 import org.encog.neural.hyperneat.substrate.Substrate;
@@ -1609,6 +1613,9 @@ public class NeuralConfigurationEditorPart {
 //			Isolate the best genomes
 			List<Genome> sortedGenomes=getSortedGenomesFromPop(train.getPopulation());
 			
+			ExecutorService taskExecutor =Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+			
+			
 			int pos=0;
 			for(Genome genome:sortedGenomes){
 				if(pos>nbOfBackTestingEvaluation)break;
@@ -1617,17 +1624,29 @@ public class NeuralConfigurationEditorPart {
 				
 				if(bestGenomes.containsScore(genome.getScore()))continue;
 				
+				taskExecutor.execute(new ParallelBackTestingEvalTask(train, bestGenomes, genome,
+						neuralConfiguration.getBackTestingBlocks(), neuralArchitecture));
+				
+				
 //				Calculate the back testing score
-				MLMethod method=train.getCODEC().decode(genome);
-				NeuralNetworkRating backTestingRating=neuralArchitecture.calculateProfitAndRiskOfBlocks(neuralConfiguration.getBackTestingBlocks(), method);
+//				MLMethod method=train.getCODEC().decode(genome);
+//				NeuralNetworkRating backTestingRating=neuralArchitecture.calculateProfitAndRiskOfBlocks(neuralConfiguration.getBackTestingBlocks(), method);
 				
 //				Create and add the new evaluation
-				GenomeEvaluation g_eval=new GenomeEvaluation(genome, genome.getScore());
-				g_eval.setBackTestingScore(backTestingRating.getScore());
-				bestGenomes.addGenomeEvaluation(g_eval);
+//				GenomeEvaluation g_eval=new GenomeEvaluation(genome, genome.getScore());
+//				g_eval.setBackTestingScore(backTestingRating.getScore());
+//				bestGenomes.addGenomeEvaluation(g_eval);
 				
 				pos++;
 			}
+			
+			taskExecutor.shutdown();
+			try {
+				taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.MINUTES);
+			} catch (InterruptedException e) {
+				throw new GeneticError(e);
+			}
+			
 			
 			String text="Epoch #" + epoch + " Score:" + train.getError()+ ", Species:" + train.getPopulation().getSpecies().size();
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
@@ -1856,6 +1875,9 @@ public class NeuralConfigurationEditorPart {
 //			Isolate the best genomes
 			List<Genome> sortedGenomes=getSortedGenomesFromPop(train.getPopulation());
 			
+			ExecutorService taskExecutor =Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+			
+			
 			int pos=0;
 			for(Genome genome:sortedGenomes){
 				if(pos>nbOfBackTestingEvaluation)break;
@@ -1864,17 +1886,30 @@ public class NeuralConfigurationEditorPart {
 				
 				if(bestGenomes.containsScore(genome.getScore()))continue;
 				
+				taskExecutor.execute(new ParallelBackTestingEvalTask(train, bestGenomes, genome,
+						neuralConfiguration.getBackTestingBlocks(), neuralArchitecture));
+				
+				
 //				Calculate the back testing score
-				MLMethod method=train.getCODEC().decode(genome);
-				NeuralNetworkRating backTestingRating=neuralArchitecture.calculateProfitAndRiskOfBlocks(neuralConfiguration.getBackTestingBlocks(), method);
+//				MLMethod method=train.getCODEC().decode(genome);
+//				NeuralNetworkRating backTestingRating=neuralArchitecture.calculateProfitAndRiskOfBlocks(neuralConfiguration.getBackTestingBlocks(), method);
 				
 //				Create and add the new evaluation
-				GenomeEvaluation g_eval=new GenomeEvaluation(genome, ((NoveltySearchGenome)genome).getBehavior());
-				g_eval.setBackTestingScore(backTestingRating.getScore());
-				bestGenomes.addGenomeEvaluation(g_eval);
+//				GenomeEvaluation g_eval=new GenomeEvaluation(genome, ((NoveltySearchGenome)genome).getBehavior());
+//				g_eval.setBackTestingScore(backTestingRating.getScore());
+//				bestGenomes.addGenomeEvaluation(g_eval);
 				
 				pos++;
 			}
+			
+			
+			taskExecutor.shutdown();
+			try {
+				taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.MINUTES);
+			} catch (InterruptedException e) {
+				throw new GeneticError(e);
+			}
+			
 			
 			String text="Epoch #" + epoch + " Score:" + train.getError()+ ", Species:" + train.getPopulation().getSpecies().size();
 			eventBroker.post(IEventConstant.TEXT_INFO,text);
