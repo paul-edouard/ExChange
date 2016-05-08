@@ -573,7 +573,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 				profitAndRisk.updateProfit(diffProfit);
 			}
 			
-//			Close the open position before living
+//			Close the open position before leaving
 			if(time>=relTraindingPeriod[1] || bar==lastBar){
 				if(lastPosition!=Position.NEUTRAL){
 //					Sold the last position
@@ -637,6 +637,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 				
 				double diffSignal=Position.getSignal(position)-Position.getSignal(lastPosition);
 				double absDiffSignal=Math.abs(diffSignal);
+				if(absDiffSignal>1)absDiffSignal=1;
 			
 				IbCommission com=this.getNeuralConfiguration().getContract().getCommission();
 				if(com!=null){
@@ -701,18 +702,18 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		}
 		
 		//Calculate the score
-		double mean=0;
-		for(NeuralNetworkRating child:profitAndRiskTotal.getChildren()){
-			mean+=child.getProfit();
-		}
-		mean/=profitAndRiskTotal.getChildren().size();
+//		double mean=0;
+//		for(NeuralNetworkRating child:profitAndRiskTotal.getChildren()){
+//			mean+=child.getProfit();
+//		}
+//		mean/=profitAndRiskTotal.getChildren().size();
 		
-		double varianz=0;
-		for(NeuralNetworkRating child:profitAndRiskTotal.getChildren()){
-			double diff=child.getProfit()-mean;
-			varianz+=diff*diff;
-		}
-		varianz/=profitAndRiskTotal.getChildren().size();
+//		double varianz=0;
+//		for(NeuralNetworkRating child:profitAndRiskTotal.getChildren()){
+//			double diff=child.getProfit()-mean;
+//			varianz+=diff*diff;
+//		}
+//		varianz/=profitAndRiskTotal.getChildren().size();
 		
 //		double score=(profitAndRiskTotal.getProfit()/profitAndRiskTotal.getChildren().size()-Math.sqrt(varianz)/2);
 		

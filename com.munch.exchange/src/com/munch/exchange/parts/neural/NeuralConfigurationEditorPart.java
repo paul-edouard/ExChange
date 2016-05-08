@@ -1566,7 +1566,7 @@ public class NeuralConfigurationEditorPart {
 			
 			preTraining();
 			
-			System.out.println("Timeout: "+timeout);
+			System.out.println("Timeout: "+BarUtils.format(timeout));
 			
 			int i=0;
 //			for(int i=0;i<nbOfEpoch;i++) {

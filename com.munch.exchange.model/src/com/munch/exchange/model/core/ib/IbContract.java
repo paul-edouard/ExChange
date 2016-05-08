@@ -27,6 +27,7 @@ import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.minute.MinuteContainer;
 import com.munch.exchange.model.core.ib.bar.seconde.SecondeContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
@@ -325,7 +326,7 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	public TradingPeriod getTraidingPeriod(){
 		switch (secType) {
 			case STK:return TradingPeriod.DAILY;
-			case CASH:return TradingPeriod.WEEKLY;
+			case CASH:return TradingPeriod.DAILY;
 			case IND:return TradingPeriod.NONE;
 		}
 		
@@ -359,6 +360,10 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 		else if(this.getTraidingPeriod()==TradingPeriod.DAILY){
 			Calendar date=Calendar.getInstance();
 			date.setTimeInMillis(dateInMs);
+			if(date.get(Calendar.HOUR_OF_DAY)>=23){
+				date.add(Calendar.DAY_OF_YEAR, 1);
+			}
+			
 			date.set(Calendar.MILLISECOND, 0);
 			date.set(Calendar.SECOND, 0);
 			date.set(Calendar.MINUTE, 0);
@@ -370,7 +375,12 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 			startEndTime[0]=date.getTimeInMillis();
 			
 			date.setTimeInMillis(dayStart);
-			date.add(Calendar.MILLISECOND,(int) endTradeTimeInMs);
+			if(endTradeTimeInMs==0){
+				date.add(Calendar.HOUR_OF_DAY,22);
+			}
+			else{
+				date.add(Calendar.MILLISECOND,(int) endTradeTimeInMs);
+			}
 			startEndTime[1]=date.getTimeInMillis();
 			
 		}
