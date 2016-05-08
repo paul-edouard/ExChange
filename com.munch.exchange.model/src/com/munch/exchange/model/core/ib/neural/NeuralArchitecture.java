@@ -3,6 +3,7 @@ package com.munch.exchange.model.core.ib.neural;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -352,12 +353,14 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	public void calculateNovelty(NoveltySearchGenome n_genome,
 			List<NoveltySearchGenome> allGenomes, int nbOfNearestNeighbor) {
 		
+		HashMap<NoveltySearchGenome, Double> relativeDistMap=new HashMap<NoveltySearchGenome, Double>();
+		
 //		System.out.println("Calculate novelty");
-		LinkedList<NoveltySearchGenome> nearestNeighbors=extractNeighbors(n_genome, allGenomes, nbOfNearestNeighbor);
+		LinkedList<NoveltySearchGenome> nearestNeighbors=extractNeighbors(n_genome, allGenomes, nbOfNearestNeighbor, relativeDistMap);
 		
 		double novelty=0;
 		for(NoveltySearchGenome neighbor:nearestNeighbors){
-			novelty+=neighbor.getRelativeDistance();
+			novelty+=relativeDistMap.get(neighbor);
 		}
 		novelty/=nearestNeighbors.size();
 	
@@ -372,7 +375,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 	}
 	
 	private LinkedList<NoveltySearchGenome> extractNeighbors(NoveltySearchGenome n_genome, 
-			List<NoveltySearchGenome> allGenomes,  int nbOfNearestNeighbor){
+			List<NoveltySearchGenome> allGenomes,  int nbOfNearestNeighbor, HashMap<NoveltySearchGenome, Double> relativeDistMap){
 		
 		LinkedList<NoveltySearchGenome> nearestNeighbors=new LinkedList<NoveltySearchGenome>();
 		
@@ -382,7 +385,8 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 //			double relativeDistance=Math.abs(genome.getBehavior()-n_genome.getBehavior());
 			double relDist=genome.getRating().calculateRelativDistance(n_genome.getRating());
 //			System.out.println("Relativ distance: "+relDist);
-			genome.setRelativeDistance(relDist);
+//			genome.setRelativeDistance(relDist);
+			relativeDistMap.put(genome, relDist);
 			
 			
 			if(nearestNeighbors.isEmpty()){
@@ -392,14 +396,14 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			
 //			The current relative distance is lower than the lowest one of the current neighbors
 			if(nearestNeighbors.size()==nbOfNearestNeighbor &&
-					nearestNeighbors.getLast().getRelativeDistance() < genome.getRelativeDistance()){
+					relativeDistMap.get(nearestNeighbors.getLast()) < relDist){
 				continue;
 			}
 			
 			int i=0;
 			boolean isInserted=false;
-			for(NoveltySearchGenome neighbor:nearestNeighbors){
-				if(genome.getRelativeDistance() < neighbor.getRelativeDistance()){
+			for( NoveltySearchGenome neighbor:nearestNeighbors){
+				if( relDist < relativeDistMap.get(neighbor)){
 					nearestNeighbors.add(i, genome);
 					isInserted=true;
 					break;

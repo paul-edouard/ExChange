@@ -3,6 +3,8 @@ package com.munch.exchange.model.core.ib.neural;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
 
@@ -44,6 +46,8 @@ public class NeuralNetworkRating implements Serializable{
 	
 	private HashMap<Long, Position> positionTracking=new HashMap<Long, Position>();
 	private HashMap<Long, Double> profitTracking=new HashMap<Long, Double>();
+	
+	private LinkedList<Long> sortedTimePosition=new LinkedList<Long>();
 	
 	private HashMap<NeuralNetworkRating, Double> relDistMap=new HashMap<NeuralNetworkRating, Double>();
 	
@@ -124,6 +128,14 @@ public class NeuralNetworkRating implements Serializable{
 		if(this.getRisk()<profitAndRisk.getMaxRisk())
 			this.setRisk(profitAndRisk.getMaxRisk());
 		
+//		Set the Position and Profit Tracking
+		positionTracking.putAll(profitAndRisk.positionTracking);
+		profitTracking.putAll(profitAndRisk.profitTracking);
+		
+//		Clean and update the sorted time position list
+		sortedTimePosition.clear();
+		sortedTimePosition.addAll(positionTracking.keySet());
+		Collections.sort(sortedTimePosition);
 		
 		children.add(profitAndRisk);
 	}
@@ -197,76 +209,76 @@ public class NeuralNetworkRating implements Serializable{
 		return profitTracking;
 	}
 	
-	private HashMap<Long, Position> getAllPositionTracking(){
-		HashMap<Long, Position> allPositionTracking=new HashMap<Long, Position>();
-		
-		for(NeuralNetworkRating child:this.children){
-			allPositionTracking.putAll(child.getAllPositionTracking());
-		}
-		
-		allPositionTracking.putAll(positionTracking);
-		
-		return allPositionTracking;
-	}
+//	private HashMap<Long, Position> getAllPositionTracking(){
+//		HashMap<Long, Position> allPositionTracking=new HashMap<Long, Position>();
+//		
+//		for(NeuralNetworkRating child:this.children){
+//			allPositionTracking.putAll(child.getAllPositionTracking());
+//		}
+//		
+//		allPositionTracking.putAll(positionTracking);
+//		
+//		return allPositionTracking;
+//	}
 	
-	private HashMap<Long, Position> getAllPositionTrackingOfTimes(Set<Long> times){
-		HashMap<Long, Position> allPositionTracking=getAllPositionTracking();
-		LinkedList<Long> sortedKeys=new LinkedList<Long>();
-		sortedKeys.addAll(allPositionTracking.keySet());
-		Collections.sort(sortedKeys);
-		
-		for(Long time:times){
-			if(allPositionTracking.containsKey(time))continue;
-			
-			Position lastPos=Position.NEUTRAL;
-			for(Long key:sortedKeys){
-				if(key>time){
-					allPositionTracking.put(key, lastPos);
-				}
-				
-				lastPos=allPositionTracking.get(key);
-			}
-			
-		}
-		
-		return allPositionTracking;
-	}
+//	private HashMap<Long, Position> getAllPositionTrackingOfTimes(Set<Long> times){
+//		HashMap<Long, Position> allPositionTracking=getAllPositionTracking();
+//		LinkedList<Long> sortedKeys=new LinkedList<Long>();
+//		sortedKeys.addAll(allPositionTracking.keySet());
+//		Collections.sort(sortedKeys);
+//		
+//		for(Long time:times){
+//			if(allPositionTracking.containsKey(time))continue;
+//			
+//			Position lastPos=Position.NEUTRAL;
+//			for(Long key:sortedKeys){
+//				if(key>time){
+//					allPositionTracking.put(key, lastPos);
+//				}
+//				
+//				lastPos=allPositionTracking.get(key);
+//			}
+//			
+//		}
+//		
+//		return allPositionTracking;
+//	}
 	
 	
-	private HashMap<Long, Double> getAllProfitTracking(){
-		HashMap<Long, Double> allProfitTracking=new HashMap<Long, Double>();
-		
-		for(NeuralNetworkRating child:this.children){
-			allProfitTracking.putAll(child.getAllProfitTracking());
-		}
-		
-		allProfitTracking.putAll(profitTracking);
-		
-		return allProfitTracking;
-	}
+//	private HashMap<Long, Double> getAllProfitTracking(){
+//		HashMap<Long, Double> allProfitTracking=new HashMap<Long, Double>();
+//		
+//		for(NeuralNetworkRating child:this.children){
+//			allProfitTracking.putAll(child.getAllProfitTracking());
+//		}
+//		
+//		allProfitTracking.putAll(profitTracking);
+//		
+//		return allProfitTracking;
+//	}
 	
-	private HashMap<Long, Double> getAllProfitTrackingOfTimes(Set<Long> times){
-		HashMap<Long, Double> allProfitTracking=getAllProfitTracking();
-		LinkedList<Long> sortedKeys=new LinkedList<Long>();
-		sortedKeys.addAll(allProfitTracking.keySet());
-		Collections.sort(sortedKeys);
-		
-		for(Long time:times){
-			if(allProfitTracking.containsKey(time))continue;
-			
-			double lastProfit=0;
-			for(Long key:sortedKeys){
-				if(key>time){
-					allProfitTracking.put(key, lastProfit);
-				}
-				
-				lastProfit=allProfitTracking.get(key);
-			}
-			
-		}
-		
-		return allProfitTracking;
-	}
+//	private HashMap<Long, Double> getAllProfitTrackingOfTimes(Set<Long> times){
+//		HashMap<Long, Double> allProfitTracking=getAllProfitTracking();
+//		LinkedList<Long> sortedKeys=new LinkedList<Long>();
+//		sortedKeys.addAll(allProfitTracking.keySet());
+//		Collections.sort(sortedKeys);
+//		
+//		for(Long time:times){
+//			if(allProfitTracking.containsKey(time))continue;
+//			
+//			double lastProfit=0;
+//			for(Long key:sortedKeys){
+//				if(key>time){
+//					allProfitTracking.put(key, lastProfit);
+//				}
+//				
+//				lastProfit=allProfitTracking.get(key);
+//			}
+//			
+//		}
+//		
+//		return allProfitTracking;
+//	}
 	
 	
 	public double calculateRelativDistance(NeuralNetworkRating other){
@@ -276,28 +288,70 @@ public class NeuralNetworkRating implements Serializable{
 			return this.getRelDist(other);
 		
 		
-		Set<Long> otherTimes=other.getAllPositionTracking().keySet();
-		Set<Long> times=this.getAllPositionTracking().keySet();
+		HashSet<Long> times=new HashSet<Long>();
+		times.addAll(this.getPositionTracking().keySet());
+		times.addAll(other.getPositionTracking().keySet());
 		
-		HashMap<Long, Position> otherAllPositionTracking=other.getAllPositionTrackingOfTimes(times);
-		HashMap<Long, Position> allPositionTracking=this.getAllPositionTrackingOfTimes(otherTimes);
 		
 		LinkedList<Long> sortedKeys=new LinkedList<Long>();
-		sortedKeys.addAll(allPositionTracking.keySet());
+		sortedKeys.addAll(times);
 		Collections.sort(sortedKeys);
 		
-		double relDist=0;
+		Iterator<Long> allTimeIt=sortedKeys.iterator();
+		Iterator<Long> thisTimeIt=this.sortedTimePosition.iterator();
+		Iterator<Long> otherTimeIt=other.sortedTimePosition.iterator();
 		
-		Long lastKey=sortedKeys.getFirst();
-		for(Long key:sortedKeys){
-			Position otherPos=otherAllPositionTracking.get(key);
-			Position pos=allPositionTracking.get(key);
+		if(sortedKeys.size()<2 || this.sortedTimePosition.size()<2 || other.sortedTimePosition.size()<2)return 0;
+		
+		Long time=allTimeIt.next();
+		Long thisTime=thisTimeIt.next();
+		Long otherTime=otherTimeIt.next();
+		
+		Long nextTime=allTimeIt.next();
+		Long nextThisTime=thisTimeIt.next();
+		Long nextOtherTime=otherTimeIt.next();
+		
+		double relDist=0;
+		while(allTimeIt.hasNext()){
 			
-			double dist=Math.abs(Position.getInt(otherPos)-Position.getInt(pos));
+			Position thisPos=this.positionTracking.get(thisTime);
+			Position otherPos=other.positionTracking.get(otherTime);
 			
-			relDist+=dist*((key-lastKey)/1000);
-			lastKey=key;
+			double dist=Math.abs(Position.getInt(otherPos)-Position.getInt(thisPos));
+			
+			relDist+=(nextTime-time)*Math.abs(dist);
+			
+			time=nextTime;
+			nextTime=allTimeIt.next();
+			
+			if(time == nextThisTime && thisTimeIt.hasNext()){
+				thisTime=nextThisTime;
+				nextThisTime=thisTimeIt.next();
+			}
+			
+			if(time == nextOtherTime && otherTimeIt.hasNext()){
+				otherTime=nextOtherTime;
+				nextOtherTime=otherTimeIt.next();
+			}
 		}
+		
+		relDist/=(sortedKeys.getLast()-sortedKeys.getFirst());
+		relDist*=100;
+		
+//		
+//		
+//		
+//		double relDist=0;
+//		
+//		Long lastKey=sortedKeys.getFirst();
+//		for(Long key:sortedKeys){
+//			Position otherPos=otherAllPositionTracking.get(key);
+//			Position pos=allPositionTracking.get(key);
+//			
+//			
+//			relDist+=dist*((key-lastKey)/1000);
+//			lastKey=key;
+//		}
 		
 //		other.addRelDist(this, relDist);
 		this.addRelDist(other, relDist);
