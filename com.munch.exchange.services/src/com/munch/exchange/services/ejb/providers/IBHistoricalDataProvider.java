@@ -53,7 +53,7 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 		if(beanRemote==null)init();
 		
 //		Start of loading all bars, split the query in order to avoid java heap space error
-		long nbOfSplits=20;
+		long nbOfSplits=40;
 		ExBar lastTimeBar=beanRemote.getService().getLastTimeBar(exContractBars,size);
 		ExBar firstTimeBar=beanRemote.getService().getFirstTimeBar(exContractBars,size);
 		long lastBarTime=lastTimeBar.getTime();
