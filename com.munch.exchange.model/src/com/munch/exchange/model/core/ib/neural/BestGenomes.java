@@ -21,6 +21,17 @@ public class BestGenomes extends LinkedList<GenomeEvaluation>{
 		super();
 	}
 	
+	
+	private double getScore(GenomeEvaluation g_eval){
+		double score=g_eval.getScore();
+		if(g_eval.getGenome() instanceof NoveltySearchGenome){
+			NoveltySearchGenome nov_gen=(NoveltySearchGenome) g_eval.getGenome();
+			score=nov_gen.getBehavior();
+		}
+		
+		return score;
+	}
+	
 	public synchronized void addGenomeEvaluation(GenomeEvaluation g_eval){
 		
 		if(this.contains(g_eval))return;
@@ -30,9 +41,11 @@ public class BestGenomes extends LinkedList<GenomeEvaluation>{
 			return;
 		}
 		
+		
+		
 //		Test if the new genome is bitten
 		for(GenomeEvaluation pareto_elt:this){
-			if(pareto_elt.getScore() >= g_eval.getScore() 
+			if(getScore(pareto_elt) >= getScore(g_eval) 
 					&& pareto_elt.getBackTestingScore() >= g_eval.getBackTestingScore() ){
 				return;
 			}
@@ -43,11 +56,11 @@ public class BestGenomes extends LinkedList<GenomeEvaluation>{
 		
 		for(int i=0;i<this.size();i++){
 				if(g_eval.getBackTestingScore() >= this.get(i).getBackTestingScore() &&
-						g_eval.getScore() > this.get(i).getScore()){
+						getScore(g_eval) > getScore(this.get(i))){
 					toDelete.add(this.get(i));
 				}
 				else if(g_eval.getBackTestingScore() > this.get(i).getBackTestingScore() &&
-						g_eval.getScore() >= this.get(i).getScore()){
+						getScore(g_eval) >= getScore(this.get(i))){
 					toDelete.add(this.get(i));
 				}
 		}
@@ -56,7 +69,7 @@ public class BestGenomes extends LinkedList<GenomeEvaluation>{
 		
 //		Insert the new genome
 		for(int i=0;i<this.size();i++){
-			if(g_eval.getScore() > this.get(i).getScore()){
+			if(getScore(g_eval) > getScore(this.get(i))){
 				this.add(i, g_eval);
 				return;
 			}

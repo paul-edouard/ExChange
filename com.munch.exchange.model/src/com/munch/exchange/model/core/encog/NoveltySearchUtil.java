@@ -20,11 +20,11 @@ public class NoveltySearchUtil {
 	
 	public static NoveltySearchEA constructNoveltySearchTrainer(
 			final CalculateNovelty calculateScore, final int inputCount,
-			final int outputCount, final int populationSize) {
+			final int outputCount, final int populationSize, double behaviorLimit) {
 		final NoveltySearchPopulation pop = new NoveltySearchPopulation(inputCount, outputCount,
 				populationSize);
 		pop.reset();
-		return constructNoveltySearchTrainer(pop, calculateScore);
+		return constructNoveltySearchTrainer(pop, calculateScore, behaviorLimit);
 	}
 
 	/**
@@ -34,12 +34,12 @@ public class NoveltySearchUtil {
 	 * @return The NEAT EA trainer.
 	 */
 	public static NoveltySearchEA constructNoveltySearchTrainer(final NoveltySearchPopulation population,
-			final CalculateNovelty calculateScore) {
+			final CalculateNovelty calculateScore, double behaviorLimit) {
 		final NoveltySearchEA result = new NoveltySearchEA(population, calculateScore);
 		result.setSpeciation(new NoveltySearchSpeciation(result, population, calculateScore) );
 
 		result.setSelection(new NoveltySearchTournamentSelection(result, 4));
-		result.addScoreAdjuster(new NoveltySearchScoreAjuster(0));
+		result.addScoreAdjuster(new NoveltySearchScoreAjuster(behaviorLimit));
 		
 		final CompoundOperator weightMutation = new CompoundOperator();
 		weightMutation.getComponents().add(

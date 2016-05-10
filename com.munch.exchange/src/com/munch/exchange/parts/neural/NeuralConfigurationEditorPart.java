@@ -1088,7 +1088,8 @@ public class NeuralConfigurationEditorPart {
 		pop.reset();
 		
 		//TODO Neural Architecture has to be able to implements more than the scroing methode
-		NoveltySearchEA ns_ea=NoveltySearchUtil.constructNoveltySearchTrainer(pop, neuralArchitecture);
+		NoveltySearchEA ns_ea=NoveltySearchUtil.constructNoveltySearchTrainer(
+				pop, neuralArchitecture, dialog.getBehaviorLimit());
 		ns_ea.setValidationMode(true);
 		ns_ea.setMaxArchiveSize(dialog.getArchiveSize());
 		ns_ea.setNbOfNearestNeighbor(dialog.getNbOfneighbors());
@@ -1611,7 +1612,7 @@ public class NeuralConfigurationEditorPart {
 		private void postIteration(){
 
 //			Isolate the best genomes
-			List<Genome> sortedGenomes=getSortedGenomesFromPop(train.getPopulation());
+			List<Genome> sortedGenomes=getSortedNoveltyGenomesFromPop(train.getPopulation());
 			
 			ExecutorService taskExecutor =Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 			
@@ -1873,7 +1874,7 @@ public class NeuralConfigurationEditorPart {
 		private void postIteration(){
 
 //			Isolate the best genomes
-			List<Genome> sortedGenomes=getSortedGenomesFromPop(train.getPopulation());
+			List<Genome> sortedGenomes=getSortedNoveltyGenomesFromPop(train.getPopulation());
 			
 			ExecutorService taskExecutor =Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 			
@@ -2075,13 +2076,15 @@ public class NeuralConfigurationEditorPart {
 	}
 	
 	
-	private List<Genome> getSortedGenomesFromPop(Population pop){
+	private List<Genome> getSortedNoveltyGenomesFromPop(Population pop){
 		List<Genome> genomes=pop.flatten();
 		
 		
 		List<Genome> sortedGenomes=new LinkedList<Genome>();
 		for(Genome genome:genomes){
 //			System.out.println(genome.getScore());
+			
+			NoveltySearchGenome nov_gen=(NoveltySearchGenome) genome;
 			
 			if(sortedGenomes.isEmpty()){
 				sortedGenomes.add(genome);continue;
@@ -2090,7 +2093,10 @@ public class NeuralConfigurationEditorPart {
 			int i=0;
 			boolean isInserted=false;
 			for(Genome sortedGenome:sortedGenomes){
-				if(sortedGenome.getScore() < genome.getScore()){
+				NoveltySearchGenome sorted_nov_gen=(NoveltySearchGenome) sortedGenome;
+				
+				
+				if(sorted_nov_gen.getBehavior() < nov_gen.getBehavior()){
 					sortedGenomes.add(i, genome);
 					isInserted=true;
 					break;

@@ -32,6 +32,7 @@ public class NeatTrainingDialog extends TitleAreaDialog {
 	private long timeout;
 	private boolean timeoutSet;
 	private int archiveSize;
+	private double behaviorLimit;
 	private int nbOfneighbors;
 	private int nbOfBackTestingEvaluation;
 	
@@ -47,6 +48,8 @@ public class NeatTrainingDialog extends TitleAreaDialog {
 	private Spinner spinnerArchiveSize;
 	private Label lblBackTEvaluation;
 	private Spinner spinnerBackTestingEval;
+	private Label lblBehaviorLimit;
+	private Spinner spinnerBehaviorLimit;
 
 	/**
 	 * Create the dialog.
@@ -122,6 +125,18 @@ public class NeatTrainingDialog extends TitleAreaDialog {
 		spinnerNbOfNeighbors.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		spinnerNbOfNeighbors.setEnabled(isNoveltySearch);
 		
+		lblBehaviorLimit = new Label(container, SWT.NONE);
+		lblBehaviorLimit.setText("Behavior Limit:");
+		
+		spinnerBehaviorLimit = new Spinner(container, SWT.BORDER);
+		spinnerBehaviorLimit.setIncrement(100);
+		spinnerBehaviorLimit.setPageIncrement(1);
+		spinnerBehaviorLimit.setMaximum(1000);
+		spinnerBehaviorLimit.setMinimum(-100000);
+		spinnerBehaviorLimit.setEnabled(isNoveltySearch);
+		spinnerBehaviorLimit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		spinnerBehaviorLimit.setDigits(2);
+		
 		lblBackTEvaluation = new Label(container, SWT.NONE);
 		lblBackTEvaluation.setText("Back T. Evaluation:");
 		
@@ -179,7 +194,7 @@ public class NeatTrainingDialog extends TitleAreaDialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(511, 508);
+		return new Point(511, 533);
 	}
 
 	@Override
@@ -196,7 +211,8 @@ public class NeatTrainingDialog extends TitleAreaDialog {
 			
 			archiveSize=spinnerArchiveSize.getSelection();
 			nbOfneighbors=spinnerNbOfNeighbors.getSelection();
-			
+			behaviorLimit=spinnerBehaviorLimit.getSelection();
+			behaviorLimit/=100.0;
 			
 		}
 		catch(Exception e){
@@ -245,6 +261,11 @@ public class NeatTrainingDialog extends TitleAreaDialog {
 	public int getNbOfBackTestingEvaluation() {
 		return nbOfBackTestingEvaluation;
 	}
+
+	public double getBehaviorLimit() {
+		return behaviorLimit;
+	}
+
 	
 	
 

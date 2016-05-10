@@ -367,7 +367,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		n_genome.setNovelty(novelty);
 		
 		
-		System.out.println("Genome: novelty="+n_genome.getNovelty()+", behavior="+n_genome.getBehavior());
+//		System.out.println("Genome: novelty="+n_genome.getNovelty()+", behavior="+n_genome.getBehavior());
 		
 //		Now the score is really set equals to the novelty
 		n_genome.setScore(novelty);

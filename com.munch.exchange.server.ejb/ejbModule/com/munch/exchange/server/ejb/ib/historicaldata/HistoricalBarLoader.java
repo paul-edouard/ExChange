@@ -123,6 +123,9 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 //			Break if the connection to TWS was broken
 			if(!ConnectionBean.INSTANCE.isConnected())break;
 			
+//			Break id the HDMS server is not online
+			if(!isIbHDMSServerOnline())break;
+			
 //			Refresh the container for the next attempt
 			containers=searchAllContainers();
 
