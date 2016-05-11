@@ -44,6 +44,7 @@
 	<class>com.munch.exchange.model.core.ib.bar.seconde.SecondeMidPointBar</class>
 	<class>com.munch.exchange.model.core.ib.bar.seconde.SecondeTradesBar</class>
 	<class>com.munch.exchange.model.core.ib.bar.BarContainer</class>
+	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartBollingerBands</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

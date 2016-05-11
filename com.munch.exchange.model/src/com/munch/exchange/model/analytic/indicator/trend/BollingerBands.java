@@ -1,5 +1,7 @@
 package com.munch.exchange.model.analytic.indicator.trend;
 
+import com.munch.exchange.model.analytic.indicator.signals.SimpleDerivate;
+
 /**
  * Bollinger Bands Technical Indicator (BB) is similar to Envelopes. The only
  * difference is that the bands of Envelopes are plotted a fixed distance (%)
@@ -75,21 +77,46 @@ public class BollingerBands {
 	
 	public static double[][] computeADX(double[] Price ,int N, double D){
 		
-		double[][] ADX=new double[3][Price.length];
+		double[][] ADX=new double[7][Price.length];
 		double[] ML=MovingAverage.SMA(Price, N);
+		
+		double[] ML_Dev=SimpleDerivate.compute(ML);
+		
 		
 		double[] stdDev=StandardDeviation.compute(Price, N);
 		double[] TL=new double[Price.length];
+		double[] TL_UT=new double[Price.length];
+		
 		double[] BL=new double[Price.length];
+		double[] BL_DT=new double[Price.length];
+		
+		
+		double[] RD=new double[Price.length];
+		double[] RD_F=new double[Price.length];
+		
 		
 		for(int i=0;i<Price.length;i++){
 			TL[i]=ML[i]+D*stdDev[i];
 			BL[i]=ML[i]-D*stdDev[i];
+			if(stdDev[i]>0){
+				RD[i]=(Price[i]-ML[i])/(D*stdDev[i]);
+				RD_F[i]=RD[i]*Math.abs(ML_Dev[i]);
+			}
+				
 		}
+		
+		TL_UT=SimpleDerivate.compute(TL);
+		BL_DT=SimpleDerivate.compute(BL);
+		
 		
 		ADX[0]=ML;
 		ADX[1]=TL;
 		ADX[2]=BL;
+		ADX[3]=RD;
+		ADX[4]=RD_F;
+		
+		ADX[5]=TL_UT;
+		ADX[6]=BL_DT;
 		
 		return ADX;
 	}

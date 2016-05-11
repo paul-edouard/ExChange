@@ -73,6 +73,24 @@ public class IbChartSerie implements Serializable,Copyable<IbChartSerie>,Compara
 		//shapeType=ShapeType.NONE;
 	}
 	
+	
+	public IbChartSerie(IbChartIndicator parent,String name,RendererType type,boolean isMain, boolean isActivated,
+			int color_R, int color_G, int color_B ){
+		this.name=name;
+		
+		this.isMain=isMain;
+		this.isActivated=isActivated;
+		this.color_R=color_R;
+		this.color_G=color_G;
+		this.color_B=color_B;
+		this.rendererType=type;
+		
+		this.indicator=parent;
+		
+		this.shapeType=ShapeType.NONE;
+	}
+	
+	
 	public IbChartSerie(IbChartIndicator parent,String name,RendererType type,boolean isMain, boolean isActivated,int[] color ){
 		this.name=name;
 		

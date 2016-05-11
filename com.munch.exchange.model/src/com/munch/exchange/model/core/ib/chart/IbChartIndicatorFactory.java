@@ -11,6 +11,7 @@ import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
 import com.munch.exchange.model.core.ib.chart.signals.SuperTrendSignal;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartBollingerBands;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSuperTrend;
@@ -43,6 +44,10 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(trendLine, IbChartDownwardTrendLine.class);
 		addChartIndicator(trendLine, IbChartUpwardTrendLine.class);
 		addChartIndicator(trendLine, IbChartSuperTrend.class);
+		
+//		BOLLINGER BAND
+		addChartIndicator(trend, IbChartBollingerBands.class);
+		
 		
 		//================================
 		//==         OSCILLATOR         ==

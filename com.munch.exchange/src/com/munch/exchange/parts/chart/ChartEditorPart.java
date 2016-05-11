@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.DateTickUnitType;
 import org.jfree.chart.axis.NumberAxis;
@@ -154,6 +155,7 @@ public class ChartEditorPart{
 	CombinedDomainXYPlot combinedPlot=null;
 	XYPlot mainPlot=null;
 	XYPlot secondPlot=null;
+	XYPlot percentPlot=null;
 	XYPlot profitPlot=null;
 	XYPlot riskPlot=null;
 	
@@ -161,6 +163,7 @@ public class ChartEditorPart{
 	private DateAxis dateAxis;
 	private NumberAxis mainAxis;
 	private NumberAxis secondAxis;
+	private NumberAxis percentAxis;
 	private NumberAxis profitAxis;
 	private NumberAxis riskAxis;
 	
@@ -404,6 +407,11 @@ public class ChartEditorPart{
 	    //===  Second Plot   ===
 	    //======================
 	    createSecondPlot();
+
+	    //======================
+	    //===  Percent Plot   ===
+	    //======================
+	    createPercentPlot();
 	    
 	    //======================
 	    //===  Profit Plot   ===
@@ -609,6 +617,39 @@ public class ChartEditorPart{
 		*/
     }
     
+    
+   private void createPercentPlot(){
+    	
+    	percentPlotrenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
+                StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
+                new DecimalFormat("0.0"), new DecimalFormat("0.00")));
+        
+        if (percentPlotrenderer instanceof XYLineAndShapeRenderer) {
+            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) percentPlotrenderer;
+            renderer.setBaseStroke(new BasicStroke(2.0f));
+            renderer.setAutoPopulateSeriesStroke(false);
+            renderer.setSeriesPaint(0, Color.BLUE);
+            renderer.setSeriesPaint(1, Color.DARK_GRAY);
+            //renderer.setSeriesPaint(2, new Color(0xFDAE61));
+        }
+        
+        //Axis Profit
+        percentAxis = new NumberAxis("Value");
+        //rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
+        DecimalFormat format = new DecimalFormat("00.00");
+        percentAxis.setNumberFormatOverride(format);
+        percentAxis.setAutoRangeIncludesZero(false);
+        
+        //Plot Profit
+        percentPlot = new XYPlot(percentCollection, null, percentAxis, percentPlotrenderer);
+        percentPlot.setBackgroundPaint(Color.lightGray);
+        percentPlot.setDomainGridlinePaint(Color.white);
+        percentPlot.setRangeGridlinePaint(Color.white);
+        
+   }
+    
+    
+    
     private void createProfitPlot(){
     	 profitPlotRenderer.setBaseStroke(new BasicStroke(2.0f));
          
@@ -680,6 +721,7 @@ public class ChartEditorPart{
     	 combinedPlot.setDomainGridlinePaint(Color.white);
     	 combinedPlot.setDomainGridlinesVisible(true);
     	 combinedPlot.setDomainPannable(true);
+    	 combinedPlot.setDomainAxisLocation(AxisLocation.BOTTOM_OR_RIGHT);
     }
     
     
@@ -693,16 +735,19 @@ public class ChartEditorPart{
     	mainNbOfSeries+=mainCollection.getSeriesCount();
     	
     	if(mainNbOfSeries>0)
-    	combinedPlot.add(mainPlot, 5);
+    		combinedPlot.add(mainPlot, 5);
     	
     	
     	//Second Plot
     	int totalNbOfSeries=secondCollection.getSeriesCount();
-    	totalNbOfSeries+=percentCollection.getSeriesCount();
-    	//logger.info("totalNbOfSeries "+totalNbOfSeries);
-    	
     	if(totalNbOfSeries>0)
     		combinedPlot.add(secondPlot, 2);
+    	
+//		Percent Plot    	
+    	int totalPercentNbOfSeries=percentCollection.getSeriesCount();
+    	if(totalPercentNbOfSeries>0)
+    		combinedPlot.add(percentPlot, 2);
+    	
     	
     	//Profit plot
     	int totalProfitNbOfSeries=profitCollection.getSeriesCount();
@@ -754,33 +799,12 @@ public class ChartEditorPart{
 		switch (serie.getRendererType()) {
 		case MAIN:
 			addIbChartSerieToXYSeriesCollection(serie, mainPlotRenderer, mainCollection);
-			
-			/*
-			mainCollection.addSeries(xySerie);
-			pos=mainCollection.indexOf(serie.getName());
-			if(pos>=0){
-				mainPlotRenderer.setSeriesShapesVisible(pos, false);
-				mainPlotRenderer.setSeriesLinesVisible(pos, true);
-				mainPlotRenderer.setSeriesStroke(pos,new BasicStroke(2.0f));
-				mainPlotRenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
-			}
-			*/
 			break;
 		case SECOND:
 			addIbChartSerieToXYSeriesCollection(serie, secondPlotrenderer, secondCollection);
-			/*
-			secondCollection.addSeries(xySerie);
-			pos=secondCollection.indexOf(serie.getName());
-			if(pos>=0){
-				secondPlotrenderer.setSeriesShapesVisible(pos, false);
-				secondPlotrenderer.setSeriesLinesVisible(pos, true);
-				secondPlotrenderer.setSeriesStroke(pos,new BasicStroke(2.0f));
-				secondPlotrenderer.setSeriesPaint(pos, new java.awt.Color(serie.getColor_R(), serie.getColor_G(), serie.getColor_B()));
-			}*/
 			break;
 		case PERCENT:
-			pos=percentCollection.indexOf(serie.getName());
-			if(pos>=0)percentCollection.removeSeries(pos);
+			addIbChartSerieToXYSeriesCollection(serie, percentPlotrenderer, percentCollection);
 			break;
 		case ERROR:
 			pos=errorCollection.indexOf(serie.getName());
