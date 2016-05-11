@@ -5,6 +5,9 @@ import java.util.LinkedList;
 import org.encog.ml.MLMethod;
 import org.encog.ml.ea.genome.Genome;
 import org.encog.ml.ea.train.EvolutionaryAlgorithm;
+import org.encog.ml.genetic.MLMethodGeneticAlgorithm;
+import org.encog.ml.train.MLTrain;
+import org.encog.neural.networks.BasicNetwork;
 
 import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.neural.BestGenomes;
@@ -14,7 +17,9 @@ import com.munch.exchange.model.core.ib.neural.NeuralNetworkRating;
 
 public class ParallelBackTestingEvalTask implements Runnable {
 	
-	EvolutionaryAlgorithm train;
+	EvolutionaryAlgorithm train=null;
+	
+	MLMethodGeneticAlgorithm genTrain=null;
 	
 	BestGenomes bestGenomes;
 	
@@ -39,6 +44,16 @@ public class ParallelBackTestingEvalTask implements Runnable {
 		this.backTestingBlocks = backTestingBlocks;
 		this.neuralArchitecture = neuralArchitecture;
 	}
+	
+	public ParallelBackTestingEvalTask(MLMethodGeneticAlgorithm genTrain, BestGenomes bestGenomes, Genome genome,
+			LinkedList<LinkedList<ExBar>> backTestingBlocks, NeuralArchitecture neuralArchitecture) {
+		super();
+		this.genTrain = genTrain;
+		this.bestGenomes = bestGenomes;
+		this.genome = genome;
+		this.backTestingBlocks = backTestingBlocks;
+		this.neuralArchitecture = neuralArchitecture;
+	}
 
 
 
@@ -48,15 +63,27 @@ public class ParallelBackTestingEvalTask implements Runnable {
 
 	@Override
 	public void run() {
+
+		if (train != null) {
+			// Calculate the back testing score
+			MLMethod method = train.getCODEC().decode(genome);
+			NeuralNetworkRating backTestingRating = neuralArchitecture.calculateProfitAndRiskOfBlocks(backTestingBlocks,
+					method);
+
+			// Create and add the new evaluation
+			GenomeEvaluation g_eval = new GenomeEvaluation(genome, genome.getScore());
+			g_eval.setBackTestingScore(backTestingRating.getScore());
+			bestGenomes.addGenomeEvaluation(g_eval);
+		} else if (genTrain != null) {
+			BasicNetwork network = (BasicNetwork) genTrain.getGenetic().getCODEC().decode(genome);
+			GenomeEvaluation g_eval = new GenomeEvaluation(genome);
+
+			NeuralNetworkRating backTestingRating = neuralArchitecture.calculateProfitAndRiskOfBlocks(backTestingBlocks,
+					network);
+			g_eval.setBackTestingScore(backTestingRating.getScore());
+			bestGenomes.addGenomeEvaluation(g_eval);
+		}
 		
-//		Calculate the back testing score
-		MLMethod method=train.getCODEC().decode(genome);
-		NeuralNetworkRating backTestingRating=neuralArchitecture.calculateProfitAndRiskOfBlocks(backTestingBlocks, method);
-		
-//		Create and add the new evaluation
-		GenomeEvaluation g_eval=new GenomeEvaluation(genome, genome.getScore());
-		g_eval.setBackTestingScore(backTestingRating.getScore());
-		bestGenomes.addGenomeEvaluation(g_eval);
 
 	}
 

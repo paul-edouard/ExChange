@@ -1450,6 +1450,10 @@ public class NeuralConfigurationEditorPart {
 			if(train instanceof MLMethodGeneticAlgorithm){
 				MLMethodGeneticAlgorithm genTrain=(MLMethodGeneticAlgorithm) train;
 				List<Genome> genomes=genTrain.getGenetic().getPopulation().flatten();
+				
+				ExecutorService taskExecutor =Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+				
+			
 				int pos=0;
 				for(Genome genome:genomes){
 					if(pos>nbOfBackTestingEvaluation)break;
@@ -1458,17 +1462,33 @@ public class NeuralConfigurationEditorPart {
 					
 					if(bestGenomes.containsScore(genome.getScore()))continue;
 					
+					
+					taskExecutor.execute(new ParallelBackTestingEvalTask(genTrain, bestGenomes, genome,
+							neuralConfiguration.getBackTestingBlocks(), neuralArchitecture));
+					
+					
 					pos++;
 					
-					BasicNetwork network=(BasicNetwork)genTrain.getGenetic().getCODEC().decode(genome);
-					GenomeEvaluation g_eval=new GenomeEvaluation(genome);
-					
-					
-					NeuralNetworkRating backTestingRating=neuralArchitecture.calculateProfitAndRiskOfBlocks(neuralConfiguration.getBackTestingBlocks(), network);
-					g_eval.setBackTestingScore(backTestingRating.getScore());
-					bestGenomes.addGenomeEvaluation(g_eval);
+//					BasicNetwork network=(BasicNetwork)genTrain.getGenetic().getCODEC().decode(genome);
+//					GenomeEvaluation g_eval=new GenomeEvaluation(genome);
+//					
+//					
+//					NeuralNetworkRating backTestingRating=neuralArchitecture.calculateProfitAndRiskOfBlocks(neuralConfiguration.getBackTestingBlocks(), network);
+//					g_eval.setBackTestingScore(backTestingRating.getScore());
+//					bestGenomes.addGenomeEvaluation(g_eval);
 				}
+				
+				
+				taskExecutor.shutdown();
+				try {
+					taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.MINUTES);
+				} catch (InterruptedException e) {
+					throw new GeneticError(e);
+				}
+				
 			}
+			
+			
 			
 			
 //			Print the current state
