@@ -1466,7 +1466,8 @@ public class ChartEditorPart{
 						//candleStickSeries.clear();
 						for(ExBar bar:replacedBars){
 							long interval=BarUtils.getIntervallInMs(barRecorder.getBarSize());
-							Second sec=new Second(new Date(bar.getTimeInMs() - interval/2));
+//							Second sec=new Second(new Date(bar.getTimeInMs() - interval/2));
+							Second sec=new Second(new Date(bar.getTimeInMs() + interval/2));
 							int index=candleStickSeries.indexOf(sec);
 							//logger.info("Index of: "+index);
 							if(index>=0){
@@ -1503,7 +1504,7 @@ public class ChartEditorPart{
 						
 						for(ExBar bar:addedBars){
 							long interval=BarUtils.getIntervallInMs(barRecorder.getBarSize());
-							Second sec=new Second(new Date(bar.getTimeInMs() - interval/2));
+							Second sec=new Second(new Date(bar.getTimeInMs() + interval/2));
 							if(candleStickSecondes.contains(sec.getFirstMillisecond()))continue;
 							//if(LastSec!=null && LastSec.equals(sec))continue;
 							candleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());

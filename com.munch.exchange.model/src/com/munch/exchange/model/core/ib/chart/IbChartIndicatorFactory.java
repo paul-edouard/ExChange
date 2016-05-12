@@ -16,6 +16,10 @@ import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSuperTrend;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartUpwardTrendLine;
+import com.munch.exchange.model.core.ib.chart.values.IbChartClose;
+import com.munch.exchange.model.core.ib.chart.values.IbChartHigh;
+import com.munch.exchange.model.core.ib.chart.values.IbChartLow;
+import com.munch.exchange.model.core.ib.chart.values.IbChartOpen;
 
 public class IbChartIndicatorFactory {
 	
@@ -29,6 +33,22 @@ public class IbChartIndicatorFactory {
 		if(!root.getName().equals(IbChartIndicatorGroup.ROOT))return false;
 		
 		parentChildrenMap.clear();
+		
+		
+		//================================
+		//==           VALUES           ==
+		//================================
+		IbChartIndicatorGroup values=searchOrCreateSubGroup(root,"Values");
+		
+//		OPEN
+		addChartIndicator(values, IbChartOpen.class);
+//		LOW
+		addChartIndicator(values, IbChartLow.class);
+//		HIGH
+		addChartIndicator(values, IbChartHigh.class);
+//		CLOSE
+		addChartIndicator(values, IbChartClose.class);
+		
 		
 		//================================
 		//==           TREND            ==
