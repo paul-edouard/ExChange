@@ -28,7 +28,7 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 	 */
 	private static final long serialVersionUID = -5309044394144277259L;
 	
-	public enum ParameterType {DOUBLE, INTEGER, STRING, NONE;}
+	public enum ParameterType {DOUBLE, INTEGER, STRING, NONE, LIST;}
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -45,6 +45,7 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 	private double _minValue=0;
 	private double _maxValue=0;
 	private int scalarFactor=0;
+	private String list="";
 	
 	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="INDICATOR_ID")
@@ -57,6 +58,29 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 	public IbChartParameter(){
 		
 	}
+	
+	public IbChartParameter(IbChartIndicator parent,String name,String val, String[] values){
+		
+		this.list="";
+		for(int i=0;i<values.length;i++){
+			if(values[i]==val){
+				this.currentValue=i;
+			}
+			this.list+=values[i]+";";
+		}
+		if(this.list.length()>0)
+			this.list.substring(0, this.list.length()-1);
+		
+		this.defaultValue=this.currentValue;
+		this._maxValue=values.length-1;
+		this._minValue=0;
+		this.type=ParameterType.LIST;
+		this.name=name;
+		this.parent=parent;
+		
+		this.scalarFactor=0;
+	}
+	
 	
 	
 	public IbChartParameter(IbChartIndicator parent,String name,ParameterType type,  double val, double minValue, double maxValue, int  scalarFac){
@@ -84,6 +108,7 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 		c._minValue=this._minValue;
 		c._maxValue=this._maxValue;
 		c.scalarFactor=this.scalarFactor;
+		c.list=this.list;
 	
 		return c;
 	}
@@ -114,6 +139,12 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+		if (list == null) {
+			if (other.list != null)
+				return false;
+		} else if (!list.equals(other.list))
+			return false;
+		
 		if (scalarFactor != other.scalarFactor)
 			return false;
 		if (type != other.type)
@@ -143,6 +174,8 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 		case STRING:
 			//TODO at the moment no supported
 			return false;
+		case LIST:
+			return this.list==other.list && this.currentValue==other.currentValue;
 		default:
 			return false;
 		}
@@ -163,6 +196,10 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 			break;
 		case STRING:
 			//TODO at the moment no supported
+			break;
+		case LIST:
+			this.list=other.list;
+			this.currentValue=other.currentValue;
 			break;
 		default:
 			break;
@@ -215,6 +252,15 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 	public int getIntegerValue() {
 		return (int) currentValue;
 	}
+	
+	public String getStringValue() {
+		int index= (int) currentValue;
+		String[] values=this.list.split(";");
+		if(index<values.length)return values[index];
+		
+		return "";
+	}
+	
 
 	public void setValue(double value) {
 		this.currentValue = value;
