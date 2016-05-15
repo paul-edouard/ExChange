@@ -44,7 +44,7 @@ public class TripleLinearWeigthMovingAverageComposite  extends IndicatorComposit
 	@Override
 	protected void createSeries() {
 		double[] prices=rate.getHistoricalData().getPrices(HistoricalPoint.Type.CLOSE);
-		double[] computed=TripleMovingAverage.computeLWMA(prices,
+		double[] computed=TripleMovingAverage.TLWMA(prices,
 							paramMap.get(PERIOD).getIntegerValue());
 		//for(int i=0;i<ama.length;i++)
 		//	System.out.println(ama[i]);

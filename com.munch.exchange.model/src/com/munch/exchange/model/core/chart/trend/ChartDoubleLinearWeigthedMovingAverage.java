@@ -34,7 +34,7 @@ public class ChartDoubleLinearWeigthedMovingAverage extends ChartIndicator {
 		ValuePointList pricesList=hisData.getPricesAsValuePointList(HistoricalPoint.Type.CLOSE);
 		
 		
-		double[] computed=DoubleMovingAverage.computeLWMA(pricesList.toDoubleArray(),
+		double[] computed=DoubleMovingAverage.DLWMA(pricesList.toDoubleArray(),
 				this.getChartParameter(PERIOD).getIntegerValue());
 		
 		this.getChartSerie(DLWMA).setValues(pricesList,computed);

@@ -261,6 +261,10 @@ public class IbChartParameter implements Serializable,Copyable<IbChartParameter>
 		return "";
 	}
 	
+	public String[] getStringArray() {
+		return this.list.split(";");
+	}
+	
 
 	public void setValue(double value) {
 		this.currentValue = value;

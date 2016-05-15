@@ -10,6 +10,8 @@ import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.jface.viewers.ComboViewer;
 
 public class Test extends Composite {
 	private Text txtMyText;
@@ -41,7 +43,15 @@ public class Test extends Composite {
 			}
 		});
 		btnReset.setText("Reset");
+		
+		ComboViewer comboViewer = new ComboViewer(this, SWT.NONE);
+		Combo combo = comboViewer.getCombo();
+		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+		
+		Combo combo_1 = new Combo(this, SWT.NONE);
+		combo_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		new Label(this, SWT.NONE);
 
 	}

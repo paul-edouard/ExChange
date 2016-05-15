@@ -49,6 +49,8 @@
 	<class>com.munch.exchange.model.core.ib.chart.values.IbChartClose</class>
 	<class>com.munch.exchange.model.core.ib.chart.values.IbChartLow</class>
 	<class>com.munch.exchange.model.core.ib.chart.values.IbChartHigh</class>
+	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartDoubleMovingAverage</class>
+	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartTripleMovingAverage</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.persistence.Entity;
 
+import com.munch.exchange.model.analytic.indicator.trend.DoubleMovingAverage;
 import com.munch.exchange.model.analytic.indicator.trend.MovingAverage;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
@@ -16,13 +17,13 @@ import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
 
 @Entity
-public class IbChartSimpleMovingAverage extends IbChartIndicator {
+public class IbChartDoubleMovingAverage extends IbChartIndicator {
 	
 	
-	public static final String SMA="Simple Moving Average";
-	public static final String EMA="Exponential Moving Average";
-	public static final String SMMA="Smoothed Moving Average";
-	public static final String LWMA="Linear Weighted Moving Average";
+	public static final String DMA="Double Moving Average";
+	public static final String DEMA="Double Exponential Moving Average";
+	public static final String DSMMA="Double Smoothed Moving Average";
+	public static final String DLWMA="Double Linear Weighted Moving Average";
 	public static final String PERIOD="Period";
 	public static final String PRICE="Price";
 
@@ -32,18 +33,18 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 	private static final long serialVersionUID = -828064667118819957L;
 	
 	
-	public IbChartSimpleMovingAverage() {
+	public IbChartDoubleMovingAverage() {
 		super();
 	}
 	
 	
-	public IbChartSimpleMovingAverage(IbChartIndicatorGroup group) {
+	public IbChartDoubleMovingAverage(IbChartIndicatorGroup group) {
 		super(group);
 	}
 	
 	@Override
 	public IbChartIndicator copy() {
-		IbChartIndicator c=new IbChartSimpleMovingAverage();
+		IbChartIndicator c=new IbChartDoubleMovingAverage();
 		c.copyData(this);
 		return c;
 	}
@@ -52,7 +53,7 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 	
 	@Override
 	public void initName() {
-		this.name="Simple Moving Average";
+		this.name="Double Moving Average";
 	}
 
 
@@ -60,16 +61,16 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 	public void createSeries() {
 		
 //		Simple Moving Average
-		this.series.add(new IbChartSerie(this,SMA,RendererType.MAIN,true,true,50, 44, 89));
+		this.series.add(new IbChartSerie(this,DMA,RendererType.MAIN,true,true,50, 44, 89));
 		
 //		Exponential Moving Average
-		this.series.add(new IbChartSerie(this,EMA,RendererType.MAIN,false,false,156, 47, 43));
+		this.series.add(new IbChartSerie(this,DEMA,RendererType.MAIN,false,false,156, 47, 43));
 		
 //		Smoothed Moving Average
-		this.series.add(new IbChartSerie(this,SMMA,RendererType.MAIN,false,false,156, 47, 43));
+		this.series.add(new IbChartSerie(this,DSMMA,RendererType.MAIN,false,false,156, 47, 43));
 		
 //		Linear Weighted Moving Average
-		this.series.add(new IbChartSerie(this,LWMA,RendererType.MAIN,false,false,240, 47, 3));
+		this.series.add(new IbChartSerie(this,DLWMA,RendererType.MAIN,false,false,240, 47, 3));
 		
 	}
 
@@ -80,6 +81,7 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 //		PERIOD
 		IbChartParameter param=new IbChartParameter(this, PERIOD,ParameterType.INTEGER, 12, 1, 200, 0);
 		this.parameters.add(param);
+		
 		
 //		PRICE
 		IbChartParameter price=new IbChartParameter(this, PRICE,DataType.CLOSE.name(),DataType.toStringArray());
@@ -94,47 +96,47 @@ public class IbChartSimpleMovingAverage extends IbChartIndicator {
 		long[] times=BarUtils.getTimeArray(bars);
 		
 //		SMA
-		double[] sma=MovingAverage.SMA(prices,
+		double[] sma=DoubleMovingAverage.DMA(prices,
 			this.getChartParameter(PERIOD).getIntegerValue());
 		if(reset){
-			this.getChartSerie(SMA).setPointValues(times,sma);
-			this.getChartSerie(SMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
+			this.getChartSerie(DMA).setPointValues(times,sma);
+			this.getChartSerie(DMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
 		}
 		else{
-			this.getChartSerie(SMA).addNewPointsOnly(times,sma);
+			this.getChartSerie(DMA).addNewPointsOnly(times,sma);
 		}
 		
 //		EMA
-		double[] ema=MovingAverage.EMA(prices,
+		double[] ema=DoubleMovingAverage.DEMA(prices,
 		this.getChartParameter(PERIOD).getIntegerValue());
 		if(reset){
-			this.getChartSerie(EMA).setPointValues(times,ema);
-			this.getChartSerie(EMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
+			this.getChartSerie(DEMA).setPointValues(times,ema);
+			this.getChartSerie(DEMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
 		}
 		else{
-			this.getChartSerie(EMA).addNewPointsOnly(times,ema);
+			this.getChartSerie(DEMA).addNewPointsOnly(times,ema);
 		}	
 		
 //		SMMA
-		double[] smma=MovingAverage.SMMA(prices,
+		double[] smma=DoubleMovingAverage.DSMMA(prices,
 		this.getChartParameter(PERIOD).getIntegerValue());
 		if(reset){
-			this.getChartSerie(SMMA).setPointValues(times,smma);
-			this.getChartSerie(SMMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
+			this.getChartSerie(DSMMA).setPointValues(times,smma);
+			this.getChartSerie(DSMMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
 		}
 		else{
-			this.getChartSerie(SMMA).addNewPointsOnly(times,smma);
+			this.getChartSerie(DSMMA).addNewPointsOnly(times,smma);
 		}
 		
 //		LWMA
-		double[] lwma=MovingAverage.LWMA(prices,
+		double[] lwma=DoubleMovingAverage.DLWMA(prices,
 		this.getChartParameter(PERIOD).getIntegerValue());
 		if(reset){
-			this.getChartSerie(LWMA).setPointValues(times,lwma);
-			this.getChartSerie(LWMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
+			this.getChartSerie(DLWMA).setPointValues(times,lwma);
+			this.getChartSerie(DLWMA).setValidAtPosition(this.getChartParameter(PERIOD).getIntegerValue()-1);
 		}
 		else{
-			this.getChartSerie(LWMA).addNewPointsOnly(times,lwma);
+			this.getChartSerie(DLWMA).addNewPointsOnly(times,lwma);
 		}
 		
 		

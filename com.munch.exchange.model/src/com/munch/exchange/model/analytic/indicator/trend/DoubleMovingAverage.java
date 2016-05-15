@@ -51,7 +51,7 @@ package com.munch.exchange.model.analytic.indicator.trend;
 public class DoubleMovingAverage {
 	
 	
-	public static double[] computeLWMA(double[] Price, int Period){
+	public static double[] DLWMA(double[] Price, int Period){
 		
 		double[] DEMA=new double[Price.length];
 		double[] LWMA=MovingAverage.LWMA(Price, Period);
@@ -63,7 +63,7 @@ public class DoubleMovingAverage {
 		return DEMA;
 	}
 	
-	public static double[] computeEMA(double[] Price, int Period){
+	public static double[] DEMA(double[] Price, int Period){
 		
 		double[] DEMA=new double[Price.length];
 		double[] EMA=MovingAverage.EMA(Price, Period);
@@ -74,5 +74,32 @@ public class DoubleMovingAverage {
 		}
 		return DEMA;
 	}
+	
+	public static double[] DMA(double[] Price, int Period){
+		
+		double[] DMA=new double[Price.length];
+		double[] EMA=MovingAverage.SMA(Price, Period);
+		double[] EMA2=MovingAverage.SMA(EMA, Period);
+		
+		for(int i=0;i<Price.length;i++){
+			DMA[i]=2*EMA[i]-EMA2[i];
+		}
+		return DMA;
+	}
+	
+	public static double[] DSMMA(double[] Price, int Period){
+		
+		double[] DSMMA=new double[Price.length];
+		double[] EMA=MovingAverage.SMMA(Price, Period);
+		double[] EMA2=MovingAverage.SMMA(EMA, Period);
+		
+		for(int i=0;i<Price.length;i++){
+			DSMMA[i]=2*EMA[i]-EMA2[i];
+		}
+		return DSMMA;
+	}
+	
+	
+	
 
 }

@@ -235,7 +235,7 @@ public class MovingAverage {
 	 * @param N
 	 * @return
 	 */
-	public static double[] SMMA(double[] Price, double N){
+	public static double[] SMMA(double[] Price, int N){
 		double[] smma=new double[Price.length];
 		double[] sum1=new double[Price.length];
 		double[] smma1=new double[Price.length];
@@ -277,7 +277,7 @@ public class MovingAverage {
 	 * @param N
 	 * @return
 	 */
-	public static double[] LWMA(double[] Price, double N){
+	public static double[] LWMA(double[] Price, int N){
 		double[] lwma=new double[Price.length];
 		
 		int sum=0;

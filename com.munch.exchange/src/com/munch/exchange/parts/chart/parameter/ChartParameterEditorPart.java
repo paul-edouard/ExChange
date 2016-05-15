@@ -134,7 +134,7 @@ public class ChartParameterEditorPart {
 		else if(this.ibChartIndicator!=null){
 			for(IbChartParameter param:this.ibChartIndicator.getParameters()){
 				IbChartParameterComposite pc=new IbChartParameterComposite(this,parent , param);
-				pc.getSlider().setEnabled(this.ibChartIndicator.isActivated());
+				pc.setEnabled(this.ibChartIndicator.isActivated());
 				ibParameterComposites.add(pc);
 			}
 		}
@@ -312,7 +312,7 @@ public class ChartParameterEditorPart {
 		 if(!isCompositeAbleToReact())return;
 		 
 		 for(IbChartParameterComposite p:ibParameterComposites)
-			 p.getSlider().setEnabled(ibChartIndicator.isActivated());
+			 p.setEnabled(ibChartIndicator.isActivated());
 	 }
 	
 	

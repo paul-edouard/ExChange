@@ -12,9 +12,11 @@ import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedPara
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
 import com.munch.exchange.model.core.ib.chart.signals.SuperTrendSignal;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartBollingerBands;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartDoubleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSuperTrend;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartTripleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartUpwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.values.IbChartClose;
 import com.munch.exchange.model.core.ib.chart.values.IbChartHigh;
@@ -58,6 +60,8 @@ public class IbChartIndicatorFactory {
 		//MOVING AVERAGE
 		IbChartIndicatorGroup movingAverage=searchOrCreateSubGroup(trend,"Moving Average");
 		addChartIndicator(movingAverage, IbChartSimpleMovingAverage.class);
+		addChartIndicator(movingAverage, IbChartDoubleMovingAverage.class);
+		addChartIndicator(movingAverage, IbChartTripleMovingAverage.class);
 		
 		//TREND LINE
 		IbChartIndicatorGroup trendLine=searchOrCreateSubGroup(trend,"Trend Line");
@@ -265,6 +269,8 @@ public class IbChartIndicatorFactory {
 			}
 			
 			if(paramFound)continue;
+			
+			parametersToAdd.add(newParam);
 			
 		}
 		

@@ -4,6 +4,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Slider;
@@ -12,6 +13,7 @@ import org.eclipse.swt.widgets.Text;
 import com.munch.exchange.IEventConstant;
 import com.munch.exchange.model.core.chart.ChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
+import com.munch.exchange.model.core.ib.chart.IbChartParameter.ParameterType;
 
 public class IbChartParameterComposite {
 	
@@ -21,6 +23,7 @@ public class IbChartParameterComposite {
 	private Text valueLabel;
 	private Slider slider;
 	private Label lblAlpha;
+	private Combo combo;
 	
 	
 	public IbChartParameterComposite(ChartParameterEditorPart p,Composite parentComposite, IbChartParameter param) {
@@ -42,25 +45,46 @@ public class IbChartParameterComposite {
 		valueLabel.setText(getStringValue());
 		valueLabel.setEditable(false);
 		
-		slider = new Slider(parentComposite, SWT.NONE);
-		slider.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		slider.setMaximum((int) (this.parameter.getMaxValue()*Math.pow(10, this.parameter.getScalarFactor())));
-		slider.setMinimum((int) (this.parameter.getMinValue()*Math.pow(10, this.parameter.getScalarFactor())));
-		slider.setPageIncrement(1);
-		//slider.setIncrement(1);
-		slider.setThumb(1);
-		slider.setSelection((int) (this.parameter.getValue()*Math.pow(10, this.parameter.getScalarFactor())));
-		slider.setEnabled(false);
-		slider.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				parameter.setValue((((double)slider.getSelection())/Math.pow(10, parameter.getScalarFactor())));
-				valueLabel.setText(getStringValue());
-				//parameter.getIndicator().fireParametersChanged();
-				parent.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED, parameter.getIndicator());
-				
-			}
-		});
+		
+		if(param.getType()!=ParameterType.LIST){
+			slider = new Slider(parentComposite, SWT.NONE);
+			slider.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+			slider.setMaximum((int) (this.parameter.getMaxValue() * Math.pow(10, this.parameter.getScalarFactor())));
+			slider.setMinimum((int) (this.parameter.getMinValue() * Math.pow(10, this.parameter.getScalarFactor())));
+			slider.setPageIncrement(1);
+			// slider.setIncrement(1);
+			slider.setThumb(1);
+			slider.setSelection((int) (this.parameter.getValue() * Math.pow(10, this.parameter.getScalarFactor())));
+			slider.setEnabled(false);
+			slider.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					parameter.setValue((((double) slider.getSelection()) / Math.pow(10, parameter.getScalarFactor())));
+					valueLabel.setText(getStringValue());
+					// parameter.getIndicator().fireParametersChanged();
+					parent.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED,
+							parameter.getIndicator());
+
+				}
+			});
+		}
+		else{
+			combo = new Combo(parentComposite, SWT.NONE);
+			combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+			combo.setItems(param.getStringArray());
+			combo.select(param.getIntegerValue());
+			combo.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					parameter.setValue(combo.getSelectionIndex());
+					valueLabel.setText(getStringValue());
+					// parameter.getIndicator().fireParametersChanged();
+					parent.getEventBroker().post(IEventConstant.IB_CHART_INDICATOR_PARAMETER_CHANGED,
+							parameter.getIndicator());
+
+				}
+			});
+		}
 		
 		
 	}
@@ -68,7 +92,10 @@ public class IbChartParameterComposite {
 	public void dispose(){
 		lblAlpha.dispose();
 		valueLabel.dispose();
-		slider.dispose();
+		if(slider!=null)
+			slider.dispose();
+		if(combo!=null)
+			combo.dispose();
 	}
 	
 	
@@ -92,17 +119,34 @@ public class IbChartParameterComposite {
 		return parameter.getName();
 	}
 	
-	public Slider getSlider() {
-		return slider;
+//	public Slider getSlider() {
+//		return slider;
+//	}
+	
+	public void setEnabled(boolean enabled){
+		if(parameter.getType()!=ParameterType.LIST){
+			slider.setEnabled(enabled);
+		}
+		else{
+			combo.setEnabled(enabled);
+		}
 	}
 	
 	public void refresh(){
 		//System.out.println("Set value");
 		valueLabel.setText(getStringValue());
-		slider.setSelection((int) (parameter.getValue()*Math.pow(10, parameter.getScalarFactor())));
+		if(parameter.getType()!=ParameterType.LIST){
+			slider.setSelection((int) (parameter.getValue()*Math.pow(10, parameter.getScalarFactor())));
+		}
+		else{
+			combo.select(parameter.getIntegerValue());
+		}
 	}
 	
 	private String getStringValue(){
+		
+		if(parameter.getType()==ParameterType.LIST)return "";
+		
 		if(parameter.getValue()==0){
 			return "00000";
 		}
@@ -110,9 +154,6 @@ public class IbChartParameterComposite {
 		switch (parameter.getType()) {
 		case INTEGER:
 			String val_str=String.valueOf((int) parameter.getValue());
-			//String max_str=String.valueOf((int) parameter.getMaxValue());
-			//while(val_str.length()<=max_str.length())
-			//	val_str="_"+val_str;
 			return val_str;
 		case DOUBLE:
 			String reg="%,."+String.valueOf(parameter.getScalarFactor())+"f%%";
@@ -120,7 +161,6 @@ public class IbChartParameterComposite {
 		default:
 			return "";
 		}
-		
 		
 	}
 	

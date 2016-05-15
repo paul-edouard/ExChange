@@ -1,6 +1,8 @@
 package com.munch.exchange.model.core.ib.bar;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 
 
 public class ExBar implements Serializable {
@@ -11,7 +13,55 @@ public class ExBar implements Serializable {
 	private static final long serialVersionUID = 5840961632782416913L;
 	
 	public static enum DataType {
-		HIGH, LOW, OPEN, CLOSE, WAP, VOLUME, TIME;
+		HIGH, LOW, OPEN, CLOSE, WAP, VOLUME, TIME, MEDIAN_PRICE, TYPICAL_PRICE,
+		WEIGHTED_CLOSE;
+		
+		public static String[] toStringArray(){
+			List<String> list=new LinkedList<String>();
+			for(DataType type:DataType.values()){
+				if(type==WAP || type==VOLUME || type==TIME)continue;
+				list.add(type.name());
+			}
+			return list.toArray(new String[list.size()]);
+		}
+		
+		public static DataType fromString(String string){
+			if(string.equals(HIGH.name())){
+				return HIGH;
+			}
+			else if(string.equals(LOW.name())){
+				return LOW;
+			}
+			else if(string.equals(OPEN.name())){
+				return OPEN;
+			}
+			else if(string.equals(CLOSE.name())){
+				return CLOSE;
+			}
+			else if(string.equals(WAP.name())){
+				return WAP;
+			}
+			else if(string.equals(VOLUME.name())){
+				return VOLUME;
+			}
+			else if(string.equals(TIME.name())){
+				return TIME;
+			}
+			else if(string.equals(MEDIAN_PRICE.name())){
+				return MEDIAN_PRICE;
+			}
+			else if(string.equals(TYPICAL_PRICE.name())){
+				return TYPICAL_PRICE;
+			}
+			else if(string.equals(WEIGHTED_CLOSE.name())){
+				return WEIGHTED_CLOSE;
+			}
+			
+			return CLOSE;
+			
+		}
+		
+		
 	}
 	
 	private boolean isRealTime=false;
@@ -96,6 +146,13 @@ public class ExBar implements Serializable {
 			case WAP:return wap;
 			case VOLUME:return (double)volume;
 			case TIME:return (double)time;
+			case MEDIAN_PRICE:
+				return (this.getLow()+this.getHigh())/2;	
+			case TYPICAL_PRICE:
+				return (this.getLow()+this.getClose()+this.getHigh())/3;
+			case WEIGHTED_CLOSE:
+				return (this.getLow()+2*this.getClose()+this.getHigh())/4;
+				
 			default:return 0;
 		}
 		

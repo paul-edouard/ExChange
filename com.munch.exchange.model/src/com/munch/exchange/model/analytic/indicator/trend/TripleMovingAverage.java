@@ -52,7 +52,7 @@ package com.munch.exchange.model.analytic.indicator.trend;
 public class TripleMovingAverage {
 	
 	
-	public static double[] computeLWMA(double[] Price, int Period){
+	public static double[] TLWMA(double[] Price, int Period){
 		
 		double[] DEMA=new double[Price.length];
 		double[] LWMA=MovingAverage.LWMA(Price, Period);
@@ -65,12 +65,38 @@ public class TripleMovingAverage {
 		return DEMA;
 	}
 	
-	public static double[] computeEMA(double[] Price, int Period){
+	public static double[] TEMA(double[] Price, int Period){
 		
 		double[] DEMA=new double[Price.length];
 		double[] EMA=MovingAverage.EMA(Price, Period);
 		double[] EMA2=MovingAverage.EMA(EMA, Period);
 		double[] EMA3=MovingAverage.EMA(EMA2, Period);
+		
+		for(int i=0;i<Price.length;i++){
+			DEMA[i]=3*EMA[i]-3*EMA2[i]+EMA3[i];
+		}
+		return DEMA;
+	}
+	
+	public static double[] TMA(double[] Price, int Period){
+		
+		double[] DEMA=new double[Price.length];
+		double[] EMA=MovingAverage.SMA(Price, Period);
+		double[] EMA2=MovingAverage.SMA(EMA, Period);
+		double[] EMA3=MovingAverage.SMA(EMA2, Period);
+		
+		for(int i=0;i<Price.length;i++){
+			DEMA[i]=3*EMA[i]-3*EMA2[i]+EMA3[i];
+		}
+		return DEMA;
+	}
+	
+	public static double[] TSMMA(double[] Price, int Period){
+		
+		double[] DEMA=new double[Price.length];
+		double[] EMA=MovingAverage.SMMA(Price, Period);
+		double[] EMA2=MovingAverage.SMMA(EMA, Period);
+		double[] EMA3=MovingAverage.SMMA(EMA2, Period);
 		
 		for(int i=0;i<Price.length;i++){
 			DEMA[i]=3*EMA[i]-3*EMA2[i]+EMA3[i];

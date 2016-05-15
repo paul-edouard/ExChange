@@ -42,7 +42,7 @@ public class DoubleLinearWeigthedMovingAverageComposite extends IndicatorComposi
 	@Override
 	protected void createSeries() {
 		double[] prices=rate.getHistoricalData().getPrices(HistoricalPoint.Type.CLOSE);
-		double[] computed=DoubleMovingAverage.computeLWMA(prices,
+		double[] computed=DoubleMovingAverage.DLWMA(prices,
 							paramMap.get(PERIOD).getIntegerValue());
 		//for(int i=0;i<ama.length;i++)
 		//	System.out.println(ama[i]);
