@@ -4,8 +4,6 @@ import java.util.List;
 
 import javax.persistence.Entity;
 
-import com.munch.exchange.model.analytic.indicator.trend.DoubleMovingAverage;
-import com.munch.exchange.model.analytic.indicator.trend.MovingAverage;
 import com.munch.exchange.model.analytic.indicator.trend.TripleMovingAverage;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
@@ -21,6 +19,11 @@ import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
 public class IbChartTripleMovingAverage extends IbChartIndicator {
 	
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1478325913606253711L;
+	
 	public static final String TMA="Triple Moving Average";
 	public static final String TEMA="Triple Exponential Moving Average";
 	public static final String TSMMA="Triple Smoothed Moving Average";
@@ -28,10 +31,6 @@ public class IbChartTripleMovingAverage extends IbChartIndicator {
 	public static final String PERIOD="Period";
 	public static final String PRICE="Price";
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -828064667118819957L;
 	
 	
 	public IbChartTripleMovingAverage() {

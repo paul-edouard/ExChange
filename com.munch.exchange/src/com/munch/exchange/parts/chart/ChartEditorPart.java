@@ -577,7 +577,7 @@ public class ChartEditorPart{
     	
     	secondPlotrenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator(
                 StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
-                new DecimalFormat("0.0"), new DecimalFormat("0.00")));
+                new DecimalFormat("0.0"), new DecimalFormat("0.0000")));
         
         if (secondPlotrenderer instanceof XYLineAndShapeRenderer) {
             XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) secondPlotrenderer;
@@ -591,8 +591,8 @@ public class ChartEditorPart{
         //Axis Profit
         secondAxis = new NumberAxis("Value");
         //rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
-        DecimalFormat format = new DecimalFormat("00.00");
-        secondAxis.setNumberFormatOverride(format);
+//        DecimalFormat format = new DecimalFormat("00.0000");
+//        secondAxis.setNumberFormatOverride(format);
         secondAxis.setAutoRangeIncludesZero(false);
         
         //Plot Profit

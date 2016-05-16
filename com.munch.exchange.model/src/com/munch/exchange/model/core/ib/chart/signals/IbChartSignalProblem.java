@@ -55,6 +55,10 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 				param.setValue(EncodingUtils.getInt(solution.getVariable(index)));
 				//System.out.println("Integer: " + param.getValue());
 				break;
+			case LIST:
+				param.setValue(EncodingUtils.getInt(solution.getVariable(index)));
+				//System.out.println("Integer: " + param.getValue());
+				break;
 
 			default:
 				break;
@@ -137,7 +141,9 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 			case INTEGER:
 				solution.setVariable(index, EncodingUtils.newInt((int)param.getMinValue(), (int)param.getMaxValue()));
 				break;
-
+			case LIST:
+				solution.setVariable(index, EncodingUtils.newInt((int)param.getMinValue(), (int)param.getMaxValue()));
+				break;
 			default:
 				break;
 			}
@@ -173,6 +179,13 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 				ivar.setValue(ThreadLocalRandom.current().nextInt(
 						(int) param.getMinValue(), (int) param.getMaxValue()));
 				solution.setVariable(index, ivar);
+				break;
+			case LIST:
+				RealVariable lvar = EncodingUtils.newInt(
+						(int) param.getMinValue(), (int) param.getMaxValue());
+				lvar.setValue(ThreadLocalRandom.current().nextInt(
+						(int) param.getMinValue(), (int) param.getMaxValue()));
+				solution.setVariable(index, lvar);
 				break;
 
 			default:
@@ -276,6 +289,11 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 				ivar.setValue(param.getValue());
 				solution.setVariable(index,ivar);
 				break;
+			case LIST:
+				RealVariable lvar=EncodingUtils.newInt((int)param.getMinValue(), (int)param.getMaxValue());
+				lvar.setValue(param.getValue());
+				solution.setVariable(index,lvar);
+				break;
 			//TODO create the String case
 
 			default:
@@ -320,6 +338,15 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 				c_i_p.setIndicator(null);
 				//System.out.println("Integer value: "+i_v.getValue());
 				parameters.add(c_i_p);
+				break;
+			case LIST:
+				RealVariable l_v=(RealVariable)solution.getVariable(index);
+				IbChartParameter c_l_p=param.copy();
+				c_l_p.setId(0);
+				c_l_p.setValue(l_v.getValue());
+				c_l_p.setIndicator(null);
+				//System.out.println("Integer value: "+i_v.getValue());
+				parameters.add(c_l_p);
 				break;
 			//TODO create the String case
 

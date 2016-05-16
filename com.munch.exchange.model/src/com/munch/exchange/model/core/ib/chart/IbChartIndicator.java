@@ -379,6 +379,19 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	}
 	
 	
+	protected void refreshSerieValues(String serieName, boolean resetValues, long[] times, double[] values, int validAtPosition){
+		
+		if(resetValues){
+			
+			this.getChartSerie(serieName).setPointValues(times,values);
+			this.getChartSerie(serieName).setValidAtPosition(validAtPosition);
+		}
+		else{
+			this.getChartSerie(serieName).addNewPointsOnly(times,values);
+		}
+		
+	}
+	
 	
 	
 }

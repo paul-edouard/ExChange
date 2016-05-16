@@ -7,13 +7,17 @@ import java.util.List;
 
 import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
+import com.munch.exchange.model.core.ib.chart.oscillators.IbChartMACD;
+import com.munch.exchange.model.core.ib.chart.oscillators.IbChartRSI;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
 import com.munch.exchange.model.core.ib.chart.signals.SuperTrendSignal;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartAdaptiveMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartBollingerBands;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDoubleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartFractalAdaptMovAver;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSuperTrend;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartTripleMovingAverage;
@@ -62,6 +66,9 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(movingAverage, IbChartSimpleMovingAverage.class);
 		addChartIndicator(movingAverage, IbChartDoubleMovingAverage.class);
 		addChartIndicator(movingAverage, IbChartTripleMovingAverage.class);
+		addChartIndicator(movingAverage, IbChartAdaptiveMovingAverage.class);
+		addChartIndicator(movingAverage, IbChartFractalAdaptMovAver.class);
+		
 		
 		//TREND LINE
 		IbChartIndicatorGroup trendLine=searchOrCreateSubGroup(trend,"Trend Line");
@@ -78,6 +85,8 @@ public class IbChartIndicatorFactory {
 		//================================
 		IbChartIndicatorGroup oscillator=searchOrCreateSubGroup(root,"Oscillator");
 		addChartIndicator(oscillator, IbChartAverageTrueRange.class);
+		addChartIndicator(oscillator, IbChartMACD.class);
+		addChartIndicator(oscillator, IbChartRSI.class);
 		
 		
 		//================================

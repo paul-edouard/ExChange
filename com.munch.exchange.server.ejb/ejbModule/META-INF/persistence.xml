@@ -51,6 +51,10 @@
 	<class>com.munch.exchange.model.core.ib.chart.values.IbChartHigh</class>
 	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartDoubleMovingAverage</class>
 	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartTripleMovingAverage</class>
+	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartAdaptiveMovingAverage</class>
+	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartFractalAdaptMovAver</class>
+	<class>com.munch.exchange.model.core.ib.chart.oscillators.IbChartMACD</class>
+	<class>com.munch.exchange.model.core.ib.chart.oscillators.IbChartRSI</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	
