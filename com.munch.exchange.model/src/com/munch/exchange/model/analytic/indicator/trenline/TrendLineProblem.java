@@ -1,4 +1,4 @@
-package com.munch.exchange.model.core.ib.chart.trend;
+package com.munch.exchange.model.analytic.indicator.trenline;
 
 import java.util.LinkedList;
 import java.util.List;

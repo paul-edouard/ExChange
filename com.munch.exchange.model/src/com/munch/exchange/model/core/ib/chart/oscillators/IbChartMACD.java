@@ -94,8 +94,7 @@ public class IbChartMACD extends IbChartIndicator {
 //		SIGNAL PERIOD
 		IbChartParameter param=new IbChartParameter(this, SIGNAL_PERIOD,ParameterType.INTEGER, 9, 1, 200, 0);
 		this.parameters.add(param);
-		
-		
+			
 //		MOVING AVERAGE ALGORITHM
 		IbChartParameter algo=new IbChartParameter(this, MOV_AVE_ALG,MACD.defaultAlgorithm,MACD.algorithms);
 		this.parameters.add(algo);

@@ -12,6 +12,7 @@ import com.munch.exchange.model.core.ib.chart.oscillators.IbChartRSI;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
+import com.munch.exchange.model.core.ib.chart.signals.RockwellLongSignal;
 import com.munch.exchange.model.core.ib.chart.signals.SuperTrendSignal;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartAdaptiveMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartBollingerBands;
@@ -20,6 +21,7 @@ import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartFractalAdaptMovAver;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSuperTrend;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartTripleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartUpwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.values.IbChartClose;
@@ -75,6 +77,8 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(trendLine, IbChartDownwardTrendLine.class);
 		addChartIndicator(trendLine, IbChartUpwardTrendLine.class);
 		addChartIndicator(trendLine, IbChartSuperTrend.class);
+		addChartIndicator(trendLine, IbChartTrendLine.class);
+		
 		
 //		BOLLINGER BAND
 		addChartIndicator(trend, IbChartBollingerBands.class);
@@ -101,6 +105,8 @@ public class IbChartIndicatorFactory {
 		//SUPER TREND SIGNAL
 		IbChartIndicatorGroup trendSignal =searchOrCreateSubGroup(signals,"Trend signal");
 		addChartIndicator(trendSignal, SuperTrendSignal.class);
+		addChartIndicator(trendSignal, RockwellLongSignal.class);
+		
 		
 		
 		

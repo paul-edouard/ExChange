@@ -124,6 +124,32 @@ package com.munch.exchange.model.analytic.indicator.trend;
  */
 public class MovingAverage {
 	
+	public static double[] compute(String algorithm,double[] prices, int N){
+		
+		if(algorithm.equals("EMA")){
+			return EMA(prices, N);
+		}
+		else if(algorithm.equals("LWMA")){
+			return LWMA(prices, N);
+		}
+		else if(algorithm.equals("DEMA")){
+			return DoubleMovingAverage.DEMA(prices, N);
+		}
+		else if(algorithm.equals("DLWMA")){
+			return DoubleMovingAverage.DLWMA(prices, N);
+		}
+		else if(algorithm.equals("TEMA")){
+			return TripleMovingAverage.TEMA(prices, N);
+		}
+		else if(algorithm.equals("TLWMA")){
+			return TripleMovingAverage.TLWMA(prices, N);
+		}
+		
+		return EMA(prices, N);
+		
+		
+	}
+	
 	
 	/**
 	 * Simple Moving Average (SMA)

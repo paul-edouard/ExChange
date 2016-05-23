@@ -11,6 +11,7 @@ import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.spi.AlgorithmFactory;
 import org.moeaframework.core.variable.RealVariable;
 
+import com.munch.exchange.model.analytic.indicator.trenline.TrendLineProblem;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.ExBar.DataType;

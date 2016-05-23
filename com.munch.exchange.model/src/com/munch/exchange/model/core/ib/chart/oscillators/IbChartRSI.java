@@ -93,7 +93,7 @@ public class IbChartRSI extends IbChartIndicator {
 		int validAtPosition=period;
 		
 		
-//		MACD
+//		RSI
 		double[] RSI=RelativeStrengthIndex.compute(prices,period);
 		
 		refreshSerieValues(RSI_Serie, 		reset, times, RSI, validAtPosition);
