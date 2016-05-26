@@ -314,12 +314,14 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 
 		
 		long SecondeDiff=from-lastBarTimeInSeconde;
+		if(SecondeDiff < 0 )return false;
+		
 		long TwoDaysSecond=172800;
 		
 //		log.info("SecondeDiff: "+SecondeDiff);
 		
 		
-		if(SecondeDiff < TwoDaysSecond)return true;
+		if(SecondeDiff < TwoDaysSecond )return true;
 		
 		
 		return false;
