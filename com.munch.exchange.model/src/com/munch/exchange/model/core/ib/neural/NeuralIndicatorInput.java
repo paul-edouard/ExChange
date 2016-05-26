@@ -15,6 +15,7 @@ import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.bar.BarType;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
@@ -33,6 +34,11 @@ public class NeuralIndicatorInput extends NeuralInput{
 	
 	@Enumerated(EnumType.STRING)
 	private WhatToShow type;
+	
+	@Enumerated(EnumType.STRING)
+	private BarType barType = BarType.TIME;
+	
+	private double barRange = 0;
 	
 	@OneToOne
 	@JoinColumn(name="CONTRACT_ID")
@@ -57,6 +63,8 @@ public class NeuralIndicatorInput extends NeuralInput{
 		
 		cp.size=this.size;
 		cp.type=this.type;
+		cp.barType=this.barType;
+		cp.barRange=this.barRange;
 		cp.contract=this.contract.copy();
 		cp.barContainer=this.barContainer.copy();
 		cp.indicator=this.indicator.copy();
@@ -188,6 +196,22 @@ public class NeuralIndicatorInput extends NeuralInput{
 
 	public void setBarContainer(BarContainer barContainer) {
 		this.barContainer = barContainer;
+	}
+
+	public BarType getBarType() {
+		return barType;
+	}
+
+	public void setBarType(BarType barType) {
+		this.barType = barType;
+	}
+
+	public double getRange() {
+		return barRange;
+	}
+
+	public void setRange(double range) {
+		this.barRange = range;
 	}
 
 	

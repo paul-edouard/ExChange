@@ -67,6 +67,7 @@ import org.jfree.data.xy.YIntervalSeriesCollection;
 import org.jfree.ui.LengthAdjustmentType;
 import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.TextAnchor;
+import org.jfree.util.Log;
 import org.jfree.util.ShapeUtilities;
 
 import com.ib.controller.Types.BarSize;
@@ -80,6 +81,7 @@ import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.bar.BarRecorder;
 import com.munch.exchange.model.core.ib.bar.BarRecorderListener;
+import com.munch.exchange.model.core.ib.bar.BarType;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
@@ -184,6 +186,7 @@ public class ChartEditorPart{
 	
 	private Combo comboBarSize;
 	private Combo comboWhatToShow;
+	private Combo comboBarType;
 	
 	@Inject
 	private Shell shell;
@@ -206,7 +209,7 @@ public class ChartEditorPart{
 		
 		
 		Composite composite = new Composite(parent, SWT.NONE);
-		GridLayout gl_composite = new GridLayout(2, false);
+		GridLayout gl_composite = new GridLayout(3, false);
 		gl_composite.horizontalSpacing = 1;
 		gl_composite.marginHeight = 1;
 		gl_composite.verticalSpacing = 1;
@@ -247,10 +250,51 @@ public class ChartEditorPart{
 				
 				comboWhatToShow.setEnabled(false);
 				comboBarSize.setEnabled(false);
+				comboBarType.setEnabled(false);
 				dataUpdater.schedule();
 			}
 		});
 		
+		comboBarType = new Combo(composite, SWT.NONE);
+		comboBarType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboBarType.setItems(BarType.toStringArray());
+		comboBarType.setText(BarType.TIME.name());
+		comboBarType.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				logger.info(comboBarType.getText());
+				BarType barType = BarType.valueOf(comboBarType.getText());
+				if(barType==barRecorder.getBartype())return;
+				
+				comboBarSize.removeAll();
+				if(barType == BarType.TIME){
+					for(String bSize:BarUtils.getAllBarSizesAsString())
+						comboBarSize.add(bSize);
+					comboBarSize.setText(comboBarSize.getItem(0));
+					
+					BarSize newBarSize=BarUtils.getBarSizeFromString(comboBarSize.getText());
+					barRecorder.setBarSize(newBarSize);
+					selectedGroup.setBarSize(newBarSize);
+					
+				}
+				else{
+					for(String bRange:BarUtils.getAllBarRangesForForex())
+						comboBarSize.add(bRange);
+					comboBarSize.setText(comboBarSize.getItem(4));
+					barRecorder.setRange(BarUtils.convertForexRange(comboBarSize.getText()));
+				}
+				
+				barRecorder.setBartype(barType);
+				selectedGroup.setBarType(barType);
+				
+				comboWhatToShow.setEnabled(false);
+				comboBarSize.setEnabled(false);
+				comboBarType.setEnabled(false);
+				barRecorder.clearAll();
+				dataUpdater.clear();
+				dataUpdater.schedule();
+				
+			}
+		});
 		
 		comboBarSize = new Combo(composite, SWT.NONE);
 		comboBarSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -260,14 +304,25 @@ public class ChartEditorPart{
 		comboBarSize.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				logger.info(comboBarSize.getText());
-				BarSize newBarSize=BarUtils.getBarSizeFromString(comboBarSize.getText());
-				if(newBarSize==barRecorder.getBarSize())return;
+				if(barRecorder.getBartype() == BarType.TIME){
+					BarSize newBarSize=BarUtils.getBarSizeFromString(comboBarSize.getText());
+					if(newBarSize==barRecorder.getBarSize())return;
 				
-				barRecorder.setBarSize(newBarSize);
-				selectedGroup.setBarSize(newBarSize);
+					barRecorder.setBarSize(newBarSize);
+					selectedGroup.setBarSize(newBarSize);
+				}
+				else{
+					double range = BarUtils.convertForexRange(comboBarSize.getText());
+					Log.info("Range: "+range);
+					if(range==barRecorder.getRange())return;
+					
+					barRecorder.setRange(range);
+					selectedGroup.setRange(range);
+				}
 				
 				comboWhatToShow.setEnabled(false);
 				comboBarSize.setEnabled(false);
+				comboBarType.setEnabled(false);
 				dataUpdater.schedule();
 			}
 		});
@@ -1594,11 +1649,77 @@ public class ChartEditorPart{
 				loadPastValues=true;
 		}
 		
+		public void clear(){
+			numberOfStarts=0;
+		}
+		
 		@Override
 		public IStatus run(IProgressMonitor monitor) {
 			numberOfStarts++;
-			//selectedGroup.removeAllListeners();
 			
+			if(barRecorder.getBartype() == BarType.TIME){
+				return loadTimeBar();
+			}
+			else{
+				System.out.println("Load range bars");
+				return loadRangeBar();
+			}
+			
+		
+//			return Status.OK_STATUS;
+		}
+		
+		private IStatus loadRangeBar(){
+			if(barRecorder.isEmpty() || numberOfStarts==1){
+				ExBar firstBar=hisDataProvider.getLastRangeBar(getBarContainer(), barRecorder.getRange());
+				to=firstBar.getTime();
+//				from=to-24*60*60*1000;
+				
+				from=to-24*60*60;
+				
+				Log.info("Loading Started!");
+				
+				List<ExBar> bars=hisDataProvider.getRangeBarsFromTo(getBarContainer(), barRecorder.getRange(), from, to);
+//				List<ExBar> newBars=hisDataProvider.getAll(getBarContainer(), barRecorder.getRange());
+				
+//				List<ExBar> toAdd=new LinkedList<ExBar>();
+//				if(newBars!=null && bars!=null && !bars.isEmpty() && !newBars.isEmpty()){
+//					for(ExBar bar:newBars){
+//						if(bars.get(bars.size()-1).getTime()<bar.getTime()){
+//							toAdd.add(bar);
+//						}
+//					}
+//					bars.addAll(toAdd);
+//				}
+				pastValueAvailable=true;
+				
+				Log.info("Loading finshed: nb. of bars: "+ bars.size());
+				barRecorder.addBars(bars);
+			}
+			else if(loadPastValues && pastValueAvailable){
+				to=barRecorder.getFirstReceivedBar().getTime();
+				from=to-24*60*60*1000;
+				//logger.info("Ask historical data: ");
+				//hisDataProvider.init();
+				List<ExBar> bars=hisDataProvider.getRangeBarsFromTo(getBarContainer(), barRecorder.getRange(), from, to);
+				
+				if(bars.size()==0){
+					pastValueAvailable=false;
+					//selectedGroup.addListener(indicatorGroupListener);
+					return Status.OK_STATUS;
+				}
+				barRecorder.addBars(bars);
+				loadPastValues=false;
+			}
+			
+			
+			
+			return Status.OK_STATUS;
+			
+		}
+		
+		
+		private IStatus loadTimeBar(){
 			if(barRecorder.isEmpty() || numberOfStarts==1){
 //				long intervall=BarUtils.getIntervallInSec(barRecorder.getBarSize());
 				ExBar firstBar=hisDataProvider.getLastTimeBar(getBarContainer(), barRecorder.getBarSize());
@@ -1608,9 +1729,8 @@ public class ChartEditorPart{
 //				from=firstBar.getTime();
 //				to=from-24*60*60;
 				
-				logger.info("From: "+BarUtils.format(from*1000));
-				logger.info("To: "+BarUtils.format(to*1000));
-				
+//				logger.info("From: "+BarUtils.format(from*1000));
+//				logger.info("To: "+BarUtils.format(to*1000));
 				
 //				to=new Date().getTime()/1000;
 //				from=to-loadingSize*intervall;
@@ -1649,9 +1769,9 @@ public class ChartEditorPart{
 				loadPastValues=false;
 			}
 			
-			//selectedGroup.addListener(indicatorGroupListener);
 			return Status.OK_STATUS;
 		}
+		
 		
 	}
 	

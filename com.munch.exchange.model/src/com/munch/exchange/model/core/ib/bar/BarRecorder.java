@@ -20,6 +20,9 @@ public class BarRecorder {
 	private BarSize barSize=BarSize._1_min;
 	private WhatToShow whatToShow=WhatToShow.MIDPOINT;
 	
+	private BarType bartype = BarType.TIME;
+	private double range = 0;
+	
 	
 	private List<BarRecorderListener> listeners=new LinkedList<BarRecorderListener>();
 	
@@ -120,7 +123,7 @@ public class BarRecorder {
 	
 	
 	
-	private void clearAll(){
+	public void clearAll(){
 		if(barMap.isEmpty())return;
 		barList.clear();
 		barMap.clear();
@@ -186,6 +189,25 @@ public class BarRecorder {
 			this.whatToShow = whatToShow;
 			clearAll();
 		}
+	}
+	
+
+
+	public BarType getBartype() {
+		return bartype;
+	}
+
+	public void setBartype(BarType bartype) {
+		this.bartype = bartype;
+	}
+	
+
+	public double getRange() {
+		return range;
+	}
+
+	public void setRange(double range) {
+		this.range = range;
 	}
 
 	public void addListener(BarRecorderListener listener){

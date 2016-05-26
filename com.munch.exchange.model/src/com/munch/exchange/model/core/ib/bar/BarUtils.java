@@ -102,6 +102,35 @@ public class BarUtils {
 		
 	}
 	
+	public static List<String> getAllBarRangesForForex(){
+		List<String> barRanges=new LinkedList<String>();
+		
+		barRanges.add("0.5 Pip");
+		barRanges.add("1 Pip");
+		barRanges.add("2 Pip");
+		barRanges.add("3 Pip");
+		barRanges.add("4 Pip");
+		barRanges.add("5 Pip");
+		barRanges.add("6 Pip");
+		barRanges.add("7 Pip");
+		barRanges.add("8 Pip");
+		barRanges.add("9 Pip");
+		barRanges.add("10 Pip");
+		barRanges.add("15 Pip");
+		barRanges.add("20 Pip");
+		barRanges.add("30 Pip");
+		return barRanges;
+	}
+	
+	public static double convertForexRange(String pip){
+		String[] tockens = pip.split(" ");
+		double range = Double.parseDouble(tockens[0]);
+		range /=10000.0;
+		return range;
+	}
+	
+	
+	
 	public static WhatToShow getWhatToShowFromString(String whatToShowStr){
 		if(whatToShowStr.equals("TRADES")){return WhatToShow.TRADES;}
 		else if(whatToShowStr.equals("MIDPOINT")){return WhatToShow.MIDPOINT;}
@@ -286,6 +315,9 @@ public class BarUtils {
 			rangeBar=integrateTimeValue(timeInMs+750, bar.getClose(),volumeRatio , range, rangeBar, convertedBars);
 		}
 		
+		if(!rangeBar.isCompleted()){
+			System.out.println("Bar is not completed: "+rangeBar.getClose());
+		}
 		convertedBars.add(rangeBar);
 		
 		return convertedBars;
@@ -316,6 +348,7 @@ public class BarUtils {
 		
 		rangeBar.setLow(Math.min(price, rangeBar.getLow()));
 		rangeBar.setHigh(Math.max(price, rangeBar.getHigh()));
+		rangeBar.setClose(price);
 		
 		return rangeBar;
 	}
@@ -326,6 +359,7 @@ public class BarUtils {
 		rangeBar.setOpen(openPrice);
 		rangeBar.setHigh(openPrice);
 		rangeBar.setLow(openPrice);
+		rangeBar.setClose(openPrice);
 		rangeBar.setCompleted(false);
 		return rangeBar;
 	}

@@ -20,6 +20,7 @@ import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.ComparableAttributes;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.bar.BarType;
 
 @Entity
 public class IbChartIndicatorGroup implements Serializable, Copyable<IbChartIndicatorGroup>,
@@ -45,6 +46,12 @@ ComparableAttributes<IbChartIndicatorGroup>{
 	
 	@Transient
 	private BarSize barSize;
+	
+	@Transient
+	private BarType barType = BarType.TIME;
+	
+	@Transient
+	private double range = 0;
 	
 	@OneToMany(mappedBy="group",cascade=CascadeType.ALL)
 	private List<IbChartIndicator> indicators;
@@ -305,6 +312,23 @@ ComparableAttributes<IbChartIndicatorGroup>{
 	public void setBarSize(BarSize barSize) {
 		this.barSize = barSize;
 	}
+
+	public BarType getBarType() {
+		return barType;
+	}
+
+	public void setBarType(BarType barType) {
+		this.barType = barType;
+	}
+
+	public double getRange() {
+		return range;
+	}
+
+	public void setRange(double range) {
+		this.range = range;
+	}
+	
 	
 	
 	

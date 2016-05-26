@@ -6,7 +6,7 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-01-06T15:28:40.057+0100")
+@Generated(value="Dali", date="2016-05-26T15:33:07.496+0200")
 @StaticMetamodel(IbChartIndicatorGroup.class)
 public class IbChartIndicatorGroup_ {
 	public static volatile SingularAttribute<IbChartIndicatorGroup, Integer> id;
