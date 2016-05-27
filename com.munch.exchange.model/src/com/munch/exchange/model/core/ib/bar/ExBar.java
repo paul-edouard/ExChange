@@ -163,6 +163,13 @@ public class ExBar implements Serializable {
 		return time;
 	}
 	
+	public long getTimeInSec() {
+		if(type==BarType.TIME)
+			return time;
+		
+		return time/1000;
+	}
+	
 	public long getTimeInMs() {
 		if(type==BarType.TIME)
 			return time*1000;

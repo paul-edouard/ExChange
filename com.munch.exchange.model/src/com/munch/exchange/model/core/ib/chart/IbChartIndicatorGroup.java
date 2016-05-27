@@ -155,6 +155,15 @@ ComparableAttributes<IbChartIndicatorGroup>{
 		return null;
 	}
 	
+	public List<IbChartIndicator> getAllIndicators(){
+		List<IbChartIndicator> allIndicators = new LinkedList<IbChartIndicator>();
+		for(IbChartIndicatorGroup child:this.getChildren()){
+			allIndicators.addAll(child.getAllIndicators());
+		}
+		allIndicators.addAll(indicators);
+		return allIndicators;
+	}
+	
 	public IbChartIndicatorGroup searchChild(String name){
 		for(IbChartIndicatorGroup child:children){
 			if(child.getName().equals(name))return child;

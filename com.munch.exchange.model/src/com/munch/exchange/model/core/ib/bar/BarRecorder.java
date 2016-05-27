@@ -51,6 +51,11 @@ public class BarRecorder {
 						localLastReceivedBar.getTime()<bar.getTime()){
 					localLastReceivedBar=bar;
 				}
+				
+//				if(firstReceivedBar!=null){
+//					System.out.println("firstReceivedBar: "+firstReceivedBar.getTime()+ ", bar: "+bar.getTime());
+//				}
+				
 				if(firstReceivedBar==null || firstReceivedBar.getTime()>bar.getTime()){
 					firstReceivedBar=bar;
 				}
@@ -128,6 +133,7 @@ public class BarRecorder {
 		barList.clear();
 		barMap.clear();
 		lastReceivedBar=null;
+		firstReceivedBar = null;
 		fireAllBarsCleared();
 	}
 	

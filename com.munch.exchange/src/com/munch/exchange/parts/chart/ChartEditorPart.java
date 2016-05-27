@@ -8,6 +8,7 @@ import java.awt.Shape;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,6 +58,7 @@ import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.chart.renderer.xy.XYAreaRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.ohlc.OHLCItem;
 import org.jfree.data.time.ohlc.OHLCSeries;
@@ -185,6 +187,7 @@ public class ChartEditorPart{
 	
 	
 	private Combo comboBarSize;
+	private ModifyListener comboBarSizeModifyListener;
 	private Combo comboWhatToShow;
 	private Combo comboBarType;
 	
@@ -265,12 +268,18 @@ public class ChartEditorPart{
 				BarType barType = BarType.valueOf(comboBarType.getText());
 				if(barType==barRecorder.getBartype())return;
 				
+
+				barRecorder.setBartype(barType);
+				selectedGroup.setBarType(barType);
+				
+				comboBarSize.removeModifyListener(comboBarSizeModifyListener);
 				comboBarSize.removeAll();
 				if(barType == BarType.TIME){
 					for(String bSize:BarUtils.getAllBarSizesAsString())
 						comboBarSize.add(bSize);
-					comboBarSize.setText(comboBarSize.getItem(0));
 					
+					
+					comboBarSize.setText(comboBarSize.getItem(0));
 					BarSize newBarSize=BarUtils.getBarSizeFromString(comboBarSize.getText());
 					barRecorder.setBarSize(newBarSize);
 					selectedGroup.setBarSize(newBarSize);
@@ -279,12 +288,13 @@ public class ChartEditorPart{
 				else{
 					for(String bRange:BarUtils.getAllBarRangesForForex())
 						comboBarSize.add(bRange);
+					
 					comboBarSize.setText(comboBarSize.getItem(4));
 					barRecorder.setRange(BarUtils.convertForexRange(comboBarSize.getText()));
+					
 				}
+				comboBarSize.addModifyListener(comboBarSizeModifyListener);
 				
-				barRecorder.setBartype(barType);
-				selectedGroup.setBarType(barType);
 				
 				comboWhatToShow.setEnabled(false);
 				comboBarSize.setEnabled(false);
@@ -292,7 +302,7 @@ public class ChartEditorPart{
 				barRecorder.clearAll();
 				dataUpdater.clear();
 				dataUpdater.schedule();
-				
+//				
 			}
 		});
 		
@@ -301,7 +311,21 @@ public class ChartEditorPart{
 		for(String bSize:BarUtils.getAllBarSizesAsString())
 			comboBarSize.add(bSize);
 		comboBarSize.setText(comboBarSize.getItem(0));
-		comboBarSize.addModifyListener(new ModifyListener() {
+		comboBarSizeModifyListener = createComboBarSizeModifyListener();
+		comboBarSize.addModifyListener(comboBarSizeModifyListener);
+		
+		addRealTimeBarListener();
+		addBarRecorderListener();
+		
+		
+		openChartTreeEditor();
+		chartGroupSelected();
+		
+		dataUpdater.schedule();
+	}
+	
+	private ModifyListener createComboBarSizeModifyListener(){
+		return new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				logger.info(comboBarSize.getText());
 				if(barRecorder.getBartype() == BarType.TIME){
@@ -323,18 +347,11 @@ public class ChartEditorPart{
 				comboWhatToShow.setEnabled(false);
 				comboBarSize.setEnabled(false);
 				comboBarType.setEnabled(false);
+				barRecorder.clearAll();
+				dataUpdater.clear();
 				dataUpdater.schedule();
 			}
-		});
-		
-		addRealTimeBarListener();
-		addBarRecorderListener();
-		
-		
-		openChartTreeEditor();
-		chartGroupSelected();
-		
-		dataUpdater.schedule();
+		};
 	}
 	
 	private void chartGroupSelected(){
@@ -419,6 +436,8 @@ public class ChartEditorPart{
 	
 	
 	private void setPeriod(double start, double end){
+		
+//		logger.info("Rest the period");
 		
 		double lower=dateAxis.getRange().getLowerBound();
 		double upper=dateAxis.getRange().getUpperBound();
@@ -1166,6 +1185,24 @@ public class ChartEditorPart{
     		this.addSerie(serie);
     	}
 	}
+	
+	private void recomputeAllActivatedIndicators(){
+		List<IbChartIndicator> allIndicators=selectedGroup.getAllIndicators();
+		for(IbChartIndicator indicator : allIndicators){
+			if(!indicator.isActivated())continue;
+			indicator.getMainChartSerie().clearPoints();
+		    
+		    clearAllSeriesOfIndicator(indicator);
+		    addAllSeriesOfIndicatior(indicator);
+		   
+		}
+		
+		isDirty();
+		    
+		refreshPlots();
+	}
+	
+	
     
     
 	//################################
@@ -1414,7 +1451,7 @@ public class ChartEditorPart{
 				
 				setPeriod(startP+(long)(trans), endP+(long)(trans));
 				
-				//logger.info("Rec: "+rec.width+", fac: "+fac+", trans: "+trans);
+//				logger.info("Rec: "+rec.width+", fac: "+fac+", trans: "+trans);
 				
 				//setPeriod(startP+(long)(trans), endP+(long)(trans));
 				//x=event.x;
@@ -1558,22 +1595,24 @@ public class ChartEditorPart{
 						*/
 						
 						for(ExBar bar:addedBars){
-							long interval=BarUtils.getIntervallInMs(barRecorder.getBarSize());
-							Second sec=new Second(new Date(bar.getTimeInMs() + interval/2));
-							if(candleStickSecondes.contains(sec.getFirstMillisecond()))continue;
+//							long interval=BarUtils.getIntervallInMs(barRecorder.getBarSize());
+//							Second sec=new Second(new Date(bar.getTimeInMs()/* + interval/2*/));
+							Millisecond ms = new Millisecond(new Date(bar.getTimeInMs()));
+							if(candleStickSecondes.contains(ms.getFirstMillisecond()))continue;
 							//if(LastSec!=null && LastSec.equals(sec))continue;
-							candleStickSeries.add(sec,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
-							candleStickSecondes.add(sec.getFirstMillisecond());
+							candleStickSeries.add(ms,bar.getOpen(), bar.getHigh(), bar.getLow(), bar.getClose());
+							candleStickSecondes.add(ms.getFirstMillisecond());
 							//candleStickSeries.getDataItem(candleStickSeries.getItemCount()-1)
 						}
 						
 						double diff=barRecorder.getLastReceivedBar().getTimeInMs()-dateAxis.getRange().getUpperBound();
-						//logger.info("Diff: "+diff);
+						
 						long interval=BarUtils.getIntervallInMs(barRecorder.getBarSize());
-						if(diff>=0 && diff<=interval){
-							dateAxis.setRange(dateAxis.getRange().getLowerBound(),
-									barRecorder.getLastReceivedBar().getTimeInMs()+interval/2);
-						}
+//						logger.info("Diff: "+diff+ "Interval: "+interval);
+//						if(diff>=0 && diff<=interval){
+//							dateAxis.setRange(dateAxis.getRange().getLowerBound(),
+//									barRecorder.getLastReceivedBar().getTimeInMs()+interval/2);
+//						}
 						
 						candleStickSeries.fireSeriesChanged();
 						threshold.setValue(lastBar.getClose());
@@ -1581,11 +1620,13 @@ public class ChartEditorPart{
 						//Refresh the series only if the more than one bar were added
 						//Otherwise the refresh will be called from the newCompletedBar function
 						if(addedBars.size()>1)
-							refreshSeries();
+							recomputeAllActivatedIndicators();
+//							refreshSeries();
 						
 						
 						comboWhatToShow.setEnabled(true);
 						comboBarSize.setEnabled(true);
+						comboBarType.setEnabled(true);
 						
 						
 					}
@@ -1633,7 +1674,7 @@ public class ChartEditorPart{
 		private long to;
 		private int numberOfStarts=0;
 		
-		private final static long loadingSize=1000;
+		private final static long loadingSize=2*60*60;
 		private boolean loadPastValues=false;
 		private boolean pastValueAvailable=true;
 		
@@ -1642,10 +1683,11 @@ public class ChartEditorPart{
 		}
 
 		public void checkSafetyInterval(){
-			double lastSec=barRecorder.getFirstReceivedBar().getTime();
+			double lastSec=barRecorder.getFirstReceivedBar().getTimeInSec();
 			double lowerRangeSec=dateAxis.getRange().getLowerBound()/1000L;
 			double diff=Math.abs(lowerRangeSec-lastSec);
-			if(diff<loadingSize/4)
+//			logger.info("Diff: "+diff);
+			if(diff<loadingSize)
 				loadPastValues=true;
 		}
 		
@@ -1661,7 +1703,7 @@ public class ChartEditorPart{
 				return loadTimeBar();
 			}
 			else{
-				System.out.println("Load range bars");
+//				System.out.println("Load range bars");
 				return loadRangeBar();
 			}
 			
@@ -1673,11 +1715,13 @@ public class ChartEditorPart{
 			if(barRecorder.isEmpty() || numberOfStarts==1){
 				ExBar firstBar=hisDataProvider.getLastRangeBar(getBarContainer(), barRecorder.getRange());
 				to=firstBar.getTime();
+				logger.info("To time: "+to);
+				Calendar day = BarUtils.getCurrentDayOf(firstBar.getTimeInMs());
 //				from=to-24*60*60*1000;
 				
-				from=to-24*60*60;
+				from=day.getTimeInMillis()/1000;
 				
-				Log.info("Loading Started!");
+//				Log.info("Loading Started!");
 				
 				List<ExBar> bars=hisDataProvider.getRangeBarsFromTo(getBarContainer(), barRecorder.getRange(), from, to);
 //				List<ExBar> newBars=hisDataProvider.getAll(getBarContainer(), barRecorder.getRange());
@@ -1693,21 +1737,32 @@ public class ChartEditorPart{
 //				}
 				pastValueAvailable=true;
 				
-				Log.info("Loading finshed: nb. of bars: "+ bars.size());
+//				logger.info("Loading finshed: nb. of bars: "+ bars.size());
+//				logger.info("bars: "+ bars.get(0).getTime());
+				barRecorder.clearAll();
 				barRecorder.addBars(bars);
 			}
 			else if(loadPastValues && pastValueAvailable){
-				to=barRecorder.getFirstReceivedBar().getTime();
-				from=to-24*60*60*1000;
-				//logger.info("Ask historical data: ");
-				//hisDataProvider.init();
-				List<ExBar> bars=hisDataProvider.getRangeBarsFromTo(getBarContainer(), barRecorder.getRange(), from, to);
+				logger.info("Try to load the past values: ");
 				
+				to=barRecorder.getFirstReceivedBar().getTimeInSec();
+				logger.info("To time: "+to);
+				
+				from=to-24*60*60;
+				List<ExBar> bars=hisDataProvider.getRangeBarsFromTo(getBarContainer(), barRecorder.getRange(), from, to);
+				int i=0;
+				while(bars.size()==0 && i < 10){
+					to-=24*60*60;
+					from-=24*60*60;	
+					bars=hisDataProvider.getRangeBarsFromTo(getBarContainer(), barRecorder.getRange(), from, to);
+					i++;
+				}
 				if(bars.size()==0){
 					pastValueAvailable=false;
 					//selectedGroup.addListener(indicatorGroupListener);
 					return Status.OK_STATUS;
 				}
+				logger.info("Loading finshed: nb. of bars: "+ bars.size());
 				barRecorder.addBars(bars);
 				loadPastValues=false;
 			}
