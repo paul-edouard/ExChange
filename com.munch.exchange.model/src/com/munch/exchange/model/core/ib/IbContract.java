@@ -67,7 +67,7 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	
 	
 	private long startTradeTimeInMs=0;
-	private long endTradeTimeInMs=0;
+	private long endTradeTimeInMs=22L*60L*60L*1000L+45L*60L*1000L;
 	
 	private int    conId;
 	private String symbol;

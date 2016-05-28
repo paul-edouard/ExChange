@@ -80,6 +80,8 @@ import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.ModifyEvent;
 
 
 public class SignalOptimizationEditorPart implements SelectionListener, 
@@ -335,6 +337,8 @@ IbChartSignalOptimizationControllerListener{
 	
 	private HashMap<String,LinkedList<ExBar>> backTestingBarsMap=new HashMap<>();
 	private HashMap<String,LinkedList<ExBar>> optimizationBarsMap=new HashMap<>();
+	private HashMap<String,LinkedList<ExBar>> allBarsMap=new HashMap<>();
+	
 	
 	LinkedList<String> sortedAlgorithmNames;
 	
@@ -378,7 +382,6 @@ IbChartSignalOptimizationControllerListener{
 	private Composite compositeCommand;
 	private Composite compositeChart;
 	private Group groupControls;
-	private Label lblBarSize;
 	private Composite compositeMain;
 	private Group grpDisplayedResults;
 	private Table tableResults;
@@ -427,6 +430,7 @@ IbChartSignalOptimizationControllerListener{
 	private TableColumn tblclmnStatus;
 	private TableColumn tblclmnId;
 	private Button btnCalculateStatistics;
+	private Combo comboBarType;
 	
 	public SignalOptimizationEditorPart() {
 	}
@@ -456,9 +460,26 @@ IbChartSignalOptimizationControllerListener{
 		groupControls.setLayout(new GridLayout(2, false));
 		groupControls.setText("Controls");
 		
-		lblBarSize = new Label(groupControls, SWT.NONE);
-		lblBarSize.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblBarSize.setText("Bar size:");
+		comboBarType = new Combo(groupControls, SWT.NONE);
+		comboBarType.setItems(new String[] {"Bar Size", "Bar Range"});
+		comboBarType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboBarType.select(0);
+		comboBarType.setText("Bar Size");
+		comboBarType.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent arg0) {
+				comboBarSize.removeAll();
+				if(comboBarType.getText().equals("Bar Size")){
+					for(String bSize:BarUtils.getAllBarSizesAsString())
+						comboBarSize.add(bSize);
+					comboBarSize.setText(comboBarSize.getItem(0));
+				}
+				else{
+					for(String bSize:BarUtils.getAllBarRangesForForex())
+						comboBarSize.add(bSize);
+					comboBarSize.setText(comboBarSize.getItem(4));
+				}
+			}
+		});
 		
 		comboBarSize = new Combo(groupControls, SWT.NONE);
 		comboBarSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -535,7 +556,8 @@ IbChartSignalOptimizationControllerListener{
 			public void widgetSelected(SelectionEvent e) {
 				logger.info("Click on btnRun");
 				
-				OptJobStater stater=new OptJobStater(comboBarSize.getText(),
+				OptJobStater stater=new OptJobStater(comboBarType.getText(),
+													comboBarSize.getText(),
 													comboAlgorithm.getText(),
 													comboReportType.getText(),
 													spinnerMaxNFE.getSelection(),
@@ -1288,7 +1310,8 @@ IbChartSignalOptimizationControllerListener{
   	//######################################
 	private class OptJobStater extends Job{
 		
-		private String bazSize;
+		private String barType;
+		private String barSize;
 		private String algorithmName;
 		private String reportType;
 		private int numberOfEvaluations;
@@ -1297,11 +1320,15 @@ IbChartSignalOptimizationControllerListener{
 		private IbChartSignal jobSignal;
 		
 		
-		public OptJobStater(String bazSize, String algorithmName, String reportType,
+		public OptJobStater(String barType, String barSize, String algorithmName, String reportType,
 				int numberOfEvaluations, int numberOfSeeds, int percentOfDataRequired) {
+			
 			super("Signal Optimization job Starter: "+signal.getName());
 			
-			this.bazSize=bazSize;
+			
+			this.barType=barType;
+			this.barSize = barSize;
+//			this.barSize = barSize;e
 			this.algorithmName=algorithmName;
 			this.reportType=reportType;
 			this.numberOfEvaluations=numberOfEvaluations;
@@ -1372,8 +1399,14 @@ IbChartSignalOptimizationControllerListener{
 			//Collect the Data
 			logger.info("Collect the data");
 			if(allCollectedBars==null || allCollectedBars.isEmpty()){
-				allCollectedBars=hisDataProvider.getAllTimeBars(getBarContainer(),
-						BarUtils.getBarSizeFromString(bazSize));
+				if(this.barType.equals("Bar Size")){
+					allCollectedBars=hisDataProvider.getAllTimeBars(getBarContainer(),
+						BarUtils.getBarSizeFromString(barSize));
+				}
+				else{
+					allCollectedBars = hisDataProvider.getAllRangeBars(getBarContainer(),
+							BarUtils.convertForexRange(barSize));
+				}
 //				Collections.sort(allCollectedBars, new ExBarComparator());
 				//TODO Remove this!
 //				while (allCollectedBars.size()>1000) {
@@ -1385,24 +1418,25 @@ IbChartSignalOptimizationControllerListener{
 			
 			//Create the Data Set
 			logger.info("Create the Data Set");
-			createTheDataSet(bazSize, percentOfDataRequired);
+			createTheDataSet(barSize, percentOfDataRequired);
 			
 			//Set the parameters
-			jobSignal.setOptimizationBars(optimizationBarsMap.get(bazSize+percentOfDataRequired));
+			jobSignal.setOptimizationBars(optimizationBarsMap.get(barSize+percentOfDataRequired));
+			jobSignal.setAllBars(allBarsMap.get(barSize));
 			
 			jobSignal.setAlgorithmName(algorithmName);
 			jobSignal.setNumberOfEvaluations(numberOfEvaluations);
 			jobSignal.setNumberOfSeeds(numberOfSeeds);
-			jobSignal.setBarSize(bazSize);
+			jobSignal.setBarSize(barSize);
 			
 			signal.setAlgorithmName(algorithmName);
 			signal.setNumberOfEvaluations(numberOfEvaluations);
 			signal.setNumberOfSeeds(numberOfSeeds);
-			signal.setBarSize(bazSize);
+			signal.setBarSize(barSize);
 			
 			//Prepare the blocks
 			jobSignal.setBatch(true);
-			jobSignal.createBlocks(jobSignal.getOptimizationBars());
+//			jobSignal.createBlocks(jobSignal.getOptimizationBars());
 			
 			
 			//Start the optimization
@@ -1421,7 +1455,16 @@ IbChartSignalOptimizationControllerListener{
 			
 			LinkedList<LinkedList<ExBar>> allBlocks=BarUtils.splitBarListInDayBlocks(allCollectedBars);
 			LinkedList<LinkedList<ExBar>> optBlocks=BarUtils.collectPercentageOfBlocks(allBlocks,percentOfDataRequired);
-		
+			
+//			Save all bars
+			LinkedList<ExBar> allBars = new  LinkedList<ExBar>();
+			for(LinkedList<ExBar> bars:allBlocks){
+				allBars.addAll(bars);
+			}
+			Collections.sort(allBars, new ExBarComparator());
+			allBarsMap.put(bazSize, allBars);
+			
+//			Save the optimization bars
 			LinkedList<ExBar> optimizationBars=new LinkedList<ExBar>();
 			HashSet<Long> timeSet=new HashSet<>();
 			for(LinkedList<ExBar> bars:optBlocks){
@@ -1432,7 +1475,7 @@ IbChartSignalOptimizationControllerListener{
 			Collections.sort(optimizationBars, new ExBarComparator());
 			optimizationBarsMap.put(bazSize+percentOfDataRequired, optimizationBars);
 			
-			
+//			Save the back testing bars
 			LinkedList<ExBar> backTestingBars=new LinkedList<ExBar>();
 			logger.info("Total Nb. of  data: "+allCollectedBars.size());
 			for(ExBar bar:allCollectedBars){

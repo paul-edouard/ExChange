@@ -118,7 +118,45 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 	@Override
 	public List<ExBar> getAllRangeBars(BarContainer container, double range) {
 		if(beanRemote==null)init();
-		return beanRemote.getService().getAllRangeBars(container,range);
+//		return beanRemote.getService().getAllRangeBars(container,range);
+		
+		
+//		Start of loading all bars, split the query in order to avoid java heap space error
+		long nbOfSplits=40;
+		ExBar lastTimeBar=beanRemote.getService().getLastRangeBar(container,range);
+		ExBar firstTimeBar=beanRemote.getService().getFirstRangeBar(container,range);
+		long lastBarTime=lastTimeBar.getTime();
+		long firstBarTime=firstTimeBar.getTime();
+		long inc=lastTimeBar.getTime()-firstTimeBar.getTime();
+		inc/=nbOfSplits;
+		if(inc==0)
+			inc=1;
+		
+		
+//		int cores = Runtime.getRuntime().availableProcessors();
+		
+		List<ExBar> collectedBars=new LinkedList<ExBar>();
+		while(firstBarTime < lastBarTime){
+			long from=firstBarTime;
+			long to=firstBarTime+inc;
+			
+			log.info("From: "+BarUtils.format(from*1000)+ ", "+"To: "+BarUtils.format(to*1000));
+//			log.info("To: "+BarUtils.format(to*1000));
+			
+//			if(cores < 10 && (lastBarTime-to) > 10*inc){
+//				log.info("Small power cores: "+cores+" skip the loading");
+//			}
+//			else{
+				collectedBars.addAll(beanRemote.getService().getRangeBarsFromTo(container,range,from,to));
+//			}
+			
+			firstBarTime+=inc;
+		}
+		
+		return collectedBars;
+		
+		
+		
 	}
 
 	@Override

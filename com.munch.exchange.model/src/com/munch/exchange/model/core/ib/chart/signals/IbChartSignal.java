@@ -48,6 +48,9 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	private LinkedList<ExBar> optimizationBars;
 	
 	@Transient
+	private LinkedList<ExBar> allBars;
+	
+	@Transient
 	private LinkedList<LinkedList<ExBar>> optimizationBlocks;
 	
 	@Transient
@@ -196,9 +199,10 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 	}
 	
-	public abstract void computeSignalPointFromBarBlock(List<ExBar> bars, boolean reset);
+	public abstract void computeSignalPoint(List<ExBar> bars, boolean reset);
 	
 	
+	/*
 	public  LinkedList<LinkedList<ExBar>> createBlocks(List<ExBar> bars){
 		if(!batch){
 			if(optimizationBlocks!=null)
@@ -222,6 +226,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 		return blocks;
 	}
+	*/
 	
 	@Override
 	protected void computeSeriesPointValues(List<ExBar> bars, boolean reset) {
@@ -237,7 +242,12 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 //		Split the received bars in blocks
 //		startTimeCounter();
-		LinkedList<LinkedList<ExBar>> blocks=createBlocks(bars);
+		
+//		LinkedList<LinkedList<ExBar>> blocks=createBlocks(bars);
+//		TODO
+		LinkedList<LinkedList<ExBar>> blocks = null;
+		
+		
 //		stopTimeCounter("Split the received bars in blocks");
 		
 //		startTimeCounter();
@@ -246,7 +256,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 //			System.out.println("Compute Block: "+(i++)+", Size: "+block.size());
 			
 			//Calculate the signal of the isolated block
-			computeSignalPointFromBarBlock(block, reset);
+			computeSignalPoint(block, reset);
 			
 			if(!batch && block==blocks.getLast())
 				break;
@@ -601,10 +611,20 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	public void setNumberOfSeeds(int numberOfSeeds) {
 		this.numberOfSeeds = numberOfSeeds;
 	}
-
-
 	
 	
+	public void setAllBars(LinkedList<ExBar> allBars) {
+		this.allBars = allBars;
+	}
+	
+	
+
+
+	public LinkedList<ExBar> getAllBars() {
+		return allBars;
+	}
+
+
 	public synchronized void setOptimizationBlocks(
 			LinkedList<LinkedList<ExBar>> optimizationBlocks) {
 		this.optimizationBlocks = optimizationBlocks;

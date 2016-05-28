@@ -37,7 +37,8 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 	public IbChartSignalProblem(IbChartSignal chartSignal) {
 		super(chartSignal.getParameters().size(), NB_OF_OBJECTIVES);
 		this.chartSignal=chartSignal;
-		this.bars=chartSignal.getOptimizationBars();
+//		this.bars=chartSignal.getOptimizationBars();
+		this.bars=chartSignal.getAllBars();
 	}
 
 	private void setChartSignalParameters(IbChartSignal signal,

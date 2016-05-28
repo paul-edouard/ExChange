@@ -147,7 +147,7 @@ public class RockwellLongSignal extends IbChartSignal {
 	
 
 	@Override
-	public void computeSignalPointFromBarBlock(List<ExBar> bars, boolean reset) {
+	public void computeSignalPoint(List<ExBar> bars, boolean reset) {
 		
 
 		double[] prices=getPrices(bars,PARAM_PRICE);

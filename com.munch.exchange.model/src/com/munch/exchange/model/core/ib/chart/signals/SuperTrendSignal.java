@@ -83,7 +83,7 @@ public class SuperTrendSignal extends IbChartSignal {
 	}
 
 	@Override
-	public void computeSignalPointFromBarBlock(List<ExBar> bars, boolean reset) {
+	public void computeSignalPoint(List<ExBar> bars, boolean reset) {
 		
 		long[] times=BarUtils.getTimeArray(bars);
 		
