@@ -121,7 +121,12 @@ public class NeuralIndicatorInput extends NeuralInput{
 	}
 	
 	public String getCollectedBarKey(){
-		return this.getBarContainer().getId()+"_"+this.getSize().toString();
+		if(this.getBarType() == BarType.TIME){
+			return this.getBarContainer().getId()+"_"+this.getBarType().name()+"_"+this.getSize().toString();
+		}
+		else{
+			return this.getBarContainer().getId()+"_"+this.getBarType().name()+"_"+String.valueOf(this.getRange());
+		}
 	}
 	
 	@Override

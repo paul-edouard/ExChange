@@ -14,6 +14,7 @@ import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.bar.BarType;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
@@ -52,14 +53,16 @@ public class NeuralConfigurationInputTreeDropAdapter extends ViewerDropAdapter {
 		String[] lines=data.toString().split("\n");
 		for(int i=0;i<lines.length;i++){
 			String[] csvTockens=lines[i].split(";");
-			if(csvTockens.length!=5)continue;
+			if(csvTockens.length!=7)continue;
 			
 			String contractId=csvTockens[0];
 			String containerId=csvTockens[1];
-			String barSizeStr=csvTockens[2];
+			String barType = csvTockens[2];
+			String barSizeStr=csvTockens[3];
+			String barRange=csvTockens[4];
 			logger.info(barSizeStr);
-			String indicatorId=csvTockens[3];
-			String serieName=csvTockens[4];
+			String indicatorId=csvTockens[5];
+			String serieName=csvTockens[6];
 			
 //			Search the contract
 			IbContract contract=contractProvider.getContract(Integer.valueOf(contractId));
@@ -102,7 +105,9 @@ public class NeuralConfigurationInputTreeDropAdapter extends ViewerDropAdapter {
 			neuralInput.setBarContainer(barContainer);
 			neuralInput.setIndicator(indicatorCopy);
 			indicatorCopy.setNeuralIndicatorInput(neuralInput);
+			neuralInput.setBarType(BarType.fromString(barType));
 			neuralInput.setSize(batSize);
+			neuralInput.setRange(Double.parseDouble(barRange));
 			neuralInput.setType(barContainer.getType());
 			
 //			Add the first input component

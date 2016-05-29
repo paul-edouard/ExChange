@@ -100,6 +100,7 @@ import com.munch.exchange.model.core.ib.IbContract.TradingPeriod;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.bar.BarType;
 import com.munch.exchange.model.core.ib.neural.BestGenomes;
 import com.munch.exchange.model.core.ib.neural.GenomeEvaluation;
 import com.munch.exchange.model.core.ib.neural.IsolatedNeuralArchitecture;
@@ -996,10 +997,14 @@ public class NeuralConfigurationEditorPart {
 //				logger.info("Bar Container: "+nii.getBarContainer().getId()+", size: "+nii.getSize().toString());
 //				logger.info("Bar Container: "+nii.getBarContainer().getType()+", size: "+nii.getSize().toString());
 //				
-				
-				List<ExBar> bars=historicalDataProvider.getAllTimeBars(nii.getBarContainer(), nii.getSize());
-					
-				neuralConfiguration.getNeuralInputsBarsCollector().put(key, bars);
+				if(nii.getBarType()==BarType.TIME){
+					List<ExBar> bars=historicalDataProvider.getAllTimeBars(nii.getBarContainer(), nii.getSize());
+					neuralConfiguration.getNeuralInputsBarsCollector().put(key, bars);
+				}
+				else{
+					List<ExBar> bars=historicalDataProvider.getAllRangeBars(nii.getBarContainer(), nii.getRange());
+					neuralConfiguration.getNeuralInputsBarsCollector().put(key, bars);
+				}
 
 			}
 		}
@@ -2416,7 +2421,11 @@ public class NeuralConfigurationEditorPart {
 		public String getText(Object element) {
 			if(element instanceof NeuralIndicatorInput){
 				NeuralIndicatorInput nii=(NeuralIndicatorInput) element;
-				return String.valueOf(nii.getSize().toString());
+				if(nii.getBarType()==BarType.TIME){
+					return BarType.TIME.name()+ ": "+String.valueOf(nii.getSize().toString());
+				}else{
+					return BarType.RANGE.name()+ ": "+String.valueOf(nii.getRange());
+				}
 			}
 			else if(element instanceof NeuralInputComponent){
 				NeuralInputComponent nic=(NeuralInputComponent) element;

@@ -11,6 +11,7 @@ import com.munch.exchange.model.core.ExchangeRate;
 import com.munch.exchange.model.core.chart.ChartIndicator;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.bar.BarType;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 
@@ -62,15 +63,17 @@ public class ChartTreeDragSourceListener implements DragSourceListener  {
 	    	else if(array[j] instanceof IbChartSerie){
 	    		IbChartSerie serie=(IbChartSerie) array[j];
 	    		IbChartIndicator indicator=serie.getIndicator();
-	    		BarSize barSize=indicator.getGroup().getRoot().getBarSize();
+	    		BarType barType = indicator.getGroup().getRoot().getBarType();
+	    		BarSize barSize = indicator.getGroup().getRoot().getBarSize();
+	    		double barRange = indicator.getGroup().getRoot().getRange();
 	    		BarContainer container=indicator.getGroup().getRoot().getContainer();
 	    		IbContract contract=container.getContract();
 	    		
 	    		if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
 	    			//Contract
-	    			dataString += contract.getId()+";"+container.getId()+";"+
-	    			barSize.toString()+";"+indicator.getId()+";"+serie.getName();
-//	    			System.out.println("dataString="+dataString);
+	    			dataString += contract.getId()+";"+container.getId()+";"+barType.toString()+";"+
+	    			barSize.toString()+";"+barRange+";"+indicator.getId()+";"+serie.getName();
+	    			System.out.println("dataString="+dataString);
 	    		}
 	    		
 	    	}
