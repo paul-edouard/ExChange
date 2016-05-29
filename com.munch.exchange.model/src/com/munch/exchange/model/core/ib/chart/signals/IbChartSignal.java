@@ -118,6 +118,8 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			this.volume=in_s.volume;
 			this.contract=in_s.getContract();
 			this.optimizationBlocks=in_s.optimizationBlocks;
+			this.optimizationBars=in_s.optimizationBars;
+			
 			
 			this.optimizedSet=new LinkedList<IbChartSignalOptimizedParameters>();
 			for(IbChartSignalOptimizedParameters parameters:in_s.optimizedSet){
@@ -236,47 +238,31 @@ public abstract class IbChartSignal extends IbChartIndicator {
 				serie.clearPoints();
 			}
 		}
-		
 		if(bars==null || bars.size()==0)return;
 		
 		
-//		Split the received bars in blocks
-//		startTimeCounter();
-		
-//		LinkedList<LinkedList<ExBar>> blocks=createBlocks(bars);
-//		TODO
-		LinkedList<LinkedList<ExBar>> blocks = null;
-		
-		
-//		stopTimeCounter("Split the received bars in blocks");
-		
-//		startTimeCounter();
-//		int i=0;
-		for(List<ExBar> block:blocks){
-//			System.out.println("Compute Block: "+(i++)+", Size: "+block.size());
-			
-			//Calculate the signal of the isolated block
-			computeSignalPoint(block, reset);
-			
-			if(!batch && block==blocks.getLast())
-				break;
-			
-			//Set the last signal to neutral in order to avoid wrong long position
-			if(this.getSignalSerie().getPoints().size()>0)
-				this.getSignalSerie().getPoints().get(this.getSignalSerie().getPoints().size()-1).setValue(this.getNeutralSignal());
-		}
-//		stopTimeCounter("Calculate the signal of the isolated blocks");
+//		################################
+//		Compute the signal for all bars
+//		################################
+		startTimeCounter();
+		computeSignalPoint(bars, reset);
+		stopTimeCounter("compute Signal for all points");
 		
 		//Return if the list is empty just in case of the problems with empty data
 		if(this.getSignalSerie().getPoints().isEmpty())return;
 		
-		//Clean the Signal Series close the empty block with 0
-//		startTimeCounter();
-//		long interval=bars.get(0).getIntervallInSec();
-		cleanSignalSerie();
-//		stopTimeCounter("Clean the Signal Series close the empty block with 0");
 		
+//		################################
+		//Clean the Signal Series close the empty block with 0
+//		################################
+		startTimeCounter();
+		cleanSignalSerie();
+		stopTimeCounter("Clean the Signal Series according to the start and and of trading times");
+		
+		
+//		################################
 		//Create the Signal Map
+//		################################
 //		startTimeCounter();
 		HashMap<Long, IbChartPoint> signalMap=new HashMap<Long, IbChartPoint>();
 		for(IbChartPoint point:this.getSignalSerie().getPoints()){
@@ -284,19 +270,31 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		}
 //		stopTimeCounter("Create the Signal Map");
 		
-		//Create the Profit Serie
-//		startTimeCounter();
-		createProfitAndRiskSeries(bars, reset, signalMap, this.volume);
-//		stopTimeCounter("Create the Profit Serie");
 		
+//		################################
+		//Create the Profit Serie
+//		################################
+		startTimeCounter();
+//		If the batch modus is selected then the profit will be calculated only for the bars of the optimized set
+		if(batch){
+			createProfitAndRiskSeries(optimizationBars, reset, signalMap, this.volume);
+		}
+		else{
+			createProfitAndRiskSeries(bars, reset, signalMap, this.volume);
+		}
+		stopTimeCounter("Create the Profit Serie");
+		
+		
+//		################################
 		//update the performance metrics
-//		startTimeCounter();
+//		################################
+		startTimeCounter();
 		if(reset && !batch){
 			if(performanceMetrics==null)
 				performanceMetrics=new PerformanceMetrics();
 			performanceMetrics.calculateMetricsForSignal(bars, signalMap,this.getCommission(),volume);
 		}
-//		stopTimeCounter("update the performance metrics");
+		stopTimeCounter("update the performance metrics");
 		
 	}
 	
@@ -440,32 +438,62 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		if(this.getSignalSerie().getPoints().size()==0)
 			return;
 		
-		/*
-		List<IbChartPoint> points=this.getSignalSerie().getPoints();
 		
-		long timePoint=points.get(0).getTime();
-		long lastTimePoint=points.get(points.size()-1).getTime();
-		
-		//Fill the empty intervals with the neutral value
-		long intervalInMs=interval*1000;
-		while(timePoint<lastTimePoint){
-			timePoint+=intervalInMs;
-			if(this.getSignalSerie().containsPoint(timePoint))continue;
-			
-			this.getSignalSerie().addPoint(timePoint, this.getNeutralSignal());
-			
-		}
-		this.getSignalSerie().sortPoints();
-		*/
 		//Clean signal Serie for contract that allow only long position
 		IbContract contract= getContract();
 		if(contract==null)return;
-		if(contract.allowShortPosition())return;
 		
+		Calendar date= Calendar.getInstance();
+		
+		long startTradingTime = contract.getStartTradeTimeInMs();
+		date.setTimeInMillis(startTradingTime);
+		
+		int startTradingHour = date.get(Calendar.HOUR_OF_DAY)-1;
+		int startTradingMinute = date.get(Calendar.MINUTE);
+		int startTradingSecond = date.get(Calendar.SECOND);
+		
+		long endTradingTime = contract.getEndTradeTimeInMs();
+		date.setTimeInMillis(endTradingTime);
+		
+		int endTradingHour = date.get(Calendar.HOUR_OF_DAY)-1;
+		int endTradingMinute = date.get(Calendar.MINUTE);
+		int endTradingSecond = date.get(Calendar.SECOND);
+		
+
 		for(IbChartPoint point:this.getSignalSerie().getPoints()){
-			if(point.getValue()<this.getNeutralSignal()){
-				point.setValue(this.getNeutralSignal());
+			if(point.getValue()==this.getNeutralSignal())continue;
+			
+			date.setTimeInMillis(point.getTime());
+			
+			int hour =  date.get(Calendar.HOUR_OF_DAY);
+			if(hour > startTradingHour && hour < endTradingHour){
+				continue;
 			}
+			else if(hour < startTradingHour || hour > endTradingHour){
+				point.setValue(this.getNeutralSignal());
+				continue;
+			}
+			
+			int minute = date.get(Calendar.MINUTE);
+			if(hour == startTradingHour && minute < startTradingMinute){
+				point.setValue(this.getNeutralSignal());
+				continue;
+			}
+			else if(hour == endTradingHour && minute > endTradingMinute){
+				point.setValue(this.getNeutralSignal());
+				continue;
+			}
+			
+			int second = date.get(Calendar.SECOND);
+			if(hour == startTradingHour && minute == startTradingMinute && second < startTradingSecond){
+				point.setValue(this.getNeutralSignal());
+				continue;
+			}
+			else if(hour == endTradingHour && minute == endTradingMinute && second > endTradingSecond){
+				point.setValue(this.getNeutralSignal());
+				continue;
+			}
+			
 		}
 		
 		
