@@ -119,6 +119,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			this.contract=in_s.getContract();
 			this.optimizationBlocks=in_s.optimizationBlocks;
 			this.optimizationBars=in_s.optimizationBars;
+			this.allBars=in_s.allBars;
 			
 			
 			this.optimizedSet=new LinkedList<IbChartSignalOptimizedParameters>();
@@ -239,14 +240,16 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			}
 		}
 		if(bars==null || bars.size()==0)return;
-		
+//		if(batch){
+//			bars=allBars;
+//		}
 		
 //		################################
 //		Compute the signal for all bars
 //		################################
-		startTimeCounter();
+//		startTimeCounter();
 		computeSignalPoint(bars, reset);
-		stopTimeCounter("compute Signal for all points");
+//		stopTimeCounter("compute Signal for all points");
 		
 		//Return if the list is empty just in case of the problems with empty data
 		if(this.getSignalSerie().getPoints().isEmpty())return;
@@ -255,9 +258,9 @@ public abstract class IbChartSignal extends IbChartIndicator {
 //		################################
 		//Clean the Signal Series close the empty block with 0
 //		################################
-		startTimeCounter();
+//		startTimeCounter();
 		cleanSignalSerie();
-		stopTimeCounter("Clean the Signal Series according to the start and and of trading times");
+//		stopTimeCounter("Clean the Signal Series according to the start and and of trading times");
 		
 		
 //		################################
@@ -274,27 +277,27 @@ public abstract class IbChartSignal extends IbChartIndicator {
 //		################################
 		//Create the Profit Serie
 //		################################
-		startTimeCounter();
+//		startTimeCounter();
 //		If the batch modus is selected then the profit will be calculated only for the bars of the optimized set
-		if(batch){
+		if(batch && optimizationBars!=null){
 			createProfitAndRiskSeries(optimizationBars, reset, signalMap, this.volume);
 		}
 		else{
 			createProfitAndRiskSeries(bars, reset, signalMap, this.volume);
 		}
-		stopTimeCounter("Create the Profit Serie");
+//		stopTimeCounter("Create the Profit Serie");
 		
 		
 //		################################
 		//update the performance metrics
 //		################################
-		startTimeCounter();
+//		startTimeCounter();
 		if(reset && !batch){
 			if(performanceMetrics==null)
 				performanceMetrics=new PerformanceMetrics();
 			performanceMetrics.calculateMetricsForSignal(bars, signalMap,this.getCommission(),volume);
 		}
-		stopTimeCounter("update the performance metrics");
+//		stopTimeCounter("update the performance metrics");
 		
 	}
 	
@@ -304,7 +307,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		
 		//Creation & Initialization of the variables
 		ExBar previewBar=bars.get(0);
-		//System.out.println("Bar: "+previewBar.getTime());
+//		System.out.println("Bar: "+previewBar.getTimeInMs());
 		double previewSignal=signalMap.get(previewBar.getTimeInMs()).getValue();
 		double profit=0.0;
 		double risk=0.0;

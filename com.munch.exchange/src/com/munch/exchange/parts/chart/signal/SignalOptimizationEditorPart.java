@@ -1454,8 +1454,7 @@ IbChartSignalOptimizationControllerListener{
 		if(!optimizationBarsMap.containsKey(bazSize+percentOfDataRequired)){
 			
 			LinkedList<LinkedList<ExBar>> allBlocks=BarUtils.splitBarListInDayBlocks(allCollectedBars);
-			LinkedList<LinkedList<ExBar>> optBlocks=BarUtils.collectPercentageOfBlocks(allBlocks,percentOfDataRequired);
-			
+		
 //			Save all bars
 			LinkedList<ExBar> allBars = new  LinkedList<ExBar>();
 			for(LinkedList<ExBar> bars:allBlocks){
@@ -1463,6 +1462,9 @@ IbChartSignalOptimizationControllerListener{
 			}
 			Collections.sort(allBars, new ExBarComparator());
 			allBarsMap.put(bazSize, allBars);
+			
+			
+			LinkedList<LinkedList<ExBar>> optBlocks=BarUtils.collectPercentageOfBlocks(allBlocks,percentOfDataRequired);
 			
 //			Save the optimization bars
 			LinkedList<ExBar> optimizationBars=new LinkedList<ExBar>();
@@ -1537,7 +1539,7 @@ IbChartSignalOptimizationControllerListener{
 				//Opt. Bars
 //				logger.info("Calculate Statistics Opt. Bars!");
 				signal.setBatch(true);
-				signal.setOptimizationBlocks(null);
+				signal.setOptimizationBars(null);
 				signal.compute(optimizationBarsMap.get(bazSize+percentOfDataRequired));
 				double[] profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
 				optParam.setOptBenefit(profitAndRisk[0]);
@@ -1547,7 +1549,7 @@ IbChartSignalOptimizationControllerListener{
 				
 //				logger.info("Calculate Statistics Back Testing. Bars!");
 				signal.setBatch(true);
-				signal.setOptimizationBlocks(null);
+				signal.setOptimizationBars(null);
 				signal.compute(backTestingBarsMap.get(bazSize+percentOfDataRequired));
 				profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
 				optParam.setBackTestBenefit(profitAndRisk[0]);

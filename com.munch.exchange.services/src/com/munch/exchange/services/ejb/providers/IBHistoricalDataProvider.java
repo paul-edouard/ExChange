@@ -1,5 +1,6 @@
 package com.munch.exchange.services.ejb.providers;
 
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -125,32 +126,45 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 		long nbOfSplits=40;
 		ExBar lastTimeBar=beanRemote.getService().getLastRangeBar(container,range);
 		ExBar firstTimeBar=beanRemote.getService().getFirstRangeBar(container,range);
-		long lastBarTime=lastTimeBar.getTime();
-		long firstBarTime=firstTimeBar.getTime();
-		long inc=lastTimeBar.getTime()-firstTimeBar.getTime();
-		inc/=nbOfSplits;
-		if(inc==0)
-			inc=1;
+		
+		Calendar currentDay=BarUtils.getCurrentDayOf(firstTimeBar.getTimeInMs());
+		Calendar nextDay=BarUtils.addOneDayTo(currentDay);
+		
+		
+//		long lastBarTime=lastTimeBar.getTime();
+//		long firstBarTime=firstTimeBar.getTime();
+//		long inc=lastTimeBar.getTime()-firstTimeBar.getTime();
+//		inc/=nbOfSplits;
+//		if(inc==0)
+//			inc=1;
 		
 		
 //		int cores = Runtime.getRuntime().availableProcessors();
 		
 		List<ExBar> collectedBars=new LinkedList<ExBar>();
-		while(firstBarTime < lastBarTime){
-			long from=firstBarTime;
-			long to=firstBarTime+inc;
+		while(nextDay.getTimeInMillis() < lastTimeBar.getTimeInMs()){
 			
-			log.info("From: "+BarUtils.format(from*1000)+ ", "+"To: "+BarUtils.format(to*1000));
+			nextDay=BarUtils.addOneDayTo(currentDay);
+			
+//			long from=firstBarTime;
+//			long to=firstBarTime+inc;
+			
+			log.info("From: "+BarUtils.format(currentDay.getTimeInMillis())+
+					", "+"To: "+BarUtils.format(nextDay.getTimeInMillis()));
 //			log.info("To: "+BarUtils.format(to*1000));
 			
 //			if(cores < 10 && (lastBarTime-to) > 10*inc){
 //				log.info("Small power cores: "+cores+" skip the loading");
 //			}
 //			else{
-				collectedBars.addAll(beanRemote.getService().getRangeBarsFromTo(container,range,from,to));
+			
+			long from=currentDay.getTimeInMillis()/1000L;
+			long to=nextDay.getTimeInMillis()/1000L;
+			
+			collectedBars.addAll(beanRemote.getService().getRangeBarsFromTo(container,range,from,to));
 //			}
 			
-			firstBarTime+=inc;
+			currentDay = nextDay;
 		}
 		
 		return collectedBars;
