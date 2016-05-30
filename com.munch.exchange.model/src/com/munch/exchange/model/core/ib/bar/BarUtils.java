@@ -129,6 +129,14 @@ public class BarUtils {
 		return range;
 	}
 	
+	public static String convertForexRange(double range){
+		String pip = String.valueOf(range)+ " Pip";
+		
+		return pip;
+	}
+	
+	
+	
 	
 	
 	public static WhatToShow getWhatToShowFromString(String whatToShowStr){

@@ -23,6 +23,7 @@ import com.munch.exchange.model.core.ib.bar.seconde.SecondeAskBar;
 import com.munch.exchange.model.core.ib.bar.seconde.SecondeBidBar;
 import com.munch.exchange.model.core.ib.bar.seconde.SecondeMidPointBar;
 import com.munch.exchange.model.core.ib.bar.seconde.SecondeTradesBar;
+import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 
 public class HistoricalBarPersistance {
 	
@@ -293,7 +294,10 @@ public class HistoricalBarPersistance {
 	
 	
 	private static long getContainerId(EntityManager em, BarContainer container, TimeBarSize barType){
-		BarContainerInterface containerIt=getContainer(em, container, barType);
+		
+		BarContainer localContainer = em.find(BarContainer.class, container.getId());
+		
+		BarContainerInterface containerIt=getContainer(em, localContainer, barType);
 		if(containerIt!=null)return containerIt.getId();
 		
 		return 0;

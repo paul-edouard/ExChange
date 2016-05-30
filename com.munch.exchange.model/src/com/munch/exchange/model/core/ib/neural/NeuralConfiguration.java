@@ -24,6 +24,7 @@ import javax.persistence.Transient;
 import com.ib.controller.Types.BarSize;
 import com.munch.exchange.model.core.ib.Copyable;
 import com.munch.exchange.model.core.ib.IbContract;
+import com.munch.exchange.model.core.ib.bar.BarType;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
 
@@ -70,7 +71,12 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 //	Training Data
 	
 	@Enumerated(EnumType.STRING)
+	private BarType barType=BarType.TIME;
+	
+	@Enumerated(EnumType.STRING)
 	private BarSize size=BarSize._1_min;
+	
+	private double range = 0;
 	
 	private int percentOfTrainingData=60;
 	
@@ -635,6 +641,30 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		return adpatedTimesMap;
 	}
 	
+
+
+
+	public BarType getBarType() {
+		return barType;
+	}
+
+
+
+	public void setBarType(BarType barType) {
+		this.barType = barType;
+	}
+
+
+
+	public double getRange() {
+		return range;
+	}
+
+
+
+	public void setRange(double range) {
+		this.range = range;
+	}
 
 
 

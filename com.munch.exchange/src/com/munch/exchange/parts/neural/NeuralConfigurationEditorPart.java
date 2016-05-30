@@ -121,6 +121,8 @@ import com.munch.exchange.model.core.ib.neural.NeuralTrainingElement;
 import com.munch.exchange.model.core.ib.neural.NeuralInputComponent.ComponentType;
 import com.munch.exchange.services.ejb.interfaces.IIBHistoricalDataProvider;
 import com.munch.exchange.services.ejb.interfaces.IIBNeuralProvider;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.ModifyEvent;
 
 public class NeuralConfigurationEditorPart {
 	
@@ -191,6 +193,7 @@ public class NeuralConfigurationEditorPart {
 	private MenuItem mntmEvaluateArchitecture;
 	private MenuItem mntmTrainAll;
 	private MenuItem mntmIsolate;
+	private Combo comboBarType;
 	
 	
 	@Inject
@@ -482,9 +485,25 @@ public class NeuralConfigurationEditorPart {
 		compositeDataSetCommandItems.setLayout(new GridLayout(5, false));
 		compositeDataSetCommandItems.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
-		Label lblBarSize = new Label(compositeDataSetCommandItems, SWT.NONE);
-		lblBarSize.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblBarSize.setText("Bar size: ");
+		comboBarType = new Combo(compositeDataSetCommandItems, SWT.NONE);
+		comboBarType.setItems(BarType.toStringArray());
+		comboBarType.setText(BarType.TIME.name());
+		comboBarType.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent arg0) {
+				comboBarSize.redraw();
+				if(comboBarType.getText().equals(BarType.TIME.name())){
+					for(String bSize:BarUtils.getAllBarSizesAsString())
+						comboBarSize.add(bSize);
+					comboBarSize.select(0);
+				}
+				else{
+					for(String bSize:BarUtils.getAllBarRangesForForex())
+						comboBarSize.add(bSize);
+					comboBarSize.select(4);
+				}
+			}
+		});
+		comboBarType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		comboBarSize = new Combo(compositeDataSetCommandItems, SWT.NONE);
 		comboBarSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -505,6 +524,8 @@ public class NeuralConfigurationEditorPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
+//				TODO Save the bat type ad the bar size of the configuration
+				
 				SearchAndDistribute job=new SearchAndDistribute();
 				job.schedule();
 				
@@ -514,6 +535,7 @@ public class NeuralConfigurationEditorPart {
 //				distributeDataFunc();
 			}
 		});
+		
 		btnSearch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		btnSearch.setText("Search And Distribute");
 		
@@ -868,7 +890,12 @@ public class NeuralConfigurationEditorPart {
 		neuralProvider.loadTrainingData(neuralConfiguration);
 		
 //		Initialization of the bar size
-		comboBarSize.setText(neuralConfiguration.getSize().toString());
+		if(neuralConfiguration.getBarType()==BarType.TIME){
+			comboBarSize.setText(neuralConfiguration.getSize().toString());
+		}
+		else{
+			comboBarSize.setText(BarUtils.convertForexRange(neuralConfiguration.getRange()));
+		}
 		comboBarSize.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
 		
 //		Initialization of the reference data type
@@ -994,14 +1021,16 @@ public class NeuralConfigurationEditorPart {
 				if(neuralConfiguration.getNeuralInputsBarsCollector().containsKey(key))
 					continue;
 				
-//				logger.info("Bar Container: "+nii.getBarContainer().getId()+", size: "+nii.getSize().toString());
-//				logger.info("Bar Container: "+nii.getBarContainer().getType()+", size: "+nii.getSize().toString());
 //				
 				if(nii.getBarType()==BarType.TIME){
+					logger.info("Bar Container: "+nii.getBarContainer().getType()+", size: "+nii.getSize().toString());
+
 					List<ExBar> bars=historicalDataProvider.getAllTimeBars(nii.getBarContainer(), nii.getSize());
 					neuralConfiguration.getNeuralInputsBarsCollector().put(key, bars);
 				}
 				else{
+					logger.info("Bar Container: "+nii.getBarContainer().getType()+", size: "+nii.getRange());
+
 					List<ExBar> bars=historicalDataProvider.getAllRangeBars(nii.getBarContainer(), nii.getRange());
 					neuralConfiguration.getNeuralInputsBarsCollector().put(key, bars);
 				}

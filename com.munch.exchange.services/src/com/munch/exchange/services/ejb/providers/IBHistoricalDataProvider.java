@@ -123,48 +123,38 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 		
 		
 //		Start of loading all bars, split the query in order to avoid java heap space error
-		long nbOfSplits=40;
 		ExBar lastTimeBar=beanRemote.getService().getLastRangeBar(container,range);
 		ExBar firstTimeBar=beanRemote.getService().getFirstRangeBar(container,range);
 		
 		Calendar currentDay=BarUtils.getCurrentDayOf(firstTimeBar.getTimeInMs());
 		Calendar nextDay=BarUtils.addOneDayTo(currentDay);
-		
-		
-//		long lastBarTime=lastTimeBar.getTime();
-//		long firstBarTime=firstTimeBar.getTime();
-//		long inc=lastTimeBar.getTime()-firstTimeBar.getTime();
-//		inc/=nbOfSplits;
-//		if(inc==0)
-//			inc=1;
-		
-		
-//		int cores = Runtime.getRuntime().availableProcessors();
+				
+		int cores = Runtime.getRuntime().availableProcessors();
 		
 		List<ExBar> collectedBars=new LinkedList<ExBar>();
 		while(nextDay.getTimeInMillis() < lastTimeBar.getTimeInMs()){
 			
 			nextDay=BarUtils.addOneDayTo(currentDay);
 			
-//			long from=firstBarTime;
-//			long to=firstBarTime+inc;
-			
-			log.info("From: "+BarUtils.format(currentDay.getTimeInMillis())+
-					", "+"To: "+BarUtils.format(nextDay.getTimeInMillis()));
-//			log.info("To: "+BarUtils.format(to*1000));
-			
-//			if(cores < 10 && (lastBarTime-to) > 10*inc){
-//				log.info("Small power cores: "+cores+" skip the loading");
-//			}
-//			else{
 			
 			long from=currentDay.getTimeInMillis()/1000L;
 			long to=nextDay.getTimeInMillis()/1000L;
 			
-			collectedBars.addAll(beanRemote.getService().getRangeBarsFromTo(container,range,from,to));
-//			}
-			
 			currentDay = nextDay;
+			
+			if(cores < 10){
+				long diff = lastTimeBar.getTimeInMs() - nextDay.getTimeInMillis();
+				if(diff > 40L*24L*60L*60L*1000L)
+					continue;
+				
+			}
+
+			log.info("From: "+BarUtils.format(currentDay.getTimeInMillis())+
+					", "+"To: "+BarUtils.format(nextDay.getTimeInMillis()));
+
+			collectedBars.addAll(beanRemote.getService().getRangeBarsFromTo(container,range,from,to));
+			
+			
 		}
 		
 		return collectedBars;

@@ -60,7 +60,7 @@ public class NeuralConfigurationInputTreeDropAdapter extends ViewerDropAdapter {
 			String barType = csvTockens[2];
 			String barSizeStr=csvTockens[3];
 			String barRange=csvTockens[4];
-			logger.info(barSizeStr);
+//			logger.info(barSizeStr);
 			String indicatorId=csvTockens[5];
 			String serieName=csvTockens[6];
 			
@@ -79,7 +79,7 @@ public class NeuralConfigurationInputTreeDropAdapter extends ViewerDropAdapter {
 			
 //			Search the bar size
 			BarSize batSize=BarUtils.getBarSizeFromString(barSizeStr);
-			logger.info("bar Size:"+batSize.toString());
+//			logger.info("bar Size:"+batSize.toString());
 			
 //			Search the indicator
 			IbChartIndicator indicator=barContainer.getIndicatorGroup().searchIndicator(Integer.valueOf(indicatorId));
