@@ -100,6 +100,13 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 		beanRemote.getService().removeNeuralConfiguration(contractId, configuration);
 	}
 	
+	
+	@Override
+	public NeuralConfiguration update(NeuralConfiguration arg0) {
+		if(beanRemote==null)init();
+		return beanRemote.getService().update(arg0);
+	}
+	
 
 	//Neural Inputs
 
@@ -307,6 +314,8 @@ public class IBNeuralProvider implements IIBNeuralProvider {
 		if(beanRemote==null)init();
 		beanRemote.getService().removeIsolatedNeuralArchitecture(configurationId,architectureId);
 	}
+
+	
 	
 	
 

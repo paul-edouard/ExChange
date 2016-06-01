@@ -198,7 +198,6 @@ public class NeuralConfigurationEditorPart {
 	
 	@Inject
 	public NeuralConfigurationEditorPart() {
-		//TODO Your code here
 	}
 	
 	@PostConstruct
@@ -490,7 +489,7 @@ public class NeuralConfigurationEditorPart {
 		comboBarType.setText(BarType.TIME.name());
 		comboBarType.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent arg0) {
-				comboBarSize.redraw();
+				comboBarSize.removeAll();
 				if(comboBarType.getText().equals(BarType.TIME.name())){
 					for(String bSize:BarUtils.getAllBarSizesAsString())
 						comboBarSize.add(bSize);
@@ -523,9 +522,7 @@ public class NeuralConfigurationEditorPart {
 		btnSearch.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
-//				TODO Save the bat type ad the bar size of the configuration
-				
+//				TODO Start the job
 				SearchAndDistribute job=new SearchAndDistribute();
 				job.schedule();
 				
@@ -888,6 +885,8 @@ public class NeuralConfigurationEditorPart {
 		btnEdit.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
 		
 		neuralProvider.loadTrainingData(neuralConfiguration);
+		
+		comboBarType.setText(neuralConfiguration.getBarType().name());
 		
 //		Initialization of the bar size
 		if(neuralConfiguration.getBarType()==BarType.TIME){
@@ -2208,13 +2207,24 @@ public class NeuralConfigurationEditorPart {
 
 		public SearchAndDistribute() {
 			super("Search and distribute");
-			readGuiData();
+			readAndSaveGuiData();
 		}
 		
-		private void readGuiData(){
+		private void readAndSaveGuiData(){
+			
+//			TODO Save the bar type and the bar size of the configuration
+			BarType bartype = BarType.fromString(comboBarType.getText());
+			neuralConfiguration.setBarType(bartype);
+			
+			if(bartype == BarType.TIME){
 //			Save the bar Size
-			neuralConfiguration.setSize(BarUtils.getBarSizeFromString(comboBarSize
+				neuralConfiguration.setSize(BarUtils.getBarSizeFromString(comboBarSize
 					.getText()));
+			}
+			else{
+				neuralConfiguration.setRange(BarUtils.convertForexRange(comboBarSize
+					.getText()));
+			}
 			
 //			Save the reference data
 			if (comboReferenceData.getSelectionIndex() == 0) {
@@ -2235,6 +2245,9 @@ public class NeuralConfigurationEditorPart {
 			} else if (comboSplitStrategy.getSelectionIndex() == 1) {
 				neuralConfiguration.setSplitStrategy(SplitStrategy.DAY);
 			}
+			
+			neuralProvider.update(neuralConfiguration);
+			
 			
 			progressBarDataSet.setMaximum(8);
 			progressBarDataSet.setSelection(0);
@@ -2266,32 +2279,67 @@ public class NeuralConfigurationEditorPart {
 			List<BarContainer> containers = historicalDataProvider
 					.getAllBarContainers(neuralConfiguration.getContract());
 			
-			for (BarContainer container : containers) {
+			if (neuralConfiguration.getBarType() == BarType.TIME) {
+				for (BarContainer container : containers) {
 
-				// Collect the mid point data
-				if (/*neuralConfiguration.getReferenceData() == ReferenceData.MID_POINT
-						&& */container.getType() == WhatToShow.MIDPOINT) {
-					List<ExBar> allBars = historicalDataProvider.getAllTimeBars(
-							container, neuralConfiguration.getSize());
-					neuralConfiguration.setAllMidPointBars(allBars);
+					// Collect the mid point data
+					if (container.getType() == WhatToShow.MIDPOINT) {
+						List<ExBar> allBars = historicalDataProvider.getAllTimeBars(container,
+								neuralConfiguration.getSize());
+						neuralConfiguration.setAllMidPointBars(allBars);
+					}
+
+					// Collect the Ask Data
+					if (container.getType() == WhatToShow.ASK) {
+						List<ExBar> allBars = historicalDataProvider.getAllTimeBars(container,
+								neuralConfiguration.getSize());
+						neuralConfiguration.setAllAskBars(allBars);
+					}
+
+					// Collect the Bid Data
+					if (container.getType() == WhatToShow.BID) {
+						List<ExBar> allBars = historicalDataProvider.getAllTimeBars(container,
+								neuralConfiguration.getSize());
+						neuralConfiguration.setAllBidBars(allBars);
+					}
+
 				}
-
-				// Collect the Ask Data
-				if (/*neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
-						&& */container.getType() == WhatToShow.ASK) {
-					List<ExBar> allBars = historicalDataProvider.getAllTimeBars(
-							container, neuralConfiguration.getSize());
-					neuralConfiguration.setAllAskBars(allBars);
+			}
+			else{
+				
+				for (BarContainer container : containers) {
+					// Collect the mid point data
+					if (container.getType() == WhatToShow.MIDPOINT) {
+						logger.info("Search the range mid point bars");
+						List<ExBar> allBars = historicalDataProvider.getAllRangeBars(
+								container, neuralConfiguration.getRange());
+						neuralConfiguration.setAllMidPointBars(allBars);
+						break;
+					}
+					
 				}
+				
+//				Collect the Ask and Bid bars exactly for the same time rate as for the midpoint data
 
-				// Collect the Bid Data
-				if (/*neuralConfiguration.getReferenceData() == ReferenceData.BID_AND_ASK
-						&& */container.getType() == WhatToShow.BID) {
-					List<ExBar> allBars = historicalDataProvider.getAllTimeBars(
-							container, neuralConfiguration.getSize());
-					neuralConfiguration.setAllBidBars(allBars);
+				for (BarContainer container : containers) {
+					// Collect the Ask Data
+					if (container.getType() == WhatToShow.ASK) {
+						logger.info("Search the corresponding ask bars");
+						List<ExBar> allBars = historicalDataProvider.getCorrespondingRangeBars(
+								container, neuralConfiguration.getAllMidPointBars());
+						neuralConfiguration.setAllAskBars(allBars);
+					}
+
+					// Collect the Bid Data
+					if (container.getType() == WhatToShow.BID) {
+						logger.info("Search the corresponding bid bars");
+						List<ExBar> allBars = historicalDataProvider.getCorrespondingRangeBars(
+								container, neuralConfiguration.getAllMidPointBars());
+						neuralConfiguration.setAllBidBars(allBars);
+					}
 				}
-
+				
+				
 			}
 			
 			updateProgressBarDataSet();

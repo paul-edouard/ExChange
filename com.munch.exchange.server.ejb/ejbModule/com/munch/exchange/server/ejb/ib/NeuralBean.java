@@ -435,6 +435,13 @@ public class NeuralBean implements NeuralBeanRemote{
 		
 		return architectures;
 	}
+
+
+	@Override
+	public NeuralConfiguration update(NeuralConfiguration arg0) {
+		em.merge(arg0);
+		return arg0;
+	}
 	
 
 }

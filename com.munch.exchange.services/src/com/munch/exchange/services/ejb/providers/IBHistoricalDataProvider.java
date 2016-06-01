@@ -3,6 +3,7 @@ package com.munch.exchange.services.ejb.providers;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.logging.Logger;
 
 import com.ib.controller.Types.BarSize;
@@ -158,10 +159,97 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 		}
 		
 		return collectedBars;
-		
-		
-		
 	}
+	
+	@Override
+	public List<ExBar> getCorrespondingRangeBars(BarContainer container, List<ExBar> masterBars) {
+		if(beanRemote==null)init();
+		if(masterBars.isEmpty())return null;
+		
+//		Start of loading all bars, split the query in order to avoid java heap space error
+		ExBar lastTimeBar=masterBars.get(masterBars.size()-1);
+		ExBar firstTimeBar=masterBars.get(0);
+		
+		Calendar currentDay=BarUtils.getCurrentDayOf(firstTimeBar.getTimeInMs());
+		Calendar nextDay=BarUtils.addOneDayTo(currentDay);
+				
+		int cores = Runtime.getRuntime().availableProcessors();
+		
+		ListIterator<ExBar> mbItr = masterBars.listIterator();
+		ExBar mbBar=mbItr.next();
+//		ExBar next_mbBar = null;
+//		if(mbItr.hasNext())
+//			next_mbBar=mbItr.next();
+		
+		List<ExBar> collectedBars=new LinkedList<ExBar>();
+		while(nextDay.getTimeInMillis() < lastTimeBar.getTimeInMs()){
+			
+			nextDay=BarUtils.addOneDayTo(currentDay);
+			
+			long from=currentDay.getTimeInMillis()/1000L;
+			long to=nextDay.getTimeInMillis()/1000L;
+			
+			currentDay = nextDay;
+			
+			if(cores < 10){
+				long diff = lastTimeBar.getTimeInMs() - nextDay.getTimeInMillis();
+				if(diff > 40L*24L*60L*60L*1000L)
+					continue;
+				
+			}
+
+			log.info("From: "+BarUtils.format(currentDay.getTimeInMillis())+
+					", "+"To: "+BarUtils.format(nextDay.getTimeInMillis()));
+			
+			
+			List<ExBar> secondeBars = beanRemote.getService().getTimeBarsFromTo(container, BarSize._1_secs, from,to);
+			if(secondeBars.isEmpty())continue;
+			
+			while(mbBar.getTimeInMs() < secondeBars.get(0).getTimeInMs() && mbItr.hasNext()){
+				mbBar=mbItr.next();
+			}
+			
+			ExBar firstBar=secondeBars.get(0);
+			ExBar syncRangeBar = BarUtils.createNewRangeBar(firstBar.getTimeInMs(), firstBar.getOpen());
+			
+			for(ExBar sec_bar:secondeBars){
+				if( mbBar==null || sec_bar.getTimeInMs() < mbBar.getTimeInMs()){
+					syncRangeBar.setClose(sec_bar.getClose());
+					if(syncRangeBar.getHigh() < sec_bar.getHigh()){
+						syncRangeBar.setHigh(sec_bar.getHigh());
+					}
+					if(syncRangeBar.getLow() > sec_bar.getLow()){
+						syncRangeBar.setLow(sec_bar.getLow());
+					}
+					syncRangeBar.setVolume(syncRangeBar.getVolume()+sec_bar.getVolume());
+				}
+				else{
+					syncRangeBar.setCompleted(true);
+					collectedBars.add(syncRangeBar);
+					syncRangeBar = BarUtils.createNewRangeBar(mbBar.getTimeInMs(), sec_bar.getOpen());
+					syncRangeBar.setClose(sec_bar.getClose());
+					syncRangeBar.setHigh(sec_bar.getHigh());
+					syncRangeBar.setLow(sec_bar.getLow());
+					syncRangeBar.setVolume(sec_bar.getVolume());
+					
+					if(mbItr.hasNext()){
+						mbBar = mbItr.next();
+					}
+					else{
+						mbBar = null;
+					}
+				}
+				
+			}
+			collectedBars.add(syncRangeBar);
+						
+		}
+		
+		return collectedBars;
+
+	}
+	
+	
 
 	@Override
 	public ExBar getFirstRangeBar(BarContainer container, double range) {
@@ -186,6 +274,8 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 		if(beanRemote==null)init();
 		return beanRemote.getService().getAllRealTimeBars(arg0,arg1);
 	}
+
+	
 
 	
 

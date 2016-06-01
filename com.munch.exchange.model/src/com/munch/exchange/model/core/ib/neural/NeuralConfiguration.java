@@ -76,7 +76,7 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	@Enumerated(EnumType.STRING)
 	private BarSize size=BarSize._1_min;
 	
-	private double range = 0;
+	private double barRange = 0;
 	
 	private int percentOfTrainingData=60;
 	
@@ -657,13 +657,13 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 
 
 	public double getRange() {
-		return range;
+		return barRange;
 	}
 
 
 
 	public void setRange(double range) {
-		this.range = range;
+		this.barRange = range;
 	}
 
 

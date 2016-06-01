@@ -361,7 +361,7 @@ public class BarUtils {
 		return rangeBar;
 	}
 	
-	private static ExBar createNewRangeBar(long timeInMs, double openPrice){
+	public static ExBar createNewRangeBar(long timeInMs, double openPrice){
 		ExBar rangeBar=new ExBar(BarType.RANGE);
 		rangeBar.setTime(timeInMs);
 		rangeBar.setOpen(openPrice);

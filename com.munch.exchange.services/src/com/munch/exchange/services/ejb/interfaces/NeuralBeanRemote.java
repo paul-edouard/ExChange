@@ -21,6 +21,7 @@ public interface NeuralBeanRemote {
 	public List<NeuralConfiguration> loadNeuralConfigurations(int contractId);
 	public NeuralConfiguration addNeuralConfiguration(int contractId,String configurationName);
 	public void removeNeuralConfiguration(int contractId,NeuralConfiguration configuration);
+	public NeuralConfiguration update(NeuralConfiguration configuration);
 	
 	//Neural Inputs
 	public List<NeuralInput> loadNeuralInputs(int configurationId);
