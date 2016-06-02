@@ -138,6 +138,9 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		
 		c.name=name;
 		c.creationDate=creationDate;
+		c.barType = barType;
+		c.size = size;
+		c.barRange = barRange;
 		c.contract=contract.copy();
 		
 		/*
@@ -298,21 +301,24 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 //		}
 		
 		//Search the block with the maximum of values
-		int maxSize=Integer.MIN_VALUE;
+		long maxSize=Integer.MIN_VALUE;
 		for(LinkedList<ExBar> block:allBlocksTemp){
 			System.out.println("NeuralConfiguration-> Block with size: "+block.size()+
 					", start: "+BarUtils.format(block.getFirst().getTimeInMs())+
 					", end: "+BarUtils.format(block.getLast().getTimeInMs()));
 			
+			long size = block.getLast().getTimeInMs() - block.getFirst().getTimeInMs();
 			
-			if(block.size()>maxSize)
-				maxSize=block.size();
+			if(size>maxSize)
+				maxSize = size;
 		}
 //		System.out.println("Maximum block size: "+maxSize);
 		
 		//Remove the blocks that contains only the half of the data
 		for(LinkedList<ExBar> block:allBlocksTemp){
-			if(block.size()<maxSize/2){
+			long size = block.getLast().getTimeInMs() - block.getFirst().getTimeInMs();
+			
+			if(size<maxSize/2){
 				System.out.println("NeuralConfiguration-> Block with size: "+block.size() +" will be ignored!");
 				continue;
 			}

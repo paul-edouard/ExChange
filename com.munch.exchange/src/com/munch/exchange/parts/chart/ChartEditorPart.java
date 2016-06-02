@@ -291,6 +291,7 @@ public class ChartEditorPart{
 					
 					comboBarSize.setText(comboBarSize.getItem(4));
 					barRecorder.setRange(BarUtils.convertForexRange(comboBarSize.getText()));
+					selectedGroup.setRange(BarUtils.convertForexRange(comboBarSize.getText()));
 					
 				}
 				comboBarSize.addModifyListener(comboBarSizeModifyListener);

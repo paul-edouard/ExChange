@@ -130,7 +130,7 @@ public class BarUtils {
 	}
 	
 	public static String convertForexRange(double range){
-		String pip = String.valueOf(range)+ " Pip";
+		String pip = String.valueOf((long) (range*10000))+ " Pip";
 		
 		return pip;
 	}

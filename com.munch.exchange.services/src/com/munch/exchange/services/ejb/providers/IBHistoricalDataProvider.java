@@ -145,7 +145,7 @@ public class IBHistoricalDataProvider implements IIBHistoricalDataProvider {
 			
 			if(cores < 10){
 				long diff = lastTimeBar.getTimeInMs() - nextDay.getTimeInMillis();
-				if(diff > 40L*24L*60L*60L*1000L)
+				if(diff > 20L*24L*60L*60L*1000L)
 					continue;
 				
 			}

@@ -868,6 +868,8 @@ public class NeuralConfigurationEditorPart {
 		neuralProvider.loadNeuralArchitecture(neuralConfiguration);
 		
 		logger.info("Nb of Architectures: "+neuralConfiguration.getNeuralArchitectures().size());
+		logger.info("Bar Type: "+neuralConfiguration.getBarType().name());
+		logger.info("Bar Type: "+neuralConfiguration.getBarType().name());
 		
 //		Add the Novelty Search Persistor
 		
@@ -886,6 +888,7 @@ public class NeuralConfigurationEditorPart {
 		
 		neuralProvider.loadTrainingData(neuralConfiguration);
 		
+		logger.info("Neural Configuration Bar Type: "+neuralConfiguration.getBarType().name());
 		comboBarType.setText(neuralConfiguration.getBarType().name());
 		
 //		Initialization of the bar size
@@ -932,7 +935,7 @@ public class NeuralConfigurationEditorPart {
 //		Initialization of percent of training data
 		spinnerPercentOfTrainingData.setSelection(neuralConfiguration.getPercentOfTrainingData());
 		spinnerPercentOfTrainingData.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
-		
+		comboBarType.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
 		
 		addColumn("Name",150,new NeuralTrainingDataLabelProvider());
 		
@@ -1661,11 +1664,49 @@ public class NeuralConfigurationEditorPart {
 		}
 		
 		
+		private List<Genome> getSortedGenomesFromPop(Population pop){
+			List<Genome> genomes=pop.flatten();
+			
+			
+			List<Genome> sortedGenomes=new LinkedList<Genome>();
+			for(Genome genome:genomes){
+//				System.out.println(genome.getScore());
+				
+//				NoveltySearchGenome nov_gen=(NoveltySearchGenome) genome;
+				
+				if(sortedGenomes.isEmpty()){
+					sortedGenomes.add(genome);continue;
+				}
+				
+				int i=0;
+				boolean isInserted=false;
+				for(Genome sortedGenome:sortedGenomes){
+//					NoveltySearchGenome sorted_nov_gen=(NoveltySearchGenome) sortedGenome;
+					
+					
+					if(sortedGenome.getAdjustedScore() < genome.getAdjustedScore()){
+						sortedGenomes.add(i, genome);
+						isInserted=true;
+						break;
+					}
+					i++;
+				}
+				
+				if(!isInserted){
+					sortedGenomes.add(genome);
+				}
+				
+				
+			}
+			
+			return sortedGenomes;
+		}
+		
 		
 		private void postIteration(){
 
 //			Isolate the best genomes
-			List<Genome> sortedGenomes=getSortedNoveltyGenomesFromPop(train.getPopulation());
+			List<Genome> sortedGenomes=getSortedGenomesFromPop(train.getPopulation());
 			
 			ExecutorService taskExecutor =Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 			
@@ -2339,6 +2380,10 @@ public class NeuralConfigurationEditorPart {
 					}
 				}
 				
+//				logger.info("Number of Mid Point Bars: "+neuralConfiguration.getAllMidPointBars().size());
+//				logger.info("Number of Ask Bars: "+neuralConfiguration.getAllAskBars().size());
+//				logger.info("Number of Bid Bars: "+neuralConfiguration.getAllBidBars().size());
+//				
 				
 			}
 			
