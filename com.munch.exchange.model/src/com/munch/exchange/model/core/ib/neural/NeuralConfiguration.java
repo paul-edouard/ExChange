@@ -96,7 +96,13 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	private List<ExBar> allAskBars=new LinkedList<ExBar>();
 	
 	@Transient
+	private HashMap<Long, ExBar> askBarsMap=new HashMap<Long, ExBar>();
+	
+	@Transient
 	private List<ExBar> allBidBars=new LinkedList<ExBar>();
+	
+	@Transient
+	private HashMap<Long, ExBar> bidBarsMap=new HashMap<Long, ExBar>();
 	
 	@Transient
 	private LinkedList<LinkedList<ExBar>> allBlocks=new LinkedList<LinkedList<ExBar>>();
@@ -209,6 +215,21 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	public void computeAllNeuralIndicatorInputs(){
 		computeAllNeuralIndicatorInputs(isResetMinMaxNeeded());
 	}
+	
+	public ExBar getAskBar(long time){
+		if(this.askBarsMap.containsKey(time))
+			return this.askBarsMap.get(time);
+		
+		return null;
+	}
+	
+	public ExBar getBidBar(long time){
+		if(this.bidBarsMap.containsKey(time))
+			return this.bidBarsMap.get(time);
+		
+		return null;
+	}
+	
 	
 	public void clearAllCollectedBars(){
 		allMidPointBars.clear();

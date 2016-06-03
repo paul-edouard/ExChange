@@ -547,8 +547,12 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		ExBar lastBar=block.getLast();
 		profitAndRisk.newPosition(previewBar.getTimeInMs(),lastPosition);
 		
-		long[] relTraindingPeriod=neuralConfiguration.getContract().
-				getRelativeTraidingPeriod(previewBar.getTimeInMs());
+		long[] relTraindingPeriod = new long[2];
+		relTraindingPeriod[0] = neuralConfiguration.getContract().getStartTradeTimeInMs();
+		relTraindingPeriod[1] = neuralConfiguration.getContract().getEndTradeTimeInMs();
+		
+//		long[] relTraindingPeriod=neuralConfiguration.getContract().
+//				getRelativeTraidingPeriod(previewBar.getTimeInMs());
 				
 		int i=0;
 //		int nbOfPosition=0;
@@ -568,12 +572,15 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 //			#################################################################
 //			####  2. Update the profit if the current position is open   ####
 //			#################################################################
-			double previewPrice=previewBar.getClose();
+//			double previewPrice=previewBar.getClose();
 			double price=bar.getClose();
+			
+			double exChangePrice = this.searchPrice(bar, lastPosition);
+			double previewExChangePrice = this.searchPrice(previewBar, lastPosition);
 			
 //			Add the profit and calculate the risk
 			if(lastPosition!=Position.NEUTRAL){
-				double diffProfit=Position.getSignal(lastPosition)*(price-previewPrice)*volume;
+				double diffProfit=Position.getSignal(lastPosition)*(exChangePrice-previewExChangePrice)*volume;
 				profitAndRisk.updateProfit(diffProfit);
 			}
 			
@@ -583,7 +590,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 //					Sold the last position
 					IbCommission com=this.getNeuralConfiguration().getContract().getCommission();
 					if(com!=null){
-						double profitDiff=-com.calculate(volume, price);
+						double profitDiff=-com.calculate(volume, exChangePrice);
 						profitAndRisk.updateProfit(profitDiff);
 					}
 					
@@ -645,7 +652,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			
 				IbCommission com=this.getNeuralConfiguration().getContract().getCommission();
 				if(com!=null){
-					double profitDiff=-absDiffSignal*com.calculate(volume, price);
+					double profitDiff=-absDiffSignal*com.calculate(volume, exChangePrice);
 					profitAndRisk.updateProfit(profitDiff);
 				}
 				
@@ -655,6 +662,11 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 //				Reset the trade profit
 				profitAndRisk.resetTradeProfit();
 				profitAndRisk.newPosition(time,position);
+				
+//				Integrate the spread as negativ profit
+				double spread = calculateSpread(bar);
+				profitAndRisk.updateProfit(spread);
+				
 //				nbOfPosition++;
 			}
 			
@@ -670,6 +682,38 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		return profitAndRisk;
 		
 	}
+	
+	private double searchPrice(ExBar bar, Position position){
+	
+		if(position == Position.LONG ){
+			ExBar bidBar = neuralConfiguration.getBidBar(bar.getTime());
+			if (bidBar != null){
+				return bidBar.getClose();
+			}
+		}
+		
+		else if(position == Position.SHORT ){
+			ExBar askBar = neuralConfiguration.getAskBar(bar.getTime());
+			if (askBar != null){
+				return askBar.getClose();	
+			}
+		}
+		
+		return  bar.getClose();
+	}
+	
+	private double calculateSpread(ExBar bar){
+		ExBar bidBar = neuralConfiguration.getBidBar(bar.getTime());
+		ExBar askBar = neuralConfiguration.getAskBar(bar.getTime());
+		if(bidBar == null || askBar == null)return 0;
+		
+		return Math.abs((askBar.getClose() - bidBar.getClose())*volume);
+		
+		
+	}
+	
+	
+	
 	
 	public NeuralNetworkRating calculateProfitAndRiskOfBlocks(LinkedList<LinkedList<ExBar>> blocks,MLMethod method){
 		
