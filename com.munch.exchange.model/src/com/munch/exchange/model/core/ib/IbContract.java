@@ -28,6 +28,7 @@ import com.ib.controller.Types.SecType;
 import com.ib.controller.Types.WhatToShow;
 import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.minute.MinuteContainer;
 import com.munch.exchange.model.core.ib.bar.seconde.SecondeContainer;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
@@ -386,6 +387,66 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 		}
 		
 		return startEndTime;
+	}
+	
+	
+	
+	int startTradingHour;
+	int startTradingMinute;
+	int startTradingSecond;
+	
+	int endTradingHour;
+	int endTradingMinute;
+	int endTradingSecond;
+	
+	public void resetTradingTimes(){
+		Calendar date= Calendar.getInstance();
+		
+		long startTradingTime = this.getStartTradeTimeInMs();
+		date.setTimeInMillis(startTradingTime);
+		
+		startTradingHour = date.get(Calendar.HOUR_OF_DAY)-1;
+		startTradingMinute = date.get(Calendar.MINUTE);
+		startTradingSecond = date.get(Calendar.SECOND);
+		
+		long endTradingTime = this.getEndTradeTimeInMs();
+		date.setTimeInMillis(endTradingTime);
+		
+		endTradingHour = date.get(Calendar.HOUR_OF_DAY)-1;
+		endTradingMinute = date.get(Calendar.MINUTE);
+		endTradingSecond = date.get(Calendar.SECOND);
+	}
+	
+	public boolean isInTradingTime(long timeInMs){
+		Calendar date= Calendar.getInstance();
+		date.setTimeInMillis(timeInMs);
+		
+		int hour =  date.get(Calendar.HOUR_OF_DAY);
+		if(hour > startTradingHour && hour < endTradingHour){
+			return true;
+		}
+		else if(hour < startTradingHour || hour > endTradingHour){
+			return false;
+		}
+		
+		int minute = date.get(Calendar.MINUTE);
+		if(hour == startTradingHour && minute < startTradingMinute){
+			return false;
+		}
+		else if(hour == endTradingHour && minute > endTradingMinute){
+			return false;
+		}
+		
+		int second = date.get(Calendar.SECOND);
+		if(hour == startTradingHour && minute == startTradingMinute && second < startTradingSecond){
+			return false;
+		}
+		else if(hour == endTradingHour && minute == endTradingMinute && second > endTradingSecond){
+			return false;
+		}
+		
+		return true;
+		
 	}
 	
 	

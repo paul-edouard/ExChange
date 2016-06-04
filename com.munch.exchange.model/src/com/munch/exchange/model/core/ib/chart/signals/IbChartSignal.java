@@ -446,56 +446,63 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		IbContract contract= getContract();
 		if(contract==null)return;
 		
-		Calendar date= Calendar.getInstance();
 		
-		long startTradingTime = contract.getStartTradeTimeInMs();
-		date.setTimeInMillis(startTradingTime);
+		contract.resetTradingTimes();
 		
-		int startTradingHour = date.get(Calendar.HOUR_OF_DAY)-1;
-		int startTradingMinute = date.get(Calendar.MINUTE);
-		int startTradingSecond = date.get(Calendar.SECOND);
-		
-		long endTradingTime = contract.getEndTradeTimeInMs();
-		date.setTimeInMillis(endTradingTime);
-		
-		int endTradingHour = date.get(Calendar.HOUR_OF_DAY)-1;
-		int endTradingMinute = date.get(Calendar.MINUTE);
-		int endTradingSecond = date.get(Calendar.SECOND);
+//		Calendar date= Calendar.getInstance();
+//		
+//		long startTradingTime = contract.getStartTradeTimeInMs();
+//		date.setTimeInMillis(startTradingTime);
+//		
+//		int startTradingHour = date.get(Calendar.HOUR_OF_DAY)-1;
+//		int startTradingMinute = date.get(Calendar.MINUTE);
+//		int startTradingSecond = date.get(Calendar.SECOND);
+//		
+//		long endTradingTime = contract.getEndTradeTimeInMs();
+//		date.setTimeInMillis(endTradingTime);
+//		
+//		int endTradingHour = date.get(Calendar.HOUR_OF_DAY)-1;
+//		int endTradingMinute = date.get(Calendar.MINUTE);
+//		int endTradingSecond = date.get(Calendar.SECOND);
 		
 
 		for(IbChartPoint point:this.getSignalSerie().getPoints()){
 			if(point.getValue()==this.getNeutralSignal())continue;
 			
-			date.setTimeInMillis(point.getTime());
-			
-			int hour =  date.get(Calendar.HOUR_OF_DAY);
-			if(hour > startTradingHour && hour < endTradingHour){
-				continue;
-			}
-			else if(hour < startTradingHour || hour > endTradingHour){
+			if(!contract.isInTradingTime(point.getTime())){
 				point.setValue(this.getNeutralSignal());
-				continue;
 			}
 			
-			int minute = date.get(Calendar.MINUTE);
-			if(hour == startTradingHour && minute < startTradingMinute){
-				point.setValue(this.getNeutralSignal());
-				continue;
-			}
-			else if(hour == endTradingHour && minute > endTradingMinute){
-				point.setValue(this.getNeutralSignal());
-				continue;
-			}
-			
-			int second = date.get(Calendar.SECOND);
-			if(hour == startTradingHour && minute == startTradingMinute && second < startTradingSecond){
-				point.setValue(this.getNeutralSignal());
-				continue;
-			}
-			else if(hour == endTradingHour && minute == endTradingMinute && second > endTradingSecond){
-				point.setValue(this.getNeutralSignal());
-				continue;
-			}
+//			date.setTimeInMillis(point.getTime());
+//			
+//			int hour =  date.get(Calendar.HOUR_OF_DAY);
+//			if(hour > startTradingHour && hour < endTradingHour){
+//				continue;
+//			}
+//			else if(hour < startTradingHour || hour > endTradingHour){
+//				point.setValue(this.getNeutralSignal());
+//				continue;
+//			}
+//			
+//			int minute = date.get(Calendar.MINUTE);
+//			if(hour == startTradingHour && minute < startTradingMinute){
+//				point.setValue(this.getNeutralSignal());
+//				continue;
+//			}
+//			else if(hour == endTradingHour && minute > endTradingMinute){
+//				point.setValue(this.getNeutralSignal());
+//				continue;
+//			}
+//			
+//			int second = date.get(Calendar.SECOND);
+//			if(hour == startTradingHour && minute == startTradingMinute && second < startTradingSecond){
+//				point.setValue(this.getNeutralSignal());
+//				continue;
+//			}
+//			else if(hour == endTradingHour && minute == endTradingMinute && second > endTradingSecond){
+//				point.setValue(this.getNeutralSignal());
+//				continue;
+//			}
 			
 		}
 		

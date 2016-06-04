@@ -547,12 +547,17 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 		ExBar lastBar=block.getLast();
 		profitAndRisk.newPosition(previewBar.getTimeInMs(),lastPosition);
 		
-		long[] relTraindingPeriod = new long[2];
-		relTraindingPeriod[0] = neuralConfiguration.getContract().getStartTradeTimeInMs();
-		relTraindingPeriod[1] = neuralConfiguration.getContract().getEndTradeTimeInMs();
+//		long[] relTraindingPeriod = new long[2];
+//		relTraindingPeriod[0] = neuralConfiguration.getContract().getStartTradeTimeInMs();
+//		relTraindingPeriod[1] = neuralConfiguration.getContract().getEndTradeTimeInMs();
 		
-//		long[] relTraindingPeriod=neuralConfiguration.getContract().
-//				getRelativeTraidingPeriod(previewBar.getTimeInMs());
+		long[] relTraindingPeriod=neuralConfiguration.getContract().
+				getRelativeTraidingPeriod(previewBar.getTimeInMs());
+		
+//		neuralConfiguration.getContract().resetTradingTimes();
+		
+//		Inint the trading time
+		
 				
 		int i=0;
 //		int nbOfPosition=0;
@@ -586,6 +591,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 			
 //			Close the open position before leaving
 			if(time>=relTraindingPeriod[1] || bar==lastBar){
+//				System.out.println("Hallo");
 				if(lastPosition!=Position.NEUTRAL){
 //					Sold the last position
 					IbCommission com=this.getNeuralConfiguration().getContract().getCommission();
@@ -665,7 +671,7 @@ public class NeuralArchitecture implements Serializable, Copyable<NeuralArchitec
 				
 //				Integrate the spread as negativ profit
 				double spread = calculateSpread(bar);
-				profitAndRisk.updateProfit(spread);
+				profitAndRisk.updateProfit(-spread);
 				
 //				nbOfPosition++;
 			}

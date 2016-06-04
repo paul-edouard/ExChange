@@ -299,6 +299,18 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		System.out.println("Nb of mid point bars: "+allMidPointBars.size());
 		System.out.println("Nb of bid bars: "+allBidBars.size());
 		System.out.println("Nb of ask bars: "+allAskBars.size());
+		
+//		Fill the bar maps
+		bidBarsMap.clear();
+		for(ExBar bar : allBidBars){
+			bidBarsMap.put(bar.getTime(), bar);
+		}
+		
+		askBarsMap.clear();
+		for(ExBar bar : allAskBars){
+			askBarsMap.put(bar.getTime(), bar);
+		}
+		
 	}
 	
 	
