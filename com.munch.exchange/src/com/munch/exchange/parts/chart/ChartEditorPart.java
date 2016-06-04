@@ -250,10 +250,12 @@ public class ChartEditorPart{
 				chartGroupSelected();
 				
 				barRecorder.setWhatToShow(newWhatToShow);
+				barRecorder.clearAll();
 				
 				comboWhatToShow.setEnabled(false);
 				comboBarSize.setEnabled(false);
 				comboBarType.setEnabled(false);
+				dataUpdater.clear();
 				dataUpdater.schedule();
 			}
 		});
@@ -264,10 +266,11 @@ public class ChartEditorPart{
 		comboBarType.setText(BarType.TIME.name());
 		comboBarType.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				logger.info(comboBarType.getText());
+				logger.info("Bar Type:" + comboBarType.getText());
 				BarType barType = BarType.valueOf(comboBarType.getText());
 				if(barType==barRecorder.getBartype())return;
 				
+				if(!comboBarType.isEnabled())return;
 
 				barRecorder.setBartype(barType);
 				selectedGroup.setBarType(barType);
@@ -329,6 +332,12 @@ public class ChartEditorPart{
 		return new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				logger.info(comboBarSize.getText());
+				
+//				comboWhatToShow.setEnabled(false);
+//				comboBarSize.setEnabled(false);
+//				comboBarType.setEnabled(false);
+				
+				
 				if(barRecorder.getBartype() == BarType.TIME){
 					BarSize newBarSize=BarUtils.getBarSizeFromString(comboBarSize.getText());
 					if(newBarSize==barRecorder.getBarSize())return;
@@ -345,9 +354,9 @@ public class ChartEditorPart{
 					selectedGroup.setRange(range);
 				}
 				
-				comboWhatToShow.setEnabled(false);
-				comboBarSize.setEnabled(false);
-				comboBarType.setEnabled(false);
+//				comboWhatToShow.setEnabled(false);
+//				comboBarSize.setEnabled(false);
+//				comboBarType.setEnabled(false);
 				barRecorder.clearAll();
 				dataUpdater.clear();
 				dataUpdater.schedule();
@@ -420,12 +429,21 @@ public class ChartEditorPart{
 		double upper=dateAxis.getRange().getUpperBound();
 		
 		
-		upper=Math.min(barRecorder.getLastReceivedBar().getTimeInMs()+BarUtils.getIntervallInMs(barRecorder.getBarSize())/2,
+		upper=Math.min(barRecorder.getLastReceivedBar().getTimeInMs()/*+BarUtils.getIntervallInMs(barRecorder.getBarSize())/2*/,
 						upper+ (double)( fac*(1-posFac)));
 		lower=Math.max(barRecorder.getFirstReceivedBar().getTimeInMs(),
 						lower- (double)( fac*posFac));
-    	
-    	dateAxis.setRange(lower, upper);
+    	if(lower<upper){
+    		dateAxis.setRange(lower, upper);
+    	}
+    	else {
+    		upper=upper+ (double)( fac*(1-posFac));
+    		lower=lower- (double)( fac*posFac);
+    		if(lower<upper){
+    			dateAxis.setRange(lower, upper);
+    		}
+    		
+    	}
     	mainAxis.configure();
     	secondAxis.configure();
     	profitAxis.configure();
@@ -446,12 +464,16 @@ public class ChartEditorPart{
 		//if(end>lastBarTime)return;
 		if(barRecorder.getLastReceivedBar()==null)return;
 		
-		upper=Math.min(barRecorder.getLastReceivedBar().getTimeInMs()+BarUtils.getIntervallInMs(barRecorder.getBarSize())/2,
+		upper=Math.min(barRecorder.getLastReceivedBar().getTimeInMs()/*+BarUtils.getIntervallInMs(barRecorder.getBarSize())/2*/,
 						end);
 		lower=Math.max(barRecorder.getFirstReceivedBar().getTimeInMs(),
 						start);
-    	
-    	dateAxis.setRange(lower, upper);
+    	if (lower < upper){
+    		dateAxis.setRange(lower, upper);
+    	}
+    	else if(start < end){
+    		dateAxis.setRange(start, end);
+    	}
     	mainAxis.configure();
     	secondAxis.configure();
     	profitAxis.configure();
@@ -1503,8 +1525,8 @@ public class ChartEditorPart{
 				}
 				
 				//Call the Real Time Bar Updater
-				if(whatToShow==getBarContainer().getType()){
-//					logger.info("New Bar: "+bar);
+				if(whatToShow==getBarContainer().getType() && bar.getClose()>0){
+					logger.info("New real time Bar: "+bar);
 					LinkedList<ExBar> realTimeBars=BarUtils.convertTimeBars(bars,BarSize._1_secs,  barRecorder.getBarSize());
 					if(realTimeBars==null ||realTimeBars.isEmpty())return;
 					
@@ -1607,6 +1629,18 @@ public class ChartEditorPart{
 						}
 						
 						double diff=barRecorder.getLastReceivedBar().getTimeInMs()-dateAxis.getRange().getUpperBound();
+						
+						logger.info("Last Recieved bar: "+BarUtils.format(barRecorder.getLastReceivedBar().getTimeInMs()));
+						logger.info("Date Axis upper bound: "+BarUtils.format((long)dateAxis.getRange().getUpperBound()));
+						
+						logger.info("First Recieved bar: "+BarUtils.format(barRecorder.getFirstReceivedBar().getTimeInMs()));
+						logger.info("Date Axis upper bound: "+BarUtils.format((long)dateAxis.getRange().getLowerBound()));
+						
+						if(barRecorder.getFirstReceivedBar().getTimeInMs() > (long)dateAxis.getRange().getUpperBound() ||
+								barRecorder.getLastReceivedBar().getTimeInMs()< (long)dateAxis.getRange().getLowerBound()){
+							dateAxis.setRange(barRecorder.getFirstReceivedBar().getTimeInMs(), barRecorder.getLastReceivedBar().getTimeInMs());
+						}
+						
 						
 						long interval=BarUtils.getIntervallInMs(barRecorder.getBarSize());
 //						logger.info("Diff: "+diff+ "Interval: "+interval);
@@ -1738,8 +1772,8 @@ public class ChartEditorPart{
 //				}
 				pastValueAvailable=true;
 				
-//				logger.info("Loading finshed: nb. of bars: "+ bars.size());
-//				logger.info("bars: "+ bars.get(0).getTime());
+				logger.info("Loading finshed: nb. of bars: "+ bars.size());
+				logger.info("bars: "+ bars.get(0).getTime());
 				barRecorder.clearAll();
 				barRecorder.addBars(bars);
 			}
