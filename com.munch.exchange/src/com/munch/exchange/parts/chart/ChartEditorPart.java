@@ -733,8 +733,8 @@ public class ChartEditorPart{
         //Axis Profit
         percentAxis = new NumberAxis("Value");
         //rangeAxis1.setLowerMargin(0.30);  // to leave room for volume bars
-        DecimalFormat format = new DecimalFormat("00.00");
-        percentAxis.setNumberFormatOverride(format);
+//        DecimalFormat format = new DecimalFormat("00.00");
+//        percentAxis.setNumberFormatOverride(format);
         percentAxis.setAutoRangeIncludesZero(false);
         
         //Plot Profit
@@ -752,8 +752,8 @@ public class ChartEditorPart{
          
          profitAxis = new NumberAxis("Profit ["+this.contract.getCurrency()+"]");
          profitAxis.setLowerMargin(0.01);  // to leave room for volume bars
-         DecimalFormat format = new DecimalFormat("00.00");
-         profitAxis.setNumberFormatOverride(format);
+//         DecimalFormat format = new DecimalFormat("00.00");
+//         profitAxis.setNumberFormatOverride(format);
          profitAxis.setAutoRangeIncludesZero(false);
          
          //Plot
@@ -768,8 +768,8 @@ public class ChartEditorPart{
         
         riskAxis = new NumberAxis("Risk ["+this.contract.getCurrency()+"]");
         riskAxis.setLowerMargin(0.01);  // to leave room for volume bars
-        DecimalFormat format = new DecimalFormat("00.00");
-        riskAxis.setNumberFormatOverride(format);
+//        DecimalFormat format = new DecimalFormat("00.00");
+//        riskAxis.setNumberFormatOverride(format);
         riskAxis.setAutoRangeIncludesZero(false);
         
         //Plot
@@ -1213,7 +1213,7 @@ public class ChartEditorPart{
 		List<IbChartIndicator> allIndicators=selectedGroup.getAllIndicators();
 		for(IbChartIndicator indicator : allIndicators){
 			if(!indicator.isActivated())continue;
-			indicator.getMainChartSerie().clearPoints();
+			indicator.clearAllSeriePoints();
 		    
 		    clearAllSeriesOfIndicator(indicator);
 		    addAllSeriesOfIndicatior(indicator);

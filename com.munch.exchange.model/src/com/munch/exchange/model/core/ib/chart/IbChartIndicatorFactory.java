@@ -19,6 +19,7 @@ import com.munch.exchange.model.core.ib.chart.trend.IbChartBollingerBands;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDoubleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDownwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartFractalAdaptMovAver;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartResistanceLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSuperTrend;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartTrendLine;
@@ -78,6 +79,7 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(trendLine, IbChartUpwardTrendLine.class);
 		addChartIndicator(trendLine, IbChartSuperTrend.class);
 		addChartIndicator(trendLine, IbChartTrendLine.class);
+		addChartIndicator(trendLine, IbChartResistanceLine.class);
 		
 		
 //		BOLLINGER BAND
@@ -317,6 +319,7 @@ public class IbChartIndicatorFactory {
 						oldSerie.setRendererType(newSerie.getRendererType());
 						parent.setDirty(true);
 					}
+					
 					
 					serieFound=true;
 					break;

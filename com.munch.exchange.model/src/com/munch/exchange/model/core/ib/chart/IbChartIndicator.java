@@ -392,6 +392,10 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 		
 	}
 	
-	
+	public void clearAllSeriePoints(){
+		for(IbChartSerie serie:series){
+			serie.clearPoints();
+		}
+	}
 	
 }

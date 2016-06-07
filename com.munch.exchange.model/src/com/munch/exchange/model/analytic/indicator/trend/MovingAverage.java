@@ -306,19 +306,20 @@ public class MovingAverage {
 	public static double[] LWMA(double[] Price, int N){
 		double[] lwma=new double[Price.length];
 		
-		int sum=0;
-		for(int j=1;j<=N;j++){
-			sum+=j;
-		}
+//		int sum=0;
+//		for(int j=1;j<=N;j++){
+//			sum+=j;
+//		}
 		
 		
 		for(int i=0;i<Price.length;i++){
+			int sum=0;
 			for(int j=0;j<N;j++){
 				if(i-j<0)continue;
 				lwma[i]+=Price[i-j]*(N-j);
+				sum+=N-j;
 			}
 			lwma[i]=lwma[i]/sum;
-			
 			
 		}
 		
