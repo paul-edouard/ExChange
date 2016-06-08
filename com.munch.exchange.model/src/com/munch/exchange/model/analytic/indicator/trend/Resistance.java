@@ -76,7 +76,7 @@ public class Resistance {
 			for(int j=0;j<period;j++){
 				if(i-j<0)break;
 				
-				res[i] += calculateResistanceOfPoint(reslinePoints[i-j], prices[i-j], variance);
+				res[i] += calculateResistanceOfPoint(reslinePoints[i], prices[i-j], variance);
 				sum++;
 			}
 			
