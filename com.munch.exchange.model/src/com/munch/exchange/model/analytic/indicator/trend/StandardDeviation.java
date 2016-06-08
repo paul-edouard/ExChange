@@ -60,6 +60,22 @@ public class StandardDeviation {
 		return stdDev;
 	}
 	
+	public static double compute(double[] Price){
+		
+		double mid = 0;
+		for(int i=0;i<Price.length;i++){
+			mid+=Price[i];
+		}
+		mid/=Price.length;
+		
+		double stdDev = 0;
+		for(int i=0;i<Price.length;i++){
+			stdDev+=Math.pow((Price[i]-mid),2);
+		}
+		stdDev=Math.sqrt(stdDev/Price.length);
+		
+		return stdDev;
+	}
 	
 
 }

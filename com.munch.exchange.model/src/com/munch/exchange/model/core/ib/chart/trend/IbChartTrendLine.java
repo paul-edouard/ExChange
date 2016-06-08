@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.persistence.Entity;
 
+import com.munch.exchange.model.analytic.indicator.trend.MovingAverage;
 import com.munch.exchange.model.analytic.indicator.trenline.TrendLine;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
@@ -25,16 +26,19 @@ public class IbChartTrendLine extends IbChartIndicator {
 	
 	
 	public static final String UP_GRADIENT="Up Gradient";
+	public static final String UP_MA_GRADIENT="Up Moving Average Gradient";
 	public static final String UP_DISTANCE="Up Distance";
 	public static final String UP_RESISTANCE="Up Resistance";
 
 	public static final String DOWN_GRADIENT="Down Gradient";
+	public static final String DOWN_MA_GRADIENT="Down Moving Average Gradient";
 	public static final String DOWN_DISTANCE="Down Distance";
 	public static final String DOWN_RESISTANCE="Down Resistance";
 	
 	public static final String PERIOD="Period";
 	public static final String FACTOR="Factor";
-	public static final String VARIANCE="Variance";
+	public static final String POW_VARIANCE="Pow Variance";
+	public static final String MA_PERIOD="Moving Average Period";
 	
 
 	
@@ -62,10 +66,12 @@ public class IbChartTrendLine extends IbChartIndicator {
 	@Override
 	public void createSeries() {
 		this.series.add(new IbChartSerie(this,this.name+" "+UP_GRADIENT,RendererType.PERCENT,true,true,50, 44, 89));
+		this.series.add(new IbChartSerie(this,this.name+" "+UP_MA_GRADIENT,RendererType.PERCENT,false,true,50, 44, 189));
 		this.series.add(new IbChartSerie(this,this.name+" "+UP_RESISTANCE,RendererType.SECOND,false,true,250, 44, 89));
 		this.series.add(new IbChartSerie(this,this.name+" "+UP_DISTANCE,RendererType.SECOND,false,false,50, 244, 89));
 
 		this.series.add(new IbChartSerie(this,this.name+" "+DOWN_GRADIENT,RendererType.PERCENT,true,true,50, 44, 89));
+		this.series.add(new IbChartSerie(this,this.name+" "+DOWN_MA_GRADIENT,RendererType.PERCENT,false,true,50, 44, 189));
 		this.series.add(new IbChartSerie(this,this.name+" "+DOWN_RESISTANCE,RendererType.SECOND,false,true,250, 44, 89));
 		this.series.add(new IbChartSerie(this,this.name+" "+DOWN_DISTANCE,RendererType.SECOND,false,false,50, 244, 89));
 	}
@@ -79,7 +85,11 @@ public class IbChartTrendLine extends IbChartIndicator {
 		this.parameters.add(new IbChartParameter(this, FACTOR,ParameterType.DOUBLE, 3, 0, 5, 1));
 		
 //		VARIANCE
-		this.parameters.add(new IbChartParameter(this, VARIANCE,ParameterType.DOUBLE, 0.001, 0.0001, 0.1, 4));
+//		this.parameters.add(new IbChartParameter(this, VARIANCE,ParameterType.DOUBLE, 0.001, 0.0001, 0.1, 4));
+		this.parameters.add(new IbChartParameter(this, POW_VARIANCE,ParameterType.DOUBLE, -5, -7, 3, 1));
+		
+//		MA PERIOD
+		this.parameters.add(new IbChartParameter(this, MA_PERIOD,ParameterType.INTEGER, 3, 1, 50, 0));
 		
 	}
 
@@ -92,16 +102,21 @@ public class IbChartTrendLine extends IbChartIndicator {
 		
 		
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
+		int ma_period=this.getChartParameter(MA_PERIOD).getIntegerValue();
 		double factor=this.getChartParameter(FACTOR).getValue();
-		double variance=this.getChartParameter(VARIANCE).getValue();
+		double variance=Math.pow(10,this.getChartParameter(POW_VARIANCE).getValue());
 		
 		double[][] TrLi=TrendLine.compute(high, low, period, factor, variance);
 		
 		this.getChartSerie(this.name+" "+UP_GRADIENT).addNewPointsOnly(times,TrLi[0]);
+		this.getChartSerie(this.name+" "+UP_MA_GRADIENT).addNewPointsOnly(times,
+				MovingAverage.EMA(TrLi[0], ma_period));
 		this.getChartSerie(this.name+" "+UP_RESISTANCE).addNewPointsOnly(times,TrLi[1]);
 		this.getChartSerie(this.name+" "+UP_DISTANCE).addNewPointsOnly(times,TrLi[2]);
 		
 		this.getChartSerie(this.name+" "+DOWN_GRADIENT).addNewPointsOnly(times,TrLi[3]);
+		this.getChartSerie(this.name+" "+DOWN_MA_GRADIENT).addNewPointsOnly(times,
+				MovingAverage.EMA(TrLi[3], ma_period));
 		this.getChartSerie(this.name+" "+DOWN_RESISTANCE).addNewPointsOnly(times,TrLi[4]);
 		this.getChartSerie(this.name+" "+DOWN_DISTANCE).addNewPointsOnly(times,TrLi[5]);
 		
