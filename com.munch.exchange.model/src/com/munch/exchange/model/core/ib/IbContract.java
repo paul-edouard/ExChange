@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 import org.hibernate.validator.constraints.Length;
 
@@ -390,13 +391,18 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	}
 	
 	
-	
+	@Transient
 	int startTradingHour;
+	@Transient
 	int startTradingMinute;
+	@Transient
 	int startTradingSecond;
 	
+	@Transient
 	int endTradingHour;
+	@Transient
 	int endTradingMinute;
+	@Transient
 	int endTradingSecond;
 	
 	public void resetTradingTimes(){

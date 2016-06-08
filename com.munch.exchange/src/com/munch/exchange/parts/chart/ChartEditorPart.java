@@ -1526,13 +1526,17 @@ public class ChartEditorPart{
 				
 				//Call the Real Time Bar Updater
 				if(whatToShow==getBarContainer().getType() && bar.getClose()>0){
-					logger.info("New real time Bar: "+bar);
+//					logger.info("New real time Bar: "+bar);
 					LinkedList<ExBar> realTimeBars=BarUtils.convertTimeBars(bars,BarSize._1_secs,  barRecorder.getBarSize());
 					if(realTimeBars==null ||realTimeBars.isEmpty())return;
 					
+					
 					//Add the Bar to the bar recorder only if some historical data were already loaded
-					if(!barRecorder.isEmpty())
-						barRecorder.addBar(realTimeBars.getLast());
+//					if(!barRecorder.isEmpty())
+//						barRecorder.addBar(realTimeBars.getLast());
+					
+					
+					
 					//lastBarTime=bar.getTimeInMs();
 					//Display.getDefault().asyncExec(new realTimeBarUpdater(liveBars));
 				}
