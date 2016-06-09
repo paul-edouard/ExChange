@@ -108,17 +108,19 @@ public class IbChartTrendLine extends IbChartIndicator {
 		
 		double[][] TrLi=TrendLine.compute(high, low, period, factor, variance);
 		
-		this.getChartSerie(this.name+" "+UP_GRADIENT).addNewPointsOnly(times,TrLi[0]);
-		this.getChartSerie(this.name+" "+UP_MA_GRADIENT).addNewPointsOnly(times,
-				MovingAverage.EMA(TrLi[0], ma_period));
-		this.getChartSerie(this.name+" "+UP_RESISTANCE).addNewPointsOnly(times,TrLi[1]);
-		this.getChartSerie(this.name+" "+UP_DISTANCE).addNewPointsOnly(times,TrLi[2]);
+		if(TrLi[0].length==0)return;
 		
-		this.getChartSerie(this.name+" "+DOWN_GRADIENT).addNewPointsOnly(times,TrLi[3]);
-		this.getChartSerie(this.name+" "+DOWN_MA_GRADIENT).addNewPointsOnly(times,
-				MovingAverage.EMA(TrLi[3], ma_period));
-		this.getChartSerie(this.name+" "+DOWN_RESISTANCE).addNewPointsOnly(times,TrLi[4]);
-		this.getChartSerie(this.name+" "+DOWN_DISTANCE).addNewPointsOnly(times,TrLi[5]);
+		refreshSerieValues(this.name+" "+UP_GRADIENT, reset, times, TrLi[0], period-1);
+		refreshSerieValues(this.name+" "+UP_MA_GRADIENT, reset, times, MovingAverage.EMA(TrLi[0], ma_period), period-1);
+		
+		refreshSerieValues(this.name+" "+UP_RESISTANCE, reset, times, TrLi[1], period-1);
+		refreshSerieValues(this.name+" "+UP_DISTANCE, reset, times, TrLi[2], period-1);
+	
+		refreshSerieValues(this.name+" "+DOWN_GRADIENT, reset, times, TrLi[3], period-1);
+		refreshSerieValues(this.name+" "+DOWN_MA_GRADIENT, reset, times, MovingAverage.EMA(TrLi[3], ma_period), period-1);
+		
+		refreshSerieValues(this.name+" "+DOWN_RESISTANCE, reset, times, TrLi[4], period-1);
+		refreshSerieValues(this.name+" "+DOWN_DISTANCE, reset, times, TrLi[5], period-1);
 		
 	}
 

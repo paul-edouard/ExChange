@@ -32,6 +32,8 @@ public class TrendLine {
 	 */
 	public static double[][] compute(double[] high, double[] low,  int period, double factor, double variance){
 		
+		System.out.println("High length: "+high.length);
+		
 		double[][] TrLi=new double[6][high.length];
 		
 		double[] A_UP=new double[high.length];
@@ -56,14 +58,14 @@ public class TrendLine {
 			}
 			
 //			Calculate the Upward Trend
-			double[] AB_UP=calculateAB(local_low, factor, 1.0);
+			double[] AB_UP=calculateAB_Direct(local_low, factor, 1.0);
 			A_UP[i]=AB_UP[0];
 			B_UP[i]=AB_UP[1];
 			RESISTANCE_UP[i]=calculateResistanceOfPoints(A_UP[i], B_UP[i], local_low, variance);
 			DISTANCE_UP[i]=low[i] - (period*A_UP[i]+B_UP[i]);
 			
 //			Calculate the Downward Trend
-			double[] AB_DOWN=calculateAB(local_high, factor, -1.0);
+			double[] AB_DOWN=calculateAB_Direct(local_high, factor, -1.0);
 			A_DOWN[i]=AB_DOWN[0];
 			B_DOWN[i]=AB_DOWN[1];
 			RESISTANCE_DOWN[i]=calculateResistanceOfPoints(A_DOWN[i], B_DOWN[i], local_high, variance);
@@ -115,6 +117,74 @@ public class TrendLine {
 		ab[0]=((RealVariable)down_result.get(0).getVariable(0)).getValue();
 		ab[1]=((RealVariable)down_result.get(0).getVariable(1)).getValue();
 		return ab;
+	}
+	
+	
+	public static double[] calculateAB_Direct(double[] price, double factor, double sign){
+		
+		double ABS=0;
+		double A = 0;
+		double B = 0;
+		
+		for(int i = 0;i < price.length - 1; i++){
+			double yi = price[i];
+			for(int j = i+1; j< price.length; j++){
+				double yj = price[j];
+				double abs = j-i;
+				
+				if(abs < ABS)continue;
+				
+				double a =(yj-yi)/abs;
+				double b = yi - a*i;
+				
+				if(ABS==0){
+					ABS = abs;A=a;B=b;
+					continue;
+				}
+					
+				
+				
+				boolean upper=false;
+				boolean lower=false;
+				for(int k = 0; k<price.length; k++){
+					if(upper && lower)break;
+					if(k==i || k==j)continue;
+					
+					double yk = a*k+b;
+					if(yk>=price[k]){
+						upper = true;
+						continue;
+					}
+					
+					if(yk<=price[k]){
+						lower=true;
+						continue;
+					}
+				}
+				
+				if(upper && lower)continue;
+				
+				if(abs > ABS ){
+					System.out.println("abs:"+abs);
+					System.out.println("lower:"+lower);
+					System.out.println("upper:"+upper);
+					
+					
+					if((sign > 0 && lower) ||  (sign < 0 && upper)){
+						System.out.println("ABS reseted to:" + abs);
+						ABS = abs;A=a;B=b;
+					}
+				}
+				
+				
+			}
+		}
+		
+//		y  = a*x + b;
+		
+		double[] AB = new double[2];AB[0]=A;AB[1]=B;
+		return AB;
+		
 	}
 	
 	
