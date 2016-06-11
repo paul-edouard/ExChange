@@ -11,6 +11,7 @@ import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.spi.AlgorithmFactory;
 import org.moeaframework.core.variable.RealVariable;
 
+import com.munch.exchange.model.analytic.indicator.trenline.TrendLine;
 import com.munch.exchange.model.analytic.indicator.trenline.TrendLineProblem;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
@@ -93,7 +94,8 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 		if(prices.length!=times.length)return YValues;
 		
 		for(int i=0;i<times.length;i++){
-			YValues[i]=ab[0]*(times[i]-times[0])+ab[1];
+//			YValues[i]=ab[0]*(times[i]-times[0])+ab[1];
+			YValues[i]=ab[0]*i+ab[1];
 			//System.out.println("YValue: "+YValues[i]+", x="+times[i]);
 		}
 		
@@ -124,27 +126,30 @@ public class IbChartDownwardTrendLine extends IbChartIndicator {
 			prices[i]=Eprices[i];
 			times[i]=Etimes[i];
 		}
-		
-		TrendLineProblem problem=new TrendLineProblem(times, prices, factor);
-		AlgorithmFactory factory=new InjectedSolutionsAlgorithmFactory(problem.newStartSolutions());
-		
-		NondominatedPopulation result = new Executor()
-		.withProblemClass(TrendLineProblem.class, times,prices,factor,-1.0)
-		.withAlgorithm("NSGAII")
-		.usingAlgorithmFactory(factory)
-		.withMaxEvaluations(10000)
-		.distributeOnAllCores()
-		.run();
-		
-		double[] ab=new double[2];
-		ab[0]=((RealVariable)result.get(0).getVariable(0)).getValue();
-		ab[1]=((RealVariable)result.get(0).getVariable(1)).getValue();
+//		
+//		TrendLineProblem problem=new TrendLineProblem(times, prices, factor);
+//		AlgorithmFactory factory=new InjectedSolutionsAlgorithmFactory(problem.newStartSolutions());
+//		
+//		NondominatedPopulation result = new Executor()
+//		.withProblemClass(TrendLineProblem.class, times,prices,factor,-1.0)
+//		.withAlgorithm("NSGAII")
+//		.usingAlgorithmFactory(factory)
+//		.withMaxEvaluations(10000)
+//		.distributeOnAllCores()
+//		.run();
+//		
+//		double[] ab=new double[2];
+//		ab[0]=((RealVariable)result.get(0).getVariable(0)).getValue();
+//		ab[1]=((RealVariable)result.get(0).getVariable(1)).getValue();
 		
 //		TrendLineFunction function=new TrendLineFunction( times, prices, factor);
 //		GradientOptimizer optimizer=new GradientOptimizer(1, 0.2, function);
 //		optimizer.setMaxIterartions(100);
 //		optimizer.optimize();
 //		double[] ab=function.getVariables();
+		
+		double[] ab = TrendLine.calculateAB_Direct(prices, -1.0, 1.0);
+		
 		
 		//System.out.println("Opt values: "+Arrays.toString(ab));
 		double[] YValues=calculateYValues(times, prices, ab);

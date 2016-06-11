@@ -152,7 +152,7 @@ public class IbChartUpwardTrendLine extends IbChartIndicator {
 //		ab[0]=((RealVariable)result.get(0).getVariable(0)).getValue();
 //		ab[1]=((RealVariable)result.get(0).getVariable(1)).getValue();
 		
-		double[] ab = TrendLine.calculateAB_Direct(prices, factor, 1.0);
+		double[] ab = TrendLine.calculateAB_Direct(prices, 1.0, 1.0);
 		
 		System.out.println("Opt values: "+Arrays.toString(ab));
 		double[] YValues=calculateYValues(times, prices, ab);

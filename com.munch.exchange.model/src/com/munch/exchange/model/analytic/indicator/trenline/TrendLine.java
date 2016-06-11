@@ -58,17 +58,17 @@ public class TrendLine {
 			}
 			
 //			Calculate the Upward Trend
-			double[] AB_UP=calculateAB_Direct(local_low, factor, 1.0);
+			double[] AB_UP=calculateAB_Direct(local_low, 1.0, 1.0);
 			A_UP[i]=AB_UP[0];
 			B_UP[i]=AB_UP[1];
-			RESISTANCE_UP[i]=calculateResistanceOfPoints(A_UP[i], B_UP[i], local_low, variance);
+			RESISTANCE_UP[i]=calculateResistanceOfPoints(A_UP[i], B_UP[i], local_low, 1);
 			DISTANCE_UP[i]=low[i] - (period*A_UP[i]+B_UP[i]);
 			
 //			Calculate the Downward Trend
-			double[] AB_DOWN=calculateAB_Direct(local_high, factor, -1.0);
+			double[] AB_DOWN=calculateAB_Direct(local_high, -1.0, 1.0);
 			A_DOWN[i]=AB_DOWN[0];
 			B_DOWN[i]=AB_DOWN[1];
-			RESISTANCE_DOWN[i]=calculateResistanceOfPoints(A_DOWN[i], B_DOWN[i], local_high, variance);
+			RESISTANCE_DOWN[i]=calculateResistanceOfPoints(A_DOWN[i], B_DOWN[i], local_high, 1);
 			DISTANCE_DOWN[i]=period*A_DOWN[i]+B_DOWN[i] - high[i];
 			
 		}
@@ -91,13 +91,16 @@ public class TrendLine {
 			double linePoint=A*i+B;
 			res+= calculateResistanceOfPoint(linePoint, prices[i], variance);
 		}
+		res/=prices.length;
 		return res;
 	}
 	
 	
 	private static double calculateResistanceOfPoint(double linePoint, double price, double variance){
 		double diff=linePoint-price;
+		
 		return Math.exp(-diff*diff/variance);
+		
 	}
 	
 	private static double[] calculateAB(double[] price, double factor, double sign){
@@ -120,9 +123,19 @@ public class TrendLine {
 	}
 	
 	
-	public static double[] calculateAB_Direct(double[] price, double factor, double sign){
+	private static double calculate_RelDist(double A, double B, double[] prices){
+		double res=0;
+		for(int i=0;i<prices.length;i++){
+			double linePoint=A*i+B;
+			res+= Math.abs(linePoint-prices[i]);
+		}
+		res/=prices.length;
+		return res;
+	}
+	
+	public static double[] calculateAB_Direct(double[] price, double sign, double variance){
 		
-		double ABS=0;
+		double RES=0;
 		double A = 0;
 		double B = 0;
 		
@@ -132,15 +145,17 @@ public class TrendLine {
 				double yj = price[j];
 				double abs = j-i;
 				
-				if(abs < ABS)continue;
+//				if(abs < ABS)continue;
 				
 				double a =(yj-yi)/abs;
 				double b = yi - a*i;
 				
-				if(ABS==0){
-					ABS = abs;A=a;B=b;
-					continue;
-				}
+//				if(RES==0){
+////					ABS = abs;
+//					A=a;B=b;
+//					RES = calculateResistanceOfPoints(A, B, price, variance);
+//					continue;
+//				}
 					
 				
 				
@@ -164,15 +179,18 @@ public class TrendLine {
 				
 				if(upper && lower)continue;
 				
-				if(abs > ABS ){
-					System.out.println("abs:"+abs);
-					System.out.println("lower:"+lower);
-					System.out.println("upper:"+upper);
+				double res = calculateResistanceOfPoints(a, b, price, 1);
+//				System.out.println("Calculated to:" + res);
+				
+				if(res > RES ){
+//					System.out.println("res:"+res);
+//					System.out.println("lower:"+lower);
+//					System.out.println("upper:"+upper);
 					
 					
 					if((sign > 0 && lower) ||  (sign < 0 && upper)){
-						System.out.println("ABS reseted to:" + abs);
-						ABS = abs;A=a;B=b;
+//						System.out.println("RES reseted to:" + res);
+						RES = res;A=a;B=b;
 					}
 				}
 				
