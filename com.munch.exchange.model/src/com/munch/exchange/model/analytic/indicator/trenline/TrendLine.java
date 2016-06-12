@@ -11,6 +11,7 @@ import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.RealVariable;
 import org.moeaframework.problem.AbstractProblem;
 
+import com.munch.exchange.model.analytic.indicator.trend.StandardDeviation;
 import com.munch.exchange.model.core.moea.InjectedSolutionsAlgorithmFactory;
 
 public class TrendLine {
@@ -99,7 +100,9 @@ public class TrendLine {
 	private static double calculateResistanceOfPoint(double linePoint, double price, double variance){
 		double diff=linePoint-price;
 		
-		return Math.exp(-diff*diff/variance);
+//		return Math.exp(-diff*diff/variance);
+		
+		return Math.exp(-Math.abs(diff));
 		
 	}
 	
@@ -138,6 +141,8 @@ public class TrendLine {
 		double RES=0;
 		double A = 0;
 		double B = 0;
+		
+//		double stdDev = StandardDeviation.compute(price);
 		
 		for(int i = 0;i < price.length - 1; i++){
 			double yi = price[i];

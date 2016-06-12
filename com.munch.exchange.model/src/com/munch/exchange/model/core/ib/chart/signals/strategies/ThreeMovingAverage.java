@@ -130,16 +130,16 @@ public class ThreeMovingAverage extends IbChartSignal {
 		
 		signal[0] = 0;
 		for(int i=1;i<prices.length;i++){
+			
 			if(MA2[i] > MA1[i] && signal[i-1] != 1.0 && MA3[i] > MA2[i]){
 				signal[i] = 1.0;
 				continue;
 			}
-			
-//			System.out.println("Signal: "+signal[i]+", MA3: "+MA3[i]+", MA2:"+MA2[i]);
 			if(signal[i-1] == 1.0 &&  MA3[i] < MA2[i]){
 				signal[i] = 0.0;
 				continue;
 			}
+			
 			
 			if(MA2[i] < MA1[i] && signal[i-1] != -1.0 && MA3[i] < MA2[i]){
 				signal[i] = -1.0;
@@ -150,7 +150,6 @@ public class ThreeMovingAverage extends IbChartSignal {
 				continue;
 			}
 			
-			
 			signal[i] = signal[i-1];
 		}
 
@@ -159,8 +158,6 @@ public class ThreeMovingAverage extends IbChartSignal {
 		refreshSerieValues(this.name+" "+SERIE_MA_SLOW, reset, times, MA1, N1-1);
 		refreshSerieValues(this.name+" "+SERIE_MA_MIDDLE, reset, times, MA2, N2-1);
 		refreshSerieValues(this.name+" "+SERIE_MA_FAST, reset, times, MA3, N3-1);
-
-		
 	}
 	
 	
