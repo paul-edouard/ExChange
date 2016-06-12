@@ -58,6 +58,7 @@
 	<class>com.munch.exchange.model.core.ib.chart.signals.RockwellLongSignal</class>
 	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartTrendLine</class>
 	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartResistanceLine</class>
+	<class>com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverage</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

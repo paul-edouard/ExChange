@@ -250,7 +250,7 @@ public class SignalPerformancePart {
 		if(!(selIndic instanceof IbChartSignal))return;
 		IbChartSignal selSignal=(IbChartSignal)selIndic;
 		
-		 logger.info("Analyse IB Chart Indiator Parameter changed");
+//		 logger.info("Analyse IB Chart Indiator Parameter changed");
 		 
 		 if(chartSignal!=selSignal)return;
 		 
