@@ -9,6 +9,7 @@ import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartMACD;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartRSI;
+import com.munch.exchange.model.core.ib.chart.oscillators.IbChartStochasticOscillator;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedParameters;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
@@ -94,6 +95,7 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(oscillator, IbChartAverageTrueRange.class);
 		addChartIndicator(oscillator, IbChartMACD.class);
 		addChartIndicator(oscillator, IbChartRSI.class);
+		addChartIndicator(oscillator, IbChartStochasticOscillator.class);
 		
 		
 		//================================

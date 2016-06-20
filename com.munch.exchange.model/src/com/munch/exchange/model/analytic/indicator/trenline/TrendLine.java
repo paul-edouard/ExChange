@@ -52,8 +52,8 @@ public class TrendLine {
 		double[] local_high=new double[period];
 		double[] local_low=new double[period];
 		
-		for(int i=period;i<high.length;i++){
-			for(int j=i-period;j<i;j++){
+		for(int i=period-1;i<high.length;i++){
+			for(int j=i-period+1;j<=i;j++){
 				local_high[j-(i-period)]=high[j];
 				local_low[j-(i-period)]=low[j];
 			}
