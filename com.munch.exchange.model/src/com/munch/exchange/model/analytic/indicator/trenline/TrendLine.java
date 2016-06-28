@@ -31,20 +31,22 @@ public class TrendLine {
 	 * @param variance is used for the calculation of the resistance [0.1 5]
 	 * @return
 	 */
-	public static double[][] compute(double[] high, double[] low,  int period, double factor, double variance){
+	public static double[][] compute(double[] high, double[] low,  int period, double variance){
 		
-		System.out.println("High length: "+high.length);
+//		System.out.println("High length: "+high.length);
 		
 		double[][] TrLi=new double[6][high.length];
 		
-		double[] A_UP=new double[high.length];
-		double[] B_UP=new double[high.length];
+		
+		double[][] AB_UP=computeAB(low, period, 1.0);
+		double[] A_UP=AB_UP[0];
+		double[] B_UP=AB_UP[1];
 		double[] RESISTANCE_UP=new double[high.length];
 		double[] DISTANCE_UP=new double[high.length];
 		
-		
-		double[] A_DOWN=new double[high.length];
-		double[] B_DOWN=new double[high.length];
+		double[][] AB_DOWN=computeAB(low, period, -1.0);
+		double[] A_DOWN=AB_DOWN[0];
+		double[] B_DOWN=AB_DOWN[1];
 		double[] RESISTANCE_DOWN=new double[high.length];
 		double[] DISTANCE_DOWN=new double[high.length];
 		
@@ -54,21 +56,21 @@ public class TrendLine {
 		
 		for(int i=period-1;i<high.length;i++){
 			for(int j=i-period+1;j<=i;j++){
-				local_high[j-(i-period)]=high[j];
-				local_low[j-(i-period)]=low[j];
+				local_high[j-(i-period+1)]=high[j];
+				local_low[j-(i-period+1)]=low[j];
 			}
 			
 //			Calculate the Upward Trend
-			double[] AB_UP=calculateAB_Direct(local_low, 1.0, 1.0);
-			A_UP[i]=AB_UP[0];
-			B_UP[i]=AB_UP[1];
+//			double[] AB_UP=calculateAB_Direct(local_low, 1.0, 1.0);
+//			A_UP[i]=AB_UP[0];
+//			B_UP[i]=AB_UP[1];
 			RESISTANCE_UP[i]=calculateResistanceOfPoints(A_UP[i], B_UP[i], local_low, 1);
 			DISTANCE_UP[i]=low[i] - (period*A_UP[i]+B_UP[i]);
 			
 //			Calculate the Downward Trend
-			double[] AB_DOWN=calculateAB_Direct(local_high, -1.0, 1.0);
-			A_DOWN[i]=AB_DOWN[0];
-			B_DOWN[i]=AB_DOWN[1];
+//			double[] AB_DOWN=calculateAB_Direct(local_high, -1.0, 1.0);
+//			A_DOWN[i]=AB_DOWN[0];
+//			B_DOWN[i]=AB_DOWN[1];
 			RESISTANCE_DOWN[i]=calculateResistanceOfPoints(A_DOWN[i], B_DOWN[i], local_high, 1);
 			DISTANCE_DOWN[i]=period*A_DOWN[i]+B_DOWN[i] - high[i];
 			
@@ -85,6 +87,36 @@ public class TrendLine {
 		return TrLi;
 		
 	}
+	
+	
+	public static double[][] computeAB(double[] price, int period, double sign){
+		double[][] AB=new double[2][price.length];
+		
+		double[] A=new double[price.length];
+		double[] B=new double[price.length];
+		
+		double[] local_ext=new double[period];
+		
+		for(int i=period-1;i<price.length;i++){
+			for(int j=i-period+1;j<=i;j++){
+				local_ext[j-(i-period+1)]=price[j];
+			}
+			
+//			Calculate the Upward Trend
+			double[] AB_UP=calculateAB_Direct(local_ext, sign, 1.0);
+			A[i]=AB_UP[0];
+			B[i]=AB_UP[1];
+		}
+		
+		AB[0]=A;
+		AB[1]=B;
+		
+		return AB;
+		
+	}
+	
+	
+	
 	
 	private static double calculateResistanceOfPoints(double A, double B, double[] prices, double variance){
 		double res=0;

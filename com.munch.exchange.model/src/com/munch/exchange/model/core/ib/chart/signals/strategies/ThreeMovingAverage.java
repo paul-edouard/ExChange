@@ -131,6 +131,7 @@ public class ThreeMovingAverage extends IbChartSignal {
 		signal[0] = 0;
 		for(int i=1;i<prices.length;i++){
 			
+//			Long 
 			if(MA2[i] > MA1[i] && signal[i-1] != 1.0 && MA3[i] > MA2[i]){
 				signal[i] = 1.0;
 				continue;
@@ -140,7 +141,7 @@ public class ThreeMovingAverage extends IbChartSignal {
 				continue;
 			}
 			
-			
+//			Short
 			if(MA2[i] < MA1[i] && signal[i-1] != -1.0 && MA3[i] < MA2[i]){
 				signal[i] = -1.0;
 				continue;

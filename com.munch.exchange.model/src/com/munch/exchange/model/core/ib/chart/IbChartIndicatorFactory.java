@@ -16,6 +16,8 @@ import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
 import com.munch.exchange.model.core.ib.chart.signals.RockwellLongSignal;
 import com.munch.exchange.model.core.ib.chart.signals.SuperTrendSignal;
 import com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverage;
+import com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverageFiltered;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartADX;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartAdaptiveMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartBollingerBands;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartDoubleMovingAverage;
@@ -87,6 +89,10 @@ public class IbChartIndicatorFactory {
 //		BOLLINGER BAND
 		addChartIndicator(trend, IbChartBollingerBands.class);
 		
+//		ADX
+		addChartIndicator(trend, IbChartADX.class);
+		
+		
 		
 		//================================
 		//==         OSCILLATOR         ==
@@ -112,6 +118,7 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(trendSignal, SuperTrendSignal.class);
 		addChartIndicator(trendSignal, RockwellLongSignal.class);
 		addChartIndicator(trendSignal, ThreeMovingAverage.class);
+		addChartIndicator(trendSignal, ThreeMovingAverageFiltered.class);
 		
 		
 		

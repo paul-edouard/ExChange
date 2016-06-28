@@ -36,7 +36,7 @@ public class IbChartTrendLine extends IbChartIndicator {
 	public static final String DOWN_RESISTANCE="Down Resistance";
 	
 	public static final String PERIOD="Period";
-	public static final String FACTOR="Factor";
+//	public static final String FACTOR="Factor";
 	public static final String POW_VARIANCE="Pow Variance";
 	public static final String MA_PERIOD="Moving Average Period";
 	
@@ -82,7 +82,7 @@ public class IbChartTrendLine extends IbChartIndicator {
 		this.parameters.add(new IbChartParameter(this, PERIOD,ParameterType.INTEGER, 30, 1, 200, 0));
 
 //		FACTOR
-		this.parameters.add(new IbChartParameter(this, FACTOR,ParameterType.DOUBLE, 3, 0, 5, 1));
+//		this.parameters.add(new IbChartParameter(this, FACTOR,ParameterType.DOUBLE, 3, 0, 5, 1));
 		
 //		VARIANCE
 //		this.parameters.add(new IbChartParameter(this, VARIANCE,ParameterType.DOUBLE, 0.001, 0.0001, 0.1, 4));
@@ -103,10 +103,10 @@ public class IbChartTrendLine extends IbChartIndicator {
 		
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
 		int ma_period=this.getChartParameter(MA_PERIOD).getIntegerValue();
-		double factor=this.getChartParameter(FACTOR).getValue();
+//		double factor=this.getChartParameter(FACTOR).getValue();
 		double variance=Math.pow(10,this.getChartParameter(POW_VARIANCE).getValue());
 		
-		double[][] TrLi=TrendLine.compute(high, low, period, factor, variance);
+		double[][] TrLi=TrendLine.compute(high, low, period, variance);
 		
 		if(TrLi[0].length==0)return;
 		

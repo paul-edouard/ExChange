@@ -91,8 +91,9 @@ public class AverageDirectionalMovementIndexWilder {
 			double absHighLastClose=Math.abs(High[i] - Close[i-1]);
 			double absLowLastClose=Math.abs(Low[i] - Close[i-1]);
 			
-			
 			tr[i]=Math.max(absHigh, Math.max(absHighLastClose,absLowLastClose));
+			
+//			System.out.println("tr: "+tr[i]+", absHigh: "+absHigh+", absHighLastClose: "+absHighLastClose+", absLowLastClose: "+absLowLastClose);
 			
 		}
 		
@@ -103,23 +104,23 @@ public class AverageDirectionalMovementIndexWilder {
 	
 	public static double[] computeADXWi(double[] Close, double[] High, double[] Low ,int Period){
 		
-		double[] DX=new double[Close.length];
+		double[] DX=new double[High.length];
 		
 		double[] dm_plus=dmPlus(High);
 		double[] dm_minus=dmMinus(Low);
-		double[] tr=trueRange(Close,High,Low);
+//		double[] tr=trueRange(Close,High,Low);
 		
-		double[] ATR=MovingAverage.SMMA(tr,Period);
+//		double[] ATR=MovingAverage.SMMA(tr,Period);
 		
 		double[] Plus_D=MovingAverage.SMMA(dm_plus,Period);
-		for(int i=1;i<Low.length;i++){
-			Plus_D[i]=Plus_D[i]/ATR[i]*100;
-		}
+//		for(int i=1;i<Low.length;i++){
+//			Plus_D[i]=Plus_D[i]/ATR[i]*100;
+//		}
 		
 		double[] Minus_D=MovingAverage.SMMA(dm_minus,Period);
-		for(int i=1;i<Low.length;i++){
-			Minus_D[i]=Minus_D[i]/ATR[i]*100;
-		}
+//		for(int i=1;i<Low.length;i++){
+//			Minus_D[i]=Minus_D[i]/ATR[i]*100;
+//		}
 		
 		
 		//DX(i) = ABS(Plus_D(i) - Minus_D(i))/(Plus_D(i) + Minus_D(i)) * 100
