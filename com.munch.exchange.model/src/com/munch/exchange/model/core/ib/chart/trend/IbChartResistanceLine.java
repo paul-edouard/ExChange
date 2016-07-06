@@ -29,15 +29,22 @@ public class IbChartResistanceLine extends IbChartIndicator {
 	public static final String MAX_RES_LINE="Max Resistance Line";
 	public static final String MIN_RES_LINE="Min Resistance Line";
 	
+	public static final String MAX_BREAKOUT_VALUE="Max Breakout Value";
+	public static final String MIN_BREAKOUT_VALUE="Min Breakout Value";
+	
 	public static final String MAX_RES_VALUE="Max Resistance Value";
 	public static final String MIN_RES_VALUE="Min Resistance Value";
 	
-	public static final String MIN_MAX_DIST="Min Max Distance";
-	public static final String RES_VALUE="Resistance Value";
+	public static final String MAX_RANGE_UP="Max Range Up";
+	public static final String MAX_RANGE_DOWN="Max Range Down";
+	
+	public static final String MIN_RANGE_UP="Min Range Up";
+	public static final String MIN_RANGE_DOWN="Min Range Down";
 	
 	
 	public static final String PERIOD="Period";
-	public static final String PRICE="Price";
+	public static final String MAX_RESISTANCE_SEARCH_PERIOD="Max Resistance Search Period";
+	public static final String RESISTANCE_RANGE="Resistance Range";
 	
 
 	
@@ -67,11 +74,21 @@ public class IbChartResistanceLine extends IbChartIndicator {
 		this.series.add(new IbChartSerie(this,this.name+" "+MAX_RES_LINE,RendererType.MAIN,true,true,50, 44, 89));
 		this.series.add(new IbChartSerie(this,this.name+" "+MIN_RES_LINE,RendererType.MAIN,true,true,50, 244, 189));
 		
+		this.series.add(new IbChartSerie(this,this.name+" "+MAX_RANGE_UP,RendererType.MAIN,false,true,50, 144, 89));
+		this.series.add(new IbChartSerie(this,this.name+" "+MAX_RANGE_DOWN,RendererType.MAIN,false,true,50, 144, 89));
+		
+		this.series.add(new IbChartSerie(this,this.name+" "+MIN_RANGE_UP,RendererType.MAIN,false,true,150, 244, 189));
+		this.series.add(new IbChartSerie(this,this.name+" "+MIN_RANGE_DOWN,RendererType.MAIN,false,true,150, 244, 189));
+		
+		
 		this.series.add(new IbChartSerie(this,this.name+" "+MAX_RES_VALUE,RendererType.SECOND,false,false,50, 44, 89));
 		this.series.add(new IbChartSerie(this,this.name+" "+MIN_RES_VALUE,RendererType.SECOND,false,false,50, 244, 189));
 		
-		this.series.add(new IbChartSerie(this,this.name+" "+MIN_MAX_DIST,RendererType.PERCENT,false,false,150, 150, 150));
-		this.series.add(new IbChartSerie(this,this.name+" "+RES_VALUE,RendererType.SECOND,false,false,150, 150, 150));
+		this.series.add(new IbChartSerie(this,this.name+" "+MAX_BREAKOUT_VALUE,RendererType.SECOND,false,false,50, 44, 89));
+		this.series.add(new IbChartSerie(this,this.name+" "+MIN_BREAKOUT_VALUE,RendererType.SECOND,false,false,50, 244, 189));
+		
+		
+		
 		
 	}
 
@@ -80,42 +97,66 @@ public class IbChartResistanceLine extends IbChartIndicator {
 //		PERIOD
 		this.parameters.add(new IbChartParameter(this, PERIOD,ParameterType.INTEGER, 30, 1, 200, 0));
 
-//		PRICE
-		IbChartParameter price=new IbChartParameter(this, PRICE,DataType.CLOSE.name(),DataType.toStringArray());
-		this.parameters.add(price);		
+//		MAX RESISTANCE SEARCH PERIOD
+		this.parameters.add(new IbChartParameter(this, MAX_RESISTANCE_SEARCH_PERIOD,ParameterType.INTEGER, 1000, 500, 2000, 0));		
+		
+//		RESISTANCE RANGE
+		this.parameters.add(new IbChartParameter(this, RESISTANCE_RANGE,ParameterType.DOUBLE, 0.0001, 0.00001, 0.005, 5));
+
 		
 	}
 
 	@Override
 	protected void computeSeriesPointValues(List<ExBar> bars, boolean reset) {
 		
-		double[] prices=getPrices(bars);
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
-//		System.out.println("Ib Chart Resis Line Period: " + period);
+		int maxResSearchPeriod=this.getChartParameter(MAX_RESISTANCE_SEARCH_PERIOD).getIntegerValue();
+		double range = this.getChartParameter(RESISTANCE_RANGE).getValue();
+
 		long[] times=BarUtils.getTimeArray(bars);
 		
+		double[] high=BarUtils.barsToDoubleArray(bars, DataType.HIGH);
+		double[] low=BarUtils.barsToDoubleArray(bars, DataType.LOW);
 		
-		double[][] RES = Resistance.compute(prices, period);
 		
-		refreshSerieValues(this.name+" "+MAX_RES_LINE, reset, times, RES[0], period-1);
-		refreshSerieValues(this.name+" "+MIN_RES_LINE, reset, times, RES[1], period-1);
+		double[][] RES = Resistance.compute(high, low, period, range, maxResSearchPeriod);
 		
-		refreshSerieValues(this.name+" "+MAX_RES_VALUE, reset, times, RES[2], period-1);
-		refreshSerieValues(this.name+" "+MIN_RES_VALUE, reset, times, RES[3], period-1);
+		double[] maxRangeUp = new double[high.length];
+		double[] maxRangeDown = new double[high.length];
 		
-		refreshSerieValues(this.name+" "+MIN_MAX_DIST, reset, times, RES[4], period-1);
-		refreshSerieValues(this.name+" "+RES_VALUE, reset, times, RES[5], period-1);
+		double[] minRangeUp = new double[high.length];
+		double[] minRangeDown = new double[high.length];
+		
+		for(int i=0;i<high.length;i++){
+			maxRangeUp[i] = RES[0][i]*(1+range);
+			maxRangeDown[i] = RES[0][i]*(1-range);
+			
+			minRangeUp[i] = RES[1][i]*(1+range);
+			minRangeDown[i] = RES[1][i]*(1-range);
+		}
+		
+		
+		refreshSerieValues(this.name+" "+MAX_RES_LINE, reset, times, RES[0], maxResSearchPeriod-1);
+		refreshSerieValues(this.name+" "+MIN_RES_LINE, reset, times, RES[1], maxResSearchPeriod-1);
+		
+		refreshSerieValues(this.name+" "+MAX_RANGE_UP, reset, times, maxRangeUp, maxResSearchPeriod-1);
+		refreshSerieValues(this.name+" "+MAX_RANGE_DOWN, reset, times, maxRangeDown, maxResSearchPeriod-1);
+		
+		refreshSerieValues(this.name+" "+MIN_RANGE_UP, reset, times, 	minRangeUp, maxResSearchPeriod-1);
+		refreshSerieValues(this.name+" "+MIN_RANGE_DOWN, reset, times, 	minRangeDown, maxResSearchPeriod-1);
+		
+		refreshSerieValues(this.name+" "+MAX_RES_VALUE, reset, times, RES[2], maxResSearchPeriod-1);
+		refreshSerieValues(this.name+" "+MIN_RES_VALUE, reset, times, RES[3], maxResSearchPeriod-1);
+		
+		
+		refreshSerieValues(this.name+" "+MAX_BREAKOUT_VALUE, reset, times, RES[6], maxResSearchPeriod-1);
+		refreshSerieValues(this.name+" "+MIN_BREAKOUT_VALUE, reset, times, RES[7], maxResSearchPeriod-1);
+		
 		
 
 	}
 	
-	private double[] getPrices(List<ExBar> bars){
-		
-		String priceLabel=this.getChartParameter(PRICE).getStringValue();
-		double[] prices=BarUtils.barsToDoubleArray(bars, DataType.fromString(priceLabel));
-		
-		return prices;
-	}
+	
 	
 
 }

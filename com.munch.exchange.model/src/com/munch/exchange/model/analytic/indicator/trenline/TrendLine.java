@@ -31,85 +31,144 @@ public class TrendLine {
 	 * @param variance is used for the calculation of the resistance [0.1 5]
 	 * @return
 	 */
-	public static double[][] compute(double[] high, double[] low,  int period, double variance){
+	public static double[][] compute(double[] high, double[] low,  int nbOfExtremum, int maxResSearchPeriod, double range){
 		
 //		System.out.println("High length: "+high.length);
 		
-		double[][] TrLi=new double[6][high.length];
+		double[][] TrLi=new double[8][high.length];
 		
 		
-		double[][] AB_UP=computeAB(low, period, 1.0);
+		double[][] AB_UP=computeAB(low, nbOfExtremum, 1.0, maxResSearchPeriod, range );
 		double[] A_UP=AB_UP[0];
-		double[] B_UP=AB_UP[1];
-		double[] RESISTANCE_UP=new double[high.length];
-		double[] DISTANCE_UP=new double[high.length];
+		double[] VALUE_UP=AB_UP[2];
+		double[] RESISTANCE_UP=AB_UP[3];
+		double[] BREAKOUT_UP=AB_UP[4];
 		
-		double[][] AB_DOWN=computeAB(low, period, -1.0);
+		double[][] AB_DOWN=computeAB(high, nbOfExtremum, -1.0, maxResSearchPeriod, range);
 		double[] A_DOWN=AB_DOWN[0];
-		double[] B_DOWN=AB_DOWN[1];
-		double[] RESISTANCE_DOWN=new double[high.length];
-		double[] DISTANCE_DOWN=new double[high.length];
+		double[] VALUE_DOWN=AB_DOWN[2];
+		double[] RESISTANCE_DOWN=AB_DOWN[3];
+		double[] BREAKOUT_DOWN=AB_DOWN[4];
 		
-		
-		double[] local_high=new double[period];
-		double[] local_low=new double[period];
-		
-		for(int i=period-1;i<high.length;i++){
-			for(int j=i-period+1;j<=i;j++){
-				local_high[j-(i-period+1)]=high[j];
-				local_low[j-(i-period+1)]=low[j];
-			}
-			
-//			Calculate the Upward Trend
-//			double[] AB_UP=calculateAB_Direct(local_low, 1.0, 1.0);
-//			A_UP[i]=AB_UP[0];
-//			B_UP[i]=AB_UP[1];
-			RESISTANCE_UP[i]=calculateResistanceOfPoints(A_UP[i], B_UP[i], local_low, 1);
-			DISTANCE_UP[i]=low[i] - (period*A_UP[i]+B_UP[i]);
-			
-//			Calculate the Downward Trend
-//			double[] AB_DOWN=calculateAB_Direct(local_high, -1.0, 1.0);
-//			A_DOWN[i]=AB_DOWN[0];
-//			B_DOWN[i]=AB_DOWN[1];
-			RESISTANCE_DOWN[i]=calculateResistanceOfPoints(A_DOWN[i], B_DOWN[i], local_high, 1);
-			DISTANCE_DOWN[i]=period*A_DOWN[i]+B_DOWN[i] - high[i];
-			
-		}
 
 		TrLi[0]=A_UP;
-		TrLi[1]=RESISTANCE_UP;
-		TrLi[2]=DISTANCE_UP;
+		TrLi[1]=VALUE_UP;
+		TrLi[2]=RESISTANCE_UP;
+		TrLi[3]=BREAKOUT_UP;
 
-		TrLi[3]=A_DOWN;
-		TrLi[4]=RESISTANCE_DOWN;
-		TrLi[5]=DISTANCE_DOWN;
+		TrLi[4]=A_DOWN;
+		TrLi[5]=VALUE_DOWN;
+		TrLi[6]=RESISTANCE_DOWN;
+		TrLi[7]=BREAKOUT_DOWN;
 
 		return TrLi;
 		
 	}
 	
 	
-	public static double[][] computeAB(double[] price, int period, double sign){
-		double[][] AB=new double[2][price.length];
+	public static double[][] computeAB(double[] price, int nbOfExtremum, double sign, int maxResSearchPeriod, double range){
+		double[][] AB=new double[5][price.length];
 		
 		double[] A=new double[price.length];
 		double[] B=new double[price.length];
 		
-		double[] local_ext=new double[period];
+		double[] Val=new double[price.length];
+		double[] Res=new double[price.length];
 		
-		for(int i=period-1;i<price.length;i++){
-			for(int j=i-period+1;j<=i;j++){
-				local_ext[j-(i-period+1)]=price[j];
+		double[] Breakout=new double[price.length];
+		
+//		double[] local_ext=new double[period];
+		
+		for(int i=0;i<price.length;i++){
+			
+//			Search the Extremums
+			LinkedList<Integer> extPos=new LinkedList<Integer>();
+			int pos = i;
+			while(pos > 1 && extPos.size()<nbOfExtremum && (i - pos)<=maxResSearchPeriod){
+				pos--;
+				if(sign < 0){
+					if(price[pos-1]<=price[pos] && price[pos] >= price[pos+1]){
+						extPos.add(0, pos);
+					}
+				}
+				else{
+					if(price[pos-1]>=price[pos] && price[pos] <= price[pos+1]){
+						extPos.add(0, pos);
+					}
+				}
+			}
+			if(extPos.size()<2)continue;
+			
+//			Create the local serie
+			double[] local_ext=new double[extPos.getLast()-extPos.getFirst()+1];
+			int k=0;
+			for(int j=extPos.getFirst();j<=extPos.getLast();j++){
+				local_ext[k]=price[j];
+				k++;
 			}
 			
-//			Calculate the Upward Trend
-			double[] AB_UP=calculateAB_Direct(local_ext, sign, 1.0);
-			A[i]=AB_UP[0];
-			B[i]=AB_UP[1];
+//			Calculate the Trend
+			double[] AB_Loc=calculateAB_Direct(local_ext, sign, 1.0);
+			A[i]=AB_Loc[0];
+			B[i]=AB_Loc[1];
+			
+//			Calculate the current Value
+			Val[i] = (i-extPos.getFirst())*A[i] + B[i];
+			
+//			Calculate the resistance
+			double resVal = 0;
+			pos = i;
+			int nbOfTops = 0;
+			while(pos > 1 && (i-pos)<=maxResSearchPeriod){
+				pos--;
+				if(Val[i]==0)break;
+				
+				if(sign < 0){
+					if(price[pos-1]<=price[pos] && price[pos] >= price[pos+1]){
+						double trend_line_val = (pos - extPos.getFirst())*A[i] + B[i];
+						double topPos = (trend_line_val-price[pos])/trend_line_val;
+						
+						if(topPos < -range)break;
+						if(topPos > range)continue;
+						
+						nbOfTops++;
+						resVal += (i-pos);
+					}
+				}
+				else{
+					if(price[pos-1]>=price[pos] && price[pos] <= price[pos+1]){
+						double trend_line_val = (pos - extPos.getFirst())*A[i] + B[i];
+						double topPos = (price[pos]-trend_line_val)/trend_line_val; 
+
+						if(topPos < -range)break;						
+						if(topPos > range)continue;
+						
+						nbOfTops++;
+						resVal += (i-pos);
+					}
+				}
+				
+			}
+			
+			if(nbOfTops > 1)
+				Res[i]=resVal;
+			
+//			Calculate the breakout value
+			if(sign < 0 && price[i] > Val[i]){
+				Breakout[i] = price[i] - Val[i];
+			}
+			else if (sign > 0 && price[i] < Val[i]){
+				Breakout[i] = Val[i] - price[i];
+			}
+			
+			
 		}
 		
 		AB[0]=A;
 		AB[1]=B;
+		AB[2]=Val;
+		AB[3]=Res;
+		AB[4]=Breakout;
 		
 		return AB;
 		

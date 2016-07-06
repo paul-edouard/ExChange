@@ -29,10 +29,13 @@ public class IbChartADX extends IbChartIndicator {
 	private static final long serialVersionUID = 4810238346550873960L;
 	
 	public static final String ADX="ADX";
-	public static final String ADX_DIR="ADX Direction";
+//	public static final String ADX_DIR="ADX Direction";
+	public static final String ADX_ACTIVATION="ADX Activation";
+	public static final String ADX_LIMIT="ADX Limit";
 	
 	public static final String PERIOD="Period";
-	public static final String TREND_PERIOD=" Trend Period";
+//	public static final String TREND_PERIOD=" Trend Period";
+	public static final String LIMIT="Activation Limit";
 //	public static final String PRICE="Price";
 	
 
@@ -60,8 +63,12 @@ public class IbChartADX extends IbChartIndicator {
 
 	@Override
 	public void createSeries() {
-		this.series.add(new IbChartSerie(this,this.name+" "+ADX,RendererType.SECOND,true,true,50, 44, 89));
-		this.series.add(new IbChartSerie(this,this.name+" "+ADX_DIR,RendererType.PERCENT,false,true,50, 44, 89));
+		this.series.add(new IbChartSerie(this,this.name+" "+ADX,RendererType.PERCENT,true,true,50, 44, 89));
+		this.series.add(new IbChartSerie(this,this.name+" "+ADX_LIMIT,RendererType.PERCENT,false,true,50, 144, 89));
+		this.series.add(new IbChartSerie(this,this.name+" "+ADX_ACTIVATION,RendererType.SECOND,false,true,50, 144, 89));
+		
+		
+//		this.series.add(new IbChartSerie(this,this.name+" "+ADX_DIR,RendererType.PERCENT,false,true,50, 44, 189));
 
 	}
 
@@ -71,9 +78,11 @@ public class IbChartADX extends IbChartIndicator {
 		this.parameters.add(new IbChartParameter(this, PERIOD,ParameterType.INTEGER, 30, 1, 200, 0));	
 
 //		TREND PERIOD
-		this.parameters.add(new IbChartParameter(this, TREND_PERIOD,ParameterType.INTEGER, 4, 1, 50, 0));	
+//		this.parameters.add(new IbChartParameter(this, TREND_PERIOD,ParameterType.INTEGER, 4, 1, 50, 0));	
 		
-		
+//		LIMIT
+		this.parameters.add(new IbChartParameter(this, LIMIT,ParameterType.DOUBLE, 0.15, 0.01, 0.3, 2));
+
 	}
 
 	@Override
@@ -84,21 +93,34 @@ public class IbChartADX extends IbChartIndicator {
 		double[] low=BarUtils.barsToDoubleArray(bars, DataType.LOW);
 		
 		int period=this.getChartParameter(PERIOD).getIntegerValue();
-		int trend_period=this.getChartParameter(TREND_PERIOD).getIntegerValue();
+//		int trend_period=this.getChartParameter(TREND_PERIOD).getIntegerValue();
+		double limit = this.getChartParameter(LIMIT).getValue()*100;
+//		System.out.println(limit);
 		long[] times=BarUtils.getTimeArray(bars);
 		
 		
 		double[] adx = AverageDirectionalMovementIndexWilder.computeADXWi(close, high, low, period);
-		double[][] AB = TrendLine.computeAB(adx, trend_period, 1.0);
-		
-		
-		double[] adx_diff = AB[0];
-		for(int i=0;i<adx_diff.length;i++){
-			adx_diff[i] = adx_diff[i] * adx[i];
+		double[] l = new double[adx.length];
+		double[] act = new double[adx.length];
+		for(int i=0;i<adx.length;i++){
+			l[i] = limit;
+			if(adx[i]>limit)
+				act[i]=1.0;
 		}
 		
+//		double[][] AB = TrendLine.computeAB(adx, trend_period, 1.0);
+//		
+//		
+//		double[] adx_diff = AB[0];
+//		for(int i=0;i<adx_diff.length;i++){
+//			adx_diff[i] = adx_diff[i] * adx[i];
+//		}
+		
 		refreshSerieValues(this.name+" "+ADX, reset, times, adx, period-1);
-		refreshSerieValues(this.name+" "+ADX_DIR, reset, times, adx_diff, period-2);
+		refreshSerieValues(this.name+" "+ADX_LIMIT, reset, times, l, period-1);
+		refreshSerieValues(this.name+" "+ADX_ACTIVATION, reset, times, act, period-1);
+		
+//		refreshSerieValues(this.name+" "+ADX_DIR, reset, times, adx_diff, period-2);
 		
 
 	}

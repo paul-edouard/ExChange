@@ -27,18 +27,22 @@ public class IbChartTrendLine extends IbChartIndicator {
 	
 	public static final String UP_GRADIENT="Up Gradient";
 	public static final String UP_MA_GRADIENT="Up Moving Average Gradient";
-	public static final String UP_DISTANCE="Up Distance";
+	public static final String UP_VALUE="Up Value";
 	public static final String UP_RESISTANCE="Up Resistance";
-
+	public static final String UP_BREAKOUT_VALUE="Up Breakout Value";
+	
 	public static final String DOWN_GRADIENT="Down Gradient";
 	public static final String DOWN_MA_GRADIENT="Down Moving Average Gradient";
-	public static final String DOWN_DISTANCE="Down Distance";
+	public static final String DOWN_VALUE="Down Value";
 	public static final String DOWN_RESISTANCE="Down Resistance";
+	public static final String DOWN_BREAKOUT_VALUE="Down Breakout Value";
 	
 	public static final String PERIOD="Period";
-//	public static final String FACTOR="Factor";
-	public static final String POW_VARIANCE="Pow Variance";
 	public static final String MA_PERIOD="Moving Average Period";
+	
+	public static final String MAX_RESISTANCE_SEARCH_PERIOD="Max Resistance Search Period";
+	public static final String RESISTANCE_RANGE="Resistance Range";
+
 	
 
 	
@@ -66,31 +70,32 @@ public class IbChartTrendLine extends IbChartIndicator {
 	@Override
 	public void createSeries() {
 		this.series.add(new IbChartSerie(this,this.name+" "+UP_GRADIENT,RendererType.PERCENT,true,true,50, 44, 89));
-		this.series.add(new IbChartSerie(this,this.name+" "+UP_MA_GRADIENT,RendererType.PERCENT,false,true,50, 44, 189));
+		this.series.add(new IbChartSerie(this,this.name+" "+UP_MA_GRADIENT,RendererType.PERCENT,false,false,50, 44, 189));
 		this.series.add(new IbChartSerie(this,this.name+" "+UP_RESISTANCE,RendererType.SECOND,false,true,250, 44, 89));
-		this.series.add(new IbChartSerie(this,this.name+" "+UP_DISTANCE,RendererType.SECOND,false,false,50, 244, 89));
+		this.series.add(new IbChartSerie(this,this.name+" "+UP_VALUE,RendererType.MAIN,false,true,50, 244, 89));
+		this.series.add(new IbChartSerie(this,this.name+" "+UP_BREAKOUT_VALUE,RendererType.SECOND,false,true,50, 244, 89));
 
 		this.series.add(new IbChartSerie(this,this.name+" "+DOWN_GRADIENT,RendererType.PERCENT,true,true,50, 44, 89));
-		this.series.add(new IbChartSerie(this,this.name+" "+DOWN_MA_GRADIENT,RendererType.PERCENT,false,true,50, 44, 189));
+		this.series.add(new IbChartSerie(this,this.name+" "+DOWN_MA_GRADIENT,RendererType.PERCENT,false,false,50, 44, 189));
 		this.series.add(new IbChartSerie(this,this.name+" "+DOWN_RESISTANCE,RendererType.SECOND,false,true,250, 44, 89));
-		this.series.add(new IbChartSerie(this,this.name+" "+DOWN_DISTANCE,RendererType.SECOND,false,false,50, 244, 89));
+		this.series.add(new IbChartSerie(this,this.name+" "+DOWN_VALUE,RendererType.MAIN,false,true,50, 244, 89));
+		this.series.add(new IbChartSerie(this,this.name+" "+DOWN_BREAKOUT_VALUE,RendererType.SECOND,false,true,190, 244, 89));
 	}
 
 	@Override
 	public void createParameters() {
 //		PERIOD
 		this.parameters.add(new IbChartParameter(this, PERIOD,ParameterType.INTEGER, 30, 1, 200, 0));
-
-//		FACTOR
-//		this.parameters.add(new IbChartParameter(this, FACTOR,ParameterType.DOUBLE, 3, 0, 5, 1));
-		
-//		VARIANCE
-//		this.parameters.add(new IbChartParameter(this, VARIANCE,ParameterType.DOUBLE, 0.001, 0.0001, 0.1, 4));
-		this.parameters.add(new IbChartParameter(this, POW_VARIANCE,ParameterType.DOUBLE, -5, -7, 3, 1));
 		
 //		MA PERIOD
 		this.parameters.add(new IbChartParameter(this, MA_PERIOD,ParameterType.INTEGER, 3, 1, 50, 0));
 		
+//		MAX RESISTANCE SEARCH PERIOD
+		this.parameters.add(new IbChartParameter(this, MAX_RESISTANCE_SEARCH_PERIOD,ParameterType.INTEGER, 500, 250, 1000, 0));		
+		
+//		RESISTANCE RANGE
+		this.parameters.add(new IbChartParameter(this, RESISTANCE_RANGE,ParameterType.DOUBLE, 0.0001, 0.00001, 0.005, 5));
+
 	}
 
 	@Override
@@ -101,26 +106,29 @@ public class IbChartTrendLine extends IbChartIndicator {
 		long[] times=BarUtils.getTimeArray(bars);
 		
 		
-		int period=this.getChartParameter(PERIOD).getIntegerValue();
+		int nbOfExtremum=this.getChartParameter(PERIOD).getIntegerValue();
 		int ma_period=this.getChartParameter(MA_PERIOD).getIntegerValue();
-//		double factor=this.getChartParameter(FACTOR).getValue();
-		double variance=Math.pow(10,this.getChartParameter(POW_VARIANCE).getValue());
 		
-		double[][] TrLi=TrendLine.compute(high, low, period, variance);
+		int maxResSearchPeriod=this.getChartParameter(MAX_RESISTANCE_SEARCH_PERIOD).getIntegerValue();
+		double range = this.getChartParameter(RESISTANCE_RANGE).getValue();
+
+		double[][] TrLi=TrendLine.compute(high, low, nbOfExtremum, maxResSearchPeriod, range);
 		
 		if(TrLi[0].length==0)return;
 		
-		refreshSerieValues(this.name+" "+UP_GRADIENT, reset, times, TrLi[0], period-1);
-		refreshSerieValues(this.name+" "+UP_MA_GRADIENT, reset, times, MovingAverage.EMA(TrLi[0], ma_period), period-1);
+		refreshSerieValues(this.name+" "+UP_GRADIENT, reset, times, TrLi[0], maxResSearchPeriod-1);
+		refreshSerieValues(this.name+" "+UP_MA_GRADIENT, reset, times, MovingAverage.EMA(TrLi[0], ma_period), maxResSearchPeriod-1);
 		
-		refreshSerieValues(this.name+" "+UP_RESISTANCE, reset, times, TrLi[1], period-1);
-		refreshSerieValues(this.name+" "+UP_DISTANCE, reset, times, TrLi[2], period-1);
+		refreshSerieValues(this.name+" "+UP_RESISTANCE, reset, times, TrLi[2], maxResSearchPeriod-1);
+		refreshSerieValues(this.name+" "+UP_VALUE, reset, times, TrLi[1], maxResSearchPeriod-1);
+		refreshSerieValues(this.name+" "+UP_BREAKOUT_VALUE, reset, times, TrLi[3], maxResSearchPeriod-1);
 	
-		refreshSerieValues(this.name+" "+DOWN_GRADIENT, reset, times, TrLi[3], period-1);
-		refreshSerieValues(this.name+" "+DOWN_MA_GRADIENT, reset, times, MovingAverage.EMA(TrLi[3], ma_period), period-1);
+		refreshSerieValues(this.name+" "+DOWN_GRADIENT, reset, times, TrLi[4], maxResSearchPeriod-1);
+		refreshSerieValues(this.name+" "+DOWN_MA_GRADIENT, reset, times, MovingAverage.EMA(TrLi[4], ma_period), maxResSearchPeriod-1);
 		
-		refreshSerieValues(this.name+" "+DOWN_RESISTANCE, reset, times, TrLi[4], period-1);
-		refreshSerieValues(this.name+" "+DOWN_DISTANCE, reset, times, TrLi[5], period-1);
+		refreshSerieValues(this.name+" "+DOWN_RESISTANCE, reset, times, TrLi[6], maxResSearchPeriod-1);
+		refreshSerieValues(this.name+" "+DOWN_VALUE, reset, times, TrLi[5], maxResSearchPeriod-1);
+		refreshSerieValues(this.name+" "+DOWN_BREAKOUT_VALUE, reset, times, TrLi[7], maxResSearchPeriod-1);
 		
 	}
 
