@@ -63,6 +63,7 @@
 	<class>com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverageFiltered</class>
 	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartADX</class>
 	<class>com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverageWithADXFilter</class>
+	<class>com.munch.exchange.model.core.ib.chart.signals.strategies.Bladerunner</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

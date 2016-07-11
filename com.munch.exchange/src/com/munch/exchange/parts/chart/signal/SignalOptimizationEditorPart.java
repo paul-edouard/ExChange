@@ -1539,8 +1539,8 @@ IbChartSignalOptimizationControllerListener{
 				//Opt. Bars
 //				logger.info("Calculate Statistics Opt. Bars!");
 				signal.setBatch(true);
-				signal.setOptimizationBars(null);
-				signal.compute(optimizationBarsMap.get(bazSize+percentOfDataRequired));
+				signal.setOptimizationBars(optimizationBarsMap.get(bazSize+percentOfDataRequired));
+				signal.compute(allCollectedBars);
 				double[] profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
 				optParam.setOptBenefit(profitAndRisk[0]);
 				optParam.setOptRisk(profitAndRisk[1]);
@@ -1549,8 +1549,8 @@ IbChartSignalOptimizationControllerListener{
 				
 //				logger.info("Calculate Statistics Back Testing. Bars!");
 				signal.setBatch(true);
-				signal.setOptimizationBars(null);
-				signal.compute(backTestingBarsMap.get(bazSize+percentOfDataRequired));
+				signal.setOptimizationBars(backTestingBarsMap.get(bazSize+percentOfDataRequired));
+				signal.compute(allCollectedBars);
 				profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
 				optParam.setBackTestBenefit(profitAndRisk[0]);
 				optParam.setBackTestRisk(profitAndRisk[1]);

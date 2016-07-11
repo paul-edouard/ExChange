@@ -15,6 +15,7 @@ import com.munch.exchange.model.core.ib.chart.signals.IbChartSignalOptimizedPara
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSimpleDerivate;
 import com.munch.exchange.model.core.ib.chart.signals.RockwellLongSignal;
 import com.munch.exchange.model.core.ib.chart.signals.SuperTrendSignal;
+import com.munch.exchange.model.core.ib.chart.signals.strategies.Bladerunner;
 import com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverage;
 import com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverageFiltered;
 import com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverageWithADXFilter;
@@ -121,6 +122,7 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(trendSignal, ThreeMovingAverage.class);
 		addChartIndicator(trendSignal, ThreeMovingAverageFiltered.class);
 		addChartIndicator(trendSignal, ThreeMovingAverageWithADXFilter.class);
+		addChartIndicator(trendSignal, Bladerunner.class);
 		
 		
 		
