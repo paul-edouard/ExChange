@@ -1,6 +1,7 @@
 package com.munch.exchange.model.core.ib.chart.signals;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -119,8 +120,12 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 		setChartSignalParameters(signal, solution);
 		
 		//Calculate the Signal
+		long start=Calendar.getInstance().getTimeInMillis();
 		signal.setBatch(true);
 		signal.compute(bars);
+		long end=Calendar.getInstance().getTimeInMillis();
+		double time=((double) ((end - start)/1000))/60;
+		System.out.println("Time needed for calcualtion: " + time +"mn");
 		
 		//Evaluate Profit and Risk
 		setObjectives(signal, solution);

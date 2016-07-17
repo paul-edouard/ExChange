@@ -10,6 +10,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -82,6 +85,8 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.widgets.Text;
+import org.encog.ml.genetic.GeneticError;
 
 
 public class SignalOptimizationEditorPart implements SelectionListener, 
@@ -431,6 +436,8 @@ IbChartSignalOptimizationControllerListener{
 	private TableColumn tblclmnId;
 	private Button btnCalculateStatistics;
 	private Combo comboBarType;
+	private Label lblPercentOfTraining;
+	private Spinner spinnerPercentOfTraningData;
 	
 	public SignalOptimizationEditorPart() {
 	}
@@ -495,7 +502,16 @@ IbChartSignalOptimizationControllerListener{
 		spinnerPercentOfData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		spinnerPercentOfData.setPageIncrement(1);
 		spinnerPercentOfData.setMinimum(1);
-		spinnerPercentOfData.setSelection(20);
+		spinnerPercentOfData.setSelection(50);
+		
+		lblPercentOfTraining = new Label(groupControls, SWT.NONE);
+		lblPercentOfTraining.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblPercentOfTraining.setText("Percent of Training Data:");
+		
+		spinnerPercentOfTraningData = new Spinner(groupControls, SWT.BORDER);
+		spinnerPercentOfTraningData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		spinnerPercentOfTraningData.setMinimum(1);
+		spinnerPercentOfTraningData.setSelection(60);
 		
 		lblAlgorithm = new Label(groupControls, SWT.NONE);
 		lblAlgorithm.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -562,7 +578,8 @@ IbChartSignalOptimizationControllerListener{
 													comboReportType.getText(),
 													spinnerMaxNFE.getSelection(),
 													spinnerSeeds.getSelection(),
-													spinnerPercentOfData.getSelection());
+													spinnerPercentOfData.getSelection(),
+													spinnerPercentOfTraningData.getSelection());
 				stater.schedule();
 				btnRun.setEnabled(false);
 				btnClear.setEnabled(false);
@@ -851,7 +868,10 @@ IbChartSignalOptimizationControllerListener{
 				
 				bestResultContentProvider.refreshOptSet();
 				
-				StatisticCalculator statisticCalculator=new StatisticCalculator(signal, comboBarSize.getText(),spinnerPercentOfData.getSelection());
+				StatisticCalculator statisticCalculator=new StatisticCalculator(signal,
+						comboBarSize.getText(),
+						spinnerPercentOfData.getSelection(),
+						spinnerPercentOfTraningData.getSelection());
 				statisticCalculator.schedule();
 				
 				
@@ -1317,11 +1337,12 @@ IbChartSignalOptimizationControllerListener{
 		private int numberOfEvaluations;
 		private int numberOfSeeds;
 		private int percentOfDataRequired;
+		private int percentOfTrainingData;
 		private IbChartSignal jobSignal;
 		
 		
 		public OptJobStater(String barType, String barSize, String algorithmName, String reportType,
-				int numberOfEvaluations, int numberOfSeeds, int percentOfDataRequired) {
+				int numberOfEvaluations, int numberOfSeeds, int percentOfDataRequired, int percentOfTrainingData) {
 			
 			super("Signal Optimization job Starter: "+signal.getName());
 			
@@ -1334,6 +1355,7 @@ IbChartSignalOptimizationControllerListener{
 			this.numberOfEvaluations=numberOfEvaluations;
 			this.numberOfSeeds=numberOfSeeds;
 			this.percentOfDataRequired=percentOfDataRequired;
+			this.percentOfTrainingData=percentOfTrainingData;
 			this.jobSignal=(IbChartSignal)signal.copy();
 			this.jobSignal.setIsolateLastNeededBars(false);
 			
@@ -1418,7 +1440,7 @@ IbChartSignalOptimizationControllerListener{
 			
 			//Create the Data Set
 			logger.info("Create the Data Set");
-			createTheDataSet(barSize, percentOfDataRequired);
+			createTheDataSet(barSize, percentOfDataRequired, percentOfTrainingData);
 			
 			//Set the parameters
 			jobSignal.setOptimizationBars(optimizationBarsMap.get(barSize+percentOfDataRequired));
@@ -1450,10 +1472,25 @@ IbChartSignalOptimizationControllerListener{
 		
 	}
 	
-	private void createTheDataSet(String bazSize, int percentOfDataRequired){
+	private LinkedList<ExBar> isolateAllRequiredBars(int percentOfDataRequired){
+		LinkedList<ExBar> allRequiredBars=new LinkedList<ExBar>();
+		int i=0;
+		int percentOfDataToIgnore=100-percentOfDataRequired;
+		for(ExBar bar:allCollectedBars){
+			i++;
+			if(i*100/allCollectedBars.size()<percentOfDataToIgnore)continue;
+			
+			allRequiredBars.add(bar);
+		}
+		return allRequiredBars;
+	}
+	
+	private void createTheDataSet(String bazSize, int percentOfDataRequired, int percentOfTrainingData){
 		if(!optimizationBarsMap.containsKey(bazSize+percentOfDataRequired)){
 			
-			LinkedList<LinkedList<ExBar>> allBlocks=BarUtils.splitBarListInDayBlocks(allCollectedBars);
+			LinkedList<ExBar> allRequiredBars=isolateAllRequiredBars(percentOfDataRequired);
+			
+			LinkedList<LinkedList<ExBar>> allBlocks=BarUtils.splitBarListInDayBlocks(allRequiredBars);
 		
 //			Save all bars
 			LinkedList<ExBar> allBars = new  LinkedList<ExBar>();
@@ -1464,7 +1501,7 @@ IbChartSignalOptimizationControllerListener{
 			allBarsMap.put(bazSize, allBars);
 			
 			
-			LinkedList<LinkedList<ExBar>> optBlocks=BarUtils.collectPercentageOfBlocks(allBlocks,percentOfDataRequired);
+			LinkedList<LinkedList<ExBar>> optBlocks=BarUtils.collectPercentageOfBlocks(allBlocks,percentOfTrainingData);
 			
 //			Save the optimization bars
 			LinkedList<ExBar> optimizationBars=new LinkedList<ExBar>();
@@ -1475,12 +1512,13 @@ IbChartSignalOptimizationControllerListener{
 					timeSet.add(bar.getTime());
 			}
 			Collections.sort(optimizationBars, new ExBarComparator());
-			optimizationBarsMap.put(bazSize+percentOfDataRequired, optimizationBars);
+			optimizationBarsMap.put(bazSize+percentOfTrainingData, optimizationBars);
 			
 //			Save the back testing bars
 			LinkedList<ExBar> backTestingBars=new LinkedList<ExBar>();
 			logger.info("Total Nb. of  data: "+allCollectedBars.size());
-			for(ExBar bar:allCollectedBars){
+			logger.info("Total Nb. of  required data: "+allRequiredBars.size());
+			for(ExBar bar:allRequiredBars){
 				if(timeSet.contains(bar.getTime()))continue;
 				backTestingBars.add(bar);
 			}
@@ -1488,7 +1526,7 @@ IbChartSignalOptimizationControllerListener{
 			logger.info("Nb. of back testing data: "+backTestingBars.size());
 			
 			
-			backTestingBarsMap.put(bazSize+percentOfDataRequired, backTestingBars);
+			backTestingBarsMap.put(bazSize+percentOfTrainingData, backTestingBars);
 			
 		}
 	}
@@ -1504,13 +1542,15 @@ IbChartSignalOptimizationControllerListener{
 		
 		private String bazSize;
 		private int percentOfDataRequired;
+		private int percentOfTrainingData;
 		
 		
-		public StatisticCalculator(IbChartSignal chartSignal,String bazSize, int percentOfDataRequired) {
+		public StatisticCalculator(IbChartSignal chartSignal,String bazSize, int percentOfDataRequired, int percentOfTrainingData) {
 			super("Statistic Calculator");
 			this.chartSignal=chartSignal;
 			this.bazSize=bazSize;
 			this.percentOfDataRequired=percentOfDataRequired;
+			this.percentOfTrainingData=percentOfTrainingData;
 		}
 
 		@Override
@@ -1527,57 +1567,60 @@ IbChartSignalOptimizationControllerListener{
 			
 			//Create the Data Set
 			logger.info("Create the Data Set");
-			createTheDataSet(bazSize, percentOfDataRequired);
+			createTheDataSet(bazSize, percentOfDataRequired, percentOfTrainingData );
+			
+			LinkedList<ExBar> allRequiredBars=isolateAllRequiredBars(percentOfDataRequired);
+			
+			int processors = Runtime.getRuntime().availableProcessors();
+			if(processors > 1)processors--;
+			
+			ExecutorService taskExecutor = Executors.newFixedThreadPool(processors);
 			
 			for(IbChartSignalOptimizedParameters optParam:bestResultContentProvider.getOptParametersSet()){
 				IbChartSignal signal=(IbChartSignal) chartSignal.copy();
-				signal.setIsolateLastNeededBars(false);
 				
-				//Set the parameters
-				signal.setParameters(optParam.getParameters());
+				taskExecutor.execute(new StatisticTask(
+						optimizationBarsMap.get(bazSize+percentOfTrainingData),
+						backTestingBarsMap.get(bazSize+percentOfTrainingData),
+						allRequiredBars, signal, optParam));
 				
-				//Opt. Bars
-//				logger.info("Calculate Statistics Opt. Bars!");
-				signal.setBatch(true);
-				signal.setOptimizationBars(optimizationBarsMap.get(bazSize+percentOfDataRequired));
-				signal.compute(allCollectedBars);
-				double[] profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
-				optParam.setOptBenefit(profitAndRisk[0]);
-				optParam.setOptRisk(profitAndRisk[1]);
-				
-				refreshTable();
-				
-//				logger.info("Calculate Statistics Back Testing. Bars!");
-				signal.setBatch(true);
-				signal.setOptimizationBars(backTestingBarsMap.get(bazSize+percentOfDataRequired));
-				signal.compute(allCollectedBars);
-				profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
-				optParam.setBackTestBenefit(profitAndRisk[0]);
-				optParam.setBackTestRisk(profitAndRisk[1]);
-				
-				refreshTable();
-				
-				//Calculate all completed bars only for comparision
-//				signal.setBatch(true);
-//				signal.setOptimizationBlocks(null);
-//				signal.compute(allCollectedBars);
-//				profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
-//				logger.info("Benefit Sum:"+(optParam.getOptBenefit()+optParam.getBackTestBenefit()));
-//				logger.info("Risk Sum:"+(Math.max(optParam.getOptRisk(),optParam.getBackTestRisk())));
+//				signal.setIsolateLastNeededBars(false);
 //				
-//				logger.info("Benefit Total:"+profitAndRisk[0]);
-//				logger.info("Risk Total:"+profitAndRisk[1]);
-				
-				
-//				logger.info("Calculate Statistics All Bars!");
-				signal.setBatch(false);
-				signal.setOptimizationBlocks(null);
-				signal.compute(allCollectedBars);
-//				logger.info("Performance metric: "+(signal.getPerformanceMetrics()!=null));
-				optParam.setPerformanceMetrics(signal.getPerformanceMetrics());
-//				logger.info("Performance metric: "+(optParam.getPerformanceMetrics()!=null));
-				
-				refreshTable();
+//				//Set the parameters
+//				signal.setParameters(optParam.getParameters());
+//				
+//				//Opt. Bars
+//				signal.setBatch(true);
+//				signal.setOptimizationBars(optimizationBarsMap.get(bazSize+percentOfTrainingData));
+//				signal.compute(allRequiredBars);
+//				double[] profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
+//				optParam.setOptBenefit(profitAndRisk[0]);
+//				optParam.setOptRisk(profitAndRisk[1]);
+//				
+//				refreshTable();
+//				
+//				signal.setBatch(true);
+//				signal.setOptimizationBars(backTestingBarsMap.get(bazSize+percentOfTrainingData));
+//				signal.compute(allRequiredBars);
+//				profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
+//				optParam.setBackTestBenefit(profitAndRisk[0]);
+//				optParam.setBackTestRisk(profitAndRisk[1]);
+//				
+//				refreshTable();
+//				
+//				signal.setBatch(false);
+//				signal.setOptimizationBlocks(null);
+//				signal.compute(allRequiredBars);
+//				optParam.setPerformanceMetrics(signal.getPerformanceMetrics());
+//				
+//				refreshTable();
+			}
+			
+			taskExecutor.shutdown();
+			try {
+				taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.MINUTES);
+			} catch (InterruptedException e) {
+				throw new GeneticError(e);
 			}
 			
 			enableBtns();
@@ -1631,12 +1674,82 @@ IbChartSignalOptimizationControllerListener{
 			});
 		}
 		
+	}
+	
+	public class StatisticTask implements Runnable {
 		
 		
+		LinkedList<ExBar> optimizationBars= new LinkedList<ExBar>();
+		LinkedList<ExBar> backTestingBars= new LinkedList<ExBar>();
+		LinkedList<ExBar> requredBarsBars= new LinkedList<ExBar>();
+		IbChartSignal signal;
+		IbChartSignalOptimizedParameters optParam;
 		
 		
+
+		public StatisticTask(LinkedList<ExBar> optimizationBars, LinkedList<ExBar> backTestingBars,
+				LinkedList<ExBar> requredBarsBars, IbChartSignal signal, IbChartSignalOptimizedParameters optParam) {
+			super();
+			this.optimizationBars = optimizationBars;
+			this.backTestingBars = backTestingBars;
+			this.requredBarsBars = requredBarsBars;
+			this.signal = signal;
+			this.optParam = optParam;
+		}
+
+		@Override
+		public void run() {
+			signal.setIsolateLastNeededBars(false);
+			
+			//Set the parameters
+			signal.setParameters(optParam.getParameters());
+			
+			//Opt. Bars
+//			logger.info("Calculate Statistics Opt. Bars!");
+			signal.setBatch(true);
+			signal.setOptimizationBars(optimizationBars);
+			signal.compute(requredBarsBars);
+			double[] profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
+			optParam.setOptBenefit(profitAndRisk[0]);
+			optParam.setOptRisk(profitAndRisk[1]);
+			
+			refreshTable();
+			
+//			logger.info("Calculate Statistics Back Testing. Bars!");
+			signal.setBatch(true);
+			signal.setOptimizationBars(backTestingBars);
+			signal.compute(requredBarsBars);
+			profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
+			optParam.setBackTestBenefit(profitAndRisk[0]);
+			optParam.setBackTestRisk(profitAndRisk[1]);
+			
+			refreshTable();
+			
+//			logger.info("Calculate Statistics All Bars!");
+			signal.setBatch(false);
+			signal.setOptimizationBlocks(null);
+			signal.compute(requredBarsBars);
+//			logger.info("Performance metric: "+(signal.getPerformanceMetrics()!=null));
+			optParam.setPerformanceMetrics(signal.getPerformanceMetrics());
+//			logger.info("Performance metric: "+(optParam.getPerformanceMetrics()!=null));
+			
+			refreshTable();
+			
+		}
+		
+		private void refreshTable(){
+			Display.getDefault().asyncExec(new Runnable() {
+				
+				@Override
+				public void run() {
+					tableViewerBestResults.refresh();
+				}
+			});
+			
+		}
 		
 	}
+	
 	
 	
 }

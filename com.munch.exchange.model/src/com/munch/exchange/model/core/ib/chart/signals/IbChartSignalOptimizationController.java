@@ -487,7 +487,7 @@ public class IbChartSignalOptimizationController {
 
 					// setup the instrumenter to collect the necessary info
 					Instrumenter instrumenter = new Instrumenter()
-							.withFrequency(50)
+							.withFrequency(10)
 							.withProblemClass(IbChartSignalProblem.class, signal);
 							
 							//.withProblem(problemName);
@@ -588,7 +588,7 @@ public class IbChartSignalOptimizationController {
 						@Override
 						public void progressUpdate(ProgressEvent event) {
 							
-							//System.out.println("event.getCurrentNFE: "+event.getCurrentNFE());
+							System.out.println("event.getCurrentNFE: "+event.getCurrentNFE());
 							//System.out.println("event.getMaxNFE(): "+event.getMaxNFE());
 							//System.out.println("Is Seed finied: "+event.isSeedFinished());
 							
@@ -613,7 +613,7 @@ public class IbChartSignalOptimizationController {
 					};
 					
 					
-					instrumenter.withFrequency(50);
+					instrumenter.withFrequency(10);
 					
 					// setup the executor to run for the desired time
 					executor = new Executor()
@@ -622,6 +622,7 @@ public class IbChartSignalOptimizationController {
 							.withAlgorithm(algorithmName)
 							.withMaxEvaluations(numberOfEvaluations)
 							.distributeOnAllCores()
+//							.distributeOn(4)
 							.withProgressListener(listener);
 					
 					//Add the already save parameters in the start population

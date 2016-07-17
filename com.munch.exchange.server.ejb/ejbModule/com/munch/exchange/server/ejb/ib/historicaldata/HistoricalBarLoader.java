@@ -27,6 +27,7 @@ import com.munch.exchange.model.core.ib.bar.TimeBarSize;
 import com.munch.exchange.model.core.ib.bar.BarComparator;
 import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
+import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.server.ejb.ib.ConnectionBean;
 
 public class HistoricalBarLoader implements IHistoricalDataHandler{
@@ -646,13 +647,46 @@ public class HistoricalBarLoader implements IHistoricalDataHandler{
 		if(removeDuplicated){
 			LinkedList<Bar> barToDelete=new LinkedList<>();
 			
+//			for(Bar bar:bars){
+//				long time=bar.time();
+//				if(HistoricalBarPersistance.containsBar(em, container, barType, time)){
+//					log.info("Bar to remove: "+bar.toString());
+//					barToDelete.add(bar);
+//				}
+//			}
+			
+//			Fill the bar to delete list
+			long start=Long.MAX_VALUE;
+			long end = Long.MIN_VALUE;
 			for(Bar bar:bars){
 				long time=bar.time();
-				if(HistoricalBarPersistance.containsBar(em, container, barType, time)){
-//					log.info("Bar to remove: "+bar.toString());
-					barToDelete.add(bar);
-				}
+				if(time < start)
+					start = time;
+				if(time > end)
+					end = time;
 			}
+			
+			List<ExBar> savedBars=HistoricalBarPersistance.getBarsFromTo(em, container, barType, start, end);
+//			log.info("Nb of saved bars: "+savedBars.size());
+			for(Bar bar:bars){
+				long time=bar.time();
+//				log.info("bar Time: "+time);
+				boolean isSaved=false;
+				for(ExBar exBar:savedBars){
+//					log.info("exBar Time: "+exBar.getTimeInSec());
+					if(exBar.getTimeInSec()==time){
+						isSaved=true;
+						break;
+					}
+				}
+				
+				if(isSaved)
+					barToDelete.add(bar);
+			}
+			
+			
+			
+			
 			
 			if(barToDelete.size() > 0){
 				log.info("Nb of bar to delete: "+barToDelete.size());

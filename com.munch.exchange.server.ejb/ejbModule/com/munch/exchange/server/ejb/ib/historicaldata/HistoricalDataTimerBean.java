@@ -40,7 +40,7 @@ public class HistoricalDataTimerBean {
 	private static final long TIMER_INTERVALL	=	11*60*1000;
 //	private static final long TIMER_INTERVALL	=	10*1000;
 	private static final long TIMER_OFFSET		=	10*60*1000;
-//	private static final long TIMER_OFFSET		=	60*1000;
+//	private static final long TIMER_OFFSET		=	10*1000;
 	
 	
 	@Resource(mappedName =Constants.JMS_CONNECTION_FACTORY)
