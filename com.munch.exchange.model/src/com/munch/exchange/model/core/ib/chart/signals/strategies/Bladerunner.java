@@ -178,6 +178,48 @@ public class Bladerunner extends IbChartSignal {
 		double[] maxBreakout = RES[6];
 		double[] minBreakout = RES[7];
 		
+		double[][] BC = createBuyAndControlSignal(close, low, maxBreakout, maxResLine, BB_Top_Line, BB_Bottom_Line, risk, profitRisk_Factor);
+		
+		double[] signal_buy=BC[0];
+		double[] control_buy=BC[1];
+		
+		double[][] SC = createSellAndControlSignal(close, low, minBreakout, minResLine, BB_Top_Line, BB_Bottom_Line, risk, profitRisk_Factor);
+		
+		double[] signal_sell=SC[0];
+		double[] control_sell=SC[1];
+		
+		
+		double[] signal=new double[close.length];
+		for(int i=0;i<close.length;i++){
+			signal[i] = signal_buy[i] + signal_sell[i];
+		}
+		
+		
+		
+		refreshSerieValues(this.getSignalSerie().getName(), reset, times, signal,getValidAtPosition());
+		
+		refreshSerieValues(this.name+" "+SERIE_MAX_RES_LINE, reset, times, maxResLine, getValidAtPosition());
+		refreshSerieValues(this.name+" "+SERIE_MIN_RES_LINE, reset, times, minResLine, getValidAtPosition());
+		
+		refreshSerieValues(this.name+" "+SERIE_MAX_BREAKOUT_VALUE, reset, times, maxBreakout, getValidAtPosition());
+		refreshSerieValues(this.name+" "+SERIE_MIN_BREAKOUT_VALUE, reset, times, minBreakout, getValidAtPosition());
+		
+		refreshSerieValues(this.name+" "+SERIE_BB_TOP_LINE, reset, times, BB_Top_Line, getValidAtPosition());
+		refreshSerieValues(this.name+" "+SERIE_BB_BOTTOM_LINE, reset, times, BB_Bottom_Line, getValidAtPosition());
+		
+		refreshSerieValues(this.name+" "+SERIE_CONTROL, reset, times, control_sell, getValidAtPosition());
+		
+		
+	}
+	
+	
+	private double[][] createBuyAndControlSignal(double[] close, double[] low,
+			double[] maxBreakout, double[] maxResLine,
+			double[] BB_Top_Line,  double[] BB_Bottom_Line,
+			double risk, double profitRisk_Factor){
+		
+		double[][] BC=new double[2][close.length];
+		
 		double[] signal=new double[close.length];
 		double[] control=new double[close.length];
 		
@@ -283,24 +325,131 @@ public class Bladerunner extends IbChartSignal {
 			
 		}
 		
+		BC[0]=signal;
+		BC[1]=control;
 		
 		
-		refreshSerieValues(this.getSignalSerie().getName(), reset, times, signal,getValidAtPosition());
-		
-		refreshSerieValues(this.name+" "+SERIE_MAX_RES_LINE, reset, times, maxResLine, getValidAtPosition());
-		refreshSerieValues(this.name+" "+SERIE_MIN_RES_LINE, reset, times, minResLine, getValidAtPosition());
-		
-		refreshSerieValues(this.name+" "+SERIE_MAX_BREAKOUT_VALUE, reset, times, maxBreakout, getValidAtPosition());
-		refreshSerieValues(this.name+" "+SERIE_MIN_BREAKOUT_VALUE, reset, times, minBreakout, getValidAtPosition());
-		
-		refreshSerieValues(this.name+" "+SERIE_BB_TOP_LINE, reset, times, BB_Top_Line, getValidAtPosition());
-		refreshSerieValues(this.name+" "+SERIE_BB_BOTTOM_LINE, reset, times, BB_Bottom_Line, getValidAtPosition());
-		
-		refreshSerieValues(this.name+" "+SERIE_CONTROL, reset, times, control, getValidAtPosition());
-		
-		
+		return BC;
 	}
 	
+	private double[][] createSellAndControlSignal(double[] close, double[] high,
+			double[] minBreakout, double[] minResLine,
+			double[] BB_Top_Line,  double[] BB_Bottom_Line,
+			double risk, double profitRisk_Factor){
+		
+		double[][] BC=new double[2][close.length];
+		
+		double[] signal=new double[close.length];
+		double[] control=new double[close.length];
+		
+		boolean downBreakoutActivated = false;
+		boolean downBBTopLineEntryActivated = false;
+		boolean downBBTopLineExitActivated = false;
+		
+		boolean isTrading = false;
+		
+		double newLowValue = 0;
+		double breakOutValue = 0;
+		double exitLimit = 0;
+		double stopLoss = 0;
+		
+		for(int i=1;i<close.length;i++){
+			control[i]= control[i-1];
+			
+//			The breakout is activated
+			if(minBreakout[i] > 0 && downBreakoutActivated == false){
+				downBreakoutActivated = true;
+				breakOutValue = minResLine[i];
+				control[i] = 1;
+			}
+			if(!isTrading && downBreakoutActivated == true && minResLine[i] > breakOutValue){
+//				System.out.println("maxBreakout[i]: "+maxResLine[i]);
+				downBreakoutActivated = false;
+				downBBTopLineEntryActivated = false;
+				downBBTopLineExitActivated = false;
+				isTrading = false;
+				newLowValue = 0;
+				control[i] = 0;
+				continue;
+			}
+			
+			
+//			Save the new high position
+			if(newLowValue == 0 && downBreakoutActivated && minResLine[i] < breakOutValue){
+				newLowValue = minResLine[i];
+			}
+			
+//			The close price enter for the first time into the Bollinger Band
+			if(downBreakoutActivated == true &&
+					high[i-1] <= BB_Bottom_Line[i] &&  high[i] >= BB_Bottom_Line[i] &&
+					downBBTopLineEntryActivated == false && newLowValue > 0){
+				downBBTopLineEntryActivated = true;
+				control[i] = 2;
+			}
+			
+//			The price exit the Bollinger bands
+			if(downBBTopLineEntryActivated &&
+					high[i-1] >= BB_Bottom_Line[i] &&  high[i] < BB_Bottom_Line[i] &&
+					downBBTopLineExitActivated == false){
+				downBBTopLineExitActivated = true;
+				
+//				The price is above the last new high
+				if(close[i] < newLowValue){
+					control[i] = 3;
+					isTrading = true;
+					signal[i] = 1.0;
+					stopLoss = close[i]-risk;
+					exitLimit = close[i] + risk*profitRisk_Factor;
+				}
+//				False Signal reset all to false and wait for the next signal
+				else{
+					downBreakoutActivated = false;
+					downBBTopLineEntryActivated = false;
+					downBBTopLineExitActivated = false;
+					isTrading = false;
+					newLowValue = 0;
+					control[i] = 0;
+					continue;
+				}
+			}
+			
+//			The price is goes out of the Bollinger Bands but from the wrong side
+			if(isTrading == false && downBBTopLineEntryActivated && high[i] >= BB_Top_Line[i]){
+				downBreakoutActivated = false;
+				downBBTopLineEntryActivated = false;
+				downBBTopLineExitActivated = false;
+				isTrading = false;
+				newLowValue = 0;
+				control[i] = 0;
+				continue;				
+			}
+			
+			if(isTrading){
+				if(stopLoss > close[i] && close[i] > exitLimit /*&& close[i] >= BB_Bottom_Line[i]*/){
+					signal[i] = 1.0;
+					control[i] = 4;
+				}
+				else{
+					downBreakoutActivated = false;
+					downBBTopLineEntryActivated = false;
+					downBBTopLineExitActivated = false;
+					isTrading = false;
+					newLowValue = 0;
+					control[i] = 0;
+					continue;
+				}
+				
+			}
+			
+			
+		}
+		
+		BC[0]=signal;
+		BC[1]=control;
+		
+		
+		return BC;
+	}
 	
 
 	
