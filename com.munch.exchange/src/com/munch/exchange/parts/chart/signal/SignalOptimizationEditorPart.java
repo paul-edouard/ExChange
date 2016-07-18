@@ -1443,7 +1443,7 @@ IbChartSignalOptimizationControllerListener{
 			createTheDataSet(barSize, percentOfDataRequired, percentOfTrainingData);
 			
 			//Set the parameters
-			jobSignal.setOptimizationBars(optimizationBarsMap.get(barSize+percentOfDataRequired));
+			jobSignal.setOptimizationBars(optimizationBarsMap.get(barSize+percentOfTrainingData));
 			jobSignal.setAllBars(allBarsMap.get(barSize));
 			
 			jobSignal.setAlgorithmName(algorithmName);

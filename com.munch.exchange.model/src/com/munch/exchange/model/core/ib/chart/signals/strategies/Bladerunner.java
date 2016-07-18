@@ -52,7 +52,8 @@ public class Bladerunner extends IbChartSignal {
 	public static final String PARAM_PROFIT_RISK_FACTOR="Profit/Risk Factor";
 	
 //	CONTROL
-	public static final String SERIE_CONTROL="Control";
+	public static final String SERIE_CONTROL_POS="Control Positiv";
+	public static final String SERIE_CONTROL_NEG="Control Negativ";
 	
 
 	public Bladerunner() {
@@ -121,7 +122,8 @@ public class Bladerunner extends IbChartSignal {
 //		"Bollinger Bands: Bottom Line";
 		this.series.add(new IbChartSerie(this,this.name+" "+SERIE_BB_BOTTOM_LINE,RendererType.MAIN,false,true,250,0,0));
 
-		this.series.add(new IbChartSerie(this,this.name+" "+SERIE_CONTROL,RendererType.PERCENT,false,true,250,0,0));
+		this.series.add(new IbChartSerie(this,this.name+" "+SERIE_CONTROL_POS,RendererType.PERCENT,false,true,250,0,0));
+		this.series.add(new IbChartSerie(this,this.name+" "+SERIE_CONTROL_NEG,RendererType.PERCENT,false,true,0,250,0));
 
 		
 		super.createSeries();
@@ -207,7 +209,8 @@ public class Bladerunner extends IbChartSignal {
 		refreshSerieValues(this.name+" "+SERIE_BB_TOP_LINE, reset, times, BB_Top_Line, getValidAtPosition());
 		refreshSerieValues(this.name+" "+SERIE_BB_BOTTOM_LINE, reset, times, BB_Bottom_Line, getValidAtPosition());
 		
-		refreshSerieValues(this.name+" "+SERIE_CONTROL, reset, times, control_sell, getValidAtPosition());
+		refreshSerieValues(this.name+" "+SERIE_CONTROL_POS, reset, times, control_buy, getValidAtPosition());
+		refreshSerieValues(this.name+" "+SERIE_CONTROL_NEG, reset, times, control_sell, getValidAtPosition());
 		
 		
 	}
@@ -257,7 +260,8 @@ public class Bladerunner extends IbChartSignal {
 			
 //			Save the new high position
 			if(newHighValue == 0 && upBreakoutActivated && maxResLine[i] > breakOutValue){
-				newHighValue = maxResLine[i];
+//				newHighValue = maxResLine[i];
+				newHighValue = breakOutValue;
 			}
 			
 //			The close price enter for the first time into the Bollinger Band
@@ -376,7 +380,8 @@ public class Bladerunner extends IbChartSignal {
 			
 //			Save the new high position
 			if(newLowValue == 0 && downBreakoutActivated && minResLine[i] < breakOutValue){
-				newLowValue = minResLine[i];
+//				newLowValue = minResLine[i];
+				newLowValue = breakOutValue;
 			}
 			
 //			The close price enter for the first time into the Bollinger Band
@@ -397,9 +402,10 @@ public class Bladerunner extends IbChartSignal {
 				if(close[i] < newLowValue){
 					control[i] = 3;
 					isTrading = true;
-					signal[i] = 1.0;
-					stopLoss = close[i]-risk;
-					exitLimit = close[i] + risk*profitRisk_Factor;
+					signal[i] = -1.0;
+					stopLoss = close[i]+risk;
+					exitLimit = close[i] - risk*profitRisk_Factor;
+					continue;
 				}
 //				False Signal reset all to false and wait for the next signal
 				else{
@@ -426,7 +432,7 @@ public class Bladerunner extends IbChartSignal {
 			
 			if(isTrading){
 				if(stopLoss > close[i] && close[i] > exitLimit /*&& close[i] >= BB_Bottom_Line[i]*/){
-					signal[i] = 1.0;
+					signal[i] = -1.0;
 					control[i] = 4;
 				}
 				else{
