@@ -176,7 +176,7 @@ public class SignalOptimizationApproximationSetViewer extends Composite implemen
 			for (Object object : list) {
 				Solution solution = (Solution)object;
 				//series.add(getValue(solution, 0), getValue(solution, 1));
-				series.add(solution.getObjective(0),solution.getObjective(1));
+				series.add(-solution.getObjective(0),solution.getObjective(1));
 			}
 			
 			dataset.addSeries(series);
@@ -190,7 +190,7 @@ public class SignalOptimizationApproximationSetViewer extends Composite implemen
 				
 			for (Solution solution : referenceSet) {
 				//series.add(getValue(solution, 0), getValue(solution, 1));
-				series.add(solution.getObjective(0),solution.getObjective(1));
+				series.add(-solution.getObjective(0),solution.getObjective(1));
 			}
 			
 			dataset.addSeries(series);
@@ -198,8 +198,8 @@ public class SignalOptimizationApproximationSetViewer extends Composite implemen
 		
 		JFreeChart chart = ChartFactory.createScatterPlot(
 				name + " @ " + scale.getSelection() + " NFE", 
-				"Objectiv 1",
-				"Objectiv 2", 
+				"Profit",
+				"Risk", 
 				dataset, 
 				PlotOrientation.VERTICAL, 
 				true, 

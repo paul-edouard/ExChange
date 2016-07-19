@@ -72,7 +72,7 @@ public class SignalOptimizationApproximationSetPlot extends
 						series.add(solution.getObjective(0), 
 								solution.getObjective(0));
 					} else if (solution.getNumberOfObjectives() > 1) {
-						series.add(solution.getObjective(0), 
+						series.add(-solution.getObjective(0), 
 								solution.getObjective(1));
 					}
 				}
@@ -83,9 +83,9 @@ public class SignalOptimizationApproximationSetPlot extends
 		
 		JFreeChart chart = ChartFactory.createScatterPlot(metric,
 				//localization.getString("text.objective", 1),
-				"Objective 1",
+				"Profit",
 				//localization.getString("text.objective", 2),
-				"Objective 2",
+				"Risk",
 				dataset,
 				PlotOrientation.VERTICAL,
 				true,
@@ -131,7 +131,7 @@ public class SignalOptimizationApproximationSetPlot extends
 						true);
 				
 				for (Solution solution : population) {
-					series.add(solution.getObjective(0), 
+					series.add(-solution.getObjective(0), 
 							solution.getObjective(1));
 				}
 				

@@ -243,6 +243,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 //		if(batch){
 //			bars=allBars;
 //		}
+//		System.out.println("Number of bars: "+bars.size());
 		
 //		################################
 //		Compute the signal for all bars
@@ -280,6 +281,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 //		startTimeCounter();
 //		If the batch modus is selected then the profit will be calculated only for the bars of the optimized set
 		if(batch && optimizationBars!=null){
+//			System.out.println("Calculate the Profit and risk only for : "+optimizationBars.size());
 			createProfitAndRiskSeries(optimizationBars, reset, signalMap, this.volume);
 		}
 		else{

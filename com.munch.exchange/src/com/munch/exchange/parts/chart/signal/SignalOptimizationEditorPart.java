@@ -869,6 +869,7 @@ IbChartSignalOptimizationControllerListener{
 				bestResultContentProvider.refreshOptSet();
 				
 				StatisticCalculator statisticCalculator=new StatisticCalculator(signal,
+						comboBarType.getText(),
 						comboBarSize.getText(),
 						spinnerPercentOfData.getSelection(),
 						spinnerPercentOfTraningData.getSelection());
@@ -1429,13 +1430,7 @@ IbChartSignalOptimizationControllerListener{
 					allCollectedBars = hisDataProvider.getAllRangeBars(getBarContainer(),
 							BarUtils.convertForexRange(barSize));
 				}
-//				Collections.sort(allCollectedBars, new ExBarComparator());
-				//TODO Remove this!
-//				while (allCollectedBars.size()>1000) {
-//					allCollectedBars.remove(0);
-//					
-//				}
-//				return Status.OK_STATUS;
+				Collections.sort(allCollectedBars, new ExBarComparator());
 			}
 			
 			//Create the Data Set
@@ -1486,7 +1481,7 @@ IbChartSignalOptimizationControllerListener{
 	}
 	
 	private void createTheDataSet(String bazSize, int percentOfDataRequired, int percentOfTrainingData){
-		if(!optimizationBarsMap.containsKey(bazSize+percentOfDataRequired)){
+		if(!optimizationBarsMap.containsKey(bazSize+percentOfTrainingData)){
 			
 			LinkedList<ExBar> allRequiredBars=isolateAllRequiredBars(percentOfDataRequired);
 			
@@ -1539,16 +1534,17 @@ IbChartSignalOptimizationControllerListener{
 		
 		
 		private IbChartSignal chartSignal;
-		
-		private String bazSize;
+		private String barType;
+		private String barSize;
 		private int percentOfDataRequired;
 		private int percentOfTrainingData;
 		
 		
-		public StatisticCalculator(IbChartSignal chartSignal,String bazSize, int percentOfDataRequired, int percentOfTrainingData) {
+		public StatisticCalculator(IbChartSignal chartSignal,String barType, String bazSize, int percentOfDataRequired, int percentOfTrainingData) {
 			super("Statistic Calculator");
 			this.chartSignal=chartSignal;
-			this.bazSize=bazSize;
+			this.barType=barType;
+			this.barSize=bazSize;
 			this.percentOfDataRequired=percentOfDataRequired;
 			this.percentOfTrainingData=percentOfTrainingData;
 		}
@@ -1561,13 +1557,27 @@ IbChartSignalOptimizationControllerListener{
 			logger.info("Collect the data");
 			if(allCollectedBars==null || allCollectedBars.isEmpty()){
 				allCollectedBars=hisDataProvider.getAllTimeBars(getBarContainer(),
-						BarUtils.getBarSizeFromString(bazSize));
+						BarUtils.getBarSizeFromString(barSize));
 				Collections.sort(allCollectedBars, new ExBarComparator());
 			}
 			
+			if(allCollectedBars==null || allCollectedBars.isEmpty()){
+				if(this.barType.equals("Bar Size")){
+					allCollectedBars=hisDataProvider.getAllTimeBars(getBarContainer(),
+						BarUtils.getBarSizeFromString(barSize));
+				}
+				else{
+					allCollectedBars = hisDataProvider.getAllRangeBars(getBarContainer(),
+							BarUtils.convertForexRange(barSize));
+				}
+				Collections.sort(allCollectedBars, new ExBarComparator());
+			}
+			
+			
+			
 			//Create the Data Set
 			logger.info("Create the Data Set");
-			createTheDataSet(bazSize, percentOfDataRequired, percentOfTrainingData );
+			createTheDataSet(barSize, percentOfDataRequired, percentOfTrainingData );
 			
 			LinkedList<ExBar> allRequiredBars=isolateAllRequiredBars(percentOfDataRequired);
 			
@@ -1580,40 +1590,10 @@ IbChartSignalOptimizationControllerListener{
 				IbChartSignal signal=(IbChartSignal) chartSignal.copy();
 				
 				taskExecutor.execute(new StatisticTask(
-						optimizationBarsMap.get(bazSize+percentOfTrainingData),
-						backTestingBarsMap.get(bazSize+percentOfTrainingData),
+						optimizationBarsMap.get(barSize+percentOfTrainingData),
+						backTestingBarsMap.get(barSize+percentOfTrainingData),
 						allRequiredBars, signal, optParam));
 				
-//				signal.setIsolateLastNeededBars(false);
-//				
-//				//Set the parameters
-//				signal.setParameters(optParam.getParameters());
-//				
-//				//Opt. Bars
-//				signal.setBatch(true);
-//				signal.setOptimizationBars(optimizationBarsMap.get(bazSize+percentOfTrainingData));
-//				signal.compute(allRequiredBars);
-//				double[] profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
-//				optParam.setOptBenefit(profitAndRisk[0]);
-//				optParam.setOptRisk(profitAndRisk[1]);
-//				
-//				refreshTable();
-//				
-//				signal.setBatch(true);
-//				signal.setOptimizationBars(backTestingBarsMap.get(bazSize+percentOfTrainingData));
-//				signal.compute(allRequiredBars);
-//				profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
-//				optParam.setBackTestBenefit(profitAndRisk[0]);
-//				optParam.setBackTestRisk(profitAndRisk[1]);
-//				
-//				refreshTable();
-//				
-//				signal.setBatch(false);
-//				signal.setOptimizationBlocks(null);
-//				signal.compute(allRequiredBars);
-//				optParam.setPerformanceMetrics(signal.getPerformanceMetrics());
-//				
-//				refreshTable();
 			}
 			
 			taskExecutor.shutdown();
@@ -1681,7 +1661,7 @@ IbChartSignalOptimizationControllerListener{
 		
 		LinkedList<ExBar> optimizationBars= new LinkedList<ExBar>();
 		LinkedList<ExBar> backTestingBars= new LinkedList<ExBar>();
-		LinkedList<ExBar> requredBarsBars= new LinkedList<ExBar>();
+		LinkedList<ExBar> requiredBars= new LinkedList<ExBar>();
 		IbChartSignal signal;
 		IbChartSignalOptimizedParameters optParam;
 		
@@ -1692,7 +1672,7 @@ IbChartSignalOptimizationControllerListener{
 			super();
 			this.optimizationBars = optimizationBars;
 			this.backTestingBars = backTestingBars;
-			this.requredBarsBars = requredBarsBars;
+			this.requiredBars = requredBarsBars;
 			this.signal = signal;
 			this.optParam = optParam;
 		}
@@ -1708,7 +1688,7 @@ IbChartSignalOptimizationControllerListener{
 //			logger.info("Calculate Statistics Opt. Bars!");
 			signal.setBatch(true);
 			signal.setOptimizationBars(optimizationBars);
-			signal.compute(requredBarsBars);
+			signal.compute(requiredBars);
 			double[] profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
 			optParam.setOptBenefit(profitAndRisk[0]);
 			optParam.setOptRisk(profitAndRisk[1]);
@@ -1718,7 +1698,7 @@ IbChartSignalOptimizationControllerListener{
 //			logger.info("Calculate Statistics Back Testing. Bars!");
 			signal.setBatch(true);
 			signal.setOptimizationBars(backTestingBars);
-			signal.compute(requredBarsBars);
+			signal.compute(requiredBars);
 			profitAndRisk=IbChartSignalProblem.extractProfitAndRiskFromChartSignal(signal);
 			optParam.setBackTestBenefit(profitAndRisk[0]);
 			optParam.setBackTestRisk(profitAndRisk[1]);
@@ -1728,7 +1708,7 @@ IbChartSignalOptimizationControllerListener{
 //			logger.info("Calculate Statistics All Bars!");
 			signal.setBatch(false);
 			signal.setOptimizationBlocks(null);
-			signal.compute(requredBarsBars);
+			signal.compute(requiredBars);
 //			logger.info("Performance metric: "+(signal.getPerformanceMetrics()!=null));
 			optParam.setPerformanceMetrics(signal.getPerformanceMetrics());
 //			logger.info("Performance metric: "+(optParam.getPerformanceMetrics()!=null));
