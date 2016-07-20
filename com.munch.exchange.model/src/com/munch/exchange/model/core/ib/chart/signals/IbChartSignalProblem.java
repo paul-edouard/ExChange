@@ -125,7 +125,7 @@ public class IbChartSignalProblem extends AbstractProblem implements Serializabl
 		signal.compute(bars);
 		long end=Calendar.getInstance().getTimeInMillis();
 		double time=((double) ((end - start)/1000))/60;
-		System.out.println("Time needed for calcualtion: " + time +"mn");
+		System.out.println("Time needed for calculation: " + time +"mn, profit: " + signal.getTotalProfit() );
 		
 		//Evaluate Profit and Risk
 		setObjectives(signal, solution);

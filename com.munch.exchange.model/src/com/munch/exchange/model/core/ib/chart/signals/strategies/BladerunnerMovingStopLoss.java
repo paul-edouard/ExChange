@@ -21,7 +21,7 @@ import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 
 @Entity
-public class Bladerunner extends IbChartSignal {
+public class BladerunnerMovingStopLoss extends IbChartSignal {
 
 	/**
 	 * 
@@ -56,24 +56,24 @@ public class Bladerunner extends IbChartSignal {
 	public static final String SERIE_CONTROL_NEG="Control Negativ";
 	
 
-	public Bladerunner() {
+	public BladerunnerMovingStopLoss() {
 		super();
 	}
 
-	public Bladerunner(IbChartIndicatorGroup group) {
+	public BladerunnerMovingStopLoss(IbChartIndicatorGroup group) {
 		super(group);
 	}
 	
 	@Override
 	public IbChartIndicator copy() {
-		IbChartIndicator c=new Bladerunner();
+		IbChartIndicator c=new BladerunnerMovingStopLoss();
 		c.copyData(this);
 		return c;
 	}
 	
 	@Override
 	public void initName() {
-		this.name= "Balderunner";
+		this.name= "Balderunner with Moving Stopp Loss";
 	}
 
 	@Override
@@ -180,12 +180,12 @@ public class Bladerunner extends IbChartSignal {
 		double[] maxBreakout = RES[6];
 		double[] minBreakout = RES[7];
 		
-		double[][] BC = createBuyAndControlSignal(close, low, maxBreakout, maxResLine, BB_Top_Line, BB_Bottom_Line, risk, profitRisk_Factor);
+		double[][] BC = createBuyAndControlSignal(close, low, maxBreakout, maxResLine, minResLine, BB_Top_Line, BB_Bottom_Line, risk, profitRisk_Factor);
 		
 		double[] signal_buy=BC[0];
 		double[] control_buy=BC[1];
 		
-		double[][] SC = createSellAndControlSignal(close, high, minBreakout, minResLine, BB_Top_Line, BB_Bottom_Line, risk, profitRisk_Factor);
+		double[][] SC = createSellAndControlSignal(close, high, minBreakout, maxResLine, minResLine, BB_Top_Line, BB_Bottom_Line, risk, profitRisk_Factor);
 		
 		double[] signal_sell=SC[0];
 		double[] control_sell=SC[1];
@@ -217,7 +217,8 @@ public class Bladerunner extends IbChartSignal {
 	
 	
 	private double[][] createBuyAndControlSignal(double[] close, double[] low,
-			double[] maxBreakout, double[] maxResLine,
+			double[] maxBreakout,
+			double[] maxResLine, double[] minResLine,
 			double[] BB_Top_Line,  double[] BB_Bottom_Line,
 			double risk, double profitRisk_Factor){
 		
@@ -236,6 +237,7 @@ public class Bladerunner extends IbChartSignal {
 		double breakOutValue = 0;
 		double exitLimit = 0;
 		double stopLoss = 0;
+		double stopLossMinResDist = 0;
 		
 		for(int i=1;i<close.length;i++){
 			control[i]= control[i-1];
@@ -284,6 +286,7 @@ public class Bladerunner extends IbChartSignal {
 					isTrading = true;
 					signal[i] = 1.0;
 					stopLoss = close[i]-risk;
+					stopLossMinResDist = stopLoss - minResLine[i];
 					exitLimit = close[i] + risk*profitRisk_Factor;
 				}
 //				False Signal reset all to false and wait for the next signal
@@ -310,6 +313,8 @@ public class Bladerunner extends IbChartSignal {
 			}
 			
 			if(isTrading){
+				stopLoss = minResLine[i] + stopLossMinResDist;
+				stopLoss = minResLine[i];
 				if(stopLoss < close[i] && close[i] < exitLimit /*&& close[i] >= BB_Bottom_Line[i]*/){
 					signal[i] = 1.0;
 					control[i] = 4;
@@ -337,7 +342,8 @@ public class Bladerunner extends IbChartSignal {
 	}
 	
 	private double[][] createSellAndControlSignal(double[] close, double[] high,
-			double[] minBreakout, double[] minResLine,
+			double[] minBreakout,
+			double[] maxResLine, double[] minResLine,
 			double[] BB_Top_Line,  double[] BB_Bottom_Line,
 			double risk, double profitRisk_Factor){
 		
@@ -356,6 +362,7 @@ public class Bladerunner extends IbChartSignal {
 		double breakOutValue = 0;
 		double exitLimit = 0;
 		double stopLoss = 0;
+		double stopLossMaxResDist = 0;
 		
 		for(int i=1;i<close.length;i++){
 			control[i]= control[i-1];
@@ -404,6 +411,7 @@ public class Bladerunner extends IbChartSignal {
 					isTrading = true;
 					signal[i] = -1.0;
 					stopLoss = close[i]+risk;
+					stopLossMaxResDist = stopLoss - maxResLine[i];
 					exitLimit = close[i] - risk*profitRisk_Factor;
 					continue;
 				}
@@ -431,6 +439,8 @@ public class Bladerunner extends IbChartSignal {
 			}
 			
 			if(isTrading){
+				stopLoss = maxResLine[i] + stopLossMaxResDist;
+				stopLoss = maxResLine[i];
 				if(stopLoss > close[i] && close[i] > exitLimit /*&& close[i] >= BB_Bottom_Line[i]*/){
 					signal[i] = -1.0;
 					control[i] = 4;
