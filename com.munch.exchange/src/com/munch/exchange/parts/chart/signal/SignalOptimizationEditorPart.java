@@ -1462,6 +1462,10 @@ IbChartSignalOptimizationControllerListener{
 			controller.setSignal(jobSignal);
 			controller.run();
 			
+			jobSignal.deactivatedDataCollector();
+			StatisticCalculator sc = new StatisticCalculator(jobSignal, barType, barSize, percentOfDataRequired, percentOfTrainingData);
+			sc.schedule();
+			
 			return Status.OK_STATUS;
 		}
 

@@ -147,10 +147,10 @@ public class Bladerunner extends IbChartSignal {
 	public void computeSignalPoint(List<ExBar> bars, boolean reset) {
 		
 //		Step 1: Read the parameters
-		long[] times=BarUtils.getTimeArray(bars);
-		double[] close=BarUtils.barsToDoubleArray(bars, DataType.CLOSE);
-		double[] high=BarUtils.barsToDoubleArray(bars, DataType.HIGH);
-		double[] low=BarUtils.barsToDoubleArray(bars, DataType.LOW);
+		long[] times=getTimeArrayFromBar(bars);
+		double[] close=getDataFromBars(bars, DataType.CLOSE);
+		double[] high=getDataFromBars(bars, DataType.HIGH);
+		double[] low=getDataFromBars(bars, DataType.LOW);
 		
 		int nbOfEtremums=this.getChartParameter(PARAM_RESISTANCE_NB_OF_EXTREMUMS).getIntegerValue();
 		int maxResSearchPeriod=this.getChartParameter(PARAM_MAX_RESISTANCE_SEARCH_PERIOD).getIntegerValue();
