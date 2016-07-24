@@ -1453,6 +1453,7 @@ IbChartSignalOptimizationControllerListener{
 			
 			//Prepare the blocks
 			jobSignal.setBatch(true);
+			jobSignal.activatedDataCollector();
 //			jobSignal.createBlocks(jobSignal.getOptimizationBars());
 			
 			
@@ -1586,6 +1587,7 @@ IbChartSignalOptimizationControllerListener{
 			
 			ExecutorService taskExecutor = Executors.newFixedThreadPool(processors);
 			
+			chartSignal.activatedDataCollector();
 			for(IbChartSignalOptimizedParameters optParam:bestResultContentProvider.getOptParametersSet()){
 				IbChartSignal signal=(IbChartSignal) chartSignal.copy();
 				
@@ -1597,12 +1599,15 @@ IbChartSignalOptimizationControllerListener{
 			}
 			
 			taskExecutor.shutdown();
+			
 			try {
 				taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.MINUTES);
 			} catch (InterruptedException e) {
 				throw new GeneticError(e);
+				
 			}
 			
+			chartSignal.deactivatedDataCollector();
 			enableBtns();
 			
 			return Status.OK_STATUS;

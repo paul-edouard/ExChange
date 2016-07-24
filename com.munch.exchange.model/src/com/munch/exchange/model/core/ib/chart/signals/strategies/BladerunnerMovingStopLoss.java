@@ -146,11 +146,12 @@ public class BladerunnerMovingStopLoss extends IbChartSignal {
 	@Override
 	public void computeSignalPoint(List<ExBar> bars, boolean reset) {
 		
+		
 //		Step 1: Read the parameters
-		long[] times=BarUtils.getTimeArray(bars);
-		double[] close=BarUtils.barsToDoubleArray(bars, DataType.CLOSE);
-		double[] high=BarUtils.barsToDoubleArray(bars, DataType.HIGH);
-		double[] low=BarUtils.barsToDoubleArray(bars, DataType.LOW);
+		long[] times=getTimeArrayFromBar(bars);
+		double[] close=getDataFromBars(bars, DataType.CLOSE);
+		double[] high=getDataFromBars(bars, DataType.HIGH);
+		double[] low=getDataFromBars(bars, DataType.LOW);
 		
 		int nbOfEtremums=this.getChartParameter(PARAM_RESISTANCE_NB_OF_EXTREMUMS).getIntegerValue();
 		int maxResSearchPeriod=this.getChartParameter(PARAM_MAX_RESISTANCE_SEARCH_PERIOD).getIntegerValue();
@@ -242,6 +243,8 @@ public class BladerunnerMovingStopLoss extends IbChartSignal {
 		for(int i=1;i<close.length;i++){
 			control[i]= control[i-1];
 			
+			if(!isTrading){
+			
 //			The breakout is activated
 			if(maxBreakout[i] > 0 && upBreakoutActivated == false){
 				upBreakoutActivated = true;
@@ -279,10 +282,14 @@ public class BladerunnerMovingStopLoss extends IbChartSignal {
 					low[i-1] <= BB_Top_Line[i] &&  low[i] > BB_Top_Line[i] &&
 					upBBTopLineExitActivated == false){
 				upBBTopLineExitActivated = true;
-				
+				control[i] = 3;
+				continue;
+			}
+			
+			if(upBBTopLineExitActivated && low[i] > BB_Top_Line[i]){
 //				The price is above the last new high
 				if(close[i] > newHighValue){
-					control[i] = 3;
+					control[i] = 4;
 					isTrading = true;
 					signal[i] = 1.0;
 					stopLoss = close[i]-risk;
@@ -301,8 +308,10 @@ public class BladerunnerMovingStopLoss extends IbChartSignal {
 				}
 			}
 			
+			
+			
 //			The price is goes out of the Bollinger Bands but from the wrong side
-			if(isTrading == false && upBBTopLineEntryActivated && low[i] <= BB_Bottom_Line[i]){
+			if(upBBTopLineEntryActivated && low[i] <= BB_Bottom_Line[i]){
 				upBreakoutActivated = false;
 				upBBTopLineEntryActivated = false;
 				upBBTopLineExitActivated = false;
@@ -311,10 +320,11 @@ public class BladerunnerMovingStopLoss extends IbChartSignal {
 				control[i] = 0;
 				continue;				
 			}
+			}
 			
 			if(isTrading){
 				stopLoss = minResLine[i] + stopLossMinResDist;
-				stopLoss = minResLine[i];
+//				stopLoss = minResLine[i];
 				if(stopLoss < close[i] && close[i] < exitLimit /*&& close[i] >= BB_Bottom_Line[i]*/){
 					signal[i] = 1.0;
 					control[i] = 4;
@@ -367,6 +377,8 @@ public class BladerunnerMovingStopLoss extends IbChartSignal {
 		for(int i=1;i<close.length;i++){
 			control[i]= control[i-1];
 			
+			if(!isTrading){
+			
 //			The breakout is activated
 			if(minBreakout[i] > 0 && downBreakoutActivated == false){
 				downBreakoutActivated = true;
@@ -404,10 +416,14 @@ public class BladerunnerMovingStopLoss extends IbChartSignal {
 					high[i-1] >= BB_Bottom_Line[i] &&  high[i] < BB_Bottom_Line[i] &&
 					downBBTopLineExitActivated == false){
 				downBBTopLineExitActivated = true;
-				
+				control[i] = 3;
+				continue;
+			}
+			
+			if(downBBTopLineExitActivated &&  high[i] < BB_Bottom_Line[i]){
 //				The price is above the last new high
 				if(close[i] < newLowValue){
-					control[i] = 3;
+					control[i] = 4;
 					isTrading = true;
 					signal[i] = -1.0;
 					stopLoss = close[i]+risk;
@@ -427,8 +443,10 @@ public class BladerunnerMovingStopLoss extends IbChartSignal {
 				}
 			}
 			
+			
+			
 //			The price is goes out of the Bollinger Bands but from the wrong side
-			if(isTrading == false && downBBTopLineEntryActivated && high[i] >= BB_Top_Line[i]){
+			if(downBBTopLineEntryActivated && high[i] >= BB_Top_Line[i]){
 				downBreakoutActivated = false;
 				downBBTopLineEntryActivated = false;
 				downBBTopLineExitActivated = false;
@@ -437,10 +455,11 @@ public class BladerunnerMovingStopLoss extends IbChartSignal {
 				control[i] = 0;
 				continue;				
 			}
+			}
 			
 			if(isTrading){
 				stopLoss = maxResLine[i] + stopLossMaxResDist;
-				stopLoss = maxResLine[i];
+//				stopLoss = maxResLine[i];
 				if(stopLoss > close[i] && close[i] > exitLimit /*&& close[i] >= BB_Bottom_Line[i]*/){
 					signal[i] = -1.0;
 					control[i] = 4;

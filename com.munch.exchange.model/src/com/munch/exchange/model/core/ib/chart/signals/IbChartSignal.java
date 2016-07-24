@@ -17,6 +17,7 @@ import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
+import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartPoint;
@@ -77,8 +78,8 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	@Transient
 	private double maxRisk;
 	
-	
-	
+	@Transient
+	private IbChartSignalDataCollector dataCollector = null;
 	
 	
 	
@@ -110,6 +111,32 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		volume=10;
 		//initProblem();
 	}
+	
+	protected double[] getDataFromBars(List<ExBar> bars, DataType dataType){
+		if(dataCollector == null)
+			return BarUtils.barsToDoubleArray(bars, dataType);
+		
+		return dataCollector.getDataFromBars(bars, dataType);
+	}
+	
+	protected long[] getTimeArrayFromBar(List<ExBar> bars){
+		if(dataCollector == null)
+			return BarUtils.getTimeArray(bars);
+		
+		return dataCollector.getTimeArrayFromBar(bars);
+	}
+	
+	
+	public void activatedDataCollector(){
+		dataCollector = new IbChartSignalDataCollector();
+	}
+	
+	public void deactivatedDataCollector(){
+		dataCollector = null;
+	}
+	
+	
+	
 
 	@Override
 	public void copyData(IbChartIndicator in) {
@@ -120,6 +147,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 			this.optimizationBlocks=in_s.optimizationBlocks;
 			this.optimizationBars=in_s.optimizationBars;
 			this.allBars=in_s.allBars;
+			this.dataCollector=in_s.dataCollector;
 			
 			
 			this.optimizedSet=new LinkedList<IbChartSignalOptimizedParameters>();
@@ -145,6 +173,8 @@ public abstract class IbChartSignal extends IbChartIndicator {
 		return super.identical(other);
 		
 	}
+	
+	
 	
 	
 	
@@ -621,8 +651,9 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	
 
 
-	public void setBatch(boolean batch) {
+	public synchronized void setBatch(boolean batch) {
 		this.batch = batch;
+		
 	}
 
 
