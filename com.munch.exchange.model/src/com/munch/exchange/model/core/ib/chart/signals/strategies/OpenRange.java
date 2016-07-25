@@ -41,7 +41,7 @@ public class OpenRange extends IbChartSignal {
 	public static final String SERIE_TAKE_PROFIT="Take profit limit";
 	public static final String SERIE_STOP_LOSS="Stop loss limit";
 	
-//	public static final String PARAM_RISK="Risk";
+	public static final String PARAM_RISK="Risk";
 	public static final String PARAM_PROFIT_RISK_FACTOR="Profit/Risk Factor";
 	
 	
@@ -75,7 +75,7 @@ public class OpenRange extends IbChartSignal {
 		
 				
 //		Risk & Profit: Risk
-//		this.parameters.add(new IbChartParameter(this, PARAM_RISK,ParameterType.DOUBLE, 0.0005, 0.0001, 0.004, 4));
+		this.parameters.add(new IbChartParameter(this, PARAM_RISK,ParameterType.DOUBLE, 0.0005, 0.0001, 0.004, 4));
 		
 //		Risk & Profit: Risk
 		this.parameters.add(new IbChartParameter(this, PARAM_PROFIT_RISK_FACTOR,ParameterType.DOUBLE, 2, 1, 5, 2));
@@ -117,7 +117,7 @@ public class OpenRange extends IbChartSignal {
 		double[] close=getDataFromBars(bars, DataType.CLOSE);
 		
 	
-//		double risk = this.getChartParameter(PARAM_RISK).getValue();
+		double risk = this.getChartParameter(PARAM_RISK).getValue();
 		double profitRisk_Factor = this.getChartParameter(PARAM_PROFIT_RISK_FACTOR).getValue();
 		
 		double start = this.getChartParameter(PARAM_START).getValue();
@@ -213,7 +213,7 @@ public class OpenRange extends IbChartSignal {
 				if(!endOpenRange && i>0){
 					triggerBuyLimit = maxResLine[i-1];
 					triggerSellLimit = minResLine[i-1];
-					range = triggerBuyLimit - triggerSellLimit;
+					range = risk;
 					targetProfit = range * profitRisk_Factor;
 					endOpenRange = true;
 					maxResLine[i]=Double.NaN;
@@ -225,7 +225,7 @@ public class OpenRange extends IbChartSignal {
 					
 						signal[i] = 1;
 						profitLimit = triggerBuyLimit + targetProfit;
-						stopLossLimit = triggerSellLimit;
+						stopLossLimit = triggerBuyLimit - risk;
 						isTrading = true;
 						takeProfit[i] = profitLimit;
 						stopLoss[i] = stopLossLimit;
@@ -236,7 +236,7 @@ public class OpenRange extends IbChartSignal {
 					minResLine[i]=Double.NaN;
 						signal[i] = -1;
 						profitLimit = triggerSellLimit - targetProfit;
-						stopLossLimit = triggerBuyLimit;
+						stopLossLimit = triggerSellLimit + risk;
 						isTrading = true;
 						takeProfit[i] = profitLimit;
 						stopLoss[i] = stopLossLimit;
