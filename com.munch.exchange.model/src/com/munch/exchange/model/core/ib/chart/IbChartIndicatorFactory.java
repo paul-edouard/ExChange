@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.chart.levels.IbChartRoundNumber;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartMACD;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartRSI;
@@ -31,6 +32,7 @@ import com.munch.exchange.model.core.ib.chart.trend.IbChartResistanceLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSimpleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartSuperTrend;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartTrendLine;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartTrLineWithoutRes;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartTripleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartUpwardTrendLine;
 import com.munch.exchange.model.core.ib.chart.values.IbChartClose;
@@ -88,6 +90,7 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(trendLine, IbChartSuperTrend.class);
 		addChartIndicator(trendLine, IbChartTrendLine.class);
 		addChartIndicator(trendLine, IbChartResistanceLine.class);
+		addChartIndicator(trendLine, IbChartTrLineWithoutRes.class);
 		
 		
 //		BOLLINGER BAND
@@ -109,7 +112,13 @@ public class IbChartIndicatorFactory {
 		
 		
 		//================================
-		//==         SIGNALS            ==
+		//==         OSCILLATOR         ==
+		//================================
+		IbChartIndicatorGroup levels=searchOrCreateSubGroup(root,"Levels");
+		addChartIndicator(levels, IbChartRoundNumber.class);
+		
+		//================================
+		//==         LEVELS             ==
 		//================================
 		IbChartIndicatorGroup signals=searchOrCreateSubGroup(root,"Signals");
 		

@@ -65,6 +65,122 @@ public class TrendLine {
 		
 	}
 	
+	public static double[][] compute(double[] high, double[] low,  int nbOfExtremum, int maxResSearchPeriod){
+		
+//		System.out.println("High length: "+high.length);
+		
+		double[][] TrLi=new double[6][high.length];
+		
+		
+		double[][] AB_UP=computeABWithoutResistance(low, nbOfExtremum, 1.0, maxResSearchPeriod );
+		double[] A_UP=AB_UP[0];
+		double[] VALUE_UP=AB_UP[2];
+		double[] BREAKOUT_UP=AB_UP[3];
+		
+		double[][] AB_DOWN=computeABWithoutResistance(high, nbOfExtremum, -1.0, maxResSearchPeriod);
+		double[] A_DOWN=AB_DOWN[0];
+		double[] VALUE_DOWN=AB_DOWN[2];
+		double[] BREAKOUT_DOWN=AB_DOWN[3];
+		
+
+		TrLi[0]=A_UP;
+		TrLi[1]=VALUE_UP;
+		TrLi[2]=BREAKOUT_UP;
+
+		TrLi[3]=A_DOWN;
+		TrLi[4]=VALUE_DOWN;
+		TrLi[5]=BREAKOUT_DOWN;
+
+		return TrLi;
+		
+	}
+	
+	
+	
+	
+	public static double[][] computeABWithoutResistance(double[] price, int nbOfExtremum, double sign, int maxResSearchPeriod){
+		double[][] AB=new double[4][price.length];
+		
+		double[] A=new double[price.length];
+		double[] B=new double[price.length];
+		
+		double[] Val=new double[price.length];
+		double[] Breakout=new double[price.length];
+		
+		LinkedList<Integer> extPos=new LinkedList<Integer>();
+		
+		for(int i=0;i<1;i++){
+			A[i]=Double.NaN;
+			B[i]=Double.NaN;
+			Val[i]=Double.NaN;
+			Breakout[i]=Double.NaN;
+		}
+		
+		for(int i=1;i<price.length-1;i++){
+			
+//			Search the Extremum
+			if(sign < 0){
+				if(price[i-1]<=price[i] && price[i] >= price[i+1]){
+					extPos.add(i);
+				}
+			}
+			else{
+				if(price[i-1]>=price[i] && price[i] <= price[i+1]){
+					extPos.add(i);
+				}
+			}
+			
+			if(!extPos.isEmpty() && (extPos.size()>nbOfExtremum || (i-extPos.getFirst())>maxResSearchPeriod)){
+				extPos.pollFirst();
+			}
+			
+			if(extPos.size()<2){
+				A[i]=Double.NaN;
+				B[i]=Double.NaN;
+				Val[i]=Double.NaN;
+				Breakout[i]=Double.NaN;
+				continue;
+			}
+			
+			
+//			Create the local serie
+			double[] local_ext=new double[extPos.getLast()-extPos.getFirst()+1];
+			int k=0;
+			for(int j=extPos.getFirst();j<=extPos.getLast();j++){
+				local_ext[k]=price[j];
+				k++;
+			}
+			
+//			Calculate the Trend
+			double[] AB_Loc=calculateAB_Direct(local_ext, sign, 1.0);
+			A[i]=AB_Loc[0];
+			B[i]=AB_Loc[1];
+			
+//			Calculate the current Value
+			Val[i] = (i-extPos.getFirst())*A[i] + B[i];
+			
+//			Calculate the breakout value
+			if(sign < 0 && price[i] > Val[i]){
+				Breakout[i] = price[i] - Val[i];
+			}
+			else if (sign > 0 && price[i] < Val[i]){
+				Breakout[i] = Val[i] - price[i];
+			}
+			
+			
+		}
+		
+		
+		AB[0]=A;
+		AB[1]=B;
+		AB[2]=Val;
+		AB[3]=Breakout;
+		
+		return AB;
+		
+	}
+		
+	
 	
 	public static double[][] computeAB(double[] price, int nbOfExtremum, double sign, int maxResSearchPeriod, double range){
 		double[][] AB=new double[5][price.length];
