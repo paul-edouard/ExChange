@@ -107,7 +107,6 @@ public class TrendLine {
 		double[] Val=new double[price.length];
 		double[] Breakout=new double[price.length];
 		
-		LinkedList<Integer> extPos=new LinkedList<Integer>();
 		
 		for(int i=0;i<1;i++){
 			A[i]=Double.NaN;
@@ -116,32 +115,25 @@ public class TrendLine {
 			Breakout[i]=Double.NaN;
 		}
 		
-		for(int i=1;i<price.length-1;i++){
+		for(int i=1;i<price.length;i++){
 			
-//			Search the Extremum
-			if(sign < 0){
-				if(price[i-1]<=price[i] && price[i] >= price[i+1]){
-					extPos.add(i);
+//			Search the Extremums
+			LinkedList<Integer> extPos=new LinkedList<Integer>();
+			int pos = i;
+			while(pos > 1 && extPos.size()<nbOfExtremum && (i - pos)<=maxResSearchPeriod){
+				pos--;
+				if(sign < 0){
+					if(price[pos-1]<=price[pos] && price[pos] >= price[pos+1]){
+						extPos.add(0, pos);
+					}
+				}
+				else{
+					if(price[pos-1]>=price[pos] && price[pos] <= price[pos+1]){
+						extPos.add(0, pos);
+					}
 				}
 			}
-			else{
-				if(price[i-1]>=price[i] && price[i] <= price[i+1]){
-					extPos.add(i);
-				}
-			}
-			
-			if(!extPos.isEmpty() && (extPos.size()>nbOfExtremum || (i-extPos.getFirst())>maxResSearchPeriod)){
-				extPos.pollFirst();
-			}
-			
-			if(extPos.size()<2){
-				A[i]=Double.NaN;
-				B[i]=Double.NaN;
-				Val[i]=Double.NaN;
-				Breakout[i]=Double.NaN;
-				continue;
-			}
-			
+			if(extPos.size()<2)continue;
 			
 //			Create the local serie
 			double[] local_ext=new double[extPos.getLast()-extPos.getFirst()+1];
@@ -158,6 +150,7 @@ public class TrendLine {
 			
 //			Calculate the current Value
 			Val[i] = (i-extPos.getFirst())*A[i] + B[i];
+			
 			
 //			Calculate the breakout value
 			if(sign < 0 && price[i] > Val[i]){
@@ -293,24 +286,20 @@ public class TrendLine {
 	
 	
 	
-	private static double calculateResistanceOfPoints(double A, double B, double[] prices, double variance){
+	private static double calculateResistanceOfPoints(double A, double B, double[] prices){
 		double res=0;
 		for(int i=0;i<prices.length;i++){
 			double linePoint=A*i+B;
-			res+= calculateResistanceOfPoint(linePoint, prices[i], variance);
+			res+= calculateResistanceOfPoint(linePoint, prices[i]);
 		}
 		res/=prices.length;
 		return res;
 	}
 	
 	
-	private static double calculateResistanceOfPoint(double linePoint, double price, double variance){
+	private static double calculateResistanceOfPoint(double linePoint, double price){
 		double diff=linePoint-price;
-		
-//		return Math.exp(-diff*diff/variance);
-		
-		return Math.exp(-Math.abs(diff));
-		
+		return Math.exp(-Math.abs(diff));		
 	}
 	
 	private static double[] calculateAB(double[] price, double factor, double sign){
@@ -391,14 +380,8 @@ public class TrendLine {
 				
 				if(upper && lower)continue;
 				
-				double res = calculateResistanceOfPoints(a, b, price, 1);
-//				System.out.println("Calculated to:" + res);
-				
-				if(res > RES ){
-//					System.out.println("res:"+res);
-//					System.out.println("lower:"+lower);
-//					System.out.println("upper:"+upper);
-					
+				double res = calculateResistanceOfPoints(a, b, price);
+				if(res > RES ){					
 					
 					if((sign > 0 && lower) ||  (sign < 0 && upper)){
 //						System.out.println("RES reseted to:" + res);

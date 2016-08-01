@@ -68,6 +68,7 @@
 	<class>com.munch.exchange.model.core.ib.chart.signals.strategies.OpenRange</class>
 	<class>com.munch.exchange.model.core.ib.chart.levels.IbChartRoundNumber</class>
 	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartTrLineWithoutRes</class>
+	<class>com.munch.exchange.model.core.ib.chart.levels.IbChartDayPivot</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	
