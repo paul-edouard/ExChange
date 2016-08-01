@@ -114,7 +114,7 @@ public class IbChartDayPivot extends IbChartIndicator {
 				continue;
 			}
 			
-			date.setTimeInMillis(bar.getTimeInMs());
+			date.setTimeInMillis(bar.getTimeInMs()+60L*59L*1000L);
 			int currentDay = date.get(Calendar.DAY_OF_YEAR);
 			
 			if(currentDay !=day){
