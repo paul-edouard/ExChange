@@ -10,7 +10,7 @@
       <programArgs>-clearPersistedState
       </programArgs>
       <vmArgs>-Xms512m
--Xmx80g
+-Xmx1g
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>

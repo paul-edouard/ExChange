@@ -4,5 +4,4 @@
   <module>
     <ejb>com.munch.exchange.server.ejb.jar</ejb>
   </module>
-  
 </application>

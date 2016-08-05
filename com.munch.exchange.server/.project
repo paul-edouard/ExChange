@@ -3,12 +3,13 @@
 	<name>com.munch.exchange.server</name>
 	<comment></comment>
 	<projects>
-		<project>com.munch.exchange.services</project>
-		<project>com.munch.exchange.model</project>
 		<project>com.ib.api</project>
+		<project>com.munch.exchange.model</project>
 		<project>com.munch.exchange.server.ejb</project>
-		<project>MOEAFramework-2.6</project>
+		<project>com.munch.exchange.services</project>
 		<project>encog-core</project>
+		<project>MOEAFramework-2.6</project>
+		<project>com.tictactec.ta.lib</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

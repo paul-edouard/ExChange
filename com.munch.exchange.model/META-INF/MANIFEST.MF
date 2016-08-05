@@ -46,5 +46,6 @@ Require-Bundle: com.munch.exchange.libs;bundle-version="1.0.0",
  com.ib.api;bundle-version="1.0.0",
  com.munch.exchange.wildflylibs;bundle-version="1.0.0",
  MOEAFramework-2.6;bundle-version="1.0.0",
- encog-core;bundle-version="1.0.0"
+ encog-core;bundle-version="1.0.0",
+ com.tictactec.ta.lib;bundle-version="1.0.0"
 Bundle-ClassPath: .
