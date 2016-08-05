@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.CdlHammer;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartDayPivot;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartRoundNumber;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
@@ -118,6 +119,15 @@ public class IbChartIndicatorFactory {
 		IbChartIndicatorGroup levels=searchOrCreateSubGroup(root,"Levels");
 		addChartIndicator(levels, IbChartRoundNumber.class);
 		addChartIndicator(levels, IbChartDayPivot.class);
+		
+		//================================
+		//==          CANDLESTICKS      ==
+		//================================
+		IbChartIndicatorGroup candlesticks=searchOrCreateSubGroup(root,"Candlesticks");
+		
+		IbChartIndicatorGroup bullish_reversals=searchOrCreateSubGroup(candlesticks,"Bullish Reversals");
+		addChartIndicator(bullish_reversals, CdlHammer.class);
+		
 		
 		//================================
 		//==         SIGNALS            ==
