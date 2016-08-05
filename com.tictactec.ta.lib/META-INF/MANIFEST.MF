@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Lib
+Bundle-SymbolicName: com.tictactec.ta.lib
+Bundle-Version: 1.0.0.qualifier
+Export-Package: com.tictactec.ta.lib,
+ com.tictactec.ta.lib.meta,
+ com.tictactec.ta.lib.meta.annotation,
+ com.tictactec.ta.lib.meta.helpers,
+ com.tictactec.ta.lib.test
