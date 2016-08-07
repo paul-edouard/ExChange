@@ -13,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -42,6 +43,11 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	private NeuralIndicatorInput neuralIndicatorInput;
 	
 	protected String name;
+	
+	@Lob
+	protected String note="";
+	
+	
 	private boolean isActivated=false;
 	
 	@Transient
@@ -213,7 +219,17 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	
+	public String getNote() {
+		if(note == null)
+			return "";
+		return note;
+	}
 
+	public void setNote(String note) {
+		this.note = note;
+	}
 
 	public boolean isActivated() {
 		return isActivated;

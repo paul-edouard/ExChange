@@ -1,1 +1,1 @@
-alter table ibbar drop column `indicatorGroup`;
+alter table ibchartindicator drop column `note`;

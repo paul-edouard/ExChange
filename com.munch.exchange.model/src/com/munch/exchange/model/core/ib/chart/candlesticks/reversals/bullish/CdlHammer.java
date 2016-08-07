@@ -60,6 +60,7 @@ public class CdlHammer extends IbChartIndicator {
 	@Override
 	public void initName() {
 		this.name="Hammer";
+		this.note = "As with any single candlestick, confirmation is required.\n The Bullish Hammer formation shows the price goes much lower than the open then closes near the opening price.\n This fact reduces the confidence of the bears.\n Ideally, a white real body Hammer with a higher open the following day could be a bullish signal for the days ahead.";
 	}
 
 	@Override

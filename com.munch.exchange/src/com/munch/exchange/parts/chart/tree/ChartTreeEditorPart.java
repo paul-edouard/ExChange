@@ -400,6 +400,16 @@ public class ChartTreeEditorPart {
 			return super.getImage(element);
 		}
 
+		@Override
+		public String getToolTipText(Object element) {
+			if (element instanceof IbChartIndicator) {
+				IbChartIndicator el = (IbChartIndicator) element;
+				return el.getNote();
+			}
+			return super.getToolTipText(element);
+		}
+		
+
 	}
 
 	class ActivatedLabelProvider extends ColumnLabelProvider {

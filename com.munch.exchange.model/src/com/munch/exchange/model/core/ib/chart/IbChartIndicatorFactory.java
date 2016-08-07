@@ -257,6 +257,11 @@ public class IbChartIndicatorFactory {
 			IbChartIndicator new_ind,IbChartIndicatorGroup parent){
 		
 //		System.out.println("1. Parent dirty: "+parent.isDirty());
+		if(!old_ind.getNote().equals(new_ind.getNote())){
+			old_ind.setNote(new_ind.getNote());
+			parent.setDirty(true);
+		}
+		
 		
 		//Clean not used parameters
 		LinkedList<IbChartParameter> parametersToDelete=new LinkedList<IbChartParameter>();
