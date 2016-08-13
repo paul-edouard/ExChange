@@ -6,12 +6,13 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-01-08T15:12:42.238+0100")
+@Generated(value="Dali", date="2016-08-09T20:01:46.151+0200")
 @StaticMetamodel(IbChartIndicator.class)
 public class IbChartIndicator_ {
 	public static volatile SingularAttribute<IbChartIndicator, Integer> id;
 	public static volatile SingularAttribute<IbChartIndicator, NeuralIndicatorInput> neuralIndicatorInput;
 	public static volatile SingularAttribute<IbChartIndicator, String> name;
+	public static volatile SingularAttribute<IbChartIndicator, String> note;
 	public static volatile SingularAttribute<IbChartIndicator, Boolean> isActivated;
 	public static volatile ListAttribute<IbChartIndicator, IbChartParameter> parameters;
 	public static volatile ListAttribute<IbChartIndicator, IbChartSerie> series;

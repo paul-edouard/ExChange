@@ -69,7 +69,10 @@
 	<class>com.munch.exchange.model.core.ib.chart.levels.IbChartRoundNumber</class>
 	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartTrLineWithoutRes</class>
 	<class>com.munch.exchange.model.core.ib.chart.levels.IbChartDayPivot</class>
-	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.CdlHammer</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishAbandonedBaby</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBeltHold</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishHammer</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBreakaway</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

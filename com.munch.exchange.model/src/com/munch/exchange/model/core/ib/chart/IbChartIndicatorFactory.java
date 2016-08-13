@@ -6,7 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.bar.BarContainer;
-import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.CdlHammer;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishAbandonedBaby;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBeltHold;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBreakaway;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishHammer;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartDayPivot;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartRoundNumber;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
@@ -126,7 +129,10 @@ public class IbChartIndicatorFactory {
 		IbChartIndicatorGroup candlesticks=searchOrCreateSubGroup(root,"Candlesticks");
 		
 		IbChartIndicatorGroup bullish_reversals=searchOrCreateSubGroup(candlesticks,"Bullish Reversals");
-		addChartIndicator(bullish_reversals, CdlHammer.class);
+		addChartIndicator(bullish_reversals, BullishAbandonedBaby.class);
+		addChartIndicator(bullish_reversals, BullishBeltHold.class);
+		addChartIndicator(bullish_reversals, BullishBreakaway.class);
+		addChartIndicator(bullish_reversals, BullishHammer.class);
 		
 		
 		//================================
