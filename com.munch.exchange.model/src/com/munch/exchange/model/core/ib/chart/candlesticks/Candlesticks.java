@@ -2,6 +2,7 @@ package com.munch.exchange.model.core.ib.chart.candlesticks;
 
 import java.util.List;
 
+import com.munch.exchange.model.analytic.indicator.candlesticks.ExchangeCore;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
 import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
@@ -57,13 +58,20 @@ public abstract class Candlesticks extends IbChartIndicator {
 		MInteger outBegIdx = new MInteger();
 		MInteger outNBElement = new MInteger();
 		
-		Core lib = new Core();
+		Core lib = new ExchangeCore();
 		
 		callCdlStickFunction(lib, inOpen, inHigh, inLow, inClose, outBegIdx, outNBElement, outInteger);
 		
 		double[] outDoubles = new double[inClose.length];
+		
 		for(int i=0;i<outInteger.length-outBegIdx.value;i++){
-			outDoubles[i+outBegIdx.value]=outInteger[i];
+			if(Math.abs(outInteger[i])<100 && i>0){
+				outDoubles[i+outBegIdx.value]=outDoubles[i+outBegIdx.value-1]*0.6666;
+			}
+			else{
+				outDoubles[i+outBegIdx.value]=outInteger[i];
+			}
+			
 		}
 		
 		refreshSerieValues(this.name+" "+SERIE_SIGNAL, reset, times, outDoubles, outBegIdx.value);

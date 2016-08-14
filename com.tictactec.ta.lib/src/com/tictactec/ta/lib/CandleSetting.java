@@ -78,8 +78,8 @@ public class CandleSetting {
        this.factor = src.factor;
     }
     
-    CandleSettingType    settingType;
-    RangeType            rangeType;
-    int                     avgPeriod;
-    double                  factor;    
+    public CandleSettingType    settingType;
+    public RangeType            rangeType;
+    public int                     avgPeriod;
+    public double                  factor;    
 }

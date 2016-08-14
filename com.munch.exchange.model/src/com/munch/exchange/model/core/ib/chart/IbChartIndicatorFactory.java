@@ -9,7 +9,11 @@ import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishAbandonedBaby;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBeltHold;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBreakaway;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishConcealingBabySwallow;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishDojiStar;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishEngulfing;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishHammer;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishHarami;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartDayPivot;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartRoundNumber;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
@@ -132,7 +136,11 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(bullish_reversals, BullishAbandonedBaby.class);
 		addChartIndicator(bullish_reversals, BullishBeltHold.class);
 		addChartIndicator(bullish_reversals, BullishBreakaway.class);
+		addChartIndicator(bullish_reversals, BullishConcealingBabySwallow.class);
+		addChartIndicator(bullish_reversals, BullishDojiStar.class);
+		addChartIndicator(bullish_reversals, BullishEngulfing.class);
 		addChartIndicator(bullish_reversals, BullishHammer.class);
+		addChartIndicator(bullish_reversals, BullishHarami.class);
 		
 		
 		//================================

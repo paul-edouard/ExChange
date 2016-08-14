@@ -52,11 +52,11 @@ package com.tictactec.ta.lib;
 
 public class Core {
    
-   private int[] unstablePeriod;
+   protected int[] unstablePeriod;
    
-   private CandleSetting[] candleSettings;
+   protected CandleSetting[] candleSettings;
    
-   private Compatibility compatibility;
+   protected Compatibility compatibility;
    
    /** Creates a new instance of Core */
    public Core() {
