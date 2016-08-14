@@ -37,10 +37,18 @@ public class BullishBreakaway extends Candlesticks {
 	@Override
 	public void initName() {
 		this.name="Bullish Breakaway";
-		this.note = "The down trend is accelerated by a gap down. The next few days trend down, however start to run out\n";
+		this.note ="How to identify:\n";
+		this.note +="1. 1st day is a long red day.\n";
+		this.note +="2. 2nd day is a red day whose body gaps down.\n";
+		this.note +="3. 3rd & 4th days close lower each day.\n";
+		this.note +="4. 5th day is a long white day that closes inside the gap created by the 1st and 2nd days.\n";
+		this.note +="\n";
+		
+		this.note +="Psychology\n";
+		this.note += "The down trend is accelerated by a gap down. The next few days trend down, however start to run out\n";
 		this.note +="of steam. The last day of the formation shows a breakout and close above the previous 3 days,\n";
 		this.note +="however the gap created on the 1st day remains unfilled. Since the gap is not filled and the trend is\n";
-		this.note +="obviously deteriorating, this implies the reversal signal.\n";
+		this.note +="obviously deteriorating, this implies the reversal signal.";
 		
 	}
 

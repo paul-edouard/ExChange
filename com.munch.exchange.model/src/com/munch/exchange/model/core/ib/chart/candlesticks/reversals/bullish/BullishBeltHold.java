@@ -41,8 +41,15 @@ public class BullishBeltHold extends Candlesticks {
 	@Override
 	public void initName() {
 		this.name="Bullish Belt Hold";
-		this.note = "A significant gap down occurs. The remaining price action for the day occurs to the upside. This\n";
-		this.note +="triggers a buying spree. Shorts cover their positions due to concern over this price action.\n";
+		
+		this.note ="How to identify:\n";
+		this.note +="1. Long white day where the open is equal to the low.\n";
+		this.note +="2. No lower shadow.\n";
+		this.note +="\n";
+		
+		this.note +="Psychology\n";
+		this.note += "A significant gap down occurs. The remaining price action for the day occurs to the upside. This\n";
+		this.note +="triggers a buying spree. Shorts cover their positions due to concern over this price action.";
 		
 	}
 

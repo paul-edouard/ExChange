@@ -39,7 +39,15 @@ public class BullishAbandonedBaby extends CandlesticksWithPenetration{
 	@Override
 	public void initName() {
 		this.name="Bullish Abandoned Baby";
-		this.note = "The gap down on the second day encourages the bears, however the close on the second day is nearly\n";
+		
+		this.note ="How to identify:\n";
+		this.note +="1. 1st day is a red day.\n";
+		this.note +="2. 2nd day is a doji whose shadows gaps below the 1st day's close.\n";
+		this.note +="3. 3rd day is a white day with no overlapping shadows.\n";
+		this.note +="\n";
+		
+		this.note +="Psychology\n";
+		this.note += "The gap down on the second day encourages the bears, however the close on the second day is nearly\n";
 		this.note +="the same as the open on the second day. This could be a sign of temporary profit taking by the shorts,\n";
 		this.note +="however the third day reveals that the more likely scenario is indecision on the second day. Watch for\n";
 		this.note +="upside price action in the next few days.";

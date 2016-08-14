@@ -10,7 +10,7 @@ import com.tictactec.ta.lib.MInteger;
 import com.tictactec.ta.lib.RetCode;
 
 @Entity
-public class BullishHarami extends Candlesticks {
+public class BullishKicking extends Candlesticks {
 
 
 	/**
@@ -18,43 +18,41 @@ public class BullishHarami extends Candlesticks {
 	 */
 	private static final long serialVersionUID = -5379239025276748671L;
 
-	public BullishHarami() {
+	public BullishKicking() {
 		super();
 	}
 
-	public BullishHarami(IbChartIndicatorGroup group) {
+	public BullishKicking(IbChartIndicatorGroup group) {
 		super(group);
 	}
 	
 	
 	@Override
 	public IbChartIndicator copy() {
-		IbChartIndicator c=new BullishHarami();
+		IbChartIndicator c=new BullishKicking();
 		c.copyData(this);
 		return c;
 	}
 
 	@Override
 	public void initName() {
-		this.name="Bullish Harami";
+		this.name="Bullish Kicking";
 		
 		this.note = "How to identify:\n";
-		this.note += "1. The 1st day is a long red day.\n";
-		this.note += "2. The 2nd day is a short day whose body is engulfed by the 1st day's body.\n";
+		this.note += "1. 1st day is a red Marubozu.\n";
+		this.note += "2. 2nd day is a white Marubozu and gaps open above the 1st day's close.\n";
 		this.note += "\n";
 		
 		this.note += "Psychology:\n";
-		this.note += "A long 1st day with high volume in the existing downtrend brings complacency to the bears. The next\n";
-		this.note +="day trades in a small range within the previous day's real body. Light volume on the 2nd day should\n";
-		this.note +="give rise to concern by the bears of an impending change of trend. Look for higher prices over the\n";
-		this.note +="coming days, especially if the next day provides confirmation of a trend change by closing higher.";
+		this.note += "The gap created by the 2nd day becomes a support area. Expect higher prices and for the gap to be\n";
+		this.note += "tested before breaking back to the downside.";
 		
 	}
 
 	@Override
 	protected RetCode callCdlStickFunction(Core lib, double[] inOpen, double[] inHigh, double[] inLow, double[] inClose,
 			MInteger outBegIdx, MInteger outNBElement, int[] outInteger) {
-		RetCode retCode = lib.cdlHarami(0, inClose.length-1, inOpen, inHigh, inLow, inClose, outBegIdx, outNBElement, outInteger);
+		RetCode retCode = lib.cdlKicking(0, inClose.length-1, inOpen, inHigh, inLow, inClose, outBegIdx, outNBElement, outInteger);
 		for(int i = 0;i<outInteger.length;i++){
 			if(outInteger[i]<0)outInteger[i]=0;
 		}

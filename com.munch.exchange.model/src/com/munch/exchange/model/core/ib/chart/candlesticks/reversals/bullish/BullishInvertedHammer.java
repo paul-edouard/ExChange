@@ -10,7 +10,7 @@ import com.tictactec.ta.lib.MInteger;
 import com.tictactec.ta.lib.RetCode;
 
 @Entity
-public class BullishHarami extends Candlesticks {
+public class BullishInvertedHammer extends Candlesticks {
 
 
 	/**
@@ -18,43 +18,44 @@ public class BullishHarami extends Candlesticks {
 	 */
 	private static final long serialVersionUID = -5379239025276748671L;
 
-	public BullishHarami() {
+	public BullishInvertedHammer() {
 		super();
 	}
 
-	public BullishHarami(IbChartIndicatorGroup group) {
+	public BullishInvertedHammer(IbChartIndicatorGroup group) {
 		super(group);
 	}
 	
 	
 	@Override
 	public IbChartIndicator copy() {
-		IbChartIndicator c=new BullishHarami();
+		IbChartIndicator c=new BullishInvertedHammer();
 		c.copyData(this);
 		return c;
 	}
 
 	@Override
 	public void initName() {
-		this.name="Bullish Harami";
+		this.name="Bullish Inverted Hammer";
 		
 		this.note = "How to identify:\n";
-		this.note += "1. The 1st day is a long red day.\n";
-		this.note += "2. The 2nd day is a short day whose body is engulfed by the 1st day's body.\n";
+		this.note += "1. Small real body formed near the bottom of the price range.\n";
+		this.note += "2. The upper shadow is no more than two times as long as the body.\n";
+		this.note += "3. The lower shadow is small or nonexistent.\n";
 		this.note += "\n";
 		
 		this.note += "Psychology:\n";
-		this.note += "A long 1st day with high volume in the existing downtrend brings complacency to the bears. The next\n";
-		this.note +="day trades in a small range within the previous day's real body. Light volume on the 2nd day should\n";
-		this.note +="give rise to concern by the bears of an impending change of trend. Look for higher prices over the\n";
-		this.note +="coming days, especially if the next day provides confirmation of a trend change by closing higher.";
+		this.note += "The long upper shadow and small real body at the bottom of the trading range are cause for concern\n";
+		this.note += "by the bears. They wonder if this is the end of the downtrend and take measures to protect their\n";
+		this.note += "gains. If the next day opens above the body of the Inverted Hammer, then expectations could be for\n";
+		this.note += "offers the opportunity to exit short positions or initiate long positions.";
 		
 	}
 
 	@Override
 	protected RetCode callCdlStickFunction(Core lib, double[] inOpen, double[] inHigh, double[] inLow, double[] inClose,
 			MInteger outBegIdx, MInteger outNBElement, int[] outInteger) {
-		RetCode retCode = lib.cdlHarami(0, inClose.length-1, inOpen, inHigh, inLow, inClose, outBegIdx, outNBElement, outInteger);
+		RetCode retCode = lib.cdlInvertedHammer(0, inClose.length-1, inOpen, inHigh, inLow, inClose, outBegIdx, outNBElement, outInteger);
 		for(int i = 0;i<outInteger.length;i++){
 			if(outInteger[i]<0)outInteger[i]=0;
 		}

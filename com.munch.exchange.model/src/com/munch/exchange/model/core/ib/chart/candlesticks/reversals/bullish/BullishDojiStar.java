@@ -37,9 +37,17 @@ public class BullishDojiStar extends Candlesticks {
 	@Override
 	public void initName() {
 		this.name="Bullish Doji Star";
-		this.note = "The downtrend is in full force with a strong 1st day. All confidence built up by the bears from the 1st\n";
+		
+		this.note ="How to identify:\n";
+		this.note +="1. 1st day is a long red day.\n";
+		this.note +="2. 2nd day is a doji day that gaps below the 1st day.\n";
+		this.note +="3. The doji shadows shouldn't be excessively long.\n";
+		this.note +="\n";
+		
+		this.note +="Psychology\n";
+		this.note += "The downtrend is in full force with a strong 1st day. All confidence built up by the bears from the 1st\n";
 		this.note +="day is destroyed when the 2nd day's gap down closes near it's open. Short covering will quickly \n";
-		this.note +="appear if the next day opens higher.\n";
+		this.note +="appear if the next day opens higher.";
 		
 	}
 

@@ -38,7 +38,17 @@ public class BullishHammer extends Candlesticks {
 	@Override
 	public void initName() {
 		this.name="Bullish Hammer";
-		this.note = "As with any single candlestick, confirmation is required. The Bullish Hammer formation shows the\n";
+
+		this.note ="How to identify:\n";
+		this.note +="1. Small real body at the upper trading range.\n";
+		this.note +="2. Color of the body is not important.\n";
+		this.note +="3. Long lower shadow at least twice the length of the body.\n";
+		this.note +="4. Little or no upper shadow.\n";
+		this.note +="5. Previous trend should be bearish.\n";
+		this.note +="\n";
+		
+		this.note +="Psychology\n";
+		this.note += "As with any single candlestick, confirmation is required. The Bullish Hammer formation shows the\n";
 		this.note +="price goes much lower than the open then closes near the opening price. This fact reduces the\n";
 		this.note +="confidence of the bears. Ideally, a white real body Hammer with a higher open the following day could\n";
 		this.note +="be a bullish signal for the days ahead.";

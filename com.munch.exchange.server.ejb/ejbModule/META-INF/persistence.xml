@@ -77,6 +77,10 @@
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishDojiStar</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishEngulfing</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishHarami</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishHaramiCross</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishHomingPigeon</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishInvertedHammer</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishKicking</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

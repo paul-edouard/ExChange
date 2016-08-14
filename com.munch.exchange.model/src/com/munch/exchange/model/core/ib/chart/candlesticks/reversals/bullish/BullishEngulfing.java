@@ -37,10 +37,17 @@ public class BullishEngulfing extends Candlesticks {
 	@Override
 	public void initName() {
 		this.name="Bullish Engulfing";
-		this.note = "If not much volume occurs on the 1st day of the Bullish Engulfing formation compared to the 2nd day,\n";
+
+		this.note ="How to identify:\n";
+		this.note +="1. The color of the 1st day's body reflects the trend, however could be a doji.\n";
+		this.note +="2. The 2nd day's real body engulfs the 1st day's body.\n";
+		this.note +="\n";
+		
+		this.note +="Psychology\n";
+		this.note += "If not much volume occurs on the 1st day of the Bullish Engulfing formation compared to the 2nd day,\n";
 		this.note +="then this increases the strength of the pattern. The 2nd day opens below the close of the 1st day,\n";
 		this.note +="however quickly rallies to close above the open of the 1st day. This damages the spirits of the shorts\n";
-		this.note +="and brings into question the bear trend which prompts additional buying in the coming days.\n";
+		this.note +="and brings into question the bear trend which prompts additional buying in the coming days.";
 		
 	}
 
