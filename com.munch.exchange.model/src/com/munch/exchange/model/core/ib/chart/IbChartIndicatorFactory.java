@@ -22,6 +22,14 @@ import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.Bul
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishMatchingLow;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishMorningDojiStar;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishMorningStar;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishPiercingLine;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishStickSandwich;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishThreeInsideUp;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishThreeOutsideUp;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishThreeStarsInTheSouth;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishThreeWhiteSoldiers;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishTriStar;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishUniqueThreeRiverBottom;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartDayPivot;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartRoundNumber;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
@@ -157,6 +165,14 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(bullish_reversals, BullishMatchingLow.class);
 		addChartIndicator(bullish_reversals, BullishMorningDojiStar.class);
 		addChartIndicator(bullish_reversals, BullishMorningStar.class);
+		addChartIndicator(bullish_reversals, BullishPiercingLine.class);
+		addChartIndicator(bullish_reversals, BullishStickSandwich.class);
+		addChartIndicator(bullish_reversals, BullishThreeInsideUp.class);
+		addChartIndicator(bullish_reversals, BullishThreeOutsideUp.class);
+		addChartIndicator(bullish_reversals, BullishThreeStarsInTheSouth.class);
+		addChartIndicator(bullish_reversals, BullishThreeWhiteSoldiers.class);
+		addChartIndicator(bullish_reversals, BullishTriStar.class);
+		addChartIndicator(bullish_reversals, BullishUniqueThreeRiverBottom.class);
 		
 		
 		//================================

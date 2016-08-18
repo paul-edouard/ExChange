@@ -85,6 +85,14 @@
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishMatchingLow</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishMorningDojiStar</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishMorningStar</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishPiercingLine</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishStickSandwich</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishThreeInsideUp</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishThreeOutsideUp</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishThreeStarsInTheSouth</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishThreeWhiteSoldiers</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishTriStar</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishUniqueThreeRiverBottom</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	
