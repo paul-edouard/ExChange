@@ -6,6 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishMatHold;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishRisingThreeMethods;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishSidebySideWhiteLines;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishThreeLineStrike;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishUpsideGapThreeMethods;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishUpsideTasukiGap;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishAbandonedBaby;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBeltHold;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBreakaway;
@@ -148,7 +154,16 @@ public class IbChartIndicatorFactory {
 		//================================
 		IbChartIndicatorGroup candlesticks=searchOrCreateSubGroup(root,"Candlesticks");
 		
-		IbChartIndicatorGroup bullish_reversals=searchOrCreateSubGroup(candlesticks,"Bullish Reversals");
+		IbChartIndicatorGroup bullish_continuation=searchOrCreateSubGroup(candlesticks,"Bullish Continuation");
+		addChartIndicator(bullish_continuation, BullishMatHold.class);
+		addChartIndicator(bullish_continuation, BullishRisingThreeMethods.class);
+		addChartIndicator(bullish_continuation, BullishSidebySideWhiteLines.class);
+		addChartIndicator(bullish_continuation, BullishThreeLineStrike.class);
+		addChartIndicator(bullish_continuation, BullishUpsideGapThreeMethods.class);
+		addChartIndicator(bullish_continuation, BullishUpsideTasukiGap.class);
+		
+		
+		IbChartIndicatorGroup bullish_reversals=searchOrCreateSubGroup(candlesticks,"Bullish Reversal");
 		addChartIndicator(bullish_reversals, BullishAbandonedBaby.class);
 		addChartIndicator(bullish_reversals, BullishBeltHold.class);
 		addChartIndicator(bullish_reversals, BullishBreakaway.class);

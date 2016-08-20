@@ -393,6 +393,9 @@ public class ChartTreeEditorPart {
 				return loader.loadImage(getClass(),
 						IImageKeys.RATE_CONTAINER_STOCKS);
 			} else if (element instanceof IbChartIndicator) {
+				IbChartIndicator indicator = (IbChartIndicator) element;
+				if(!indicator.getIcon().isEmpty())
+					return loader.loadImage(getClass(), indicator.getIcon());
 				return loader.loadImage(getClass(), IImageKeys.RATE_STOCK);
 			} else if (element instanceof IbChartSerie) {
 				return loader.loadImage(getClass(), IImageKeys.RATE_INDICE);
@@ -408,6 +411,18 @@ public class ChartTreeEditorPart {
 			}
 			return super.getToolTipText(element);
 		}
+
+		@Override
+		public Image getToolTipImage(Object object) {
+			if (object instanceof IbChartIndicator) {
+				IbChartIndicator indicator = (IbChartIndicator) object;
+				if(!indicator.getIcon().isEmpty())
+					return loader.loadImage(getClass(), indicator.getIcon());
+			}
+			return super.getToolTipImage(object);
+		}
+		
+		
 		
 
 	}

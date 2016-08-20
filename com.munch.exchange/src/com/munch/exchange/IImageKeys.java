@@ -48,6 +48,12 @@ public interface IImageKeys {
 	public static final String CHECKED = "icons/checked.gif";
 	public static final String UNCHECKED = "icons/unchecked.gif";
 	
+	
+	//Candlesticks
+	public static final String CANDLE = "icons/candlestick/downside_gap_3_methods.gif";
+	
+	
+	
 	//IB
 	
 	/*

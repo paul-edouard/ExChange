@@ -1,0 +1,72 @@
+package com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish;
+
+import javax.persistence.Entity;
+
+import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
+import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
+import com.munch.exchange.model.core.ib.chart.candlesticks.Candlesticks;
+import com.munch.exchange.model.core.ib.chart.candlesticks.CandlesticksWithPenetration;
+import com.tictactec.ta.lib.Core;
+import com.tictactec.ta.lib.MInteger;
+import com.tictactec.ta.lib.RetCode;
+
+@Entity
+public class BullishSidebySideWhiteLines extends Candlesticks {
+
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5379239025276748671L;
+
+	public BullishSidebySideWhiteLines() {
+		super();
+	}
+
+	public BullishSidebySideWhiteLines(IbChartIndicatorGroup group) {
+		super(group);
+	}
+	
+	
+	@Override
+	public IbChartIndicator copy() {
+		IbChartIndicator c=new BullishSidebySideWhiteLines();
+		c.copyData(this);
+		return c;
+	}
+
+	@Override
+	public void initName() {
+		this.name="Bullish Side-by-Side White Lines";
+		
+		this.note = "How to identify:\n";
+		this.note += "1. 1st three days make up the Three White Soldiers formation.\n";
+		this.note += "2. The last day is a red day that opens above the 3rd day and closes below the 1st day's open.\n";
+		this.note += "\n";
+		
+		this.note += "Psychology:\n";
+		this.note += "The 4th day is a powerful move down which destroys the reversal sentiment. Since the reversal has \n";
+		this.note += "essentially already played out in a matter of one day, the risk is now higher for those who wish to bet \n";
+		this.note += "on a reversal. The uptrend should resume.";
+		
+	}
+
+
+	@Override
+	protected RetCode callCdlStickFunction(Core lib, double[] inOpen, double[] inHigh, double[] inLow, double[] inClose,
+			MInteger outBegIdx, MInteger outNBElement, int[] outInteger) {
+		RetCode retCode = lib.cdlGapSideSideWhite(0, inClose.length-1, inOpen, inHigh, inLow, inClose, outBegIdx, outNBElement, outInteger);
+		for(int i = 0;i<outInteger.length;i++){
+			if(outInteger[i]<0)outInteger[i]=0;
+		}
+//		
+		return retCode;
+	}
+
+
+	
+	
+	
+	
+
+}

@@ -47,6 +47,8 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 	@Lob
 	protected String note="";
 	
+	protected String icon = "";
+	
 	
 	private boolean isActivated=false;
 	
@@ -229,6 +231,16 @@ public abstract class IbChartIndicator implements Serializable,Copyable<IbChartI
 
 	public void setNote(String note) {
 		this.note = note;
+	}
+	
+	
+
+	public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
 	}
 
 	public boolean isActivated() {
