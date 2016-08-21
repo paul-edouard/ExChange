@@ -39,6 +39,8 @@ public class BullishUpsideTasukiGap extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Upside Tasuki Gap";
 		
+		this.icon = "icons/candlestick/bullish/continuation/upside_tasuki_gap.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st two days are white days with an up gap between the 1st and 2nd day.\n";
 		this.note += "2. 3rd day is a red day which opens within the body of the 2nd day and closes within the gap between the 1st and 2nd days.\n";

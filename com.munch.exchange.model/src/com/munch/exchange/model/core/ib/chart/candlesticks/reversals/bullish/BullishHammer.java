@@ -38,6 +38,8 @@ public class BullishHammer extends Candlesticks {
 	@Override
 	public void initName() {
 		this.name="Bullish Hammer";
+		
+		this.icon = "icons/candlestick/bullish/reversal/hammer-dragonfly_doji.gif";
 
 		this.note ="How to identify:\n";
 		this.note +="1. Small real body at the upper trading range.\n";

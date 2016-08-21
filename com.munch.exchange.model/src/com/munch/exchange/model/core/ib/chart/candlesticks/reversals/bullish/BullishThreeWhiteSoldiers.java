@@ -38,6 +38,8 @@ public class BullishThreeWhiteSoldiers extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Three White Soldiers";
 		
+		this.icon = "icons/candlestick/bullish/reversal/three_white_soldiers.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. Three consecutive long white days with higher closes each day.\n";
 		this.note += "2. Each day opens within the previous body.\n";

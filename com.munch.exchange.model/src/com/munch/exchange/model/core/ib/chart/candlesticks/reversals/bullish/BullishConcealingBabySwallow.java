@@ -38,6 +38,8 @@ public class BullishConcealingBabySwallow extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Concealing Baby Swallow";
 		
+		this.icon = "icons/candlestick/bullish/reversal/concealing_baby_swallow.gif";
+		
 		this.note ="How to identify:\n";
 		this.note +="1. 1st two days are red Marubozu days.\n";
 		this.note +="2. 3rd day is red and opens with a gap down as well as a long\n upper shadow that trades into the body of the 2nd day.\n";

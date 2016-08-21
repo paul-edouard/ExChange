@@ -39,6 +39,8 @@ public class BullishMorningStar extends CandlesticksWithPenetration {
 	public void initName() {
 		this.name="Bullish Morning Star";
 		
+		this.icon = "icons/candlestick/bullish/reversal/morning_star.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st day is a long red day.\n";
 		this.note += "2. 2nd day gaps below the 1st day's close.\n";

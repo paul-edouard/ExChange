@@ -38,6 +38,8 @@ public class BullishDojiStar extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Doji Star";
 		
+		this.icon = "icons/candlestick/bullish/reversal/doji_star.gif";
+		
 		this.note ="How to identify:\n";
 		this.note +="1. 1st day is a long red day.\n";
 		this.note +="2. 2nd day is a doji day that gaps below the 1st day.\n";

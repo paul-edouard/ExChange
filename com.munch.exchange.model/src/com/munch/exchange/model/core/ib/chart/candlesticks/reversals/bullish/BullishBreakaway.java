@@ -37,6 +37,9 @@ public class BullishBreakaway extends Candlesticks {
 	@Override
 	public void initName() {
 		this.name="Bullish Breakaway";
+		
+		this.icon = "icons/candlestick/bullish/reversal/breakaway.gif";
+		
 		this.note ="How to identify:\n";
 		this.note +="1. 1st day is a long red day.\n";
 		this.note +="2. 2nd day is a red day whose body gaps down.\n";

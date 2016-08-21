@@ -39,7 +39,7 @@ public class BullishMatHold extends CandlesticksWithPenetration {
 	public void initName() {
 		this.name="Bullish Mat Hold";
 		
-		this.icon = "icons/candlestick/downside_gap_3_methods.gif";
+		this.icon = "icons/candlestick/bullish/continuation/mat_hold.gif";
 		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st day is a long white day.\n";

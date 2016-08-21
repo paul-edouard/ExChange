@@ -38,6 +38,8 @@ public class BullishTriStar extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Tri-Star";
 		
+		this.icon = "icons/candlestick/bullish/reversal/tri-star.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. All three days are doji days.\n";
 		this.note += "2. 2nd day gaps below the 1st and 3rd days.\n";

@@ -37,6 +37,8 @@ public class BullishEngulfing extends Candlesticks {
 	@Override
 	public void initName() {
 		this.name="Bullish Engulfing";
+		
+		this.icon = "icons/candlestick/bullish/reversal/engulfing.gif";
 
 		this.note ="How to identify:\n";
 		this.note +="1. The color of the 1st day's body reflects the trend, however could be a doji.\n";

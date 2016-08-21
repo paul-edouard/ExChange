@@ -40,6 +40,8 @@ public class BullishAbandonedBaby extends CandlesticksWithPenetration{
 	public void initName() {
 		this.name="Bullish Abandoned Baby";
 		
+		this.icon = "icons/candlestick/bullish/reversal/abandoned_baby.gif";
+		
 		this.note ="How to identify:\n";
 		this.note +="1. 1st day is a red day.\n";
 		this.note +="2. 2nd day is a doji whose shadows gaps below the 1st day's close.\n";

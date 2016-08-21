@@ -99,6 +99,14 @@
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishThreeLineStrike</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishUpsideGapThreeMethods</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishUpsideTasukiGap</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishDownsideGapThreeMethods</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishDownsideTasukiGap</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishFallingThreeMethods</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishInNeck</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishSideBySideWhiteLines</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishThreeLineStrike</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishThrusting</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishAbandonedBaby</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

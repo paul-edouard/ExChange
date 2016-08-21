@@ -38,6 +38,8 @@ public class BullishLadderBottom extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Ladder Bottom";
 		
+		this.icon = "icons/candlestick/bullish/reversal/ladder_bottom.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st three days are red days with lower opens and closes each day.\n";
 		this.note += "2. 4th day is a red day with an upper shadow.\n";

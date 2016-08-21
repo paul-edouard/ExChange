@@ -38,6 +38,8 @@ public class BullishPiercingLine extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Piercing Line";
 		
+		this.icon = "icons/candlestick/bullish/reversal/piercing_line.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st day is a long red body.\n";
 		this.note += "2. 2nd day is a white body which opens below the low of the 1st day.\n";

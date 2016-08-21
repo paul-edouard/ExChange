@@ -38,6 +38,8 @@ public class BullishThreeInsideUp extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Three Inside Up";
 		
+		this.icon = "icons/candlestick/bullish/reversal/three_inside_up.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st two days form a bullish harami.\n";
 		this.note += "2. 3rd day closes higher than the 2nd day.\n";

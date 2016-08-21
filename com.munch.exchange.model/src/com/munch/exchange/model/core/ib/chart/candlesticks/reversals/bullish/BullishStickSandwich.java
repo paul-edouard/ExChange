@@ -38,6 +38,8 @@ public class BullishStickSandwich extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Stick Sandwich";
 		
+		this.icon = "icons/candlestick/bullish/reversal/stick_sandwich.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st day is red.\n";
 		this.note += "2. 2nd day is white and trades above the close of the 1st day.\n";

@@ -38,6 +38,8 @@ public class BullishThreeOutsideUp extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Three Outside Up";
 		
+		this.icon = "icons/candlestick/bullish/reversal/three_outside_up.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st two days create a bullish engulfing formation.\n";
 		this.note += "2. 3rd day closes higher than the 2nd day.\n";

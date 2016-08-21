@@ -39,6 +39,8 @@ public class BullishRisingThreeMethods extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Rising Three Methods";
 		
+		this.icon = "icons/candlestick/bullish/continuation/rising_three_methods.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st day is a long white day.\n";
 		this.note += "2. Three small body candlesticks follow the 1st day. Each trends downward and closes within the range of the 1st day.\n";

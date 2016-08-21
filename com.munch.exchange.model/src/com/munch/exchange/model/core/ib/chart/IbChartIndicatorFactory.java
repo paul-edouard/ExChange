@@ -6,12 +6,20 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.munch.exchange.model.core.ib.bar.BarContainer;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishDownsideGapThreeMethods;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishDownsideTasukiGap;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishFallingThreeMethods;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishInNeck;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishSideBySideWhiteLines;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishThreeLineStrike;
+import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishThrusting;
 import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishMatHold;
 import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishRisingThreeMethods;
 import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishSidebySideWhiteLines;
 import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishThreeLineStrike;
 import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishUpsideGapThreeMethods;
 import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishUpsideTasukiGap;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishAbandonedBaby;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishAbandonedBaby;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBeltHold;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBreakaway;
@@ -188,6 +196,22 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(bullish_reversals, BullishThreeWhiteSoldiers.class);
 		addChartIndicator(bullish_reversals, BullishTriStar.class);
 		addChartIndicator(bullish_reversals, BullishUniqueThreeRiverBottom.class);
+		
+		
+		IbChartIndicatorGroup bearish_continuation=searchOrCreateSubGroup(candlesticks,"Bearish Continuation");
+		addChartIndicator(bearish_continuation, BearishDownsideGapThreeMethods.class);
+		addChartIndicator(bearish_continuation, BearishDownsideTasukiGap.class);
+		addChartIndicator(bearish_continuation, BearishFallingThreeMethods.class);
+		addChartIndicator(bearish_continuation, BearishInNeck.class);
+		addChartIndicator(bearish_continuation, BearishSideBySideWhiteLines.class);
+		addChartIndicator(bearish_continuation, BearishThreeLineStrike.class);
+		addChartIndicator(bearish_continuation, BearishThrusting.class);
+		
+		IbChartIndicatorGroup bearish_reversal=searchOrCreateSubGroup(candlesticks,"Bearish Reversal");
+		addChartIndicator(bearish_reversal, BearishAbandonedBaby.class);
+		
+		
+		
 		
 		
 		//================================

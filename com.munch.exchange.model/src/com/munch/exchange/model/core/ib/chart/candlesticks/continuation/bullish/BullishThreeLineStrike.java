@@ -39,6 +39,8 @@ public class BullishThreeLineStrike extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Three-Line Strike";
 		
+		this.icon = "icons/candlestick/bullish/continuation/3_line_strike.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st two days are white days with an up gap between the 1st and 2nd day.\n";
 		this.note += "2. 3rd day is a white day about the same size as the 2nd day, opening at about the same price.\n";

@@ -39,6 +39,8 @@ public class BullishSidebySideWhiteLines extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Side-by-Side White Lines";
 		
+		this.icon = "icons/candlestick/bullish/continuation/side_by_side_white_lines.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st three days make up the Three White Soldiers formation.\n";
 		this.note += "2. The last day is a red day that opens above the 3rd day and closes below the 1st day's open.\n";

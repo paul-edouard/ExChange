@@ -38,6 +38,8 @@ public class BullishHaramiCross extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Harami Cross";
 		
+		this.icon = "icons/candlestick/bullish/reversal/harami_cross.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. The 1st day is a long red day.\n";
 		this.note += "2. The 2nd day is a doji day that is engulfed by the 1st day's body.\n";

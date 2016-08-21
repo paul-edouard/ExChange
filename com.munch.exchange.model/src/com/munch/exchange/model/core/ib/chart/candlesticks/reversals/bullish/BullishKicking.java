@@ -38,6 +38,8 @@ public class BullishKicking extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Kicking";
 		
+		this.icon = "icons/candlestick/bullish/reversal/kicking.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st day is a red Marubozu.\n";
 		this.note += "2. 2nd day is a white Marubozu and gaps open above the 1st day's close.\n";

@@ -38,6 +38,8 @@ public class BullishUniqueThreeRiverBottom extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Unique Three River Bottom";
 		
+		this.icon = "icons/candlestick/bullish/reversal/unique_three_river_bottom.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st day is a long red day.\n";
 		this.note += "2. 2nd day is red forming a Homing Pigeon.\n";

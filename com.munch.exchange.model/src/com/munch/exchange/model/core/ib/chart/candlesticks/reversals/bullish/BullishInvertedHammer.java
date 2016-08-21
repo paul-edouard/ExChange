@@ -38,6 +38,8 @@ public class BullishInvertedHammer extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Inverted Hammer";
 		
+		this.icon = "icons/candlestick/bullish/reversal/inverted_hammer-gravestone_dogi.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. Small real body formed near the bottom of the price range.\n";
 		this.note += "2. The upper shadow is no more than two times as long as the body.\n";

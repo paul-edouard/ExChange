@@ -38,6 +38,8 @@ public class BullishThreeStarsInTheSouth extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Three Stars in the South";
 		
+		this.icon = "icons/candlestick/bullish/reversal/three_stars_in_the_south.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st day is a long red day with a long lower shadow.\n";
 		this.note += "2. 2nd day is a small version of the 1st day with a lower above the 1st day's low.\n";

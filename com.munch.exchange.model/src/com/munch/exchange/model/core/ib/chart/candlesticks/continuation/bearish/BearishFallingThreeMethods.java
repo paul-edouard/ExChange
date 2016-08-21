@@ -11,7 +11,7 @@ import com.tictactec.ta.lib.MInteger;
 import com.tictactec.ta.lib.RetCode;
 
 @Entity
-public class BullishUpsideTasukiGap extends Candlesticks {
+public class BearishFallingThreeMethods extends Candlesticks {
 
 
 	/**
@@ -19,35 +19,39 @@ public class BullishUpsideTasukiGap extends Candlesticks {
 	 */
 	private static final long serialVersionUID = -5379239025276748671L;
 
-	public BullishUpsideTasukiGap() {
+	public BearishFallingThreeMethods() {
 		super();
 	}
 
-	public BullishUpsideTasukiGap(IbChartIndicatorGroup group) {
+	public BearishFallingThreeMethods(IbChartIndicatorGroup group) {
 		super(group);
 	}
 	
 	
 	@Override
 	public IbChartIndicator copy() {
-		IbChartIndicator c=new BullishUpsideTasukiGap();
+		IbChartIndicator c=new BearishFallingThreeMethods();
 		c.copyData(this);
 		return c;
 	}
 
 	@Override
 	public void initName() {
-		this.name="Bullish Upside Tasuki Gap";
+		this.name="Bullish Falling Three Methods";
+		
+		this.icon = "icons/candlestick/bearish/continuation/falling_three_methods.gif";
+
 		
 		this.note = "How to identify:\n";
-		this.note += "1. 1st two days are white days with an up gap between the 1st and 2nd day.\n";
-		this.note += "2. 3rd day is a red day which opens within the body of the 2nd day and closes within the gap between the 1st and 2nd days.\n";
-		this.note += "2. 3rd day should not fully close the gap.\n";
+		this.note += "1. 1st day is a long red day.\n";
+		this.note += "2. Three small body candlesticks follow the 1st day. Each trends upward and closes within the range of the 1st day.\n";
+		this.note += "3. The last day is a long red day and closes below the 1st day's close.\n";
 		this.note += "\n";
 		
 		this.note += "Psychology:\n";
-		this.note += "The gap up on the 2nd day does not get filled by the 3rd day. This suggests that the uptrend will \n";
-		this.note += "continue.";
+		this.note += "This is a formation which shows the market taking a breather before continuing it's downtrend. Notice \n";
+		this.note += "that a new high is not seen during the 4 remaining days of this formation. This gives little confidence \n";
+		this.note += "to the bulls, making way for the short sellers.";
 		
 	}
 
@@ -55,9 +59,9 @@ public class BullishUpsideTasukiGap extends Candlesticks {
 	@Override
 	protected RetCode callCdlStickFunction(Core lib, double[] inOpen, double[] inHigh, double[] inLow, double[] inClose,
 			MInteger outBegIdx, MInteger outNBElement, int[] outInteger) {
-		RetCode retCode = lib.cdlTasukiGap(0, inClose.length-1, inOpen, inHigh, inLow, inClose, outBegIdx, outNBElement, outInteger);
+		RetCode retCode = lib.cdlRiseFall3Methods(0, inClose.length-1, inOpen, inHigh, inLow, inClose, outBegIdx, outNBElement, outInteger);
 		for(int i = 0;i<outInteger.length;i++){
-			if(outInteger[i]<0)outInteger[i]=0;
+			if(outInteger[i]>0)outInteger[i]=0;
 		}
 //		
 		return retCode;

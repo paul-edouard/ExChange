@@ -39,6 +39,8 @@ public class BullishUpsideGapThreeMethods extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Upside Gap Three Methods";
 		
+		this.icon = "icons/candlestick/bullish/continuation/upside_gap_3_methods.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st two day are long white days with a gap between them.\n";
 		this.note += "2. 3rd day is a red day that fills the gap of the 1st two days.\n";

@@ -38,6 +38,8 @@ public class BullishHomingPigeon extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Homing Pigeon";
 		
+		this.icon = "icons/candlestick/bullish/reversal/homing_pigeon.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st day is a long red day.\n";
 		this.note += "2. 2nd day is a short red day which is engulfed by the 1st day's range.\n";

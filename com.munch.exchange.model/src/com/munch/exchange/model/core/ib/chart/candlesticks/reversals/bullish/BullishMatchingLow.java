@@ -38,6 +38,8 @@ public class BullishMatchingLow extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Matching Low";
 		
+		this.icon = "icons/candlestick/bullish/reversal/matching_low.gif";
+		
 		this.note = "How to identify:\n";
 		this.note += "1. 1st day is a long red day.\n";
 		this.note += "2. 2nd day is a red day with a close equal to the 1st day.\n";

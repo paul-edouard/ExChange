@@ -42,6 +42,8 @@ public class BullishBeltHold extends Candlesticks {
 	public void initName() {
 		this.name="Bullish Belt Hold";
 		
+		this.icon = "icons/candlestick/bullish/reversal/belt_hold.gif";
+		
 		this.note ="How to identify:\n";
 		this.note +="1. Long white day where the open is equal to the low.\n";
 		this.note +="2. No lower shadow.\n";
