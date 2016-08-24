@@ -107,6 +107,11 @@
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishThreeLineStrike</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bearish.BearishThrusting</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishAbandonedBaby</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishAdvanceBlock</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishBeltHold</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishBreakaway</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishDarkCloudCover</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishDojiStar</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

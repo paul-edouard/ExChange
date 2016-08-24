@@ -20,6 +20,11 @@ import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.
 import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishUpsideGapThreeMethods;
 import com.munch.exchange.model.core.ib.chart.candlesticks.continuation.bullish.BullishUpsideTasukiGap;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishAbandonedBaby;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishAdvanceBlock;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishBeltHold;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishBreakaway;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishDarkCloudCover;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishDojiStar;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishAbandonedBaby;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBeltHold;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBreakaway;
@@ -209,9 +214,11 @@ public class IbChartIndicatorFactory {
 		
 		IbChartIndicatorGroup bearish_reversal=searchOrCreateSubGroup(candlesticks,"Bearish Reversal");
 		addChartIndicator(bearish_reversal, BearishAbandonedBaby.class);
-		
-		
-		
+		addChartIndicator(bearish_reversal, BearishAdvanceBlock.class);
+		addChartIndicator(bearish_reversal, BearishBeltHold.class);
+		addChartIndicator(bearish_reversal, BearishBreakaway.class);
+		addChartIndicator(bearish_reversal, BearishDarkCloudCover.class);
+		addChartIndicator(bearish_reversal, BearishDojiStar.class);
 		
 		
 		//================================
