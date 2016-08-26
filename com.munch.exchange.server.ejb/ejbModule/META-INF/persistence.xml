@@ -112,6 +112,20 @@
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishBreakaway</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishDarkCloudCover</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishDojiStar</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishEngulfing</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishEveningDojiStar</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishEveningStar</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishHangingMan</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishHarami</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishIdenticalThreeCrows</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishKicking</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishShootingStar</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishThreeBlackCrows</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishThreeInsideDown</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishThreeOutsideDown</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishTriStar</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishTwoCrows</class>
+	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishUpsideGapTwoCrows</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

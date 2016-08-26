@@ -25,6 +25,20 @@ import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.Bea
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishBreakaway;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishDarkCloudCover;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishDojiStar;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishEngulfing;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishEveningDojiStar;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishEveningStar;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishHangingMan;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishHarami;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishIdenticalThreeCrows;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishKicking;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishShootingStar;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishThreeBlackCrows;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishThreeInsideDown;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishThreeOutsideDown;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishTriStar;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishTwoCrows;
+import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishUpsideGapTwoCrows;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishAbandonedBaby;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBeltHold;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishBreakaway;
@@ -219,6 +233,24 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(bearish_reversal, BearishBreakaway.class);
 		addChartIndicator(bearish_reversal, BearishDarkCloudCover.class);
 		addChartIndicator(bearish_reversal, BearishDojiStar.class);
+		addChartIndicator(bearish_reversal, BearishEngulfing.class);
+		addChartIndicator(bearish_reversal, BearishEveningDojiStar.class);
+		addChartIndicator(bearish_reversal, BearishEveningStar.class);
+		addChartIndicator(bearish_reversal, BearishHangingMan.class);
+		addChartIndicator(bearish_reversal, BearishHarami.class);
+		addChartIndicator(bearish_reversal, BearishIdenticalThreeCrows.class);
+		addChartIndicator(bearish_reversal, BearishKicking.class);
+		addChartIndicator(bearish_reversal, BearishShootingStar.class);
+		addChartIndicator(bearish_reversal, BearishThreeBlackCrows.class);
+		addChartIndicator(bearish_reversal, BearishThreeInsideDown.class);
+		addChartIndicator(bearish_reversal, BearishThreeOutsideDown.class);
+		addChartIndicator(bearish_reversal, BearishTriStar.class);
+		addChartIndicator(bearish_reversal, BearishTwoCrows.class);
+		addChartIndicator(bearish_reversal, BearishUpsideGapTwoCrows.class);
+		
+		
+		
+		
 		
 		
 		//================================
