@@ -37,7 +37,7 @@ public class BearishThreeOutsideDown extends Candlesticks {
 
 	@Override
 	public void initName() {
-	this.name="Bullish Three Outside Down";
+	this.name="Bearish Three Outside Down";
 		
 		this.icon = "icons/candlestick/bearish/reversal/three_outside_down.gif";
 

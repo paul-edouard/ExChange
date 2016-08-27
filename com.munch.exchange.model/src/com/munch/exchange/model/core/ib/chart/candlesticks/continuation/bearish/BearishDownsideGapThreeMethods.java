@@ -37,7 +37,7 @@ public class BearishDownsideGapThreeMethods extends Candlesticks {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Downside Gap Three Methods";
+		this.name="Bearish Downside Gap Three Methods";
 		
 		this.icon = "icons/candlestick/bearish/continuation/downside_gap_3_methods.gif";
 

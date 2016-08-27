@@ -37,7 +37,7 @@ public class BearishSideBySideWhiteLines extends Candlesticks {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Side-by-Side White Lines";
+		this.name="Bearish Side-by-Side White Lines";
 		
 		this.icon = "icons/candlestick/bearish/continuation/side_by_side_white_lines.gif";
 

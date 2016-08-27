@@ -37,7 +37,7 @@ public class BearishDarkCloudCover extends CandlesticksWithPenetration {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Dark Cloud Cover";
+		this.name="Bearish Dark Cloud Cover";
 		
 		this.icon = "icons/candlestick/bearish/reversal/dark_cloud_cover.gif";
 

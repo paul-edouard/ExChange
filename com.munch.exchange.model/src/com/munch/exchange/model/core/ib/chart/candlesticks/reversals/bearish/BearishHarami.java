@@ -37,7 +37,7 @@ public class BearishHarami extends Candlesticks {
 
 	@Override
 	public void initName() {
-	this.name="Bullish Harami";
+	this.name="Bearish Harami";
 		
 		this.icon = "icons/candlestick/bearish/reversal/harami.gif";
 

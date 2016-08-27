@@ -37,7 +37,7 @@ public class BearishUpsideGapTwoCrows extends Candlesticks {
 
 	@Override
 	public void initName() {
-	this.name="Bullish Upside Gap Two Crows";
+	this.name="Bearish Upside Gap Two Crows";
 		
 		this.icon = "icons/candlestick/bearish/reversal/upside_gap_two_crows.gif";
 

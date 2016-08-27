@@ -37,7 +37,7 @@ public class BearishAdvanceBlock extends Candlesticks {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Advance Block";
+		this.name="Bearish Advance Block";
 		
 		this.icon = "icons/candlestick/bearish/reversal/advance_block.gif";
 

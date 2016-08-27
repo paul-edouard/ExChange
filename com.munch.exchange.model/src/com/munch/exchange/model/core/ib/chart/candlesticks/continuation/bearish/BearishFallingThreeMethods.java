@@ -37,7 +37,7 @@ public class BearishFallingThreeMethods extends Candlesticks {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Falling Three Methods";
+		this.name="Bearish Falling Three Methods";
 		
 		this.icon = "icons/candlestick/bearish/continuation/falling_three_methods.gif";
 

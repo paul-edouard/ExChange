@@ -37,7 +37,7 @@ public class BearishBreakaway extends Candlesticks {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Breakaway";
+		this.name="Bearish Breakaway";
 		
 		this.icon = "icons/candlestick/bearish/reversal/breakaway.gif";
 

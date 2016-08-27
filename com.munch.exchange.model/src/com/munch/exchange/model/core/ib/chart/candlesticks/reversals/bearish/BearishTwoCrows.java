@@ -37,7 +37,7 @@ public class BearishTwoCrows extends Candlesticks {
 
 	@Override
 	public void initName() {
-	this.name="Bullish Two Crows";
+	this.name="Bearish Two Crows";
 		
 		this.icon = "icons/candlestick/bearish/reversal/2crows.gif";
 

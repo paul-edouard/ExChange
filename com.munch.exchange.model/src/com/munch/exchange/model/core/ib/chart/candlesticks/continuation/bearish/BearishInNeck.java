@@ -37,7 +37,7 @@ public class BearishInNeck extends Candlesticks {
 
 	@Override
 	public void initName() {
-		this.name="Bullish In Neck";
+		this.name="Bearish In Neck";
 		
 		this.icon = "icons/candlestick/bearish/continuation/in_neck.gif";
 

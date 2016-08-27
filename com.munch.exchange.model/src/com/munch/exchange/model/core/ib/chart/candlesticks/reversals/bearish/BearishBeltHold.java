@@ -37,7 +37,7 @@ public class BearishBeltHold extends Candlesticks {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Belt Hold";
+		this.name="Bearish Belt Hold";
 		
 		this.icon = "icons/candlestick/bearish/reversal/belt_hold.gif";
 

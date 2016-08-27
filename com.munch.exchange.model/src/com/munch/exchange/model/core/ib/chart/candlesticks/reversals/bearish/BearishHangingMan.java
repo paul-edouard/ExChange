@@ -37,7 +37,7 @@ public class BearishHangingMan extends Candlesticks {
 
 	@Override
 	public void initName() {
-	this.name="Bullish Hanging Man";
+	this.name="Bearish Hanging Man";
 		
 		this.icon = "icons/candlestick/bearish/reversal/hanging_man-dragonfly_doji.gif";
 

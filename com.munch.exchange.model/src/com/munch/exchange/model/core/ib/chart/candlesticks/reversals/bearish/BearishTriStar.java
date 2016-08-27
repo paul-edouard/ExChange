@@ -37,7 +37,7 @@ public class BearishTriStar extends Candlesticks {
 
 	@Override
 	public void initName() {
-	this.name="Bullish Tri-Star";
+	this.name="Bearish Tri-Star";
 		
 		this.icon = "icons/candlestick/bearish/reversal/tri-star.gif";
 

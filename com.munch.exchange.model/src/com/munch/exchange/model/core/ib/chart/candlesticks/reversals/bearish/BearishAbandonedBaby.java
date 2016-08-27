@@ -37,7 +37,7 @@ public class BearishAbandonedBaby extends CandlesticksWithPenetration {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Abandoned Baby";
+		this.name="Bearish Abandoned Baby";
 		
 		this.icon = "icons/candlestick/bearish/reversal/abondoned_baby.gif";
 

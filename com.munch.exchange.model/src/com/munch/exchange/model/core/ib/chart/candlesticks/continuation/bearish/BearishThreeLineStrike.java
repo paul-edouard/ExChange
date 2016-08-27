@@ -37,7 +37,7 @@ public class BearishThreeLineStrike extends Candlesticks {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Three-Line Strike";
+		this.name="Bearish Three-Line Strike";
 		
 		this.icon = "icons/candlestick/bearish/continuation/3_line_strike.gif";
 

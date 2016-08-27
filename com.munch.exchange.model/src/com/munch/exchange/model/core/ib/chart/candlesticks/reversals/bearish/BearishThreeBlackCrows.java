@@ -37,7 +37,7 @@ public class BearishThreeBlackCrows extends Candlesticks {
 
 	@Override
 	public void initName() {
-	this.name="Bullish Three Black Crows";
+	this.name="Bearish Three Black Crows";
 		
 		this.icon = "icons/candlestick/bearish/reversal/three_black_crows.gif";
 

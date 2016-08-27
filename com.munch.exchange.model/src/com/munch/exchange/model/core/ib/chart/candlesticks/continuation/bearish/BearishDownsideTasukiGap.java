@@ -37,7 +37,7 @@ public class BearishDownsideTasukiGap extends Candlesticks {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Downside Tasuki Gap";
+		this.name="Bearish Downside Tasuki Gap";
 		
 		this.icon = "icons/candlestick/bearish/continuation/downside_tasuki_gap.gif";
 

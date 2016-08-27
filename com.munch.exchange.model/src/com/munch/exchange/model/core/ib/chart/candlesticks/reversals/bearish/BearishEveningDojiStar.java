@@ -37,7 +37,7 @@ public class BearishEveningDojiStar extends CandlesticksWithPenetration {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Evening Doji Star";
+		this.name="Bearish Evening Doji Star";
 		
 		this.icon = "icons/candlestick/bearish/reversal/evening_doji_star.gif";
 

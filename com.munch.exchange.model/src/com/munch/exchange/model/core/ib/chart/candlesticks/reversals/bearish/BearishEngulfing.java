@@ -37,7 +37,7 @@ public class BearishEngulfing extends Candlesticks {
 
 	@Override
 	public void initName() {
-		this.name="Bullish Engulfing";
+		this.name="Bearish Engulfing";
 		
 		this.icon = "icons/candlestick/bearish/reversal/engulfing.gif";
 

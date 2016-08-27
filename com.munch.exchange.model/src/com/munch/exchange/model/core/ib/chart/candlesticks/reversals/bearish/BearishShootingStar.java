@@ -37,7 +37,7 @@ public class BearishShootingStar extends Candlesticks {
 
 	@Override
 	public void initName() {
-	this.name="Bullish Shooting Star";
+	this.name="Bearish Shooting Star";
 		
 		this.icon = "icons/candlestick/bearish/reversal/shooting_star-gravestone_doji.gif";
 
