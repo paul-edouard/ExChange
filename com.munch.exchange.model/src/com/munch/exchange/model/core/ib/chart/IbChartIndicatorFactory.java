@@ -80,6 +80,7 @@ import com.munch.exchange.model.core.ib.chart.signals.strategies.OpenRange;
 import com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverage;
 import com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverageFiltered;
 import com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverageWithADXFilter;
+import com.munch.exchange.model.core.ib.chart.signals.strategies.ZeroLagStrategy;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartADX;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartAdaptiveMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartBollingerBands;
@@ -93,6 +94,7 @@ import com.munch.exchange.model.core.ib.chart.trend.IbChartTrendLine;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartTrLineWithoutRes;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartTripleMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartUpwardTrendLine;
+import com.munch.exchange.model.core.ib.chart.trend.IbChartZeroLag;
 import com.munch.exchange.model.core.ib.chart.values.IbChartClose;
 import com.munch.exchange.model.core.ib.chart.values.IbChartHigh;
 import com.munch.exchange.model.core.ib.chart.values.IbChartLow;
@@ -139,6 +141,7 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(movingAverage, IbChartTripleMovingAverage.class);
 		addChartIndicator(movingAverage, IbChartAdaptiveMovingAverage.class);
 		addChartIndicator(movingAverage, IbChartFractalAdaptMovAver.class);
+		addChartIndicator(movingAverage, IbChartZeroLag.class);
 		
 		
 		//TREND LINE
@@ -272,6 +275,8 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(trendSignal, Bladerunner.class);
 		addChartIndicator(trendSignal, BladerunnerMovingStopLoss.class);
 		addChartIndicator(trendSignal, OpenRange.class);
+		addChartIndicator(trendSignal, ZeroLagStrategy.class);
+		
 		
 		
 		

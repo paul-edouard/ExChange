@@ -126,6 +126,8 @@
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishTriStar</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishTwoCrows</class>
 	<class>com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bearish.BearishUpsideGapTwoCrows</class>
+	<class>com.munch.exchange.model.core.ib.chart.trend.IbChartZeroLag</class>
+	<class>com.munch.exchange.model.core.ib.chart.signals.strategies.ZeroLagStrategy</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

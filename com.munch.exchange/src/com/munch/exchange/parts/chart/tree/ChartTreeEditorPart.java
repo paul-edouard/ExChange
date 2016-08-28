@@ -376,9 +376,17 @@ public class ChartTreeEditorPart {
 
 			if (element instanceof IbChartIndicatorGroup) {
 				IbChartIndicatorGroup el = (IbChartIndicatorGroup) element;
-				return el.getName();
+				String prefix = "";
+				for(IbChartIndicator ind:el.getAllIndicators()){
+					if(ind.isActivated()){
+						prefix = "* ";
+						break;
+					}
+				}
+				return prefix + el.getName();
 			} else if (element instanceof IbChartIndicator) {
 				IbChartIndicator el = (IbChartIndicator) element;
+//				el.isActivated()
 				return el.getName();
 			} else if (element instanceof IbChartSerie) {
 				IbChartSerie el = (IbChartSerie) element;
