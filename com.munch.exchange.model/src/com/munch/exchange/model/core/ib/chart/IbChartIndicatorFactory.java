@@ -63,6 +63,7 @@ import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.Bul
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishThreeWhiteSoldiers;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishTriStar;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishUniqueThreeRiverBottom;
+import com.munch.exchange.model.core.ib.chart.cycle.IbChartHilbertTrSineWave;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartDayPivot;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartRoundNumber;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
@@ -252,8 +253,11 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(bearish_reversal, BearishUpsideGapTwoCrows.class);
 		
 		
-		
-		
+		//================================
+		//==             CYCLE          ==
+		//================================
+		IbChartIndicatorGroup cycle=searchOrCreateSubGroup(root,"Cycle");
+		addChartIndicator(cycle, IbChartHilbertTrSineWave.class);
 		
 		
 		//================================

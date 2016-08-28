@@ -88,21 +88,45 @@ EC = alpha*(EMA + BestGain*(Close - EC[1])) + (1 -alpha)*EC[1];
 			}
 
 			cl[i] = bestCl;
-//			EC Crosses Over EMA 
-			if(cl[i-1] <= ema[i-1] && cl[i] > ema[i] && 100*leastError/Price[i] > Thresh){
-//				signal[i] = 1 + signal[i-1];
-//				signal[i] = Math.min(1 , signal[i]);
+////			EC Crosses Over EMA 
+//			if(cl[i-1] <= ema[i-1] && cl[i] > ema[i] && 100*leastError/Price[i] > Thresh){
+////				signal[i] = 1 + signal[i-1];
+////				signal[i] = Math.min(1 , signal[i]);
+//				signal[i] = 1;
+//				continue;
+//			}
+//			
+////			EC Under Over EMA
+//			if(cl[i-1] >= ema[i-1] && cl[i] < ema[i] && 100*leastError/Price[i] > Thresh){
+////				signal[i] = signal[i-1] -1;
+////				signal[i] = Math.max(-1 , signal[i]);
+//				signal[i] = -1;
+//				continue;
+//			}
+			if(signal[i-1] <= 0 && cl[i] > ema[i] && 100*(cl[i]-ema[i])/ema[i] > Thresh){
 				signal[i] = 1;
 				continue;
 			}
+			else if(signal[i-1] > 0 && cl[i] < ema[i]){
+				signal[i] = 0;
+				if(100*(-cl[i]+ema[i])/ema[i] > Thresh){
+					signal[i] = -1;
+				}
+				continue;
+			}
 			
-//			EC Under Over EMA
-			if(cl[i-1] >= ema[i-1] && cl[i] < ema[i] && 100*leastError/Price[i] > Thresh){
-//				signal[i] = signal[i-1] -1;
-//				signal[i] = Math.max(-1 , signal[i]);
+			if(signal[i-1] >= 0 && cl[i] < ema[i] && 100*(-cl[i]+ema[i])/ema[i] > Thresh){
 				signal[i] = -1;
 				continue;
 			}
+			else if(signal[i-1] < 0 && cl[i] > ema[i]){
+				signal[i] = 0;
+				continue;
+			}
+			
+			
+			
+			
 			
 			signal[i] = signal[i-1];
 			
