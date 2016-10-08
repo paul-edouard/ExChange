@@ -68,6 +68,7 @@ import com.munch.exchange.model.core.ib.chart.levels.IbChartDayPivot;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartRoundNumber;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartMACD;
+import com.munch.exchange.model.core.ib.chart.oscillators.IbChartMMI;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartRSI;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartStochasticOscillator;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
@@ -171,6 +172,7 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(oscillator, IbChartMACD.class);
 		addChartIndicator(oscillator, IbChartRSI.class);
 		addChartIndicator(oscillator, IbChartStochasticOscillator.class);
+		addChartIndicator(oscillator, IbChartMMI.class);
 		
 		
 		//================================
