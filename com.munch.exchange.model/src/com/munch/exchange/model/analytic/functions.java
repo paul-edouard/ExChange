@@ -42,6 +42,28 @@ public class functions {
 		return median;
 	}
 	
+	
+	public static boolean falling(double[] numArray, int index){
+		if(index==0 || index>=numArray.length)return false;
+		
+		return numArray[index]<numArray[index-1];
+	}
+	
+	
+	public static boolean vallay(double[] numArray, int index){
+		if(index<2 || index>=numArray.length)return false;
+		
+		return numArray[index]>numArray[index-1] && numArray[index-2]>numArray[index-1];
+	}
+	
+	public static boolean peak(double[] numArray, int index){
+		if(index<2 || index>=numArray.length)return false;
+		
+		return numArray[index]<numArray[index-1] && numArray[index-2]<numArray[index-1];
+	}
+	
+	
+	
 	public static void main(String[] args){
 		double[] list = new double[5];
 		list[0]= 1;
@@ -50,8 +72,16 @@ public class functions {
 		list[3]= 4;
 		list[4]= 10;
 		
-		double[] med = median(list, 6);
-		System.out.println(Arrays.toString(med));
+//		double[] med = median(list, 6);
+//		System.out.println(Arrays.toString(med));
+		
+		for(int i=0;i<list.length;i++){
+			System.out.println("i="+i+", value="+list[i]);
+			System.out.println("falling="+falling(list, i));
+			System.out.println("vallay="+vallay(list, i));
+			System.out.println("peak="+peak(list, i));
+			
+		}
 		
 	}
 	

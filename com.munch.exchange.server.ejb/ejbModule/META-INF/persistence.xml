@@ -130,6 +130,10 @@
 	<class>com.munch.exchange.model.core.ib.chart.signals.strategies.ZeroLagStrategy</class>
 	<class>com.munch.exchange.model.core.ib.chart.cycle.IbChartHilbertTrSineWave</class>
 	<class>com.munch.exchange.model.core.ib.chart.oscillators.IbChartMMI</class>
+	<class>com.munch.exchange.model.core.ib.chart.filter.IbChartLowPass</class>
+	<class>com.munch.exchange.model.core.ib.chart.filter.IbChartSmooth</class>
+	<class>com.munch.exchange.model.core.ib.chart.filter.IbChartHighPass</class>
+	<class>com.munch.exchange.model.core.ib.chart.filter.IbChartBand</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

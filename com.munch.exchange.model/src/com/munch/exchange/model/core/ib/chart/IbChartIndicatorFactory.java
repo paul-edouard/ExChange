@@ -64,6 +64,10 @@ import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.Bul
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishTriStar;
 import com.munch.exchange.model.core.ib.chart.candlesticks.reversals.bullish.BullishUniqueThreeRiverBottom;
 import com.munch.exchange.model.core.ib.chart.cycle.IbChartHilbertTrSineWave;
+import com.munch.exchange.model.core.ib.chart.filter.IbChartBand;
+import com.munch.exchange.model.core.ib.chart.filter.IbChartHighPass;
+import com.munch.exchange.model.core.ib.chart.filter.IbChartLowPass;
+import com.munch.exchange.model.core.ib.chart.filter.IbChartSmooth;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartDayPivot;
 import com.munch.exchange.model.core.ib.chart.levels.IbChartRoundNumber;
 import com.munch.exchange.model.core.ib.chart.oscillators.IbChartAverageTrueRange;
@@ -181,6 +185,15 @@ public class IbChartIndicatorFactory {
 		IbChartIndicatorGroup levels=searchOrCreateSubGroup(root,"Levels");
 		addChartIndicator(levels, IbChartRoundNumber.class);
 		addChartIndicator(levels, IbChartDayPivot.class);
+		
+		//================================
+		//==          FILTERS           ==
+		//================================
+		IbChartIndicatorGroup filters=searchOrCreateSubGroup(root,"Filters");
+		addChartIndicator(filters, IbChartLowPass.class);
+		addChartIndicator(filters, IbChartSmooth.class);
+		addChartIndicator(filters, IbChartHighPass.class);
+		addChartIndicator(filters, IbChartBand.class);
 		
 		//================================
 		//==          CANDLESTICKS      ==

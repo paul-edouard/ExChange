@@ -11,7 +11,7 @@ public class SwissArmyKnifeIndicator {
 	 * 
 	 * 
 	 */
-	public double[] exponentialMovingAverage(double[] input, int period){
+	public static double[] exponentialMovingAverage(double[] input, int period){
 		
 		double alpha = (Math.cos(2*Math.PI/period)+Math.sin(2*Math.PI/period)-1) / (Math.cos(2*Math.PI/period));
 		
@@ -35,10 +35,14 @@ public class SwissArmyKnifeIndicator {
 	computation of the correct alpha to be a little nebulous.  The double EMA is the 
 	equivalent  of  squaring  the  Transfer  Response  of  an  EMA.
 	 */
-	public double[] TwoPoleGaussianFilter(double[] input, int period){
+	public static double[] TwoPoleGaussianFilter(double[] input, int period){
 		
-		double beta = 2.415+(1 - Math.cos(2*Math.PI/period));
+		double beta = 2.415*(1 - Math.cos(2*Math.PI/period));
 		double alpha = -beta +Math.sqrt(beta*beta+2*beta);
+		
+//		System.out.println("Compute new with period: "+period);
+//		System.out.println("Compute new with beta: "+beta);
+//		System.out.println("Compute new with alpha: "+alpha);
 		
 		double c0 = alpha*alpha;
 		
@@ -53,11 +57,11 @@ public class SwissArmyKnifeIndicator {
 		
 	}
 	
-	public double[] lowPass(double[] input, int period){
+	public static double[] lowPass(double[] input, int period){
 		return TwoPoleGaussianFilter(input, period);
 	}
 	
-	public double[] Gauss(double[] input, int period){
+	public static double[] Gauss(double[] input, int period){
 		return TwoPoleGaussianFilter(input, period);
 	}
 	
@@ -72,12 +76,12 @@ public class SwissArmyKnifeIndicator {
 	 * @param period
 	 * @return
 	 */
-	public double[] TwoPoleButterworthFilter(double[] input, int period){
+	public static double[] TwoPoleButterworthFilter(double[] input, int period){
 		
-		double beta = 2.415+(1 - Math.cos(2*Math.PI/period));
+		double beta = 2.415*(1 - Math.cos(2*Math.PI/period));
 		double alpha = -beta +Math.sqrt(beta*beta+2*beta);
 		
-		double c0 = alpha*alpha/4;
+		double c0 = alpha*alpha/4.0;
 		
 		double b0 = 1;
 		double b1 = 2;
@@ -90,7 +94,7 @@ public class SwissArmyKnifeIndicator {
 		
 	}
 	
-	public double[] Butter(double[] input, int period){
+	public static double[] Butter(double[] input, int period){
 		return TwoPoleButterworthFilter(input, period);
 	}
 	
@@ -102,8 +106,8 @@ public class SwissArmyKnifeIndicator {
 	 * @param input
 	 * @return
 	 */
-	public double[] SmoothingFilter(double[] input){
-		double c0 = 1/4;
+	public static double[] SmoothingFilter(double[] input){
+		double c0 = 1.0/4.0;
 		
 		double b0 = 1;
 		double b1 = 2;
@@ -115,7 +119,7 @@ public class SwissArmyKnifeIndicator {
 		return compute(input, c0, b0, b1, b2, a1, a2);
 	}
 	
-	public double[] Smooth(double[] input){
+	public static double[] Smooth(double[] input){
 		return SmoothingFilter(input);
 	}
 	
@@ -131,7 +135,7 @@ public class SwissArmyKnifeIndicator {
 	 * @return
 	 */
 	
-	public double[] HighPassFilter(double[] input, int period){
+	public static double[] HighPassFilter(double[] input, int period){
 		double alpha = (Math.cos(2*Math.PI/period)+Math.sin(2*Math.PI/period)-1) / (Math.cos(2*Math.PI/period));
 		
 		double c0 = 1-alpha/2;
@@ -146,7 +150,7 @@ public class SwissArmyKnifeIndicator {
 		return compute(input, c0, b0, b1, b2, a1, a2);
 	}
 	
-	public double[] HP(double[] input, int period){
+	public static double[] HP(double[] input, int period){
 		return HighPassFilter(input, period);
 	}
 	
@@ -161,9 +165,9 @@ public class SwissArmyKnifeIndicator {
 	 * @param period
 	 * @return
 	 */
-	public double[] TwoPoleHighPassFilter(double[] input, int period){
+	public static double[] TwoPoleHighPassFilter(double[] input, int period){
 		
-		double beta = 2.415+(1 - Math.cos(2*Math.PI/period));
+		double beta = 2.415*(1 - Math.cos(2*Math.PI/period));
 		double alpha = -beta +Math.sqrt(beta*beta+2*beta);
 		
 		
@@ -179,7 +183,7 @@ public class SwissArmyKnifeIndicator {
 		return compute(input, c0, b0, b1, b2, a1, a2);
 	}
 	
-	public double[] TwoPHP(double[] input, int period){
+	public static double[] TwoPHP(double[] input, int period){
 		return TwoPoleHighPassFilter(input, period);
 	}
 	
@@ -205,7 +209,7 @@ public class SwissArmyKnifeIndicator {
 	 * @param sigma between 0.05 and 0.5
 	 * @return
 	 */
-	public double[] BandPassFilter(double[] input, int period, double sigma){
+	public static double[] BandPassFilter(double[] input, int period, double sigma){
 		double beta = Math.cos(2*Math.PI/period);
 		
 		double gama = Math.cos(2*Math.PI*sigma/period);
@@ -225,7 +229,7 @@ public class SwissArmyKnifeIndicator {
 		
 	}
 	
-	public double[] BP(double[] input, int period, double sigma){
+	public static double[] BP(double[] input, int period, double sigma){
 		return BandPassFilter(input, period, sigma);
 	}
 	
@@ -241,7 +245,7 @@ public class SwissArmyKnifeIndicator {
 	 * @param sigma
 	 * @return
 	 */
-	public double[] BandStopFilter(double[] input, int period, double sigma){
+	public static double[] BandStopFilter(double[] input, int period, double sigma){
 		double beta = Math.cos(2*Math.PI/period);
 		
 		double gama = Math.cos(2*Math.PI*sigma/period);
@@ -260,13 +264,13 @@ public class SwissArmyKnifeIndicator {
 		return compute(input, c0, b0, b1, b2, a1, a2);
 	}
 	
-	public double[] BS(double[] input, int period, double sigma){
+	public static double[] BS(double[] input, int period, double sigma){
 		return BandStopFilter(input, period, sigma);
 	}
 	
 	
 	
-	private double[] compute(double[] input, 
+	private static double[] compute(double[] input, 
 			double c0,
 			double b0, double b1, double b2,
 			double a1, double a2){
@@ -274,9 +278,11 @@ public class SwissArmyKnifeIndicator {
 		double[] output = new double[input.length];
 		output[0] = input[0];
 		output[1] = input[1];
-		for(int i = 0; i<input.length; i++){
+		for(int i = 2; i<input.length; i++){
 			output[i] = c0*(b0*input[i] + 	b1*input[i-1] + b2*input[i-2]) +
 							a1*output[i-1]+ a2*output[i-2];
+//			System.out.println("c0"+c0+ ", b0: "+b0+", "+b1+", "+b2);
+//			System.out.println("output: "+output[i]+ ", Input: "+input[i]+", "+input[i-1]+", "+input[i-2]);
 		}
 		
 		
