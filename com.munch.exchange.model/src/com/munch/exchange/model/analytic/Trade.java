@@ -1,5 +1,9 @@
 package com.munch.exchange.model.analytic;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
 
 /*
  * 
@@ -8,6 +12,39 @@ package com.munch.exchange.model.analytic;
  */
 
 public class Trade {
+	
+	public static enum TradeType {
+		STOP_LOSS, TRAIL, TRAIL_LOCK, TRAIL_STEP;
+		
+		public static String[] toStringArray(){
+			List<String> list=new LinkedList<String>();
+			for(DataType type:DataType.values()){
+				list.add(type.name());
+			}
+			return list.toArray(new String[list.size()]);
+		}
+		
+		public static TradeType fromString(String string){
+			if(string.equals(STOP_LOSS.name())){
+				return STOP_LOSS;
+			}
+			else if(string.equals(TRAIL.name())){
+				return TRAIL;
+			}
+			else if(string.equals(TRAIL_LOCK.name())){
+				return TRAIL_LOCK;
+			}
+			else if(string.equals(TRAIL_STEP.name())){
+				return TRAIL_STEP;
+			}
+			
+			
+			return STOP_LOSS;
+			
+		}
+		
+		
+	}
 	
 	
 	double enterPrice = 0;
@@ -60,6 +97,8 @@ public class Trade {
 	 * Example: The asset price of a long position goes up by 10 pips. TrailSlope = 50 
 	 * would then raise the stop loss by 5 pips. TrailSlope = 200 would raise the stop loss by 20 pips.
 	 * 
+	 * 0.1 <= trailSlope < 2
+	 * 
 	 */
 	double trailSlope = 1;
 	
@@ -74,8 +113,11 @@ public class Trade {
 	 *would set the stop loss at the entry price when the current price reaches the Trail value.
 	 *Using TrailLock is in most cases preferable to setting a profit target.  
 	 * 
+	 * 0 <= trailLock < 1
+	 * 
 	 */
 	double trailLock = 0;
+	boolean isTrailLocked = false;
 	
 	/*
 	 * Automatically raise the stop loss every bar by a percentage of the difference between current
@@ -84,6 +126,8 @@ public class Trade {
 	 * has a stop at USD 0.98 and the price is currently at USD 1.01. TrailStep = 10 will increase the
 	 * stop loss by 0.003 (30 pips) at the next bar. TrailStep reduces the trade time dependent on the
 	 * profit situation, and is often preferable to a fixed exit time with ExitTime. 
+	 * 
+	 *  0 <= trailStep < 1
 	 * 
 	 */
 	double trailStep = 0;
@@ -96,13 +140,44 @@ public class Trade {
 	 * Has no effect on TrailLock. This parameter can prevent that a winning trade with a slow rising stop
 	 * turns into a loser. 
 	 * 
+	 * 1 <= trailSpeed < 3
 	 * 
 	 */
 	double trailSpeed = 1;
 
-	public Trade(double volume) {
+	/**
+	 * 
+	 * @param volume	the volume of the entry
+	 * @param type		the type of the stop management
+	 * @param stopLossDistance	the stop loss distance in $
+	 * @param trailDistance		the trail distance in $
+	 * @param param_percent		the first parameter use for the optimization 0 < param < 1
+	 * @param trailSpeed		the speed 0 <= speed <3
+	 */
+	public Trade(double volume, TradeType type,
+			double stopLossDistance,double trailDistance,
+			double param_percent, double trailSpeed) {
 		super();
 		this.volume = volume;
+		
+		this.stopLossDistance = stopLossDistance;
+		if(type!=TradeType.STOP_LOSS){
+			this.trailDistance = trailDistance;
+			
+			if(type==TradeType.TRAIL_LOCK){
+				this.trailLock = param_percent;
+			}
+			else if(type==TradeType.TRAIL_STEP){
+				this.trailStep = param_percent;
+			}
+			else{
+				this.trailSlope = 2*param_percent;
+			}
+			
+			this.trailSpeed = trailSpeed;
+			
+		}
+		
 	}
 	
 	
@@ -142,7 +217,7 @@ public class Trade {
 		double startInvest = enterPrice * volume;
 		double stopInvest = startInvest + trailDistance*position;
 		
-		this.stopLoss = stopInvest/volume;
+		this.trail = stopInvest/volume;
 	}
 	
 	private void setProfitTarget(){
@@ -201,48 +276,108 @@ public class Trade {
 	 * Set the current price
 	 * @param currentPrice
 	 */
-	public void setCurrentPrice(double curPrice) {
+	public double setCurrentPrice(double curPrice) {
 		currentPrice = curPrice;
 		
 		if(profitTargetDistance>0){
 //			Test if the profit target is reached
 			if(currentPrice*position >= profitTarget*position){
 				position = 0;
-				return;
-			}
-			
+				return position;
+			}	
 		}
 		
-		if(stopLossDistance == 0)return;
+		if(stopLossDistance == 0)return position;
 		
 		if(currentPrice*position <= stopLoss*position){
 			position = 0;
-			return;
+			return position;
 		}
+		
+//		System.out.println("stopLossDistance = "+stopLossDistance);
+//		System.out.println("stopLoss = "+stopLoss);
 		
 //		Reset the 
-		if(trailDistance == 0)return;
-		
-//		Test if the trail is reached
-		if(currentPrice*position >= trail*position){
-			stopLoss = (currentPrice*position - trail*position)*trailSlope;
-			
-			
-//			double trailStopDistance = (currentPrice*position - enterPrice*position)*trailSlope;
-//			
-//			trail = currentPrice;
-//			stopLoss =trailStopDistance; 
-			
-			
+		if(trailDistance == 0){
+			if(currentPrice*position <= stopLoss*position)
+				position = 0;
+			return position;
 		}
 		
+//		Test if the trail is reached
+//		System.out.println("Trail distance: "+trailDistance);
+//		System.out.println("Trail: "+trail+", Stop loss: "+stopLoss);
 		
+		if(currentPrice*position >= trail*position){
+//			System.out.println("Trail lock: "+trailLock);
+			if(trailLock>0){
+				if(!isTrailLocked){
+					double diff = (currentPrice - enterPrice)*trailLock;
+					stopLoss = enterPrice+diff;
+					isTrailLocked = true;
+				}
+			}
+			else if(trailStep > 0){
+				double diff = (currentPrice - stopLoss)*trailStep;
+//				System.out.println("Diff: "+diff);
+				if(stopLoss*position < enterPrice*position){
+					diff *= trailSpeed ;
+				}
+//				System.out.println("Diff2: "+diff);
+				stopLoss += diff;
+			}
+			else{
+				double diff = (currentPrice - trail)*trailSlope;
+//				System.out.println("Diff: "+diff);
+				if(stopLoss*position < enterPrice*position){
+					diff *= trailSpeed ;
+				}
+//				System.out.println("Diff2: "+diff);
+				trail = currentPrice;
+				stopLoss += diff;
+			}
+						
+		}
+		
+//		System.out.println("-> New stopLoss = "+stopLoss);
+//		System.out.println("New Trail: "+trail+", New Stop loss: "+stopLoss);
+		
+		if(currentPrice*position <= stopLoss*position){
+			position = 0;
+			return position;
+		}
+	
+		
+		
+		return position;
 	}
 	
 	
 	
 	
-	
+	public static void main(String[] args){
+		
+		double[] serie = {1,1.1,1.1,1,0.8,0.7,0.8,0.9,1.0};
+		
+		double volume = 1;
+		TradeType type = TradeType.TRAIL_LOCK;
+		
+		double stopLossDistance = 0.2;
+		double trailDistance = 0.05;
+		double param_percent =  0.8;
+		double trailSpeed = 1.1;
+		
+		Trade trade = new Trade(volume, type, stopLossDistance, trailDistance, param_percent, trailSpeed);
+		trade.enterShort(serie[0]);
+		for(int i = 0;i<serie.length;i++){
+			System.out.println("\nValue: "+serie[i]);
+			double position = trade.setCurrentPrice(serie[i]);
+			
+			System.out.println("> Position: "+position);
+		}
+		
+		
+	}
 	
 	
 	
