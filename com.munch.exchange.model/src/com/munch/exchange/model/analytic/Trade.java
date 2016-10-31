@@ -18,7 +18,7 @@ public class Trade {
 		
 		public static String[] toStringArray(){
 			List<String> list=new LinkedList<String>();
-			for(DataType type:DataType.values()){
+			for(TradeType type:TradeType.values()){
 				list.add(type.name());
 			}
 			return list.toArray(new String[list.size()]);
@@ -278,6 +278,7 @@ public class Trade {
 	 */
 	public double setCurrentPrice(double curPrice) {
 		currentPrice = curPrice;
+		if(position == 0)return position;
 		
 		if(profitTargetDistance>0){
 //			Test if the profit target is reached
@@ -378,20 +379,6 @@ public class Trade {
 		
 		
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	

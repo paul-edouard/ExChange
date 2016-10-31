@@ -134,6 +134,7 @@
 	<class>com.munch.exchange.model.core.ib.chart.filter.IbChartSmooth</class>
 	<class>com.munch.exchange.model.core.ib.chart.filter.IbChartHighPass</class>
 	<class>com.munch.exchange.model.core.ib.chart.filter.IbChartBand</class>
+	<class>com.munch.exchange.model.core.ib.chart.signals.strategies.trend.TrendWithMMIFilter</class>
 	<properties>
 		<property name="hibernate.hbm2ddl.auto" value="update"/>
 	</properties>	

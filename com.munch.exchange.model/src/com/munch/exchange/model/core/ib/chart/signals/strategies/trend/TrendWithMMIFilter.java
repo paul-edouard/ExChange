@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.persistence.Entity;
 
+import com.munch.exchange.model.analytic.Trade;
+import com.munch.exchange.model.analytic.functions;
 import com.munch.exchange.model.analytic.indicator.SwissArmyKnifeIndicator;
 import com.munch.exchange.model.analytic.indicator.oscillators.MACD;
 import com.munch.exchange.model.analytic.indicator.oscillators.MMI;
@@ -21,6 +23,7 @@ import com.munch.exchange.model.core.ib.chart.IbChartParameter.ParameterType;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
+import com.munch.exchange.model.core.ib.chart.signals.strategies.IbChartStrategy;
 
 /**
  * 
@@ -73,7 +76,7 @@ The win rate ("accuracy") of a system highly depends on the Stop/Takeprofit rati
  */
 
 @Entity
-public class TrendWithMMIFilter extends IbChartSignal {
+public class TrendWithMMIFilter extends IbChartStrategy {
 
 	
 	/**
@@ -124,6 +127,8 @@ public class TrendWithMMIFilter extends IbChartSignal {
 //		MMI SMOOTH PERIOD
 		this.parameters.add(new IbChartParameter(this, PARAM_MMI_SMOOTH_PERIOD,ParameterType.INTEGER, 50, 1, 500, 0));
 		
+		super.createParameters();
+		
 	}
 	
 	
@@ -152,11 +157,11 @@ public class TrendWithMMIFilter extends IbChartSignal {
 	}
 	
 	
-
 	@Override
-	public void computeSignalPoint(List<ExBar> bars, boolean reset) {
+	public void computeSignalPoint(List<ExBar> bars, boolean reset, Trade trade) {
+		// TODO Auto-generated method stub
 		
-		
+
 //		Step 1: Read the parameters
 		long[] times=getTimeArrayFromBar(bars);
 		double[] close=getDataFromBars(bars, DataType.CLOSE);
@@ -173,31 +178,37 @@ public class TrendWithMMIFilter extends IbChartSignal {
 		double[] mmi_smooth = SwissArmyKnifeIndicator.Gauss(mmi, mmi_smooth_period);
 		
 		
-		
-		/*
 		double[] signal=new double[close.length];
 		for(int i=0;i<close.length;i++){
-			signal[i] = signal_buy[i] + signal_sell[i];
+			if(functions.falling(mmi_smooth, i)){
+				if(functions.vallay(trend, i)){
+					trade.enterLong(close[i]);
+				}
+				else if(functions.peak(trend, i)){
+					trade.enterShort(close[i]);
+				}
+				else{
+					trade.setCurrentPrice(close[i]);
+				}
+			}
+			else{
+				trade.setCurrentPrice(close[i]);
+			}
+			
+			signal[i] =trade.getPosition();
 		}
 		
 		
 		
 		refreshSerieValues(this.getSignalSerie().getName(), reset, times, signal,getValidAtPosition());
 		
-		refreshSerieValues(this.name+" "+SERIE_MAX_RES_LINE, reset, times, maxResLine, getValidAtPosition());
-		refreshSerieValues(this.name+" "+SERIE_MIN_RES_LINE, reset, times, minResLine, getValidAtPosition());
+		refreshSerieValues(this.name+" "+SERIE_TREND, reset, times, trend, getValidAtPosition());
 		
-		refreshSerieValues(this.name+" "+SERIE_MAX_BREAKOUT_VALUE, reset, times, maxBreakout, getValidAtPosition());
-		refreshSerieValues(this.name+" "+SERIE_MIN_BREAKOUT_VALUE, reset, times, minBreakout, getValidAtPosition());
-		
-		refreshSerieValues(this.name+" "+SERIE_BB_TOP_LINE, reset, times, BB_Top_Line, getValidAtPosition());
-		refreshSerieValues(this.name+" "+SERIE_BB_BOTTOM_LINE, reset, times, BB_Bottom_Line, getValidAtPosition());
-		
-		refreshSerieValues(this.name+" "+SERIE_CONTROL_POS, reset, times, control_buy, getValidAtPosition());
-		refreshSerieValues(this.name+" "+SERIE_CONTROL_NEG, reset, times, control_sell, getValidAtPosition());
-		*/
-		
+		refreshSerieValues(this.name+" "+SERIE_MMI, reset, times, mmi, getValidAtPosition());
+		refreshSerieValues(this.name+" "+SERIE_MMI_SMOOTH, reset, times, mmi_smooth, getValidAtPosition());
+			
 	}
+	
 	
 	
 	private double[][] createBuyAndControlSignal(double[] close, double[] low,
@@ -468,6 +479,8 @@ public class TrendWithMMIFilter extends IbChartSignal {
 		
 		return BC;
 	}
+
+	
 	
 
 	

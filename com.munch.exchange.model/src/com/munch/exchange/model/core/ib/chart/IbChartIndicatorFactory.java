@@ -87,6 +87,7 @@ import com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAver
 import com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverageFiltered;
 import com.munch.exchange.model.core.ib.chart.signals.strategies.ThreeMovingAverageWithADXFilter;
 import com.munch.exchange.model.core.ib.chart.signals.strategies.ZeroLagStrategy;
+import com.munch.exchange.model.core.ib.chart.signals.strategies.trend.TrendWithMMIFilter;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartADX;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartAdaptiveMovingAverage;
 import com.munch.exchange.model.core.ib.chart.trend.IbChartBollingerBands;
@@ -295,6 +296,18 @@ public class IbChartIndicatorFactory {
 		addChartIndicator(trendSignal, BladerunnerMovingStopLoss.class);
 		addChartIndicator(trendSignal, OpenRange.class);
 		addChartIndicator(trendSignal, ZeroLagStrategy.class);
+		
+		//STRATEGIES
+		IbChartIndicatorGroup strategiesSignal =searchOrCreateSubGroup(signals,"Strategies");
+				
+		//TREND
+		IbChartIndicatorGroup trendStrategySignal =searchOrCreateSubGroup(strategiesSignal,"Trend Str.");
+		addChartIndicator(trendStrategySignal, TrendWithMMIFilter.class);
+		
+		
+		
+				
+		
 		
 		
 		
