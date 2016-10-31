@@ -46,6 +46,30 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	
 	public static enum TradingPeriod {
 		DAILY, WEEKLY, NONE;
+		
+		public static String[] toStringArray(){
+			List<String> list=new LinkedList<String>();
+			for(TradingPeriod tp:TradingPeriod.values()){
+				list.add(tp.name());
+			}
+			return list.toArray(new String[list.size()]);
+		}
+		
+		public static TradingPeriod fromString(String string){
+			if(string.equals(DAILY.name())){
+				return DAILY;
+			}
+			else if(string.equals(WEEKLY.name())){
+				return WEEKLY;
+			}
+			else if(string.equals(NONE.name())){
+				return NONE;
+			}
+			
+			return NONE;
+		}
+		
+		
 	}
 	
 	@Id
@@ -67,9 +91,12 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	@OneToOne(mappedBy="contract",cascade=CascadeType.ALL)
 	private SecondeContainer secondeContainer;
 	
-	
+	@Enumerated(EnumType.STRING)
+	private TradingPeriod selectedTradingPeriod = TradingPeriod.DAILY;
 	private long startTradeTimeInMs=0;
+	private long endTradeEntryTimeInMs=22L*60L*60L*1000L+45L*60L*1000L;
 	private long endTradeTimeInMs=22L*60L*60L*1000L+45L*60L*1000L;
+	
 	
 	private int    conId;
 	private String symbol;
@@ -879,6 +906,27 @@ public class IbContract implements Serializable,Copyable<IbContract>{
 	public void setEndTradeTimeInMs(long endTradeTime) {
 		this.endTradeTimeInMs = endTradeTime;
 	}
+	
+
+	public long getEndTradeEntryTimeInMs() {
+		return endTradeEntryTimeInMs;
+	}
+
+	public void setEndTradeEntryTimeInMs(long endTradeEntryTimeInMs) {
+		this.endTradeEntryTimeInMs = endTradeEntryTimeInMs;
+	}
+	
+
+	public TradingPeriod getSelectedTradingPeriod() {
+		return selectedTradingPeriod;
+	}
+
+	public void setSelectedTradingPeriod(TradingPeriod selectedTradingPeriod) {
+		this.selectedTradingPeriod = selectedTradingPeriod;
+	}
+	
+	
+	
 
 	@Override
 	public int hashCode() {

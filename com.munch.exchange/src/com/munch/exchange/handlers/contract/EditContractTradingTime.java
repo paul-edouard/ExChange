@@ -40,10 +40,14 @@ public class EditContractTradingTime {
 		
 		
 		EditTradingTimeDialog dialog=new EditTradingTimeDialog(shell,
-				selectedContract.getStartTradeTimeInMs(), selectedContract.getEndTradeTimeInMs());
+				selectedContract.getStartTradeTimeInMs(), selectedContract.getEndTradeTimeInMs(),
+				selectedContract.getEndTradeEntryTimeInMs(), selectedContract.getSelectedTradingPeriod());
 		if (dialog.open() == Window.OK) {
 			selectedContract.setStartTradeTimeInMs(dialog.getStartTime());
 			selectedContract.setEndTradeTimeInMs(dialog.getEndTime());
+			
+			selectedContract.setEndTradeEntryTimeInMs(dialog.getEndEntryTime());
+			selectedContract.setSelectedTradingPeriod(dialog.getTradingPeriod());
 			
 			contractProvider.update(selectedContract);	
 		}

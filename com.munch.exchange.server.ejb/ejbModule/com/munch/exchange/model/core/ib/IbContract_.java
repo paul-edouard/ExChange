@@ -6,13 +6,14 @@ import com.ib.controller.Types.SecType;
 import com.munch.exchange.model.core.ib.bar.BarContainer;
 import com.munch.exchange.model.core.ib.bar.minute.MinuteContainer;
 import com.munch.exchange.model.core.ib.bar.seconde.SecondeContainer;
+import com.munch.exchange.model.core.ib.IbContract.TradingPeriod;
 import com.munch.exchange.model.core.ib.neural.NeuralConfiguration;
 import javax.annotation.Generated;
 import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-06-12T11:06:15.508+0200")
+@Generated(value="Dali", date="2016-10-31T14:42:51.326+0100")
 @StaticMetamodel(IbContract.class)
 public class IbContract_ {
 	public static volatile SingularAttribute<IbContract, Integer> id;
@@ -21,7 +22,9 @@ public class IbContract_ {
 	public static volatile ListAttribute<IbContract, NeuralConfiguration> neuralConfigurations;
 	public static volatile SingularAttribute<IbContract, MinuteContainer> minuteContainer;
 	public static volatile SingularAttribute<IbContract, SecondeContainer> secondeContainer;
+	public static volatile SingularAttribute<IbContract, TradingPeriod> selectedTradingPeriod;
 	public static volatile SingularAttribute<IbContract, Long> startTradeTimeInMs;
+	public static volatile SingularAttribute<IbContract, Long> endTradeEntryTimeInMs;
 	public static volatile SingularAttribute<IbContract, Long> endTradeTimeInMs;
 	public static volatile SingularAttribute<IbContract, Integer> conId;
 	public static volatile SingularAttribute<IbContract, String> symbol;

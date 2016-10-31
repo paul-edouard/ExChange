@@ -15,23 +15,35 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.ResourceManager;
 
+import com.munch.exchange.model.core.ib.IbContract.TradingPeriod;
+import org.eclipse.swt.widgets.Combo;
+
 public class EditTradingTimeDialog extends TitleAreaDialog {
+	
+	private TradingPeriod tradingPeriod = TradingPeriod.NONE;
 	
 	private long startTime;
 	private long endTime;
+	private long endEntryTime;
+	
 	private DateTime dateTimeStart;
 	private DateTime dateTimeEnd;
+	private DateTime dateTimeLastEntry;
+	private Combo comboTradingPeriod;
+	
 
 	/**
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public EditTradingTimeDialog(Shell parentShell, long startTime, long endTime) {
+	public EditTradingTimeDialog(Shell parentShell, long startTime, long endTime, long endEntryTime, TradingPeriod tradingPeriod) {
 		super(parentShell);
 		setHelpAvailable(false);
 		
 		this.startTime = startTime;
 		this.endTime = endTime;
+		this.endEntryTime = endEntryTime;
+		this.tradingPeriod = tradingPeriod;
 	}
 
 	/**
@@ -50,6 +62,18 @@ public class EditTradingTimeDialog extends TitleAreaDialog {
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		composite.setLayout(new GridLayout(2, false));
 		
+		Label lblPeriod = new Label(composite, SWT.NONE);
+		lblPeriod.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblPeriod.setText("Period:");
+		
+		comboTradingPeriod = new Combo(composite, SWT.NONE);
+		comboTradingPeriod.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboTradingPeriod.setItems(TradingPeriod.toStringArray());
+		if(tradingPeriod != null)
+			comboTradingPeriod.setText(tradingPeriod.name());
+		else
+			comboTradingPeriod.select(0);
+		
 		Label lblStart = new Label(composite, SWT.NONE);
 		lblStart.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		lblStart.setSize(76, 25);
@@ -57,8 +81,17 @@ public class EditTradingTimeDialog extends TitleAreaDialog {
 		
 		dateTimeStart = new DateTime(composite, SWT.BORDER | SWT.TIME);
 		dateTimeStart.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		Calendar time=Calendar.getInstance();time.setTimeInMillis(this.startTime);
+		Calendar time=Calendar.getInstance();
+		time.setTimeInMillis(this.startTime);
 		dateTimeStart.setTime(time.get(Calendar.HOUR_OF_DAY)-1, time.get(Calendar.MINUTE), time.get(Calendar.SECOND));
+		
+		Label lblLastEntry = new Label(composite, SWT.NONE);
+		lblLastEntry.setText("Last Entry:");
+		
+		dateTimeLastEntry = new DateTime(composite, SWT.BORDER | SWT.TIME);
+		dateTimeLastEntry.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		time.setTimeInMillis(this.endEntryTime);
+		dateTimeLastEntry.setTime(time.get(Calendar.HOUR_OF_DAY)-1, time.get(Calendar.MINUTE), time.get(Calendar.SECOND));
 		
 		Label lblEnd = new Label(composite, SWT.NONE);
 		lblEnd.setText("End:");
@@ -84,6 +117,12 @@ public class EditTradingTimeDialog extends TitleAreaDialog {
 		startTime *=1000L;
 		endTime = dateTimeEnd.getHours()*60L*60L+dateTimeEnd.getMinutes()*60L + dateTimeEnd.getSeconds();
 		endTime *=1000L;
+		
+		endEntryTime = dateTimeLastEntry.getHours()*60L*60L+dateTimeLastEntry.getMinutes()*60L + dateTimeLastEntry.getSeconds();
+		endEntryTime *=1000L;
+		
+		
+		tradingPeriod = TradingPeriod.fromString(comboTradingPeriod.getText());
 		
 		System.out.println("dateTimeStart:"+dateTimeStart.getHours());
 		
@@ -114,7 +153,7 @@ public class EditTradingTimeDialog extends TitleAreaDialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(377, 309);
+		return new Point(413, 440);
 	}
 
 	public long getStartTime() {
@@ -123,6 +162,14 @@ public class EditTradingTimeDialog extends TitleAreaDialog {
 
 	public long getEndTime() {
 		return endTime;
+	}
+
+	public TradingPeriod getTradingPeriod() {
+		return tradingPeriod;
+	}
+
+	public long getEndEntryTime() {
+		return endEntryTime;
 	}
 
 	
