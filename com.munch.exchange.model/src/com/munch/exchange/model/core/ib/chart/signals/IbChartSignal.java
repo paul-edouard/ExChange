@@ -604,7 +604,7 @@ public abstract class IbChartSignal extends IbChartIndicator {
 	}
 
 
-	private IbCommission getCommission() {
+	public IbCommission getCommission() {
 		//Try to find the commission from the current contract
 		if(commission==null){
 				IbContract contract= getContract();
