@@ -111,6 +111,8 @@ ComparableAttributes<IbChartIndicatorGroup>{
 		}
 		
 		for(IbChartIndicator ind:indicators){
+			if(ind== null || indicator==null)continue;
+			
 			if(ind.getId()==indicator.getId())return true;
 		}
 		return false;
