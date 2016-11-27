@@ -372,6 +372,79 @@ public class BarUtils {
 		return rangeBar;
 	}
 	
+//	#########################################
+//	##            WEEK BLOCKS              ##
+//	#########################################
+	public static LinkedList<LinkedList<ExBar>> splitBarListInWeekBlocks(List<ExBar> bars){
+		LinkedList<LinkedList<ExBar>> dayBlocks = splitBarListInDayBlocks(bars);
+		
+		LinkedList<LinkedList<ExBar>> weekBlocks=new LinkedList<LinkedList<ExBar>>();
+		
+		LinkedList<ExBar> weekBlock=new LinkedList<ExBar>();
+		
+		Calendar currentWeek=getWeekDayOf(dayBlocks.getFirst().getFirst().getTimeInMs());
+		Calendar nextWeek=addOneWeekTo(currentWeek);
+		
+		
+		for(LinkedList<ExBar> dayBlock:dayBlocks){
+			ExBar firstBar = dayBlock.getFirst();
+			if(firstBar.getTimeInMs() >= nextWeek.getTimeInMillis()){
+//				A new week is open save the old one
+				if(!weekBlock.isEmpty())
+					weekBlocks.add(weekBlock);
+				
+				weekBlock=new LinkedList<ExBar>();
+				weekBlock.addAll(dayBlock);
+				
+//				Find out the new end of the new week
+				while(firstBar.getTimeInMs() >= nextWeek.getTimeInMillis())
+					nextWeek=addOneWeekTo(nextWeek);
+				continue;
+			}
+			
+			weekBlock.addAll(dayBlock);
+		}
+		
+		
+		if(!weekBlock.isEmpty()){
+			weekBlocks.add(weekBlock);
+		}
+		
+		return weekBlocks;
+	}
+	
+	public static Calendar getWeekDayOf(long dateInMs){
+		Calendar date=Calendar.getInstance();
+		date.setTimeInMillis(dateInMs);
+		
+		date.set(Calendar.MILLISECOND, 0);
+		date.set(Calendar.SECOND, 0);
+		date.set(Calendar.MINUTE, 0);
+		date.set(Calendar.HOUR_OF_DAY, 12);
+		
+		while (date.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY) {
+			date.add(Calendar.DAY_OF_YEAR, -1);
+		}
+		
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+//		System.out.println("Current week of: "+sdf.format(date.getTime()));
+		
+		return date;
+	}
+	
+	public static Calendar addOneWeekTo(Calendar date){
+		
+		Calendar nextDay=Calendar.getInstance();
+		nextDay.setTimeInMillis(date.getTimeInMillis());
+		nextDay.add(Calendar.DAY_OF_YEAR, 7);
+		
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+//		System.out.println("Add one week: "+sdf.format(nextDay.getTime()));
+
+		return nextDay;
+	}
+	
+	
 	
 //	#########################################
 //	##             DAY BLOCKS              ##

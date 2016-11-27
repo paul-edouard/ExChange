@@ -194,6 +194,8 @@ public class NeuralConfigurationEditorPart {
 	private MenuItem mntmTrainAll;
 	private MenuItem mntmIsolate;
 	private Combo comboBarType;
+	private Spinner spinnerMinProfitLimit;
+	private Spinner spinnerVolume;
 	
 	
 	@Inject
@@ -522,14 +524,13 @@ public class NeuralConfigurationEditorPart {
 		btnSearch.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-//				TODO Start the job
+//				Start the job
 				SearchAndDistribute job=new SearchAndDistribute();
+//				Start the research Job
 				job.schedule();
 				
 				btnSearch.setEnabled(false);
 				
-//				searchReferenceDataFunc();
-//				distributeDataFunc();
 			}
 		});
 		
@@ -558,7 +559,6 @@ public class NeuralConfigurationEditorPart {
 		else{
 			comboSplitStrategy.select(1);
 		}
-		comboSplitStrategy.setEnabled(false);
 		
 		btnViewTrainingData = new Button(compositeDataSetCommandItems, SWT.NONE);
 		btnViewTrainingData.setEnabled(false);
@@ -571,6 +571,32 @@ public class NeuralConfigurationEditorPart {
 		btnViewTrainingData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		btnViewTrainingData.setText("View Data");
 		btnViewTrainingData.setEnabled(false);
+		
+		Label lblMinProfitLinit = new Label(compositeDataSetCommandItems, SWT.NONE);
+		lblMinProfitLinit.setText("Minimal Profit Limit [$]:");
+		
+		spinnerMinProfitLimit = new Spinner(compositeDataSetCommandItems, SWT.BORDER);
+		spinnerMinProfitLimit.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent arg0) {
+//				TODO Remove the test modify
+				System.out.println(spinnerMinProfitLimit.getSelection());
+			}
+		});
+		spinnerMinProfitLimit.setPageIncrement(1);
+		spinnerMinProfitLimit.setMaximum(1000);
+		spinnerMinProfitLimit.setSelection(50);
+		spinnerMinProfitLimit.setDigits(1);
+		
+		Label lblVolume = new Label(compositeDataSetCommandItems, SWT.NONE);
+		lblVolume.setText("Volume:");
+		
+		spinnerVolume = new Spinner(compositeDataSetCommandItems, SWT.BORDER);
+		spinnerVolume.setIncrement(100);
+		spinnerVolume.setMaximum(100000);
+		spinnerVolume.setMinimum(10);
+		spinnerVolume.setSelection(20000);
+		spinnerVolume.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		new Label(compositeDataSetCommandItems, SWT.NONE);
 		
 		treeViewerTrainingData = new TreeViewer(compositeDataSet,SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL | SWT.FULL_SELECTION);
@@ -930,12 +956,18 @@ public class NeuralConfigurationEditorPart {
 			break;
 		}
 		}
-		comboSplitStrategy.setEnabled(false);
 		
 //		Initialization of percent of training data
 		spinnerPercentOfTrainingData.setSelection(neuralConfiguration.getPercentOfTrainingData());
 		spinnerPercentOfTrainingData.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
 		comboBarType.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
+	
+//		Initialization of the Min Profit Limit
+		spinnerMinProfitLimit.setSelection((int)(neuralConfiguration.getMinProfitLimit()*10));
+		spinnerMinProfitLimit.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
+//		Initialization of the Volume
+		spinnerVolume.setSelection((int)neuralConfiguration.getVolume());
+		spinnerVolume.setEnabled(neuralConfiguration.getNeuralTrainingElements().isEmpty());
 		
 		addColumn("Name",150,new NeuralTrainingDataLabelProvider());
 		
@@ -1123,7 +1155,7 @@ public class NeuralConfigurationEditorPart {
 		pop.setInitialConnectionDensity(dialog.getConnectionDensity());// not required, but speeds training
 		pop.reset();
 		
-		//TODO Neural Architecture has to be able to implements more than the scroing methode
+		//Neural Architecture has to be able to implements more than the scroing methode
 		NoveltySearchEA ns_ea=NoveltySearchUtil.constructNoveltySearchTrainer(
 				pop, neuralArchitecture, dialog.getBehaviorLimit());
 		ns_ea.setValidationMode(true);
@@ -1535,7 +1567,7 @@ public class NeuralConfigurationEditorPart {
 //			for(int i=0;i<texts.length;i++)
 			eventBroker.post(IEventConstant.TEXT_INFO,bestGenomes.toString());
 			
-			//TODO Calculate the expected end of training
+			// Calculate the expected end of training
 			
 			epoch++;
 			updateProgressBarArchitecture();
@@ -2253,7 +2285,7 @@ public class NeuralConfigurationEditorPart {
 		
 		private void readAndSaveGuiData(){
 			
-//			TODO Save the bar type and the bar size of the configuration
+//			Save the bar type and the bar size of the configuration
 			BarType bartype = BarType.fromString(comboBarType.getText());
 			neuralConfiguration.setBarType(bartype);
 			
@@ -2287,8 +2319,14 @@ public class NeuralConfigurationEditorPart {
 				neuralConfiguration.setSplitStrategy(SplitStrategy.DAY);
 			}
 			
+//			Save the data
+			neuralConfiguration.setMinProfitLimit(((double) spinnerMinProfitLimit.getSelection())/10.0);
+			neuralConfiguration.setVolume(spinnerVolume.getSelection());
+			
 			neuralProvider.update(neuralConfiguration);
 			
+			
+			disableAllGuiElts();
 			
 			progressBarDataSet.setMaximum(8);
 			progressBarDataSet.setSelection(0);
@@ -2296,6 +2334,22 @@ public class NeuralConfigurationEditorPart {
 			
 		}
 		
+		
+		private void disableAllGuiElts(){
+//			TODO Disable All
+			comboBarSize.setEnabled(false);
+			comboBarType.setEnabled(false);
+			
+			
+			comboReferenceData.setEnabled(false);
+			spinnerPercentOfTrainingData.setEnabled(false);
+			
+			spinnerMinProfitLimit.setEnabled(false);
+			spinnerVolume.setEnabled(false);
+			comboSplitStrategy.setEnabled(false);
+			
+			
+		}
 
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
@@ -2430,8 +2484,9 @@ public class NeuralConfigurationEditorPart {
 			printMemoryUsage("Compute the adapted Data of each components");
 			
 //			save the configuration
-			neuralProvider.updateTrainingData(neuralConfiguration.getId(),
-					neuralConfiguration.getNeuralTrainingElements());
+//			TODO Save the config
+//			neuralProvider.updateTrainingData(neuralConfiguration.getId(),
+//					neuralConfiguration.getNeuralTrainingElements());
 			updateProgressBarDataSet();
 			
 			printMemoryUsage("End distribute");

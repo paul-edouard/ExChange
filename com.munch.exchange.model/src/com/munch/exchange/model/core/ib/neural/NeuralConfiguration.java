@@ -80,6 +80,10 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	
 	private int percentOfTrainingData=60;
 	
+	private double minProfitLimit = 5.0;
+	
+	private long volume = 20000;
+	
 	@Enumerated(EnumType.STRING)
 	private ReferenceData referenceData=ReferenceData.MID_POINT;
 	
@@ -159,6 +163,10 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		c.percentOfTrainingData=percentOfTrainingData;
 		c.referenceData=referenceData;
 		c.splitStrategy=splitStrategy;
+		
+		c.minProfitLimit=minProfitLimit;
+		c.volume=volume;
+		
 		c.neuralTrainingElements=new LinkedList<NeuralTrainingElement>();
 		for(NeuralTrainingElement element:neuralTrainingElements){
 			NeuralTrainingElement e_cp=element.copy();
@@ -316,22 +324,25 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	
 	public void splitReferenceData(){
 		
+//		TODO Split the Reference Data
 		
 		trainingBlocks.clear();
 		backTestingBlocks.clear();
 		
 		allBlocks=new LinkedList<LinkedList<ExBar>>();
 		
-		LinkedList<LinkedList<ExBar>> allBlocksTemp=BarUtils.splitBarListInDayBlocks(this.getReferenceBars());
+//		LinkedList<LinkedList<ExBar>> allBlocksTemp=BarUtils.splitBarListInDayBlocks(this.getReferenceBars());
 		
-//		switch (this.getSplitStrategy()) {
-//		case WEEK:
-//			allBlocksTemp=IbBar.splitBarListInWeekBlocks(this.getReferenceBars());
-//			break;
-//		case DAY:
-//			allBlocksTemp=IbBar.splitBarListInDayBlocks(this.getReferenceBars());
-//			break;
-//		}
+		LinkedList<LinkedList<ExBar>> allBlocksTemp=null;
+		
+		switch (this.getSplitStrategy()) {
+		case WEEK:
+			allBlocksTemp=BarUtils.splitBarListInWeekBlocks(this.getReferenceBars());
+			break;
+		case DAY:
+			allBlocksTemp=BarUtils.splitBarListInDayBlocks(this.getReferenceBars());
+			break;
+		}
 		
 		//Search the block with the maximum of values
 		long maxSize=Integer.MIN_VALUE;
@@ -681,12 +692,9 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	}
 	
 
-
-
 	public BarType getBarType() {
 		return barType;
 	}
-
 
 
 	public void setBarType(BarType barType) {
@@ -694,31 +702,22 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	}
 
 
-
 	public double getRange() {
 		return barRange;
 	}
-
 
 
 	public void setRange(double range) {
 		this.barRange = range;
 	}
 
-
-
 	public List<NeuralArchitecture> getNeuralArchitectures() {
 		return neuralArchitectures;
 	}
 	
-
-
-
 	public List<IsolatedNeuralArchitecture> getIsolatedArchitectures() {
 		return isolatedArchitectures;
 	}
-
-
 
 	public void setIsolatedArchitectures(
 			List<IsolatedNeuralArchitecture> isolatedArchitectures) {
@@ -728,13 +727,37 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		}
 	}
 
-
-
 	public void setNeuralArchitectures(List<NeuralArchitecture> neuralArchitectures) {
 		this.neuralArchitectures = neuralArchitectures;
 		for(NeuralArchitecture archi:this.neuralArchitectures){
 			archi.setNeuralConfiguration(this);
 		}
+	}
+
+
+
+	
+	
+	public double getMinProfitLimit() {
+		return minProfitLimit;
+	}
+
+
+
+	public void setMinProfitLimit(double minProfitLimit) {
+		this.minProfitLimit = minProfitLimit;
+	}
+
+
+
+	public long getVolume() {
+		return volume;
+	}
+
+
+
+	public void setVolume(long volume) {
+		this.volume = volume;
 	}
 
 

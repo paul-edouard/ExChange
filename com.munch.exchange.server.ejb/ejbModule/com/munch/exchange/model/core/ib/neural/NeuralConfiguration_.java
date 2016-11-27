@@ -10,7 +10,7 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-06-07T18:31:34.918+0200")
+@Generated(value="Dali", date="2016-11-27T15:19:28.319+0100")
 @StaticMetamodel(NeuralConfiguration.class)
 public class NeuralConfiguration_ {
 	public static volatile SingularAttribute<NeuralConfiguration, Integer> id;
@@ -22,6 +22,8 @@ public class NeuralConfiguration_ {
 	public static volatile SingularAttribute<NeuralConfiguration, BarSize> size;
 	public static volatile SingularAttribute<NeuralConfiguration, Double> barRange;
 	public static volatile SingularAttribute<NeuralConfiguration, Integer> percentOfTrainingData;
+	public static volatile SingularAttribute<NeuralConfiguration, Double> minProfitLimit;
+	public static volatile SingularAttribute<NeuralConfiguration, Long> volume;
 	public static volatile SingularAttribute<NeuralConfiguration, ReferenceData> referenceData;
 	public static volatile SingularAttribute<NeuralConfiguration, SplitStrategy> splitStrategy;
 	public static volatile ListAttribute<NeuralConfiguration, NeuralTrainingElement> neuralTrainingElements;
