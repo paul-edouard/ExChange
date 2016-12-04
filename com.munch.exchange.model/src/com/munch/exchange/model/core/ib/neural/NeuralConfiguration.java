@@ -22,11 +22,14 @@ import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 import com.ib.controller.Types.BarSize;
+import com.munch.exchange.model.analytic.indicator.signals.ReverseMaxProfitClass;
 import com.munch.exchange.model.core.ib.Copyable;
+import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.IbContract;
 import com.munch.exchange.model.core.ib.bar.BarType;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
+import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
 
 @Entity
 public class NeuralConfiguration implements Serializable, Copyable<NeuralConfiguration>,Comparable<NeuralConfiguration>{
@@ -119,6 +122,9 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	
 	@Transient
 	private HashMap<Long, Integer> adpatedTimesMap=new HashMap<Long, Integer>();
+	
+	@Transient
+	NeuralInputComponent targetBuySellSignalComponent = new NeuralInputComponent();
 	
 	
 //	Architectures
@@ -382,25 +388,7 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 			// neuralTrainingElements.clear();
 
 			for (LinkedList<ExBar> block : trainingBlocks) {
-				Calendar day =BarUtils.getCurrentDayOf(block.get(0)
-							.getTimeInMs());
-				day=BarUtils.addOneDayTo(day);
-				
-				String key = String.valueOf(day.getTimeInMillis());
-				
-//				switch (this.getSplitStrategy()) {
-//				case WEEK:
-//					Calendar sunday = IbBar.getLastSundayOfDate(block.get(0)
-//							.getTimeInMs());
-//					key = String.valueOf(sunday.getTimeInMillis());
-//					break;
-//					
-//				case DAY:
-//					Calendar day = IbBar.getCurrentDayOf(block.get(0)
-//							.getTimeInMs());
-//					key = String.valueOf(day.getTimeInMillis());
-//					break;
-//				}
+				String key = getKeyOfBarBlock(block);
 				
 				if(key!=null){
 					NeuralTrainingElement element=new NeuralTrainingElement(key);
@@ -412,27 +400,8 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 			}
 		} else {
 			for(LinkedList<ExBar> block:allBlocks){
-				Calendar day =BarUtils.getCurrentDayOf(block.get(0)
-						.getTimeInMs());
-				day=BarUtils.addOneDayTo(day);
 			
-				String key = String.valueOf(day.getTimeInMillis());
-			
-//				String key=null;
-//				
-//				switch (this.getSplitStrategy()) {
-//				case WEEK:
-//					Calendar sunday = IbBar.getLastSundayOfDate(block.get(0)
-//							.getTimeInMs());
-//					key = String.valueOf(sunday.getTimeInMillis());
-//					break;
-//				case DAY:
-//					Calendar day = IbBar.getCurrentDayOf(block.get(0)
-//							.getTimeInMs());
-//					key = String.valueOf(day.getTimeInMillis());
-//					break;
-//				}
-				
+				String key = getKeyOfBarBlock(block);				
 				if(key==null)continue;
 				
 				boolean isTrainingElement=false;
@@ -457,6 +426,17 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		
 	}
 	
+	private String getKeyOfBarBlock(LinkedList<ExBar> block){
+		Calendar day =BarUtils.getCurrentDayOf(block.get(0)
+				.getTimeInMs());
+		day=BarUtils.addOneDayTo(day);
+	
+		String key = String.valueOf(day.getTimeInMillis());
+		
+		return key;
+	}
+	
+	
 	public void computeAdaptedDataOfEachComponents(){
 		
 		long[] referencedLongTimes=BarUtils.getTimeArray(this.getReferenceBars());
@@ -465,17 +445,18 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 			referencedTimes[i]=referencedLongTimes[i];
 		}
 		
-		
+//		1. Set the time of the Buy and Sell Signal
+		targetBuySellSignalComponent.setTimes(referencedTimes);
 		
 //		System.out.println("Nb of referenced times: "+referencedTimes.length);
 		
 		
-//		Compute the Adapted Values
+//		2. Compute the Adapted Values
 		for (NeuralInput input : neuralInputs) {
 			input.computeAdaptedData(referencedTimes);
 		}
 		
-//		reduce the value components values to their minimum
+//		3. reduce the value components values to their minimum
 		int minLength=Integer.MAX_VALUE;
 		for (NeuralInput input : neuralInputs) {
 			for(NeuralInputComponent component: input.getComponents()){
@@ -492,7 +473,7 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 			adpatedTimesMap.put((long)tmpAdaptedTimes[i], i);
 		}
 		
-		
+//		4. Reduce the Adapted value of each components
 		for (NeuralInput input : neuralInputs) {
 			for(NeuralInputComponent component: input.getComponents()){
 				int dataLength=component.getAdaptedtimes().length;
@@ -511,6 +492,16 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 			}
 		}
 		
+//		5. Reduce the adapted value of the target buy sell signal
+		int dataLength=targetBuySellSignalComponent.getValues().length;		
+		double[] reducedAdaptedValues=Arrays.copyOfRange(targetBuySellSignalComponent.getValues(),dataLength-minLength ,dataLength);
+		double[] reducedAdaptedTimes=Arrays.copyOfRange(targetBuySellSignalComponent.getTimes(),dataLength-minLength ,dataLength);
+		
+		
+		targetBuySellSignalComponent.setAdaptedtimes(reducedAdaptedTimes);
+		targetBuySellSignalComponent.setAdaptedValues(reducedAdaptedValues);
+		
+		
 //		System.out.println("Min Length: "+minLength);
 //		
 //		for (NeuralInput input : neuralInputs) {
@@ -524,6 +515,26 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		
 		
 	}
+	
+	public void computeTargetBuySellSignal(){
+		IbCommission commission = this.getContract().getCommission();
+		long volume = this.getVolume();
+		double profitLimit = this.getMinProfitLimit();
+		
+		ReverseMaxProfitClass reverseMaxProfit = new ReverseMaxProfitClass(profitLimit, volume, commission); 
+		
+		double[] ask = BarUtils.barsToDoubleArray(allAskBars, DataType.CLOSE);
+		double[] bid = BarUtils.barsToDoubleArray(allBidBars, DataType.CLOSE);
+		
+		double[] signal = reverseMaxProfit.compute(ask, bid);
+		
+		targetBuySellSignalComponent.setValues(signal);
+//		long[] referencedLongTimes=BarUtils.getTimeArray(this.getReferenceBars());
+		
+		
+	}
+	
+	
 	
 	
 	
@@ -758,6 +769,18 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 
 	public void setVolume(long volume) {
 		this.volume = volume;
+	}
+
+
+
+	public NeuralInputComponent getTargetBuySellSignalComponent() {
+		return targetBuySellSignalComponent;
+	}
+
+
+
+	public void setTargetBuySellSignalComponent(NeuralInputComponent targetBuySellSignalComponent) {
+		this.targetBuySellSignalComponent = targetBuySellSignalComponent;
 	}
 
 

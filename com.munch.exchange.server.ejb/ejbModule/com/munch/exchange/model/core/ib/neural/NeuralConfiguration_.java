@@ -10,7 +10,7 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="Dali", date="2016-11-27T15:19:28.319+0100")
+@Generated(value="Dali", date="2016-12-04T20:38:48.726+0100")
 @StaticMetamodel(NeuralConfiguration.class)
 public class NeuralConfiguration_ {
 	public static volatile SingularAttribute<NeuralConfiguration, Integer> id;

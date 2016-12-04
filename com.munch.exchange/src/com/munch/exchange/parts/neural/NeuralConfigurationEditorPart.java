@@ -1002,6 +1002,10 @@ public class NeuralConfigurationEditorPart {
 			}
 		}
 		
+		addColumn("Target Signal" ,100,
+				new NeuralInputComponentLabelProvider(neuralConfiguration.getTargetBuySellSignalComponent()));
+		
+		
 	}
 	
 	
@@ -2328,7 +2332,7 @@ public class NeuralConfigurationEditorPart {
 			
 			disableAllGuiElts();
 			
-			progressBarDataSet.setMaximum(8);
+			progressBarDataSet.setMaximum(9);
 			progressBarDataSet.setSelection(0);
 			dataSetCounter=0;
 			
@@ -2478,6 +2482,11 @@ public class NeuralConfigurationEditorPart {
 			System.gc();
 			printMemoryUsage("In order to save memory clear the data collector");
 			
+//			TODO create the target signal
+			neuralConfiguration.computeTargetBuySellSignal();
+			updateProgressBarDataSet();
+			printMemoryUsage("Compute the target buy sell signal");
+			
 //			Compute the adapted Data of each components
 			neuralConfiguration.computeAdaptedDataOfEachComponents();
 			updateProgressBarDataSet();
@@ -2544,7 +2553,7 @@ public class NeuralConfigurationEditorPart {
 			public void run() {
 				dataSetCounter++;
 				progressBarDataSet.setSelection(dataSetCounter);
-				if(dataSetCounter==8)
+				if(dataSetCounter==9)
 					btnViewTrainingData.setEnabled(true);
 			}
 		}

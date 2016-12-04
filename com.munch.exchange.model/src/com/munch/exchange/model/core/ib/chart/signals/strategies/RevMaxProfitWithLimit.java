@@ -4,11 +4,7 @@ import java.util.List;
 
 import javax.persistence.Entity;
 
-import com.munch.exchange.model.analytic.indicator.oscillators.MACD;
-import com.munch.exchange.model.analytic.indicator.oscillators.RelativeStrengthIndex;
-import com.munch.exchange.model.analytic.indicator.signals.SimpleDerivate;
-import com.munch.exchange.model.analytic.indicator.trend.MovingAverage;
-import com.munch.exchange.model.analytic.indicator.trend.StandardDeviation;
+import com.munch.exchange.model.analytic.indicator.signals.ReverseMaxProfitClass;
 import com.munch.exchange.model.core.ib.IbCommission;
 import com.munch.exchange.model.core.ib.bar.BarUtils;
 import com.munch.exchange.model.core.ib.bar.ExBar;
@@ -16,9 +12,7 @@ import com.munch.exchange.model.core.ib.bar.ExBar.DataType;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicator;
 import com.munch.exchange.model.core.ib.chart.IbChartIndicatorGroup;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter;
-import com.munch.exchange.model.core.ib.chart.IbChartSerie;
 import com.munch.exchange.model.core.ib.chart.IbChartParameter.ParameterType;
-import com.munch.exchange.model.core.ib.chart.IbChartSerie.RendererType;
 import com.munch.exchange.model.core.ib.chart.signals.IbChartSignal;
 
 @Entity
@@ -72,11 +66,11 @@ public class RevMaxProfitWithLimit extends IbChartSignal {
 	}
 	
 	
-	private double localMin;
-	private int localMinIndex;
-	
-	private double localMax;
-	private int localMaxIndex;
+//	private double localMin;
+//	private int localMinIndex;
+//	
+//	private double localMax;
+//	private int localMaxIndex;
 	
 	@Override
 	public void computeSignalPoint(List<ExBar> bars, boolean reset) {
@@ -84,87 +78,95 @@ public class RevMaxProfitWithLimit extends IbChartSignal {
 //		Step 1: Read the parameters
 		long[] times=BarUtils.getTimeArray(bars);
 		double[] price=getPrices(bars,PARAM_PRICE);
-		double[] signal=new double[price.length];
+		
 		
 		double minProfitLimit=this.getChartParameter(PARAM_MIN_PROFIT_LIMIT).getValue();
-		
-		signal[0] = 0;
-		
-		localMin = price[0];
-		localMinIndex = 0;
-		
-		localMax = price[0];
-		localMaxIndex = 0;
-		
-		long volume = this.getVolume();
 		IbCommission commission = this.getCommission();
+		long volume = this.getVolume();
 		
-		signal[0] = 0.0;
-		for(int i=1;i<price.length;i++){
-			if(price[i]>localMax){
-				resetMaxValues(price, i);
-				if(signal[i] > 0)
-					resetMinValues(price, i);
-			}
-			if(price[i] < localMin){
-				resetMinValues(price, i);
-				if(signal[i] < 0)
-					resetMaxValues(price, i);
-			}
-			
-			double MinMaxdiff = Math.abs(localMax-localMin)*volume;
-			
-			if(MinMaxdiff<2*commission.calculate(volume, price[i])){
-				signal[i] = signal[i-1];
-				continue;
-			}
-			
-			if(localMaxIndex>=localMinIndex){
-				resetFromToWith(signal, localMinIndex, localMaxIndex, 1.0);
-				resetMinValues(price, i);
-			}
-			else{
-				resetFromToWith(signal, localMaxIndex, localMinIndex, -1.0);
-				resetMaxValues(price, i);
-			}
-			
-		}
+		ReverseMaxProfitClass reverseMaxProfit = new ReverseMaxProfitClass(minProfitLimit, volume, commission);
+		double[] signal = reverseMaxProfit.compute(price);
+				
+//		ReverseMaxProfit reverseMaxProfit = new ReverseMaxProfit( minProfitLimit, volume, commission);
 		
-//		Remove the signal where the profit is lower that the given limit
-		int lastChangeIndex = 0;
-		for(int i=1;i<price.length;i++){
-			if(signal[i-1] == signal[i])continue;
-			
-			double profitDiff = Math.abs(price[i]-price[lastChangeIndex])*volume - 2*commission.calculate(volume, price[i]);
-			if(profitDiff < minProfitLimit){
-//				resetFromToWith(signal, lastChangeIndex, i-1, signal[i]);
-				resetFromToWith(signal, lastChangeIndex, i-1, 0);
-			}
-			
-			
-			lastChangeIndex = i;
-			
-		}
+//		double[] signal=new double[price.length];
+//		signal[0] = 0;
+//		
+//		localMin = price[0];
+//		localMinIndex = 0;
+//		
+//		localMax = price[0];
+//		localMaxIndex = 0;
+//		
+//		
+//		
+//		
+//		signal[0] = 0.0;
+//		for(int i=1;i<price.length;i++){
+//			if(price[i]>localMax){
+//				resetMaxValues(price, i);
+//				if(signal[i] > 0)
+//					resetMinValues(price, i);
+//			}
+//			if(price[i] < localMin){
+//				resetMinValues(price, i);
+//				if(signal[i] < 0)
+//					resetMaxValues(price, i);
+//			}
+//			
+//			double MinMaxdiff = Math.abs(localMax-localMin)*volume;
+//			
+//			if(MinMaxdiff<2*commission.calculate(volume, price[i])){
+//				signal[i] = signal[i-1];
+//				continue;
+//			}
+//			
+//			if(localMaxIndex>=localMinIndex){
+//				resetFromToWith(signal, localMinIndex, localMaxIndex, 1.0);
+//				resetMinValues(price, i);
+//			}
+//			else{
+//				resetFromToWith(signal, localMaxIndex, localMinIndex, -1.0);
+//				resetMaxValues(price, i);
+//			}
+//			
+//		}
+//		
+////		Remove the signal where the profit is lower that the given limit
+//		int lastChangeIndex = 0;
+//		for(int i=1;i<price.length;i++){
+//			if(signal[i-1] == signal[i])continue;
+//			
+//			double profitDiff = Math.abs(price[i]-price[lastChangeIndex])*volume - 2*commission.calculate(volume, price[i]);
+//			if(profitDiff < minProfitLimit){
+////				resetFromToWith(signal, lastChangeIndex, i-1, signal[i]);
+//				resetFromToWith(signal, lastChangeIndex, i-1, 0);
+//			}
+//			
+//			
+//			lastChangeIndex = i;
+//			
+//		}
 		
 		
 		refreshSerieValues(this.getSignalSerie().getName(), reset, times, signal, 0);
 		
 	}
 	
-	private void resetMinValues(double[] array, int index){
-		localMin = array[index];
-		localMinIndex = index;
-	}
-	private void resetMaxValues(double[] array, int index){
-		localMax = array[index];
-		localMaxIndex = index;
-	}
+//	private void resetMinValues(double[] array, int index){
+//		localMin = array[index];
+//		localMinIndex = index;
+//	}
+//	private void resetMaxValues(double[] array, int index){
+//		localMax = array[index];
+//		localMaxIndex = index;
+//	}
 	
-	private void resetFromToWith(double[] array, int from, int to, double value){
-		for(int i=from;i<=to;i++){
-			array[i] = value;
-		}
-	}
+//	private void resetFromToWith(double[] array, int from, int to, double value){
+//		for(int i=from;i<=to;i++){
+//			array[i] = value;
+//		}
+//	}
 	
 	private double[] getPrices(List<ExBar> bars, String paramName){
 		
