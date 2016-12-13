@@ -1,5 +1,8 @@
 package com.munch.exchange.model.core.ib.neural;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -535,6 +538,83 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	}
 	
 	
+	public void exportDataToDirectory(String directory){
+		if(this.getAdpatedTimesMap()==null){
+			System.out.println("Error the adapted data were not formed");
+			return;
+		}
+		
+		System.out.println("1. Export the training data set");
+		exportDataOfBlocks(trainingBlocks, "Training", directory);
+		
+		System.out.println("2. Export the test data set");
+		exportDataOfBlocks(backTestingBlocks, "Test", directory);
+
+		
+	}
+	
+	private void exportDataOfBlocks(LinkedList<LinkedList<ExBar>> blocks, String blockLabel, String directory){
+		
+//		Create the export directory
+		String trainingPath = directory+File.separator+blockLabel;
+		File trainingDir = new File(trainingPath);
+		trainingDir.mkdirs();
+		
+		int nbOfBlock = 1;
+		for( LinkedList<ExBar> block : blocks){
+			String fileName = trainingPath+File.separator +"Block_"+nbOfBlock+".csv";
+			
+			System.out.println("1."+nbOfBlock+" Block:");
+			
+			try {
+	           
+	            File newTextFile = new File(fileName);
+
+	            FileWriter fw = new FileWriter(newTextFile);
+	            
+	            for(ExBar bar : block ){
+					createDataLine(fw, bar);
+				}
+	            
+	            fw.close();
+
+	        } catch (IOException iox) {
+	            //do stuff with exception
+	            iox.printStackTrace();
+	        }
+			
+			
+			
+			
+			nbOfBlock++;
+		}
+		
+		
+	}
+	
+	
+	
+	private void createDataLine(FileWriter fw, ExBar bar) throws IOException{
+		long time=bar.getTimeInMs();
+//		The given time is not in the adapted data
+		if(!this.getAdpatedTimesMap().containsKey(time))
+			return ;
+		
+		int daptedValueIndex=this.getAdpatedTimesMap().get(time);
+		
+//		Now create the line
+		String line = "";
+		for (NeuralInput input : neuralInputs) {
+			for(NeuralInputComponent component: input.getComponents()){
+				line +=String.valueOf(component.getAdaptedValues()[daptedValueIndex])+";";
+			}
+		}
+		line +=String.valueOf(targetBuySellSignalComponent.getAdaptedValues()[daptedValueIndex]);
+		
+		
+		fw.write(line+"\n");
+		
+	}
 	
 	
 	

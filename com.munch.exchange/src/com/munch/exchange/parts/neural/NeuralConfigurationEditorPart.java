@@ -47,6 +47,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
@@ -196,6 +197,7 @@ public class NeuralConfigurationEditorPart {
 	private Combo comboBarType;
 	private Spinner spinnerMinProfitLimit;
 	private Spinner spinnerVolume;
+	private Button btnExportData;
 	
 	
 	@Inject
@@ -596,7 +598,17 @@ public class NeuralConfigurationEditorPart {
 		spinnerVolume.setMinimum(10);
 		spinnerVolume.setSelection(20000);
 		spinnerVolume.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		new Label(compositeDataSetCommandItems, SWT.NONE);
+		
+		btnExportData = new Button(compositeDataSetCommandItems, SWT.NONE);
+		btnExportData.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				exportData();
+			}
+		});
+		btnExportData.setEnabled(false);
+		btnExportData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		btnExportData.setText("Export Data");
 		
 		treeViewerTrainingData = new TreeViewer(compositeDataSet,SWT.BORDER| SWT.MULTI
 				| SWT.V_SCROLL | SWT.FULL_SELECTION);
@@ -1040,6 +1052,16 @@ public class NeuralConfigurationEditorPart {
 		createAllTrainingDataColumns();
 		treeViewerTrainingData.refresh();
 		
+	}
+	
+	private void exportData(){
+		//TODO Export Data
+		
+		DirectoryDialog dialog= new DirectoryDialog(shell,SWT.OPEN );
+		String directory=dialog.open();
+		if(directory!=null && !directory.isEmpty()){
+			neuralConfiguration.exportDataToDirectory(directory);
+		}
 	}
 	
 	
@@ -2494,8 +2516,8 @@ public class NeuralConfigurationEditorPart {
 			
 //			save the configuration
 //			TODO Save the config
-//			neuralProvider.updateTrainingData(neuralConfiguration.getId(),
-//					neuralConfiguration.getNeuralTrainingElements());
+			neuralProvider.updateTrainingData(neuralConfiguration.getId(),
+					neuralConfiguration.getNeuralTrainingElements());
 			updateProgressBarDataSet();
 			
 			printMemoryUsage("End distribute");
@@ -2553,8 +2575,10 @@ public class NeuralConfigurationEditorPart {
 			public void run() {
 				dataSetCounter++;
 				progressBarDataSet.setSelection(dataSetCounter);
-				if(dataSetCounter==9)
+				if(dataSetCounter==9){
 					btnViewTrainingData.setEnabled(true);
+					btnExportData.setEnabled(true);
+				}
 			}
 		}
 		);
