@@ -564,33 +564,36 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 		File trainingFeaturesDir = new File(trainingFeaturesPath);
 		trainingFeaturesDir.mkdirs();
 		
-		String trainingLabelsPath = trainingPath+File.separator+"Labels";
-		File trainingLabelsDir = new File(trainingLabelsPath);
-		trainingLabelsDir.mkdirs();
+//		String trainingLabelsPath = trainingPath+File.separator+"Labels";
+//		File trainingLabelsDir = new File(trainingLabelsPath);
+//		trainingLabelsDir.mkdirs();
 		
 		
 		
 		int nbOfBlock = 1;
 		for( LinkedList<ExBar> block : blocks){
 			String fileNameFeatures = trainingFeaturesPath+File.separator +"Block_"+nbOfBlock+".csv";
-			String fileNameLabels = trainingLabelsPath+File.separator +"Block_"+nbOfBlock+".csv";
+//			String fileNameLabels = trainingLabelsPath+File.separator +"Block_"+nbOfBlock+".csv";
 			
 			System.out.println("1."+nbOfBlock+" Block:");
 			
 			try {
 	           
 	            File newTextFileFeatures = new File(fileNameFeatures);
-	            File newTextFileLabels = new File(fileNameLabels);
+//	            File newTextFileLabels = new File(fileNameLabels);
 
 	            FileWriter fwFeatures = new FileWriter(newTextFileFeatures);
-	            FileWriter fwLabels = new FileWriter(newTextFileLabels);
+//	            FileWriter fwLabels = new FileWriter(newTextFileLabels);
 	            
+	            //Create the header
+	            createHeaderLine(fwFeatures);
+	            //Create a line for each block
 	            for(ExBar bar : block ){
-					createDataLine(fwFeatures, fwLabels, bar);
+					createDataLine(fwFeatures, bar);
 				}
 	            
 	            fwFeatures.close();
-	            fwLabels.close();
+//	            fwLabels.close();
 
 	        } catch (IOException iox) {
 	            //do stuff with exception
@@ -604,8 +607,23 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 	}
 	
 	
+	private void createHeaderLine(FileWriter fwFeatures)throws IOException{
+		String lineFeatures = "";
+		for (NeuralInput input : neuralInputs) {
+			for(NeuralInputComponent component: input.getComponents()){
+				
+				lineFeatures +=component.getName()+"["+input.getName()+"]"+";";
+			}
+		}
+		
+		lineFeatures += "Target Buy Sell Signal";
+		
+		fwFeatures.write(lineFeatures+"\n");
+		
+	}
 	
-	private void createDataLine(FileWriter fwFeatures, FileWriter fwLabels, ExBar bar) throws IOException{
+	
+	private void createDataLine(FileWriter fwFeatures, ExBar bar) throws IOException{
 		long time=bar.getTimeInMs();
 //		The given time is not in the adapted data
 		if(!this.getAdpatedTimesMap().containsKey(time))
@@ -620,14 +638,18 @@ public class NeuralConfiguration implements Serializable, Copyable<NeuralConfigu
 				lineFeatures +=String.valueOf(component.getAdaptedValues()[daptedValueIndex])+";";
 			}
 		}
-		lineFeatures = lineFeatures.substring(0, lineFeatures.length()-1);
 		
-		String lineLabels = "";
-		lineLabels +=String.valueOf(targetBuySellSignalComponent.getAdaptedValues()[daptedValueIndex]);
+		lineFeatures +=String.valueOf(targetBuySellSignalComponent.getAdaptedValues()[daptedValueIndex]);
+		
+		
+//		lineFeatures = lineFeatures.substring(0, lineFeatures.length()-1);
+		
+//		String lineLabels = "";
+//		lineLabels +=String.valueOf(targetBuySellSignalComponent.getAdaptedValues()[daptedValueIndex]);
 		
 		
 		fwFeatures.write(lineFeatures+"\n");
-		fwLabels.write(lineLabels+"\n");
+//		fwLabels.write(lineLabels+"\n");
 		
 	}
 	

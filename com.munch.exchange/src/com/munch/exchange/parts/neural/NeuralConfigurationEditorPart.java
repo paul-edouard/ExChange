@@ -1062,6 +1062,7 @@ public class NeuralConfigurationEditorPart {
 		if(directory!=null && !directory.isEmpty()){
 			neuralConfiguration.exportDataToDirectory(directory);
 		}
+		
 	}
 	
 	

@@ -54,10 +54,10 @@ Export-Package: com.munch.exchange.services;
    com.munch.exchange.model.core.ib,
    com.ib.controller,
    com.munch.exchange.services.ejb.beans"
-Bundle-ClassPath: bin/,
- src/,
+Bundle-ClassPath: src/,
  resources/,
  jboss-cli-client.jar,
  jboss-client.jar,
- hibernate-core-4.3.10.Final.jar
+ hibernate-core-4.3.10.Final.jar,
+ bin/
 Bundle-ActivationPolicy: lazy
